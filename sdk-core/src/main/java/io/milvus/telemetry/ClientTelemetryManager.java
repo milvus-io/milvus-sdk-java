@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -75,6 +76,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ClientTelemetryManager.class);
     private static final Gson GSON = new Gson();
     private static final int SAMPLE_BUFFER_SIZE = 1000;
+    private static final int HISTORY_SAMPLE_SIZE = 128;
     private static final long SNAPSHOT_HISTORY_TTL_MS = TimeUnit.HOURS.toMillis(1);
     private static final int SNAPSHOT_HARD_LIMIT = 4096;
     /**
@@ -1061,30 +1063,24 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private static Map<String, Object> aggregateHistory(
             List<MetricsSnapshot> snapshots, long start, long end) {
-        Map<String, double[]> totals = new LinkedHashMap<>();
+        Map<String, HistoryAggregate> totals = new LinkedHashMap<>();
         for (MetricsSnapshot snapshot : snapshots) {
             for (OperationSnapshot operation : snapshot.metrics) {
-                MetricSnapshot metric = operation.global;
-                double[] total = totals.computeIfAbsent(operation.operation, ignored -> new double[6]);
-                total[0] += metric.request_count;
-                total[1] += metric.success_count;
-                total[2] += metric.error_count;
-                total[3] += metric.avg_latency_ms * metric.request_count;
-                total[4] += metric.p99_latency_ms * metric.request_count;
-                total[5] = Math.max(total[5], metric.max_latency_ms);
+                totals.computeIfAbsent(operation.operation, ignored -> new HistoryAggregate())
+                        .add(operation.global);
             }
         }
         Map<String, Object> metrics = new LinkedHashMap<>();
-        for (Map.Entry<String, double[]> entry : totals.entrySet()) {
-            double[] total = entry.getValue();
-            long count = (long) total[0];
+        for (Map.Entry<String, HistoryAggregate> entry : totals.entrySet()) {
+            HistoryAggregate total = entry.getValue();
             Map<String, Object> metric = new LinkedHashMap<>();
-            metric.put("request_count", count);
-            metric.put("success_count", (long) total[1]);
-            metric.put("error_count", (long) total[2]);
-            metric.put("avg_latency_ms", count == 0 ? 0.0 : total[3] / count);
-            metric.put("p99_latency_ms", count == 0 ? 0.0 : total[4] / count);
-            metric.put("max_latency_ms", total[5]);
+            metric.put("request_count", total.requests);
+            metric.put("success_count", total.successes);
+            metric.put("error_count", total.failures);
+            metric.put("avg_latency_ms",
+                    total.requests == 0 ? 0.0 : total.weightedLatencyMs / total.requests);
+            metric.put("p99_latency_ms", total.p99LatencyMs());
+            metric.put("max_latency_ms", total.maxLatencyMs);
             metrics.put(entry.getKey(), metric);
         }
         Map<String, Object> aggregated = new LinkedHashMap<>();
@@ -1095,6 +1091,107 @@ public final class ClientTelemetryManager implements AutoCloseable {
         response.put("aggregated", aggregated);
         response.put("snapshot_count", snapshots.size());
         return response;
+    }
+
+    private static final class HistoryAggregate {
+        private long requests;
+        private long successes;
+        private long failures;
+        private double weightedLatencyMs;
+        private double maxLatencyMs;
+        private final List<WeightedSampleSet> sampleSets = new ArrayList<>();
+
+        private void add(MetricSnapshot metric) {
+            requests += metric.request_count;
+            successes += metric.success_count;
+            failures += metric.error_count;
+            weightedLatencyMs += metric.avg_latency_ms * metric.request_count;
+            maxLatencyMs = Math.max(maxLatencyMs, metric.max_latency_ms);
+            if (metric.request_count == 0) {
+                return;
+            }
+            if (metric.latencySamplesMicros.length == 0) {
+                sampleSets.add(WeightedSampleSet.fallback(
+                        metric.p99_latency_ms, metric.request_count));
+                return;
+            }
+            double weight = (double) metric.request_count / metric.latencySamplesMicros.length;
+            sampleSets.add(new WeightedSampleSet(metric.latencySamplesMicros, weight));
+        }
+
+        private double p99LatencyMs() {
+            if (requests == 0 || sampleSets.isEmpty()) {
+                return 0.0;
+            }
+            PriorityQueue<WeightedSampleCursor> cursors = new PriorityQueue<>(
+                    Comparator.comparingDouble(WeightedSampleCursor::latencyMs));
+            for (WeightedSampleSet samples : sampleSets) {
+                cursors.add(new WeightedSampleCursor(samples));
+            }
+            double threshold = requests * 0.99;
+            double cumulative = 0.0;
+            double lastLatencyMs = 0.0;
+            while (!cursors.isEmpty()) {
+                WeightedSampleCursor cursor = cursors.remove();
+                lastLatencyMs = cursor.latencyMs();
+                cumulative += cursor.samples.weight;
+                if (cumulative > threshold) {
+                    return lastLatencyMs;
+                }
+                if (cursor.advance()) {
+                    cursors.add(cursor);
+                }
+            }
+            return lastLatencyMs;
+        }
+    }
+
+    private static final class WeightedSampleSet {
+        private final long[] latencyMicros;
+        private final double fallbackLatencyMs;
+        private final double weight;
+
+        private WeightedSampleSet(long[] latencyMicros, double weight) {
+            this.latencyMicros = latencyMicros;
+            this.fallbackLatencyMs = 0.0;
+            this.weight = weight;
+        }
+
+        private WeightedSampleSet(double fallbackLatencyMs, double weight) {
+            this.latencyMicros = new long[0];
+            this.fallbackLatencyMs = fallbackLatencyMs;
+            this.weight = weight;
+        }
+
+        private static WeightedSampleSet fallback(double latencyMs, double weight) {
+            return new WeightedSampleSet(latencyMs, weight);
+        }
+
+        private int size() {
+            return latencyMicros.length == 0 ? 1 : latencyMicros.length;
+        }
+
+        private double latencyMs(int index) {
+            return latencyMicros.length == 0 ? fallbackLatencyMs : latencyMicros[index] / 1000.0;
+        }
+    }
+
+    private static final class WeightedSampleCursor {
+        private final WeightedSampleSet samples;
+        private int index;
+
+        private WeightedSampleCursor(WeightedSampleSet samples) {
+            this.samples = samples;
+        }
+
+        private double latencyMs() {
+            return samples.latencyMs(index);
+        }
+
+        private boolean advance() {
+            index++;
+            return index < samples.size();
+        }
     }
 
     private static long parseTimestamp(String value) {
@@ -1383,14 +1480,28 @@ public final class ClientTelemetryManager implements AutoCloseable {
         public final double avg_latency_ms;
         public final double p99_latency_ms;
         public final double max_latency_ms;
+        private final transient long[] latencySamplesMicros;
 
         MetricSnapshot(long requests, long successes, long failures, double average, double p99, double max) {
+            this(requests, successes, failures, average, p99, max, new long[0]);
+        }
+
+        MetricSnapshot(
+                long requests,
+                long successes,
+                long failures,
+                double average,
+                double p99,
+                double max,
+                long[] latencySamplesMicros) {
             this.request_count = requests;
             this.success_count = successes;
             this.error_count = failures;
             this.avg_latency_ms = average;
             this.p99_latency_ms = p99;
             this.max_latency_ms = max;
+            this.latencySamplesMicros = Arrays.copyOf(
+                    latencySamplesMicros, latencySamplesMicros.length);
         }
     }
 
@@ -1416,13 +1527,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
 
         OperationSnapshot snapshot(String operation) {
-            MetricSnapshot globalSnapshot = global.snapshot();
+            MetricSnapshot globalSnapshot = global.snapshot(true);
             if (globalSnapshot == null) {
                 return null;
             }
             Map<String, MetricSnapshot> collectionSnapshots = new LinkedHashMap<>();
             for (Map.Entry<String, MetricBucket> entry : collections.entrySet()) {
-                MetricSnapshot snapshot = entry.getValue().snapshot();
+                MetricSnapshot snapshot = entry.getValue().snapshot(false);
                 if (snapshot != null) {
                     collectionSnapshots.put(entry.getKey(), snapshot);
                 }
@@ -1470,18 +1581,34 @@ public final class ClientTelemetryManager implements AutoCloseable {
             sampleCount = Math.min(sampleCount + 1, SAMPLE_BUFFER_SIZE);
         }
 
-        MetricSnapshot snapshot() {
+        MetricSnapshot snapshot(boolean retainHistorySamples) {
             if (requests == 0) {
                 return null;
             }
             long[] sorted = Arrays.copyOf(samples, sampleCount);
             Arrays.sort(sorted);
             long p99 = sorted.length == 0 ? 0 : sorted[Math.min(sorted.length - 1, (int) (sorted.length * 0.99))];
+            long[] historySamples = retainHistorySamples
+                    ? retainEvenlySpacedSamples(sorted) : new long[0];
             return new MetricSnapshot(
                     requests, successes, failures,
                     (double) totalLatencyMicros / requests / 1000.0,
                     p99 / 1000.0,
-                    maxLatencyMicros / 1000.0);
+                    maxLatencyMicros / 1000.0,
+                    historySamples);
+        }
+
+        private static long[] retainEvenlySpacedSamples(long[] sorted) {
+            if (sorted.length <= HISTORY_SAMPLE_SIZE) {
+                return sorted;
+            }
+            long[] retained = new long[HISTORY_SAMPLE_SIZE];
+            for (int index = 0; index < retained.length; index++) {
+                int source = (int) Math.round(
+                        (double) index * (sorted.length - 1) / (retained.length - 1));
+                retained[index] = sorted[source];
+            }
+            return retained;
         }
     }
 

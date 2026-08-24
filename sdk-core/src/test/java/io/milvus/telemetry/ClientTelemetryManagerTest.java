@@ -950,7 +950,97 @@ class ClientTelemetryManagerTest {
             assertEquals(1, body.get("total_snapshots").getAsInt());
             assertEquals(1, search.get("request_count").getAsLong());
             assertFalse(search.has("requestCount"));
+            assertFalse(search.has("latencySamplesMicros"));
+            assertFalse(search.has("latency_samples_micros"));
             assertFalse(metrics.isJsonArray());
+        } finally {
+            manager.close();
+        }
+    }
+
+    @Test
+    void latencyAggregateMergesWeightedSamplesInsteadOfWindowP99s() throws Exception {
+        ClientTelemetryManager manager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "default", null);
+        try {
+            long now = System.currentTimeMillis();
+            ClientTelemetryManager.OperationSnapshot fast = new ClientTelemetryManager.OperationSnapshot(
+                    "Search",
+                    new ClientTelemetryManager.MetricSnapshot(
+                            100, 100, 0, 1.0, 1.0, 1.0, new long[]{1_000}),
+                    Collections.emptyMap());
+            ClientTelemetryManager.OperationSnapshot slow = new ClientTelemetryManager.OperationSnapshot(
+                    "Search",
+                    new ClientTelemetryManager.MetricSnapshot(
+                            100, 100, 0, 100.0, 100.0, 100.0, new long[]{100_000}),
+                    Collections.emptyMap());
+            ClientTelemetryManager.OperationSnapshot legacy = new ClientTelemetryManager.OperationSnapshot(
+                    "Legacy",
+                    new ClientTelemetryManager.MetricSnapshot(10, 10, 0, 42.0, 42.0, 42.0),
+                    Collections.emptyMap());
+            @SuppressWarnings("unchecked")
+            Deque<ClientTelemetryManager.MetricsSnapshot> snapshots =
+                    (Deque<ClientTelemetryManager.MetricsSnapshot>) getField(manager, "snapshots");
+            synchronized (snapshots) {
+                snapshots.addLast(new ClientTelemetryManager.MetricsSnapshot(
+                        now - 20, now - 10, Arrays.asList(fast, legacy)));
+                snapshots.addLast(new ClientTelemetryManager.MetricsSnapshot(
+                        now - 10, now, Collections.singletonList(slow)));
+            }
+
+            String payload = String.format(
+                    "{\"start_time\":\"%s\",\"end_time\":\"%s\"}",
+                    java.time.Instant.ofEpochMilli(now - 21),
+                    java.time.Instant.ofEpochMilli(now + 1));
+            CommandReply reply = processOne(manager, command(
+                    "weighted-p99", "show_latency_history", payload, 1));
+            JsonObject metrics = JsonParser.parseString(reply.getPayload().toStringUtf8())
+                    .getAsJsonObject().getAsJsonObject("aggregated").getAsJsonObject("metrics");
+
+            assertTrue(reply.getSuccess());
+            assertEquals(200, metrics.getAsJsonObject("Search").get("request_count").getAsLong());
+            assertEquals(100.0,
+                    metrics.getAsJsonObject("Search").get("p99_latency_ms").getAsDouble());
+            assertEquals(42.0,
+                    metrics.getAsJsonObject("Legacy").get("p99_latency_ms").getAsDouble());
+        } finally {
+            manager.close();
+        }
+    }
+
+    @Test
+    void snapshotsRetainAtMost128GlobalLatencySamples() throws Exception {
+        ClientTelemetryManager manager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "default", null);
+        try {
+            assertTrue(processOne(manager, command(
+                    "enable-books",
+                    "collection_metrics",
+                    "{\"enabled\":true,\"collections\":[\"books\"]}",
+                    1)).getSuccess());
+            for (int latencyMs = 1; latencyMs <= 200; latencyMs++) {
+                manager.recordOperation(
+                        "Search",
+                        "books",
+                        System.nanoTime() - TimeUnit.MILLISECONDS.toNanos(latencyMs),
+                        "",
+                        "");
+            }
+            invoke(manager, "createSnapshot");
+            ClientTelemetryManager.OperationSnapshot search =
+                    manager.getMetricsSnapshots().get(0).metrics.get(0);
+            Field samplesField = ClientTelemetryManager.MetricSnapshot.class
+                    .getDeclaredField("latencySamplesMicros");
+            samplesField.setAccessible(true);
+            long[] globalSamples = (long[]) samplesField.get(search.global);
+            long[] collectionSamples = (long[]) samplesField.get(search.collection_metrics.get("books"));
+
+            assertEquals(128, globalSamples.length);
+            assertEquals(0, collectionSamples.length);
+            assertEquals(search.global.max_latency_ms, globalSamples[globalSamples.length - 1] / 1000.0);
+            for (int index = 1; index < globalSamples.length; index++) {
+                assertTrue(globalSamples[index - 1] <= globalSamples[index]);
+            }
         } finally {
             manager.close();
         }
