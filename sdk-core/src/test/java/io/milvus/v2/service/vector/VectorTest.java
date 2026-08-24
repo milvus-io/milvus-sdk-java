@@ -712,6 +712,26 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testSearchRejectsNullFunctionChainElement() {
+        // addFunctionChain(null) is rejected eagerly
+        MilvusClientException nullAdd = Assertions.assertThrows(MilvusClientException.class,
+                () -> SearchReq.builder().addFunctionChain(null));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, nullAdd.getErrorCode());
+
+        // a null element inside the functionChains list is rejected at conversion time
+        FunctionChain chain = FunctionChain.builder().stage(FunctionChainStage.L2_RERANK).build();
+        SearchReq request = SearchReq.builder()
+                .collectionName("test2")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .functionChains(Arrays.asList(chain, null))
+                .build();
+        MilvusClientException nullElement = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.search(request));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, nullElement.getErrorCode());
+    }
+
+    @Test
     void testSearchAsync() throws Exception {
         SearchReq request = SearchReq.builder()
                 .collectionName("test2")
