@@ -250,6 +250,70 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testQueryElementLevelExpandsResultsWithOffset() {
+        QueryResults response = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .addFieldsData(FieldData.newBuilder()
+                        .setFieldName("id")
+                        .setType(DataType.Int64)
+                        .setScalars(ScalarField.newBuilder()
+                                .setLongData(LongArray.newBuilder().addData(10L).addData(20L).build())
+                                .build())
+                        .build())
+                .addElementIndices(ElementIndices.newBuilder()
+                        .setIndices(LongArray.newBuilder().addData(0L).addData(2L).build())
+                        .build())
+                .addElementIndices(ElementIndices.newBuilder()
+                        .setIndices(LongArray.newBuilder().addData(1L).build())
+                        .build())
+                .build();
+        when(blockingStub.query(any())).thenReturn(response);
+
+        QueryResp resp = client_v2.query(QueryReq.builder()
+                .collectionName("book")
+                .filter("element_filter(clips, $[tag] == \"sports\")")
+                .build());
+
+        List<QueryResp.QueryResult> results = resp.getQueryResults();
+        Assertions.assertEquals(3, results.size());
+
+        Assertions.assertEquals(10L, results.get(0).getEntity().get("id"));
+        Assertions.assertEquals(0L, results.get(0).getElementOffset());
+
+        Assertions.assertEquals(10L, results.get(1).getEntity().get("id"));
+        Assertions.assertEquals(2L, results.get(1).getElementOffset());
+
+        Assertions.assertEquals(20L, results.get(2).getEntity().get("id"));
+        Assertions.assertEquals(1L, results.get(2).getElementOffset());
+    }
+
+    @Test
+    void testQueryElementLevelRejectsIndexCountMismatch() {
+        // element_indices count (1) does not match the row count (2): must fail, not silently drop
+        QueryResults response = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .addFieldsData(FieldData.newBuilder()
+                        .setFieldName("id")
+                        .setType(DataType.Int64)
+                        .setScalars(ScalarField.newBuilder()
+                                .setLongData(LongArray.newBuilder().addData(10L).addData(20L).build())
+                                .build())
+                        .build())
+                .addElementIndices(ElementIndices.newBuilder()
+                        .setIndices(LongArray.newBuilder().addData(0L).build())
+                        .build())
+                .build();
+        when(blockingStub.query(any())).thenReturn(response);
+
+        MilvusClientException ex = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.query(QueryReq.builder()
+                        .collectionName("book")
+                        .filter("element_filter(clips, $[tag] == \"sports\")")
+                        .build()));
+        Assertions.assertEquals(ErrorCode.SERVER_ERROR, ex.getErrorCode());
+    }
+
+    @Test
     void testQueryAsync() throws Exception {
         QueryReq request = QueryReq.builder()
                 .collectionName("book")
