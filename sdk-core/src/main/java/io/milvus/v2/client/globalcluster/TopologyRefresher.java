@@ -95,8 +95,10 @@ public class TopologyRefresher {
             long oldVersion = currentVersion.get();
             if (newVersion != oldVersion) {
                 logger.info("Global topology version changed from {} to {}, triggering reconnection", oldVersion, newVersion);
-                currentVersion.set(newVersion);
                 onTopologyChange.accept(topology);
+                // Only acknowledge the version after the replacement client has been installed.
+                // A failed reconnect must be retried on the next refresh rather than cached away.
+                currentVersion.set(newVersion);
             } else {
                 logger.debug("Global topology version unchanged ({}), no action needed", oldVersion);
             }

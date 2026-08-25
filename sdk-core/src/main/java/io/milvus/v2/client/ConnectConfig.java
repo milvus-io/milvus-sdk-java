@@ -20,6 +20,8 @@
 package io.milvus.v2.client;
 
 import io.milvus.common.utils.URLParser;
+import io.milvus.telemetry.ClientTelemetryManager;
+import io.milvus.telemetry.TelemetryConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.SSLContext;
@@ -59,6 +61,10 @@ public class ConnectConfig {
     // clientRequestId maintains a map for different threads, each thread can assign a specific id.
     // the specific id is passed to the server, from the access log we can know which client calls the interface
     private ThreadLocal<String> clientRequestId;
+    private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
+    private String telemetryClientId = "";
+    private ClientTelemetryManager.RuntimeState telemetryRuntimeState;
+    private boolean deferTelemetryStart;
 
     // Constructor for builder
     private ConnectConfig(ConnectConfigBuilder builder) {
@@ -85,6 +91,10 @@ public class ConnectConfig {
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.sslContext = builder.sslContext;
         this.clientRequestId = builder.clientRequestId;
+        this.telemetryConfig = builder.telemetryConfig;
+        this.telemetryClientId = builder.telemetryClientId;
+        this.telemetryRuntimeState = builder.telemetryRuntimeState;
+        this.deferTelemetryStart = builder.deferTelemetryStart;
         this.enablePrecheck = builder.enablePrecheck;
         this.option = builder.option;
     }
@@ -164,6 +174,24 @@ public class ConnectConfig {
 
     public ThreadLocal<String> getClientRequestId() {
         return clientRequestId;
+    }
+
+    public TelemetryConfig getTelemetryConfig() {
+        return telemetryConfig;
+    }
+
+    public String getTelemetryClientId() {
+        return telemetryClientId;
+    }
+
+    public synchronized ClientTelemetryManager.RuntimeState takeTelemetryRuntimeState() {
+        ClientTelemetryManager.RuntimeState state = telemetryRuntimeState;
+        telemetryRuntimeState = null;
+        return state;
+    }
+
+    public boolean isDeferTelemetryStart() {
+        return deferTelemetryStart;
     }
 
     public String getProxyAddress() {
@@ -269,6 +297,18 @@ public class ConnectConfig {
         this.clientRequestId = clientRequestId;
     }
 
+    public void setTelemetryConfig(TelemetryConfig telemetryConfig) {
+        this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
+    }
+
+    public void setTelemetryClientId(String telemetryClientId) {
+        this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
+    }
+
+    public synchronized void setTelemetryRuntimeState(ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+        this.telemetryRuntimeState = telemetryRuntimeState;
+    }
+
     public String getHost() {
         URLParser urlParser = new URLParser(this.uri);
         return urlParser.getHostname();
@@ -352,6 +392,10 @@ public class ConnectConfig {
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private SSLContext sslContext;
         private ThreadLocal<String> clientRequestId;
+        private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
+        private String telemetryClientId = "";
+        private ClientTelemetryManager.RuntimeState telemetryRuntimeState;
+        private boolean deferTelemetryStart;
         private boolean enablePrecheck = false;
         private Map<String, String> option = new HashMap<>();
 
@@ -463,6 +507,31 @@ public class ConnectConfig {
 
         public ConnectConfigBuilder clientRequestId(ThreadLocal<String> clientRequestId) {
             this.clientRequestId = clientRequestId;
+            return this;
+        }
+
+        public ConnectConfigBuilder telemetryConfig(TelemetryConfig telemetryConfig) {
+            this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
+            return this;
+        }
+
+        public ConnectConfigBuilder telemetryClientId(String telemetryClientId) {
+            this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
+            return this;
+        }
+
+        public ConnectConfigBuilder telemetryRuntimeState(
+                ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+            this.telemetryRuntimeState = telemetryRuntimeState;
+            return this;
+        }
+
+        /**
+         * Builds the connection and telemetry stub without starting the telemetry worker.
+         * Used only while a global-cluster replacement is prepared for an atomic handoff.
+         */
+        public ConnectConfigBuilder deferTelemetryStart(boolean deferTelemetryStart) {
+            this.deferTelemetryStart = deferTelemetryStart;
             return this;
         }
 

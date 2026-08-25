@@ -19,12 +19,17 @@
 
 package io.milvus.client;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.*;
 import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
+import io.milvus.common.interceptor.ClientRequestInterceptor;
 import io.milvus.common.interceptor.IdentifierInterceptor;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.exception.MilvusException;
@@ -56,6 +61,8 @@ import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
+import io.milvus.telemetry.ClientTelemetryManager;
+import io.milvus.telemetry.TelemetryInterceptor;
 import io.milvus.v2.utils.ClientUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,7 +72,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -79,11 +88,24 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private RetryParam retryParam = RetryParam.newBuilder().build();
     private String currentDatabaseName;
     private final String endpoint;
+    private final ClientTelemetryManager telemetry;
+    private final boolean ownsTelemetry;
+    private final ThreadLocal<String> clientRequestId;
+    private final ThreadLocal<Integer> logicalOperationDepth =
+            ThreadLocal.withInitial(() -> 0);
 
     public MilvusServiceClient(ConnectParam connectParam) {
         ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
         this.rpcDeadlineMs = connectParam.getRpcDeadlineMs();
         this.endpoint = connectParam.getHost() + ":" + connectParam.getPort();
+        this.telemetry = new ClientTelemetryManager(
+                connectParam.getTelemetryConfig(),
+                connectParam.getUserName(),
+                getSDKVersion(),
+                () -> currentDatabaseName,
+                () -> telemetryUserConfig(connectParam));
+        this.ownsTelemetry = true;
+        this.clientRequestId = connectParam.getClientRequestId();
 
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
@@ -94,22 +116,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
         List<ClientInterceptor> clientInterceptors = new ArrayList<>();
         clientInterceptors.add(MetadataUtils.newAttachHeadersInterceptor(metadata));
-        //client interceptor used to fetch client_request_id from threadlocal variable and set it for every grpc request
-        clientInterceptors.add(new ClientInterceptor() {
-            @Override
-            public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-                return new ForwardingClientCall
-                        .SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
-                    @Override
-                    public void start(ClientCall.Listener<RespT> responseListener, Metadata headers) {
-                        if (connectParam.getClientRequestId() != null && !StringUtils.isEmpty(connectParam.getClientRequestId().get())) {
-                            headers.put(Metadata.Key.of("client_request_id", Metadata.ASCII_STRING_MARSHALLER), connectParam.getClientRequestId().get());
-                        }
-                        super.start(responseListener, headers);
-                    }
-                };
-            }
-        });
+        clientInterceptors.add(new ClientRequestInterceptor(connectParam.getClientRequestId()));
+        clientInterceptors.add(new TelemetryInterceptor(telemetry, connectParam.getClientRequestId()));
 
         try {
             if (StringUtils.isNotEmpty(connectParam.getServerPemPath())) {
@@ -210,6 +218,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                     new IdentifierInterceptor(identifier));
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel);
             futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel);
+            telemetry.setStub(ClientTelemetryServiceGrpc.newBlockingStub(interceptedChannel));
+            telemetry.start();
         } catch (Exception e) {
             // close the channel if connect() throws exception, avoid leakage
             try {
@@ -232,6 +242,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         this.retryParam = src.retryParam;
         this.currentDatabaseName = src.currentDatabaseName;
         this.endpoint = src.endpoint;
+        this.telemetry = src.telemetry;
+        // Fluent wrappers share the channel and therefore share its lifecycle. Closing any
+        // wrapper closes that channel, so it must close the shared telemetry worker as well.
+        this.ownsTelemetry = true;
+        this.clientRequestId = src.clientRequestId;
     }
 
     @Override
@@ -265,8 +280,27 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public void close(long maxWaitSeconds) throws InterruptedException {
+        if (ownsTelemetry) {
+            telemetry.close();
+        }
         channel.shutdownNow();
         channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
+    }
+
+    /** Returns the telemetry manager for metrics inspection and custom command handlers. */
+    public ClientTelemetryManager getTelemetry() {
+        return telemetry;
+    }
+
+    private static Map<String, Object> telemetryUserConfig(ConnectParam connectParam) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("address", connectParam.getHost() + ":" + connectParam.getPort());
+        result.put("username", connectParam.getUserName());
+        result.put("db_name", connectParam.getDatabaseName());
+        result.put("secure", connectParam.isSecure());
+        result.put("connect_timeout_ms", connectParam.getConnectTimeoutMs());
+        result.put("rpc_deadline_ms", connectParam.getRpcDeadlineMs());
+        return result;
     }
 
     private static class TimeoutInterceptor implements ClientInterceptor {
@@ -437,6 +471,98 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
         logError(msg);
         return R.failed(new RuntimeException(msg));
+    }
+
+    private String captureClientRequestId() {
+        String value = clientRequestId == null ? null : clientRequestId.get();
+        return ClientRequestInterceptor.isValidClientRequestId(value) ? value : "";
+    }
+
+    private <T> R<T> recordLogicalOperation(
+            String operation, String collection, java.util.function.Supplier<R<T>> supplier) {
+        int depth = logicalOperationDepth.get();
+        logicalOperationDepth.set(depth + 1);
+        long startNanos = System.nanoTime();
+        String requestId = captureClientRequestId();
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     telemetry.beginLogicalOperation()) {
+            R<T> result = supplier.get();
+            if (depth == 0) {
+                recordLogicalResult(operation, collection, startNanos, resultError(result), requestId);
+            }
+            return result;
+        } catch (RuntimeException | Error throwable) {
+            if (depth == 0) {
+                recordLogicalResult(operation, collection, startNanos, throwable.toString(), requestId);
+            }
+            throw throwable;
+        } finally {
+            resetLogicalOperationDepth(depth);
+        }
+    }
+
+    private <T> ListenableFuture<R<T>> recordLogicalOperationAsync(
+            String operation, String collection,
+            java.util.function.Supplier<ListenableFuture<R<T>>> supplier) {
+        int depth = logicalOperationDepth.get();
+        logicalOperationDepth.set(depth + 1);
+        long startNanos = System.nanoTime();
+        String requestId = captureClientRequestId();
+        final ListenableFuture<R<T>> future;
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     telemetry.beginLogicalOperation()) {
+            future = supplier.get();
+        } catch (RuntimeException | Error throwable) {
+            if (depth == 0) {
+                recordLogicalResult(operation, collection, startNanos, throwable.toString(), requestId);
+            }
+            throw throwable;
+        } finally {
+            resetLogicalOperationDepth(depth);
+        }
+        if (depth == 0) {
+            Futures.addCallback(future, new FutureCallback<R<T>>() {
+                @Override
+                public void onSuccess(R<T> result) {
+                    recordLogicalResult(operation, collection, startNanos, resultError(result), requestId);
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    recordLogicalResult(operation, collection, startNanos, throwable.toString(), requestId);
+                }
+            }, MoreExecutors.directExecutor());
+        }
+        return future;
+    }
+
+    private void resetLogicalOperationDepth(int depth) {
+        if (depth == 0) {
+            logicalOperationDepth.remove();
+        } else {
+            logicalOperationDepth.set(depth);
+        }
+    }
+
+    private static String resultError(R<?> result) {
+        if (result != null && Integer.valueOf(R.Status.Success.getCode()).equals(result.getStatus())) {
+            return "";
+        }
+        if (result != null && result.getException() != null) {
+            return result.getException().toString();
+        }
+        return result == null ? "Milvus operation returned null"
+                : "Milvus operation failed with status " + result.getStatus();
+    }
+
+    private void recordLogicalResult(
+            String operation, String collection, long startNanos, String error, String requestId) {
+        try {
+            telemetry.recordOperation(operation, collection == null ? "" : collection,
+                    startNanos, error, requestId);
+        } catch (RuntimeException ignored) {
+            // Telemetry is best-effort and must never replace the operation result.
+        }
     }
 
     /**
@@ -670,32 +796,79 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public R<MutationResult> insert(InsertParam requestParam) {
-        return retry(() -> super.insert(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Insert", collection,
+                () -> retry(() -> super.insert(requestParam)));
     }
 
     @Override
     public R<MutationResult> upsert(UpsertParam requestParam) {
-        return retry(() -> super.upsert(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Upsert", collection,
+                () -> retry(() -> super.upsert(requestParam)));
     }
 
     @Override
     public R<MutationResult> delete(DeleteParam requestParam) {
-        return retry(() -> super.delete(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Delete", collection,
+                () -> retry(() -> super.delete(requestParam)));
     }
 
     @Override
     public R<SearchResults> search(SearchParam requestParam) {
-        return retry(() -> super.search(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Search", collection,
+                () -> retry(() -> super.search(requestParam)));
     }
 
     @Override
     public R<SearchResults> hybridSearch(HybridSearchParam requestParam) {
-        return retry(() -> super.hybridSearch(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("HybridSearch", collection,
+                () -> retry(() -> super.hybridSearch(requestParam)));
     }
 
     @Override
     public R<QueryResults> query(QueryParam requestParam) {
-        return retry(() -> super.query(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> retry(() -> super.query(requestParam)));
+    }
+
+    @Override
+    public ListenableFuture<R<MutationResult>> insertAsync(InsertParam requestParam) {
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperationAsync("Insert", collection,
+                () -> super.insertAsync(requestParam));
+    }
+
+    @Override
+    public ListenableFuture<R<MutationResult>> upsertAsync(UpsertParam requestParam) {
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperationAsync("Upsert", collection,
+                () -> super.upsertAsync(requestParam));
+    }
+
+    @Override
+    public ListenableFuture<R<SearchResults>> searchAsync(SearchParam requestParam) {
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperationAsync("Search", collection,
+                () -> super.searchAsync(requestParam));
+    }
+
+    @Override
+    public ListenableFuture<R<SearchResults>> hybridSearchAsync(HybridSearchParam requestParam) {
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperationAsync("HybridSearch", collection,
+                () -> super.hybridSearchAsync(requestParam));
+    }
+
+    @Override
+    public ListenableFuture<R<QueryResults>> queryAsync(QueryParam requestParam) {
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperationAsync("Query", collection,
+                () -> super.queryAsync(requestParam));
     }
 
     @Override
@@ -910,27 +1083,38 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public R<InsertResponse> insert(InsertRowsParam requestParam) {
-        return retry(() -> super.insert(requestParam));
+        String collection = requestParam == null || requestParam.getInsertParam() == null
+                ? "" : requestParam.getInsertParam().getCollectionName();
+        return recordLogicalOperation("Insert", collection,
+                () -> retry(() -> super.insert(requestParam)));
     }
 
     @Override
     public R<DeleteResponse> delete(DeleteIdsParam requestParam) {
-        return retry(() -> super.delete(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Delete", collection,
+                () -> retry(() -> super.delete(requestParam)));
     }
 
     @Override
     public R<GetResponse> get(GetIdsParam requestParam) {
-        return retry(() -> super.get(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> retry(() -> super.get(requestParam)));
     }
 
     @Override
     public R<QueryResponse> query(QuerySimpleParam requestParam) {
-        return retry(() -> super.query(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> retry(() -> super.query(requestParam)));
     }
 
     @Override
     public R<SearchResponse> search(SearchSimpleParam requestParam) {
-        return retry(() -> super.search(requestParam));
+        String collection = requestParam == null ? "" : requestParam.getCollectionName();
+        return recordLogicalOperation("Search", collection,
+                () -> retry(() -> super.search(requestParam)));
     }
 
     @Override
