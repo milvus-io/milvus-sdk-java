@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.QueryIteratorCursor;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.response.QueryResultsWrapper;
@@ -162,7 +163,7 @@ public class IteratorExample {
     }
 
     private static void queryIteratorWithTemplate(int batchSize) {
-        System.out.println("\n========== queryIterator() ==========");
+        System.out.println("\n========== queryIteratorWithTemplate() ==========");
         List<Long> ids = new ArrayList<>();
         for (long i = 500L; i < 600L; i++) {
             ids.add(i);
@@ -196,6 +197,61 @@ public class IteratorExample {
             }
         }
         System.out.printf("%d query results returned%n", counter);
+    }
+
+
+    // Query iterator with a resumable cursor
+    private static void queryIteratorWithCursor(int batchSize, int limit) {
+        System.out.println("\n========== queryIteratorWithCursor() with resumable cursor ==========");
+        String expr = ID_FIELD + " < 3000";
+
+        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .expr(expr)
+                .outputFields(Lists.newArrayList(ID_FIELD, AGE_FIELD))
+                .batchSize(batchSize)
+                .limit(limit)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .build());
+
+        // read the first page, then capture the cursor and close the iterator
+        System.out.println("QueryIterator first page results:");
+        List<QueryResultsWrapper.RowRecord> firstPage = queryIterator.next();
+        for (QueryResultsWrapper.RowRecord record : firstPage) {
+            System.out.println(record);
+        }
+
+        QueryIteratorCursor cursor = queryIterator.getCursor();
+        queryIterator.close();
+        System.out.printf("%d query results returned before cursor capture, cursor=%s%n",
+                firstPage.size(), cursor);
+
+        // resume pagination from the captured cursor in a brand new iterator
+        QueryIterator resumed = client.queryIterator(QueryIteratorReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .expr(expr)
+                .outputFields(Lists.newArrayList(ID_FIELD, AGE_FIELD))
+                .batchSize(batchSize)
+                .limit(limit)
+                .cursor(cursor)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .build());
+
+        System.out.println("Resumed iterator results:");
+        int counter = 0;
+        while (true) {
+            List<QueryResultsWrapper.RowRecord> res = resumed.next();
+            if (res.isEmpty()) {
+                System.out.println("resumed query iteration finished, close");
+                resumed.close();
+                break;
+            }
+            for (QueryResultsWrapper.RowRecord record : res) {
+                System.out.println(record);
+                counter++;
+            }
+        }
+        System.out.printf("%d query results returned after resume%n", counter);
     }
 
 
@@ -275,7 +331,7 @@ public class IteratorExample {
     }
 
     private static void searchIteratorV2WithTemplate(int batchSize) {
-        System.out.println("\n========== searchIteratorV2() ==========");
+        System.out.println("\n========== searchIteratorV2WithTemplate() ==========");
         List<Long> ids = new ArrayList<>();
         for (long i = 500L; i < 600L; i++) {
             ids.add(i);
@@ -323,6 +379,7 @@ public class IteratorExample {
 
         queryIterator("userID < 3000", 1, 5, 10000);
         queryIteratorWithTemplate(80);
+        queryIteratorWithCursor(2, 100);
 
         searchIteratorV1("userAge > 50 &&userAge < 100", "{\"range_filter\": 15.0, \"radius\": 20.0}", 100, 500);
         searchIteratorV1("", "", 1, 3000);

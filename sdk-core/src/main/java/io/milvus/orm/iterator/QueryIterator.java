@@ -118,6 +118,12 @@ public class QueryIterator {
         this.vectorUtils.setEndpoint(blockingStub.getEndpoint());
         this.vectorUtils.setCurrentDbName(blockingStub.getDatabaseName());
 
+        if (queryIteratorReq.getCursor() != null) {
+            // resume from a previously captured cursor: reuse its session ts and pk/element
+            // position, and skip the setup-ts query and offset seek.
+            restoreFromCursor(queryIteratorReq.getCursor());
+            return;
+        }
         setupTsByRequest();
         seek();
     }
@@ -187,6 +193,35 @@ public class QueryIterator {
 
     public void close() {
         iteratorCache.releaseCache(cacheIdInUse);
+    }
+
+    /**
+     * Capture the current iterator position as a resumable cursor. The cursor holds the
+     * session timestamp, the last primary key returned, and (for element-filter iterators)
+     * the last matched element offset, so pagination can continue in a new iterator.
+     */
+    public QueryIteratorCursor getCursor() {
+        QueryIteratorCursor.QueryIteratorCursorBuilder builder = QueryIteratorCursor.builder()
+                .sessionTs(sessionTs)
+                .lastElementOffset(nextElementOffset == null ? null
+                        : ((Number) nextElementOffset).longValue());
+        if (nextId == null) {
+            return builder.build();
+        }
+        if (primaryField.getDataType() == DataType.VarChar) {
+            builder.strPk(String.valueOf(nextId));
+        } else {
+            builder.intPk(((Number) nextId).longValue());
+        }
+        return builder.build();
+    }
+
+    private void restoreFromCursor(QueryIteratorCursor cursor) {
+        this.sessionTs = cursor.getSessionTs();
+        this.nextId = cursor.getStrPk() != null ? cursor.getStrPk() : cursor.getIntPk();
+        this.nextElementOffset = cursor.getLastElementOffset();
+        this.cacheIdInUse = NO_CACHE_ID;
+        this.offset = 0;
     }
 
     private void updateCursor(List<QueryResultsWrapper.RowRecord> res) {
