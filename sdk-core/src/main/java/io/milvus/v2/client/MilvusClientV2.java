@@ -32,6 +32,8 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
+import io.milvus.telemetry.ClientTelemetryManager;
+import io.milvus.telemetry.TelemetryInterceptor;
 import io.milvus.v2.service.cdc.CDCService;
 import io.milvus.v2.service.cdc.request.DumpMessagesReq;
 import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
@@ -90,9 +92,13 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
@@ -132,6 +138,7 @@ public class MilvusClientV2 {
     private ConnectConfig connectConfig;
     private GlobalStub globalStub;
     private String cacheEndpoint = "";
+    private ClientTelemetryManager telemetry;
 
     /**
      * Creates a Milvus client instance.
@@ -217,7 +224,20 @@ public class MilvusClientV2 {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
-        channel = clientUtils.getChannel(connectConfig);
+        ClientTelemetryManager.RuntimeState telemetryRuntimeState = connectConfig.takeTelemetryRuntimeState();
+        String runtimeClientId = telemetryRuntimeState == null
+                ? connectConfig.getTelemetryClientId() : telemetryRuntimeState.getClientId();
+        telemetry = new ClientTelemetryManager(
+                connectConfig.getTelemetryConfig(),
+                connectConfig.getUsername(),
+                clientUtils.getSDKVersion(),
+                this::configuredDatabaseName,
+                this::telemetryUserConfig,
+                runtimeClientId);
+        telemetry.restoreRuntimeState(telemetryRuntimeState);
+        connectConfig.setTelemetryClientId(telemetry.getClientId());
+        channel = clientUtils.getChannel(connectConfig,
+                new TelemetryInterceptor(telemetry, connectConfig.getClientRequestId()));
 
         try {
             blockingStub = MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
@@ -229,6 +249,10 @@ public class MilvusClientV2 {
                     new IdentifierInterceptor(identifier));
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel).withWaitForReady();
             futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel).withWaitForReady();
+            telemetry.setStub(io.milvus.grpc.ClientTelemetryServiceGrpc.newBlockingStub(interceptedChannel));
+            if (!connectConfig.isDeferTelemetryStart()) {
+                telemetry.start();
+            }
 
             if (connectConfig.getDbName() != null) {
                 // check if database exists
@@ -249,11 +273,23 @@ public class MilvusClientV2 {
         this.channel = primaryClient.channel;
         this.blockingStub = primaryClient.blockingStub;
         this.futureStub = primaryClient.futureStub;
+        this.telemetry = primaryClient.telemetry;
+        if (connectConfig != null && telemetry != null) {
+            connectConfig.setTelemetryClientId(telemetry.getClientId());
+        }
         // Keep cacheEndpoint scoped to the logical global-cluster endpoint. Replacing it with the
         // physical primary endpoint would make session timestamps and schemas recorded before a
         // failover unreachable after the primary changes.
         if (connectConfig != null) {
             initServices(connectConfig.getDbName());
+        }
+    }
+
+    /** Starts a telemetry manager whose worker was intentionally deferred during connection setup. */
+    public void startTelemetry() {
+        ClientTelemetryManager manager = getTelemetry();
+        if (manager != null) {
+            manager.start();
         }
     }
 
@@ -286,14 +322,85 @@ public class MilvusClientV2 {
     private MilvusServiceGrpc.MilvusServiceFutureStub getFutureRpcStub(String clientRequestId) {
         return getFutureRpcStub().withOption(
                 ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
-                clientRequestId == null ? "" : clientRequestId);
+                clientRequestId == null ? "" : clientRequestId).withOption(
+                TelemetryInterceptor.LOGICAL_OPERATION_OPTION, true);
     }
 
     private String captureClientRequestId() {
         if (connectConfig == null || connectConfig.getClientRequestId() == null) {
-            return null;
+            return "";
         }
-        return connectConfig.getClientRequestId().get();
+        String requestId = connectConfig.getClientRequestId().get();
+        return requestId == null ? "" : requestId;
+    }
+
+    private String captureTelemetryRequestId() {
+        String requestId = captureClientRequestId();
+        return ClientRequestInterceptor.isValidClientRequestId(requestId) ? requestId : "";
+    }
+
+    private <T> T recordLogicalOperation(
+            String operation, String collection, Supplier<T> supplier) {
+        ClientTelemetryManager manager = getTelemetry();
+        if (manager == null) {
+            return supplier.get();
+        }
+        long startNanos = System.nanoTime();
+        String requestId = captureTelemetryRequestId();
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     manager.beginLogicalOperation()) {
+            T result = supplier.get();
+            recordLogicalResult(manager, operation, collection, startNanos, "", requestId);
+            return result;
+        } catch (RuntimeException | Error throwable) {
+            recordLogicalResult(manager, operation, collection, startNanos,
+                    telemetryError(throwable), requestId);
+            throw throwable;
+        }
+    }
+
+    private <T> CompletableFuture<T> recordLogicalOperationAsync(
+            String operation, String collection, Supplier<CompletableFuture<T>> supplier) {
+        ClientTelemetryManager manager = getTelemetry();
+        if (manager == null) {
+            return supplier.get();
+        }
+        long startNanos = System.nanoTime();
+        String requestId = captureTelemetryRequestId();
+        final CompletableFuture<T> future;
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     manager.beginLogicalOperation()) {
+            future = supplier.get();
+        } catch (RuntimeException | Error throwable) {
+            recordLogicalResult(manager, operation, collection, startNanos,
+                    telemetryError(throwable), requestId);
+            throw throwable;
+        }
+        future.whenComplete((result, throwable) -> recordLogicalResult(manager,
+                operation,
+                collection,
+                startNanos,
+                throwable == null ? "" : telemetryError(throwable),
+                requestId));
+        return future;
+    }
+
+    private static void recordLogicalResult(
+            ClientTelemetryManager manager, String operation, String collection,
+            long startNanos, String error, String requestId) {
+        try {
+            manager.recordOperation(operation, collection, startNanos, error, requestId);
+        } catch (RuntimeException ignored) {
+            // Telemetry is best-effort and must never replace the operation result.
+        }
+    }
+
+    private static String telemetryError(Throwable throwable) {
+        Throwable current = throwable;
+        while (current instanceof CompletionException && current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current.toString();
     }
 
     /**
@@ -360,6 +467,34 @@ public class MilvusClientV2 {
         return dbName;
     }
 
+    private String configuredDatabaseName() {
+        return connectConfig == null ? null : connectConfig.getDbName();
+    }
+
+    /** Returns the telemetry manager for metrics inspection and custom command handlers. */
+    public ClientTelemetryManager getTelemetry() {
+        if (globalStub != null) {
+            MilvusClientV2 primaryClient = globalStub.getPrimaryClient();
+            return primaryClient == null ? null : primaryClient.getTelemetry();
+        }
+        return telemetry;
+    }
+
+    private Map<String, Object> telemetryUserConfig() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (connectConfig == null) {
+            return result;
+        }
+        result.put("address", connectConfig.getHost() + ":" + connectConfig.getPort());
+        result.put("username", connectConfig.getUsername());
+        result.put("db_name", connectConfig.getDbName());
+        result.put("secure", connectConfig.isSecure());
+        result.put("connect_timeout_ms", connectConfig.getConnectTimeoutMs());
+        result.put("rpc_deadline_ms", connectConfig.getRpcDeadlineMs());
+        result.put("current_db", currentUsedDatabase());
+        return result;
+    }
+
     public MilvusClientV2Session session(String clusterId) {
         if (StringUtils.isEmpty(clusterId)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "clusterId cannot be null or empty");
@@ -380,17 +515,162 @@ public class MilvusClientV2 {
         if (dbName == null) {
             throw new IllegalArgumentException("dbName cannot be null");
         }
-        // check if database exists
-        clientUtils.checkDatabaseExist(this.getRpcStub(), dbName);
-        try {
-            this.connectConfig.setDbName(dbName);
-            this.close(3);
-            this.connect(this.connectConfig);
-            this.initServices(dbName);
-        } catch (InterruptedException e) {
-            logger.error("close connect error");
-            throw new RuntimeException(e);
+        if (connectConfig != null && dbName.equals(connectConfig.getDbName())) {
+            return;
         }
+
+        ClientTelemetryManager oldTelemetry = getTelemetry();
+        String telemetryClientId = oldTelemetry == null
+                ? connectConfig.getTelemetryClientId() : oldTelemetry.getClientId();
+        ConnectConfig candidateConfig = copyConnectConfigForDatabase(
+                connectConfig, dbName, telemetryClientId);
+        // Construct and validate the replacement before fencing or mutating the active client.
+        MilvusClientV2 candidate = createDatabaseCandidate(candidateConfig);
+        ClientTelemetryManager newTelemetry = candidate.getTelemetry();
+        ManagedChannel oldChannel = this.channel;
+        MilvusServiceGrpc.MilvusServiceBlockingStub oldBlockingStub = this.blockingStub;
+        MilvusServiceGrpc.MilvusServiceFutureStub oldFutureStub = this.futureStub;
+        ConnectConfig oldConfig = this.connectConfig;
+        GlobalStub oldGlobalStub = this.globalStub;
+        String oldCacheEndpoint = this.cacheEndpoint;
+        long retirementToken = 0L;
+        boolean retirementPending = false;
+        try {
+            if (oldTelemetry != null) {
+                if (newTelemetry == null) {
+                    throw new IllegalStateException("replacement client has no telemetry manager");
+                }
+                newTelemetry.prepareRuntimeStateHandoffFrom(oldTelemetry);
+                retirementToken = oldTelemetry.beginRuntimeStateRetirement();
+                retirementPending = true;
+            }
+
+            this.channel = candidate.channel;
+            this.blockingStub = candidate.blockingStub;
+            this.futureStub = candidate.futureStub;
+            this.connectConfig = candidate.connectConfig;
+            this.globalStub = candidate.globalStub;
+            this.cacheEndpoint = candidate.cacheEndpoint;
+            this.telemetry = candidate.telemetry;
+            if (this.globalStub != null) {
+                this.globalStub.retargetPrimaryChange(this::updatePrimaryConnection);
+                this.rpcUtils.setGlobalRefreshTrigger(() -> {
+                    if (globalStub != null) {
+                        globalStub.triggerRefresh();
+                    }
+                });
+            } else {
+                this.rpcUtils.setGlobalRefreshTrigger(null);
+            }
+            this.initServices(dbName);
+
+            if (oldTelemetry != null) {
+                oldTelemetry.handoffRuntimeStateTo(newTelemetry, retirementToken);
+                retirementPending = false;
+            } else {
+                candidate.startTelemetry();
+            }
+            // Preserve the caller-visible ConnectConfig identity used by the existing API,
+            // but mutate it only after the replacement and telemetry handoff have committed.
+            oldConfig.setDbName(dbName);
+            if (newTelemetry != null) {
+                oldConfig.setTelemetryClientId(newTelemetry.getClientId());
+            }
+            this.connectConfig = oldConfig;
+            candidate.connectConfig = oldConfig;
+        } catch (RuntimeException | Error exception) {
+            this.channel = oldChannel;
+            this.blockingStub = oldBlockingStub;
+            this.futureStub = oldFutureStub;
+            this.connectConfig = oldConfig;
+            this.globalStub = oldGlobalStub;
+            this.cacheEndpoint = oldCacheEndpoint;
+            this.telemetry = oldTelemetry;
+            if (this.globalStub != null) {
+                this.rpcUtils.setGlobalRefreshTrigger(() -> {
+                    if (globalStub != null) {
+                        globalStub.triggerRefresh();
+                    }
+                });
+            } else {
+                this.rpcUtils.setGlobalRefreshTrigger(null);
+            }
+            this.initServices(oldConfig.getDbName());
+            if (newTelemetry != null && oldTelemetry != null) {
+                newTelemetry.cancelRuntimeStateHandoffFrom(oldTelemetry);
+            }
+            if (retirementPending && oldTelemetry != null) {
+                oldTelemetry.cancelRuntimeStateRetirement(retirementToken);
+            }
+            try {
+                candidate.close();
+            } catch (Exception closeException) {
+                exception.addSuppressed(closeException);
+            }
+            throw exception;
+        }
+
+        // The replacement now owns the public stubs. Dispose only resources that were
+        // owned by the discarded outer/candidate connection; telemetry was closed by handoff.
+        candidate.rpcUtils.shutdown();
+        if (oldGlobalStub != null) {
+            try {
+                oldGlobalStub.close();
+            } catch (RuntimeException exception) {
+                logger.warn("Failed to close the previous global connection", exception);
+            }
+        } else if (oldChannel != null) {
+            try {
+                oldChannel.shutdownNow();
+                oldChannel.awaitTermination(3, TimeUnit.SECONDS);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                logger.warn("Interrupted while closing the previous database connection", exception);
+            } catch (RuntimeException exception) {
+                logger.warn("Failed to close the previous database connection", exception);
+            }
+        }
+    }
+
+    MilvusClientV2 createDatabaseCandidate(ConnectConfig config) {
+        return new MilvusClientV2(config);
+    }
+
+    private static ConnectConfig copyConnectConfigForDatabase(
+            ConnectConfig original, String dbName, String telemetryClientId) {
+        ConnectConfig.ConnectConfigBuilder builder = ConnectConfig.builder()
+                .uri(original.getUri())
+                .token(original.getToken())
+                .dbName(dbName);
+        if (original.getUsername() != null) {
+            builder.username(original.getUsername());
+        }
+        if (original.getPassword() != null) {
+            builder.password(original.getPassword());
+        }
+        return builder
+                .connectTimeoutMs(original.getConnectTimeoutMs())
+                .keepAliveTimeMs(original.getKeepAliveTimeMs())
+                .keepAliveTimeoutMs(original.getKeepAliveTimeoutMs())
+                .keepAliveWithoutCalls(original.isKeepAliveWithoutCalls())
+                .rpcDeadlineMs(original.getRpcDeadlineMs())
+                .clientKeyPath(original.getClientKeyPath())
+                .clientPemPath(original.getClientPemPath())
+                .caPemPath(original.getCaPemPath())
+                .serverPemPath(original.getServerPemPath())
+                .serverName(original.getServerName())
+                .proxyAddress(original.getProxyAddress())
+                .secure(original.getSecure())
+                .idleTimeoutMs(original.getIdleTimeoutMs())
+                .sslContext(original.getSslContext())
+                .clientRequestId(original.getClientRequestId())
+                .telemetryConfig(original.getTelemetryConfig())
+                .telemetryClientId(telemetryClientId)
+                .deferTelemetryStart(true)
+                .enablePrecheck(original.isEnablePrecheck())
+                .option(original.getOption() == null
+                        ? new LinkedHashMap<>() : new LinkedHashMap<>(original.getOption()))
+                .build();
     }
 
     /**
@@ -858,7 +1138,9 @@ public class MilvusClientV2 {
      * @return InsertResp
      */
     public InsertResp insert(InsertReq request) {
-        return rpcUtils.retry(() -> vectorService.insert(this.getRpcStub(), request));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Insert", collection,
+                () -> rpcUtils.retry(() -> vectorService.insert(this.getRpcStub(), request)));
     }
 
     /**
@@ -868,7 +1150,9 @@ public class MilvusClientV2 {
      * @return UpsertResp
      */
     public UpsertResp upsert(UpsertReq request) {
-        return rpcUtils.retry(() -> vectorService.upsert(this.getRpcStub(), request));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Upsert", collection,
+                () -> rpcUtils.retry(() -> vectorService.upsert(this.getRpcStub(), request)));
     }
 
     /**
@@ -878,7 +1162,9 @@ public class MilvusClientV2 {
      * @return DeleteResp
      */
     public DeleteResp delete(DeleteReq request) {
-        return rpcUtils.retry(() -> vectorService.delete(this.getRpcStub(), request));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Delete", collection,
+                () -> rpcUtils.retry(() -> vectorService.delete(this.getRpcStub(), request)));
     }
 
     /**
@@ -888,11 +1174,13 @@ public class MilvusClientV2 {
      * @return GetResp
      */
     public GetResp get(GetReq request) {
-        return rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request));
+        return get(request, null);
     }
 
     GetResp get(GetReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -907,8 +1195,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<GetResp> getAsync(GetReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.getAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("Query", collection,
+                () -> vectorService.getAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -918,11 +1208,13 @@ public class MilvusClientV2 {
      * @return QueryResp
      */
     public QueryResp query(QueryReq request) {
-        return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request));
+        return query(request, null);
     }
 
     QueryResp query(QueryReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -937,8 +1229,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<QueryResp> queryAsync(QueryReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.queryAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("Query", collection,
+                () -> vectorService.queryAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -948,11 +1242,13 @@ public class MilvusClientV2 {
      * @return SearchResp
      */
     public SearchResp search(SearchReq request) {
-        return rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request));
+        return search(request, null);
     }
 
     SearchResp search(SearchReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Search", collection,
+                () -> rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -967,8 +1263,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<SearchResp> searchAsync(SearchReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.searchAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("Search", collection,
+                () -> vectorService.searchAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -978,11 +1276,13 @@ public class MilvusClientV2 {
      * @return SearchResp
      */
     public SearchResp hybridSearch(HybridSearchReq request) {
-        return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request));
+        return hybridSearch(request, null);
     }
 
     SearchResp hybridSearch(HybridSearchReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("HybridSearch", collection,
+                () -> rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -997,8 +1297,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<SearchResp> hybridSearchAsync(HybridSearchReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.hybridSearchAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("HybridSearch", collection,
+                () -> vectorService.hybridSearchAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -1050,7 +1352,8 @@ public class MilvusClientV2 {
     private RpcStubWrapper createIteratorRpcStub(String requestDatabaseName) {
         String databaseName = StringUtils.isNotEmpty(requestDatabaseName)
                 ? requestDatabaseName : connectConfig.getDbName();
-        return new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs(),
+        return new RpcStubWrapper(this.getRpcStub().withOption(
+                TelemetryInterceptor.LOGICAL_OPERATION_OPTION, true), connectConfig.getRpcDeadlineMs(),
                 cacheEndpoint, databaseName);
     }
 
@@ -1062,7 +1365,8 @@ public class MilvusClientV2 {
      * @return RunAnalyzerResp
      */
     public RunAnalyzerResp runAnalyzer(RunAnalyzerReq request) {
-        return rpcUtils.retry(() -> vectorService.runAnalyzer(this.getRpcStub(), request));
+        return recordLogicalOperation("RunAnalyzer", "",
+                () -> rpcUtils.retry(() -> vectorService.runAnalyzer(this.getRpcStub(), request)));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1938,7 +2242,12 @@ public class MilvusClientV2 {
             channel = null;
             blockingStub = null;
             futureStub = null;
+            telemetry = null;
             return;
+        }
+        if (telemetry != null) {
+            telemetry.close();
+            telemetry = null;
         }
         if (channel != null) {
             channel.shutdownNow();
