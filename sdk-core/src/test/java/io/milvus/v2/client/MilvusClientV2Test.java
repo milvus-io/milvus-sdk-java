@@ -544,7 +544,8 @@ public class MilvusClientV2Test extends BaseTest {
 
         // io.milvus/v2/client
         config.setIgnoredMethods(Arrays.asList("clientRequestId", "getClientRequestId", "setClientRequestId",
-                "sslContext", "setSslContext", "getSslContext"));
+                "sslContext", "setSslContext", "getSslContext", "getTelemetryRuntimeState",
+                "telemetryRuntimeState", "telemetryConfig", "setDeferTelemetryStart"));
         VerifyClass(ConnectConfig.class.getName(), config);
         config.clearIgnoredMethods();
         VerifyClass(RetryConfig.class.getName(), config);
