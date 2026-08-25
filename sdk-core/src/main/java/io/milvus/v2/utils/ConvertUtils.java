@@ -85,12 +85,35 @@ public class ConvertUtils {
 
         // normal query
         QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(response);
-        queryResultsWrapper.getRowRecords().forEach(rowRecord -> {
-            QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()
-                    .entity(rowRecord.getFieldValues())
-                    .build();
-            entities.add(queryResult);
-        });
+        List<QueryResultsWrapper.RowRecord> rowRecords = queryResultsWrapper.getRowRecords();
+        List<io.milvus.grpc.ElementIndices> elementIndices = response.getElementIndicesList();
+        if (elementIndices != null && !elementIndices.isEmpty()) {
+            if (elementIndices.size() != rowRecords.size()) {
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, String.format(
+                        "The element_indices count (%d) does not match the row count (%d)",
+                        elementIndices.size(), rowRecords.size()));
+            }
+            // struct-array element-level query: expand one entity into one result per matched element.
+            // The source entity index is intentionally not exposed on the result: callers identify
+            // the source entity by its primary key, so the index carries no user-meaningful info.
+            for (int i = 0; i < rowRecords.size(); i++) {
+                Map<String, Object> fieldValues = rowRecords.get(i).getFieldValues();
+                for (Long offset : elementIndices.get(i).getIndices().getDataList()) {
+                    QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()
+                            .entity(new HashMap<>(fieldValues))
+                            .elementOffset(offset)
+                            .build();
+                    entities.add(queryResult);
+                }
+            }
+        } else {
+            rowRecords.forEach(rowRecord -> {
+                QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()
+                        .entity(rowRecord.getFieldValues())
+                        .build();
+                entities.add(queryResult);
+            });
+        }
         return entities;
     }
 

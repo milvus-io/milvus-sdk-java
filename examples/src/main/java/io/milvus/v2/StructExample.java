@@ -443,6 +443,31 @@ public class StructExample {
         }
     }
 
+    private static void elementLevelQuery() {
+        System.out.println("===================================================");
+        String filter = String.format("element_filter(%s, $[%s] < 2000)", STRUCT_FIELD, FRAME_FIELD);
+        System.out.println("Element-level query with filter expression: " + filter);
+
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(filter)
+                .limit(5)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .outputFields(Arrays.asList(ID_FIELD, NAME_FIELD,
+                        String.format("%s[%s]", STRUCT_FIELD, FRAME_FIELD),
+                        String.format("%s[%s]", STRUCT_FIELD, DESC_FIELD)))
+                .build());
+        // the server evaluates the filter at element granularity and returns element_indices;
+        // the SDK expands one entity into one result per matched element, and each result carries
+        // elementOffset (the matched element's index within the struct-array field). The source
+        // entity index before expansion is intentionally not exposed: callers identify the source
+        // entity by its primary key in the entity map.
+        List<QueryResp.QueryResult> results = queryResp.getQueryResults();
+        for (QueryResp.QueryResult result : results) {
+            System.out.println(result + ", elementOffset=" + result.getElementOffset());
+        }
+    }
+
     private static JsonArray buildMetadataStructArray() {
         JsonArray metadata = new JsonArray();
 
@@ -540,6 +565,7 @@ public class StructExample {
 
             searchInt8VectorField(ID_FIELD + " == 999");
             elementLevelSearch();
+            elementLevelQuery();
 
             addCollectionStructField();
         } finally {
