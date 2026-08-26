@@ -150,6 +150,11 @@ class VectorTest extends BaseTest {
     void testDeleteExposesCost() {
         MutationResult result = MutationResult.newBuilder()
                 .setDeleteCnt(2L)
+                .setIDs(IDs.newBuilder()
+                        .setIntId(LongArray.newBuilder()
+                                .addData(10L)
+                                .addData(20L)
+                                .build()))
                 .setStatus(Status.newBuilder().setCode(0)
                         .putExtraInfo("report_value", "456")
                         .build())
@@ -162,6 +167,7 @@ class VectorTest extends BaseTest {
                 .build());
 
         Assertions.assertEquals(2L, resp.getDeleteCnt());
+        Assertions.assertEquals(Arrays.asList(10L, 20L), resp.getPrimaryKeys());
         Assertions.assertEquals(456L, resp.getCost());
     }
 
