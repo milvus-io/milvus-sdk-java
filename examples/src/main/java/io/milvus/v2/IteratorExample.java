@@ -214,25 +214,31 @@ public class IteratorExample {
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());
 
-        // read the first page, then capture the cursor and close the iterator
-        System.out.println("QueryIterator first page results:");
-        List<QueryResultsWrapper.RowRecord> firstPage = queryIterator.next();
-        for (QueryResultsWrapper.RowRecord record : firstPage) {
-            System.out.println(record);
+        // Read four pages, then capture the cursor and close the iterator. With a batch size
+        // of 10, these pages contain 40 records in total.
+        System.out.println("QueryIterator first four pages results:");
+        int returnedBeforeCursor = 0;
+        for (int page = 0; page < 4; page++) {
+            List<QueryResultsWrapper.RowRecord> records = queryIterator.next();
+            for (QueryResultsWrapper.RowRecord record : records) {
+                System.out.println(record);
+                returnedBeforeCursor++;
+            }
         }
 
         QueryIteratorCursor cursor = queryIterator.getCursor();
         queryIterator.close();
         System.out.printf("%d query results returned before cursor capture, cursor=%s%n",
-                firstPage.size(), cursor);
+                returnedBeforeCursor, cursor);
 
-        // resume pagination from the captured cursor in a brand new iterator
+        // resume pagination from the captured cursor in a brand new iterator. The limit is
+        // per-iterator, so subtract the rows already consumed to keep the combined total = limit.
         QueryIterator resumed = client.queryIterator(QueryIteratorReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .expr(expr)
                 .outputFields(Lists.newArrayList(ID_FIELD, AGE_FIELD))
                 .batchSize(batchSize)
-                .limit(limit)
+                .limit(limit - returnedBeforeCursor)
                 .cursor(cursor)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());
@@ -379,7 +385,7 @@ public class IteratorExample {
 
         queryIterator("userID < 3000", 1, 5, 10000);
         queryIteratorWithTemplate(80);
-        queryIteratorWithCursor(2, 100);
+        queryIteratorWithCursor(10, 100);
 
         searchIteratorV1("userAge > 50 &&userAge < 100", "{\"range_filter\": 15.0, \"radius\": 20.0}", 100, 500);
         searchIteratorV1("", "", 1, 3000);
