@@ -190,6 +190,9 @@ public class AddFieldExample {
                     .isNullable(true)
                     .build());
 
+            // Milvus 3.0 requires dataCoord.compaction.bumpSchemaVersion.enabled=true to add
+            // a function field to a collection that already contains segments.
+            //
             // Add a function-backed sparse field
             client.addFunctionField(AddFunctionFieldReq.builder()
                     .collectionName(COLLECTION_NAME)

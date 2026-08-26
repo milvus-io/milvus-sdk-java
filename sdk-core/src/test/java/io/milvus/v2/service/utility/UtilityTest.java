@@ -21,6 +21,11 @@ package io.milvus.v2.service.utility;
 
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.grpc.DescribeCollectionRequest;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.ManualCompactionRequest;
+import io.milvus.grpc.ManualCompactionResponse;
+import io.milvus.grpc.Status;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.common.CompactionState;
 import io.milvus.v2.service.utility.request.*;
@@ -28,12 +33,16 @@ import io.milvus.v2.service.utility.response.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UtilityTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(UtilityTest.class);
@@ -130,6 +139,34 @@ class UtilityTest extends BaseTest {
                 .build();
         RefreshExternalCollectionResp resp = client_v2.refreshExternalCollection(req);
         assertEquals(12345L, resp.getJobId());
+    }
+
+    @Test
+    void testCompactConvertsTargetSizeUnitToMegabytes() {
+        Status success = Status.newBuilder().setCode(0).build();
+        when(blockingStub.describeCollection(any(DescribeCollectionRequest.class)))
+                .thenReturn(DescribeCollectionResponse.newBuilder()
+                        .setStatus(success)
+                        .setCollectionID(100L)
+                        .build());
+        when(blockingStub.manualCompaction(any(ManualCompactionRequest.class)))
+                .thenReturn(ManualCompactionResponse.newBuilder()
+                        .setStatus(success)
+                        .setCompactionID(200L)
+                        .build());
+
+        CompactReq request = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(2L)
+                .targetSizeUnit("GB")
+                .build();
+        CompactResp response = client_v2.compact(request);
+
+        assertEquals(Long.valueOf(200L), response.getCompactionID());
+        ArgumentCaptor<ManualCompactionRequest> captor =
+                ArgumentCaptor.forClass(ManualCompactionRequest.class);
+        verify(blockingStub).manualCompaction(captor.capture());
+        assertEquals(2048L, captor.getValue().getTargetSize());
     }
 
     @Test

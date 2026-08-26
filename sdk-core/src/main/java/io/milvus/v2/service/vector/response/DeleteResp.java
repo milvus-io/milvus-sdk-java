@@ -19,12 +19,22 @@
 
 package io.milvus.v2.service.vector.response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DeleteResp {
     private long deleteCnt;
+    /**
+     * Primary keys of the deleted entities. Note: Milvus servers >= 2.3.2 no longer echo the
+     * deleted primary keys in the delete response, so this list will be empty against a modern
+     * server. It is only populated when talking to an older server that returns the keys.
+     */
+    private List<Object> primaryKeys;
     private Long cost;
 
     private DeleteResp(DeleteRespBuilder builder) {
         this.deleteCnt = builder.deleteCnt;
+        this.primaryKeys = builder.primaryKeys;
         this.cost = builder.cost;
     }
 
@@ -40,6 +50,14 @@ public class DeleteResp {
         this.deleteCnt = deleteCnt;
     }
 
+    public List<Object> getPrimaryKeys() {
+        return primaryKeys;
+    }
+
+    public void setPrimaryKeys(List<Object> primaryKeys) {
+        this.primaryKeys = primaryKeys;
+    }
+
     public Long getCost() {
         return cost;
     }
@@ -52,16 +70,23 @@ public class DeleteResp {
     public String toString() {
         return "DeleteResp{" +
                 "deleteCnt=" + deleteCnt +
+                ", primaryKeys=" + primaryKeys +
                 ", cost=" + cost +
                 '}';
     }
 
     public static class DeleteRespBuilder {
         private long deleteCnt;
+        private List<Object> primaryKeys = new ArrayList<>();
         private Long cost;
 
         public DeleteRespBuilder deleteCnt(long deleteCnt) {
             this.deleteCnt = deleteCnt;
+            return this;
+        }
+
+        public DeleteRespBuilder primaryKeys(List<Object> primaryKeys) {
+            this.primaryKeys = primaryKeys;
             return this;
         }
 
