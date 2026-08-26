@@ -287,7 +287,7 @@ public class OptimizeTask {
      * @param targetSize size string like "512MB", "1GB", "1.5gb", or null
      * @return size in MB, or null if targetSize is null
      */
-    static Long parseTargetSize(String targetSize) {
+    public static Long parseTargetSize(String targetSize) {
         if (targetSize == null) {
             return null;
         }

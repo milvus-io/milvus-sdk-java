@@ -588,6 +588,7 @@ public class CreateCollectionReq {
         private Long fieldId; // field id, only populated by describe_collection
         private Boolean isDynamic; // whether this field is the dynamic field
         private Boolean isFunctionOutput; // whether this field is a function output field
+        private List<Map<String, Object>> indexes = new ArrayList<>(); // only populated by describe_collection
 
         private FieldSchema(FieldSchemaBuilder builder) {
             this.name = builder.name;
@@ -776,6 +777,10 @@ public class CreateCollectionReq {
             return isFunctionOutput;
         }
 
+        public List<Map<String, Object>> getIndexes() {
+            return indexes;
+        }
+
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
          */
@@ -795,6 +800,13 @@ public class CreateCollectionReq {
          */
         public void setIsFunctionOutput(Boolean isFunctionOutput) {
             this.isFunctionOutput = isFunctionOutput;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setIndexes(List<Map<String, Object>> indexes) {
+            this.indexes = indexes;
         }
 
         @Override
@@ -819,6 +831,7 @@ public class CreateCollectionReq {
                     ", typeParams=" + typeParams +
                     ", multiAnalyzerParams=" + multiAnalyzerParams +
                     ", externalField='" + externalField + '\'' +
+                    ", indexes=" + indexes +
                     '}';
         }
 
