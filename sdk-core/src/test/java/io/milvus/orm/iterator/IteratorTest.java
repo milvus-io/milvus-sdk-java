@@ -33,6 +33,7 @@ import io.milvus.grpc.SearchRequest;
 import io.milvus.grpc.SearchResultData;
 import io.milvus.grpc.SearchResults;
 import io.milvus.grpc.Status;
+import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.IndexParam;
@@ -50,6 +51,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -217,6 +221,291 @@ class IteratorTest {
         assertEquals("1", queryParam(request, Constant.QUERY_ITER_LAST_ELEMENT_OFFSET));
     }
 
+    @Test
+    void queryIteratorGetCursorCapturesPosition() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                queryResults(Arrays.asList(1L, 2L, 3L), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+
+        QueryIteratorCursor cursor = iterator.getCursor();
+        assertEquals(100L, cursor.getSessionTs());
+        assertEquals(Long.valueOf(3L), cursor.getIntPk());
+        assertNull(cursor.getStrPk());
+        assertNull(cursor.getLastElementOffset());
+
+        QueryIteratorCursor restored = QueryIteratorCursor.fromProto(cursor.toProto());
+        assertEquals(100L, restored.getSessionTs());
+        assertEquals(Long.valueOf(3L), restored.getIntPk());
+        assertNull(restored.getStrPk());
+    }
+
+    @Test
+    void queryIteratorGetCursorVarcharPk() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                varcharQueryResults(Collections.emptyList(), 100L),
+                varcharQueryResults(Arrays.asList("a", "b", "c"), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("pk"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+
+        QueryIteratorCursor cursor = iterator.getCursor();
+        assertEquals("c", cursor.getStrPk());
+        assertNull(cursor.getIntPk());
+    }
+
+    @Test
+    void queryIteratorResumesVarcharPkFromCursor() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                varcharQueryResults(Collections.emptyList(), 100L),
+                varcharQueryResults(Arrays.asList("a", "b"), 100L),
+                varcharQueryResults(Collections.singletonList("c"), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("pk"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+        QueryIteratorCursor cursor = iterator.getCursor();
+        assertEquals("b", cursor.getStrPk());
+
+        QueryIterator resumed = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("pk"))
+                        .batchSize(10)
+                        .cursor(cursor)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField(),
+                TEST_COLLECTION_ID);
+        assertEquals(Collections.singletonList("c"), strPks(resumed.next()));
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(stub, times(3)).query(captor.capture());
+        QueryRequest resumedRequest = captor.getAllValues().get(2);
+        assertEquals("pk > \"b\"", resumedRequest.getExpr());
+        assertEquals(100L, resumedRequest.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void queryIteratorGetCursorElementFilterCapturesOffset() {
+        String filter = "element_filter(structA, $[int_val] >= 20000)";
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                elementQueryResults(7L, 0L, 1L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .expr(filter)
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+
+        QueryIteratorCursor cursor = iterator.getCursor();
+        assertEquals(Long.valueOf(7L), cursor.getIntPk());
+        assertEquals(Long.valueOf(1L), cursor.getLastElementOffset());
+    }
+
+    @Test
+    void queryIteratorResumesFromCursor() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                queryResults(Arrays.asList(1L, 2L), 100L),
+                queryResults(Collections.singletonList(3L), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+        QueryIteratorCursor cursor = iterator.getCursor();
+
+        QueryIterator resumed = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .batchSize(10)
+                        .cursor(cursor)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        assertEquals(Collections.singletonList(3L), ids(resumed.next()));
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(stub, times(3)).query(captor.capture());
+        QueryRequest resumedRequest = captor.getAllValues().get(2);
+        assertEquals("id > 2", resumedRequest.getExpr());
+        assertEquals(100L, resumedRequest.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void queryIteratorResumesElementFilterFromCursor() {
+        String filter = "element_filter(structA, $[int_val] >= 20000)";
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                elementQueryResults(7L, 0L, 1L),
+                queryResults(Collections.emptyList(), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .expr(filter)
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+        QueryIteratorCursor cursor = iterator.getCursor();
+
+        QueryIterator resumed = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .expr(filter)
+                        .batchSize(10)
+                        .cursor(cursor)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        resumed.next();
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(stub, times(3)).query(captor.capture());
+        QueryRequest resumedRequest = captor.getAllValues().get(2);
+        assertEquals("id >= 7 and (" + filter + ")", resumedRequest.getExpr());
+        assertEquals("7", queryParam(resumedRequest, Constant.QUERY_ITER_LAST_PK));
+        assertEquals("1", queryParam(resumedRequest, Constant.QUERY_ITER_LAST_ELEMENT_OFFSET));
+    }
+
+    @Test
+    void queryIteratorElementFilterCursorRejectsProtoSerialization() {
+        String filter = "element_filter(structA, $[int_val] >= 20000)";
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                elementQueryResults(7L, 0L, 1L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .expr(filter)
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+
+        QueryIteratorCursor cursor = iterator.getCursor();
+        assertNotNull(cursor.getLastElementOffset());
+        assertThrows(ParamException.class, cursor::toProto);
+    }
+
+    @Test
+    void queryIteratorResumeIgnoresRequestOffset() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                queryResults(Arrays.asList(1L, 2L), 100L),
+                queryResults(Collections.singletonList(3L), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+        QueryIteratorCursor cursor = iterator.getCursor();
+
+        QueryIterator resumed = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .batchSize(10)
+                        .offset(5)
+                        .cursor(cursor)
+                        .build(),
+                testStubWrapper(stub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        assertEquals(Collections.singletonList(3L), ids(resumed.next()));
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(stub, times(3)).query(captor.capture());
+        QueryRequest resumedRequest = captor.getAllValues().get(2);
+        assertNull(queryParam(resumedRequest, Constant.OFFSET));
+    }
+
+    @Test
+    void queryIteratorReqToStringIncludesCursor() {
+        QueryIteratorCursor cursor = QueryIteratorCursor.builder()
+                .sessionTs(100L)
+                .intPk(3L)
+                .build();
+        QueryIteratorReq req = QueryIteratorReq.builder()
+                .collectionName("test")
+                .cursor(cursor)
+                .build();
+        assertTrue(req.toString().contains("cursor=" + cursor));
+    }
+
     private static QueryResults queryResults(List<Long> ids, long sessionTs) {
         QueryResults.Builder builder = QueryResults.newBuilder()
                 .setStatus(successStatus())
@@ -228,6 +517,24 @@ class IteratorTest {
                             .setType(DataType.Int64)
                             .setScalars(ScalarField.newBuilder()
                                     .setLongData(LongArray.newBuilder().addAllData(ids).build())
+                                    .build())
+                            .build());
+        }
+        return builder.build();
+    }
+
+    private static QueryResults varcharQueryResults(List<String> pks, long sessionTs) {
+        QueryResults.Builder builder = QueryResults.newBuilder()
+                .setStatus(successStatus())
+                .setSessionTs(sessionTs);
+        if (!pks.isEmpty()) {
+            builder.addOutputFields("pk")
+                    .addFieldsData(FieldData.newBuilder()
+                            .setFieldName("pk")
+                            .setType(DataType.VarChar)
+                            .setScalars(ScalarField.newBuilder()
+                                    .setStringData(io.milvus.grpc.StringArray.newBuilder()
+                                            .addAllData(pks).build())
                                     .build())
                             .build());
         }
@@ -297,12 +604,28 @@ class IteratorTest {
                 .build();
     }
 
+    private static CreateCollectionReq.FieldSchema varcharPrimaryField() {
+        return CreateCollectionReq.FieldSchema.builder()
+                .name("pk")
+                .dataType(io.milvus.v2.common.DataType.VarChar)
+                .isPrimaryKey(true)
+                .build();
+    }
+
     private static List<Long> ids(List<QueryResultsWrapper.RowRecord> records) {
         List<Long> ids = new ArrayList<>();
         for (QueryResultsWrapper.RowRecord record : records) {
             ids.add((Long) record.get("id"));
         }
         return ids;
+    }
+
+    private static List<String> strPks(List<QueryResultsWrapper.RowRecord> records) {
+        List<String> pks = new ArrayList<>();
+        for (QueryResultsWrapper.RowRecord record : records) {
+            pks.add((String) record.get("pk"));
+        }
+        return pks;
     }
 
     private static List<Long> offsets(List<QueryResultsWrapper.RowRecord> records) {

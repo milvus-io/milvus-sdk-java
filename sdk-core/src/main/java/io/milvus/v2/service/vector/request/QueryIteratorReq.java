@@ -1,6 +1,7 @@
 package io.milvus.v2.service.vector.request;
 
 import com.google.common.collect.Lists;
+import io.milvus.orm.iterator.QueryIteratorCursor;
 import io.milvus.v2.common.ConsistencyLevel;
 
 import java.util.HashMap;
@@ -37,6 +38,11 @@ public class QueryIteratorReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     private Map<String, Object> filterTemplateValues;
 
+    // A previously captured cursor to resume pagination from (pymilvus parity).
+    // When set, the iterator continues from the cursor's session ts and pk/element
+    // position instead of starting over; offset is ignored in that case.
+    private QueryIteratorCursor cursor;
+
     private QueryIteratorReq(QueryIteratorReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -52,6 +58,7 @@ public class QueryIteratorReq {
         this.batchSize = builder.batchSize;
         this.reduceStopForBest = builder.reduceStopForBest;
         this.filterTemplateValues = builder.filterTemplateValues;
+        this.cursor = builder.cursor;
     }
 
     public static QueryIteratorReqBuilder builder() {
@@ -172,6 +179,14 @@ public class QueryIteratorReq {
         return filterTemplateValues;
     }
 
+    public QueryIteratorCursor getCursor() {
+        return cursor;
+    }
+
+    public void setCursor(QueryIteratorCursor cursor) {
+        this.cursor = cursor;
+    }
+
     @Override
     public String toString() {
         return "QueryIteratorReq{" +
@@ -188,6 +203,7 @@ public class QueryIteratorReq {
                 ", timezone='" + timezone + '\'' +
                 ", batchSize=" + batchSize +
                 ", reduceStopForBest=" + reduceStopForBest +
+                ", cursor=" + cursor +
                 '}';
     }
 
@@ -206,6 +222,7 @@ public class QueryIteratorReq {
         private long batchSize = 1000L;
         private boolean reduceStopForBest = true;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
+        private QueryIteratorCursor cursor;
 
         public QueryIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -279,6 +296,11 @@ public class QueryIteratorReq {
 
         public QueryIteratorReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
+            return this;
+        }
+
+        public QueryIteratorReqBuilder cursor(QueryIteratorCursor cursor) {
+            this.cursor = cursor;
             return this;
         }
 
