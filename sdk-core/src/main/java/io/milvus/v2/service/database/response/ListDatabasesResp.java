@@ -22,6 +22,9 @@ package io.milvus.v2.service.database.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code listDatabases} API.
+ */
 public class ListDatabasesResp {
     private List<String> databaseNames;
 
@@ -29,10 +32,20 @@ public class ListDatabasesResp {
         this.databaseNames = builder.databaseNames;
     }
 
+    /**
+     * Returns the names of all databases.
+     *
+     * @return the list of database names
+     */
     public List<String> getDatabaseNames() {
         return databaseNames;
     }
 
+    /**
+     * Sets the names of all databases.
+     *
+     * @param databaseNames the list of database names
+     */
     public void setDatabaseNames(List<String> databaseNames) {
         this.databaseNames = databaseNames;
     }
@@ -44,6 +57,11 @@ public class ListDatabasesResp {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link ListDatabasesResp}.
+     *
+     * @return a new {@link ListDatabasesRespBuilder}
+     */
     public static ListDatabasesRespBuilder builder() {
         return new ListDatabasesRespBuilder();
     }
@@ -54,11 +72,22 @@ public class ListDatabasesResp {
         private ListDatabasesRespBuilder() {
         }
 
+        /**
+         * Sets the names of all databases.
+         *
+         * @param databaseNames the list of database names
+         * @return this builder
+         */
         public ListDatabasesRespBuilder databaseNames(List<String> databaseNames) {
             this.databaseNames = databaseNames;
             return this;
         }
 
+        /**
+         * Builds the {@link ListDatabasesResp}.
+         *
+         * @return the built response
+         */
         public ListDatabasesResp build() {
             return new ListDatabasesResp(this);
         }

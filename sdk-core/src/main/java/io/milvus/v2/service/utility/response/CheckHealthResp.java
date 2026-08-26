@@ -22,6 +22,9 @@ package io.milvus.v2.service.utility.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code checkHealth} API.
+ */
 public class CheckHealthResp {
     private Boolean isHealthy;
     private List<String> reasons;
@@ -37,26 +40,56 @@ public class CheckHealthResp {
         return new CheckHealthRespBuilder();
     }
 
+    /**
+     * Returns whether the Milvus instance is healthy.
+     *
+     * @return {@code true} if the instance is healthy, {@code false} otherwise
+     */
     public Boolean getIsHealthy() {
         return isHealthy;
     }
 
+    /**
+     * Sets whether the Milvus instance is healthy.
+     *
+     * @param isHealthy {@code true} if the instance is healthy, {@code false} otherwise
+     */
     public void setIsHealthy(Boolean isHealthy) {
         this.isHealthy = isHealthy;
     }
 
+    /**
+     * Returns the reasons why the instance is unhealthy.
+     *
+     * @return the list of health-check failure reasons
+     */
     public List<String> getReasons() {
         return reasons;
     }
 
+    /**
+     * Sets the reasons why the instance is unhealthy.
+     *
+     * @param reasons the list of health-check failure reasons
+     */
     public void setReasons(List<String> reasons) {
         this.reasons = reasons;
     }
 
+    /**
+     * Returns the quota states of the Milvus instance.
+     *
+     * @return the list of quota states
+     */
     public List<String> getQuotaStates() {
         return quotaStates;
     }
 
+    /**
+     * Sets the quota states of the Milvus instance.
+     *
+     * @param quotaStates the list of quota states
+     */
     public void setQuotaStates(List<String> quotaStates) {
         this.quotaStates = quotaStates;
     }
@@ -75,21 +108,44 @@ public class CheckHealthResp {
         private List<String> reasons = new ArrayList<>();
         private List<String> quotaStates = new ArrayList<>();
 
+        /**
+         * Sets whether the Milvus instance is healthy.
+         *
+         * @param isHealthy {@code true} if the instance is healthy, {@code false} otherwise
+         * @return this builder
+         */
         public CheckHealthRespBuilder isHealthy(Boolean isHealthy) {
             this.isHealthy = isHealthy;
             return this;
         }
 
+        /**
+         * Sets the reasons why the instance is unhealthy.
+         *
+         * @param reasons the list of health-check failure reasons
+         * @return this builder
+         */
         public CheckHealthRespBuilder reasons(List<String> reasons) {
             this.reasons = reasons;
             return this;
         }
 
+        /**
+         * Sets the quota states of the Milvus instance.
+         *
+         * @param quotaStates the list of quota states
+         * @return this builder
+         */
         public CheckHealthRespBuilder quotaStates(List<String> quotaStates) {
             this.quotaStates = quotaStates;
             return this;
         }
 
+        /**
+         * Builds the {@code CheckHealthResp}.
+         *
+         * @return the constructed {@code CheckHealthResp}
+         */
         public CheckHealthResp build() {
             return new CheckHealthResp(this);
         }

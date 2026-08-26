@@ -48,6 +48,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
+/**
+ * Abstract base class for the BulkWriter.
+ * <p>
+ * Writes rows as CSV, JSON or Parquet data files and chunks them when the target size
+ * is reached. Concrete subclasses commit finished files locally or to remote storage.
+ */
 public abstract class BulkWriter implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(BulkWriter.class);
     protected CreateCollectionReq.CollectionSchema collectionSchema;
@@ -92,22 +98,48 @@ public abstract class BulkWriter implements AutoCloseable {
         firstWrite = true;
     }
 
+    /**
+    * Returns the accumulated size of all appended rows.
+    *
+    * @return the total size
+    */
     protected Long getTotalSize() {
         return totalSize;
     }
 
+    /**
+    * Returns the number of rows appended so far.
+    *
+    * @return the total row count
+    */
     public Long getTotalRowCount() {
         return totalRowCount;
     }
 
+    /**
+    * Returns the chunk size threshold in bytes.
+    *
+    * @return the chunk size
+    */
     protected Long getChunkSize() {
         return chunkSize;
     }
 
+    /**
+    * Returns the current file writer.
+    *
+    * @return the current file writer
+    */
     protected FormatFileWriter getFileWriter() {
         return fileWriter;
     }
 
+    /**
+    * Switches to a new file writer (increments the flush count and creates a writer by file type).
+    *
+    * @return the previous file writer
+    * @throws IOException if the new writer cannot be created
+    */
     protected FormatFileWriter newFileWriter() throws IOException {
         FormatFileWriter oldFileWriter = fileWriter;
 
@@ -156,6 +188,13 @@ public abstract class BulkWriter implements AutoCloseable {
         }
     }
 
+    /**
+    * Appends a single row of data.
+    *
+    * @param row the row data as a JSON object
+    * @throws IOException if writing the row fails
+    * @throws InterruptedException if the calling thread is interrupted while committing
+    */
     public void appendRow(JsonObject row) throws IOException, InterruptedException {
         Map<String, Object> rowValues = verifyRow(row);
         List<String> filePaths = Lists.newArrayList();
@@ -179,6 +218,9 @@ public abstract class BulkWriter implements AutoCloseable {
     protected abstract void callBackIfCommitReady(List<String> filePaths) throws IOException, InterruptedException;
 
 
+    /**
+    * Resets the accumulated size and row count after a file is committed.
+    */
     protected void commit() {
         appendLock.lock();
         totalSize = 0;
@@ -186,6 +228,11 @@ public abstract class BulkWriter implements AutoCloseable {
         appendLock.unlock();
     }
 
+    /**
+    * Returns the local data path where files are written.
+    *
+    * @return the data path
+    */
     protected String getDataPath() {
         return "";
     }
@@ -203,6 +250,12 @@ public abstract class BulkWriter implements AutoCloseable {
         }
     }
 
+    /**
+    * Validates a row against the collection schema and converts it into a map of field values.
+    *
+    * @param row the row data as a JSON object
+    * @return the validated field-value map
+    */
     protected Map<String, Object> verifyRow(JsonObject row) {
         int rowSize = 0;
         Map<String, Object> rowValues = new HashMap<>();

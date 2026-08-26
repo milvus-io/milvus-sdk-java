@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.response;
 
+/**
+ * Response returned by the {@code getFlushAllState} API.
+ */
 public class GetFlushAllStateResp {
     private Boolean flushed;
 
@@ -30,10 +33,20 @@ public class GetFlushAllStateResp {
         return new GetFlushAllStateRespBuilder();
     }
 
+    /**
+     * Returns whether all data up to the flush-all timestamp has been flushed.
+     *
+     * @return {@code true} if the flush is complete, {@code false} otherwise
+     */
     public Boolean getFlushed() {
         return flushed;
     }
 
+    /**
+     * Sets whether all data up to the flush-all timestamp has been flushed.
+     *
+     * @param flushed {@code true} if the flush is complete, {@code false} otherwise
+     */
     public void setFlushed(Boolean flushed) {
         this.flushed = flushed;
     }
@@ -48,11 +61,22 @@ public class GetFlushAllStateResp {
     public static class GetFlushAllStateRespBuilder {
         private Boolean flushed = Boolean.FALSE;
 
+        /**
+         * Sets whether all data up to the flush-all timestamp has been flushed.
+         *
+         * @param flushed {@code true} if the flush is complete, {@code false} otherwise
+         * @return this builder
+         */
         public GetFlushAllStateRespBuilder flushed(Boolean flushed) {
             this.flushed = flushed;
             return this;
         }
 
+        /**
+         * Builds the {@code GetFlushAllStateResp}.
+         *
+         * @return the constructed {@code GetFlushAllStateResp}
+         */
         public GetFlushAllStateResp build() {
             return new GetFlushAllStateResp(this);
         }

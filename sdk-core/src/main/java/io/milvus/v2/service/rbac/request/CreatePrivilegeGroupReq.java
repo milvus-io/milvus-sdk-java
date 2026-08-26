@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code createPrivilegeGroup} API.
+ */
 public class CreatePrivilegeGroupReq {
     private String groupName;
 
@@ -26,10 +29,20 @@ public class CreatePrivilegeGroupReq {
         this.groupName = builder.groupName;
     }
 
+    /**
+     * Returns the name of the privilege group.
+     *
+     * @return the privilege group name
+     */
     public String getGroupName() {
         return groupName;
     }
 
+    /**
+     * Sets the name of the privilege group.
+     *
+     * @param groupName the privilege group name
+     */
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
@@ -41,6 +54,11 @@ public class CreatePrivilegeGroupReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link CreatePrivilegeGroupReq}.
+     *
+     * @return a new {@link CreatePrivilegeGroupReqBuilder}
+     */
     public static CreatePrivilegeGroupReqBuilder builder() {
         return new CreatePrivilegeGroupReqBuilder();
     }
@@ -51,11 +69,22 @@ public class CreatePrivilegeGroupReq {
         private CreatePrivilegeGroupReqBuilder() {
         }
 
+        /**
+         * Sets the name of the privilege group.
+         *
+         * @param groupName the privilege group name
+         * @return this builder
+         */
         public CreatePrivilegeGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
+        /**
+         * Builds the {@link CreatePrivilegeGroupReq}.
+         *
+         * @return the built request
+         */
         public CreatePrivilegeGroupReq build() {
             return new CreatePrivilegeGroupReq(this);
         }

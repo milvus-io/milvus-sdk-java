@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code truncateCollection} API.
+ */
 public class TruncateCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -28,24 +31,49 @@ public class TruncateCollectionReq {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Creates a new builder for {@link TruncateCollectionReq}.
+     *
+     * @return the builder
+     */
     public static TruncateCollectionReqBuilder builder() {
         return new TruncateCollectionReqBuilder();
     }
 
     // Getters
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
     // Setters
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -65,16 +93,33 @@ public class TruncateCollectionReq {
         private TruncateCollectionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public TruncateCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public TruncateCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds a {@link TruncateCollectionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public TruncateCollectionReq build() {
             return new TruncateCollectionReq(this);
         }

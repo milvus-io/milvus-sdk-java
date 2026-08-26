@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code getQuerySegmentInfo} API.
+ */
 public class GetQuerySegmentInfoReq {
     private String databaseName;
     private String collectionName;
@@ -32,18 +35,38 @@ public class GetQuerySegmentInfoReq {
         return new GetQuerySegmentInfoReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -60,16 +83,33 @@ public class GetQuerySegmentInfoReq {
         private String databaseName;
         private String collectionName;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public GetQuerySegmentInfoReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public GetQuerySegmentInfoReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds the {@code GetQuerySegmentInfoReq}.
+         *
+         * @return the constructed {@code GetQuerySegmentInfoReq}
+         */
         public GetQuerySegmentInfoReq build() {
             return new GetQuerySegmentInfoReq(this);
         }

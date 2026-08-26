@@ -44,6 +44,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * BulkWriter that writes bulk data files and uploads them to remote cloud storage.
+ * <p>
+ * Rows are buffered locally into chunked data files, then uploaded to an S3-compatible
+ * bucket or an Azure container. The local copies are removed after a successful upload.
+ */
 public class RemoteBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(RemoteBulkWriter.class);
 
@@ -71,26 +77,54 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     }
 
     @Override
+    /**
+    * Appends a single row of data and writes it to the current data file.
+    *
+    * @param rowData the row data as a JSON object
+    * @throws IOException if writing the row fails
+    * @throws InterruptedException if the calling thread is interrupted while committing
+    */
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
 
     @Override
+    /**
+    * Commits the current data file and uploads it to the remote storage.
+    *
+    * @param async if true, the flush runs in a background thread; otherwise it blocks until done
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     public void commit(boolean async) throws InterruptedException {
         super.commit(async);
     }
 
     @Override
+    /**
+    * Returns the remote path where the data files are uploaded.
+    *
+    * @return the remote path
+    */
     protected String getDataPath() {
         return remotePath;
     }
 
     @Override
+    /**
+    * Returns the list of committed remote file path batches.
+    *
+    * @return the list of remote file path batches
+    */
     public List<List<String>> getBatchFiles() {
         return remoteFiles;
     }
 
     @Override
+    /**
+    * Commits any remaining buffered rows and waits for the flush threads to finish.
+    *
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     protected void exit() throws InterruptedException {
         super.exit();
         // remove the temp folder "bulk_writer"
@@ -160,6 +194,11 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     }
 
     @Override
+    /**
+    * Uploads the finished local files to the remote storage and removes the local copies.
+    *
+    * @param fileList the paths of the committed local files
+    */
     protected void callBack(List<String> fileList) {
         List<String> remoteFileList = new ArrayList<>();
         try {
@@ -188,6 +227,11 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     }
 
     @Override
+    /**
+    * Executes remaining actions, closes the storage client, and cleans up local directories.
+    *
+    * @throws Exception if an error occurs while closing
+    */
     public void close() throws Exception {
         logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
         try {

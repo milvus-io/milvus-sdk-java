@@ -9,9 +9,25 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Resolves the cloud-storage endpoint used by the bulk writer for uploading data files.
+ *
+ * <p>For Alibaba Cloud OSS, the endpoint is derived from the region and the connection type, and
+ * its reachability is verified before being returned. For other clouds, the provided default
+ * endpoint is returned unchanged.
+ */
 public class EndpointResolver {
     private static final Logger logger = LoggerFactory.getLogger(EndpointResolver.class);
 
+    /**
+     * Resolves the storage endpoint for the given cloud, region, and connection type.
+     *
+     * @param defaultEndpoint the default storage endpoint
+     * @param cloud the cloud storage provider name
+     * @param region the storage region
+     * @param connectType the connection type ({@code INTERNAL}, {@code PUBLIC}, or {@code AUTO})
+     * @return the resolved storage endpoint
+     */
     public static String resolveEndpoint(String defaultEndpoint, String cloud, String region, ConnectType connectType) {
         logger.info("Start resolving endpoint, cloud:{}, region:{}, connectType:{}", cloud, region, connectType);
         if (CloudStorage.isAliCloud(cloud)) {

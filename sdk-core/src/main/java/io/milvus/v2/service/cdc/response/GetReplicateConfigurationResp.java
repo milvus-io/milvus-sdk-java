@@ -21,6 +21,9 @@ package io.milvus.v2.service.cdc.response;
 
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 
+/**
+ * Response returned by the {@code getReplicateConfiguration} CDC API.
+ */
 public class GetReplicateConfigurationResp {
     private ReplicateConfiguration replicateConfiguration;
 
@@ -28,14 +31,29 @@ public class GetReplicateConfigurationResp {
         this.replicateConfiguration = builder.replicateConfiguration;
     }
 
+    /**
+     * Creates a new {@code GetReplicateConfigurationResp} builder.
+     *
+     * @return the builder
+     */
     public static GetReplicateConfigurationRespBuilder builder() {
         return new GetReplicateConfigurationRespBuilder();
     }
 
+    /**
+     * Returns the replicate configuration.
+     *
+     * @return the replicate configuration
+     */
     public ReplicateConfiguration getReplicateConfiguration() {
         return replicateConfiguration;
     }
 
+    /**
+     * Sets the replicate configuration.
+     *
+     * @param replicateConfiguration the replicate configuration
+     */
     public void setReplicateConfiguration(ReplicateConfiguration replicateConfiguration) {
         this.replicateConfiguration = replicateConfiguration;
     }
@@ -50,11 +68,22 @@ public class GetReplicateConfigurationResp {
     public static class GetReplicateConfigurationRespBuilder {
         private ReplicateConfiguration replicateConfiguration;
 
+        /**
+         * Sets the replicate configuration.
+         *
+         * @param replicateConfiguration the replicate configuration
+         * @return this builder
+         */
         public GetReplicateConfigurationRespBuilder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
             this.replicateConfiguration = replicateConfiguration;
             return this;
         }
 
+        /**
+         * Builds the {@link GetReplicateConfigurationResp}.
+         *
+         * @return the response
+         */
         public GetReplicateConfigurationResp build() {
             return new GetReplicateConfigurationResp(this);
         }

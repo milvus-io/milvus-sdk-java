@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.resourcegroup.request;
 
+/**
+ * Request parameters for the {@code transferReplica} API.
+ */
 public class TransferReplicaReq {
     private String sourceGroupName;
     private String targetGroupName;
@@ -34,46 +37,101 @@ public class TransferReplicaReq {
         this.numberOfReplicas = builder.numberOfReplicas;
     }
 
+    /**
+     * Creates a new builder for {@code TransferReplicaReq}.
+     *
+     * @return the builder
+     */
     public static TransferReplicaReqBuilder builder() {
         return new TransferReplicaReqBuilder();
     }
 
+    /**
+     * Returns the name of the source resource group.
+     *
+     * @return the source resource group name
+     */
     public String getSourceGroupName() {
         return sourceGroupName;
     }
 
+    /**
+     * Sets the name of the source resource group.
+     *
+     * @param sourceGroupName the source resource group name
+     */
     public void setSourceGroupName(String sourceGroupName) {
         this.sourceGroupName = sourceGroupName;
     }
 
+    /**
+     * Returns the name of the target resource group.
+     *
+     * @return the target resource group name
+     */
     public String getTargetGroupName() {
         return targetGroupName;
     }
 
+    /**
+     * Sets the name of the target resource group.
+     *
+     * @param targetGroupName the target resource group name
+     */
     public void setTargetGroupName(String targetGroupName) {
         this.targetGroupName = targetGroupName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the number of replicas to be transferred.
+     *
+     * @return the number of replicas
+     */
     public Long getNumberOfReplicas() {
         return numberOfReplicas;
     }
 
+    /**
+     * Sets the number of replicas to be transferred.
+     *
+     * @param numberOfReplicas the number of replicas
+     */
     public void setNumberOfReplicas(Long numberOfReplicas) {
         this.numberOfReplicas = numberOfReplicas;
     }
@@ -96,31 +154,66 @@ public class TransferReplicaReq {
         private String databaseName;
         private Long numberOfReplicas = 1L;
 
+        /**
+         * Sets the name of the source resource group.
+         *
+         * @param sourceGroupName the source resource group name
+         * @return this builder
+         */
         public TransferReplicaReqBuilder sourceGroupName(String sourceGroupName) {
             this.sourceGroupName = sourceGroupName;
             return this;
         }
 
+        /**
+         * Sets the name of the target resource group.
+         *
+         * @param targetGroupName the target resource group name
+         * @return this builder
+         */
         public TransferReplicaReqBuilder targetGroupName(String targetGroupName) {
             this.targetGroupName = targetGroupName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public TransferReplicaReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public TransferReplicaReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the number of replicas to be transferred.
+         *
+         * @param numberOfReplicas the number of replicas
+         * @return this builder
+         */
         public TransferReplicaReqBuilder numberOfReplicas(Long numberOfReplicas) {
             this.numberOfReplicas = numberOfReplicas;
             return this;
         }
 
+        /**
+         * Builds the {@code TransferReplicaReq}.
+         *
+         * @return the built request
+         */
         public TransferReplicaReq build() {
             return new TransferReplicaReq(this);
         }

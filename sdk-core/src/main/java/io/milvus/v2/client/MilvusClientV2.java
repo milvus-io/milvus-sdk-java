@@ -153,12 +153,22 @@ public class MilvusClientV2 {
         }
     }
 
-    // Setter for blockingStub, primarily used by tests and internal client wiring.
+    /**
+     * Sets the blocking gRPC stub used for synchronous RPC calls.
+     * Primarily used by tests and internal client wiring.
+     *
+     * @param blockingStub the blocking gRPC stub
+     */
     public void setBlockingStub(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         this.blockingStub = blockingStub;
     }
 
-    // Setter for futureStub, primarily used by tests and internal client wiring.
+    /**
+     * Sets the future gRPC stub used for asynchronous RPC calls.
+     * Primarily used by tests and internal client wiring.
+     *
+     * @param futureStub the future gRPC stub
+     */
     public void setFutureStub(MilvusServiceGrpc.MilvusServiceFutureStub futureStub) {
         this.futureStub = futureStub;
     }
@@ -439,15 +449,34 @@ public class MilvusClientV2 {
         return resp.getIdentifier();
     }
 
+    /**
+     * Configures the retry policy used for RPC calls.
+     *
+     * @param retryConfig the retry configuration
+     */
     public void retryConfig(RetryConfig retryConfig) {
         rpcUtils.retryConfig(retryConfig);
     }
 
+    /**
+     * Configures the retry policy used for RPC calls and returns this client for chaining.
+     *
+     * @param retryConfig the retry configuration
+     * @return this client
+     */
     public MilvusClientV2 withRetry(RetryConfig retryConfig) {
         rpcUtils.retryConfig(retryConfig);
         return this;
     }
 
+    /**
+     * Sets the RPC deadline for all subsequent calls and returns this client for chaining.
+     * A timeout value smaller than 1ms is treated as 1ms; a value of zero disables the deadline.
+     *
+     * @param timeout the timeout value
+     * @param timeoutUnit the unit of the timeout value
+     * @return this client
+     */
     public MilvusClientV2 withTimeout(long timeout, TimeUnit timeoutUnit) {
         // the unit of rpcDeadlineMs is millisecond
         // if the input timeout value is zero, rpcDeadlineMs is zero
@@ -459,6 +488,12 @@ public class MilvusClientV2 {
         return this;
     }
 
+    /**
+     * Returns the database currently in use by this client.
+     * Returns {@code "default"} when no database has been configured.
+     *
+     * @return the current database name
+     */
     public String currentUsedDatabase() {
         String dbName = this.connectConfig.getDbName();
         if (StringUtils.isEmpty(dbName)) {
@@ -495,6 +530,12 @@ public class MilvusClientV2 {
         return result;
     }
 
+    /**
+     * Creates a session bound to the given cluster ID for cluster-level operations.
+     *
+     * @param clusterId the cluster ID to bind the session to
+     * @return a new session bound to the given cluster
+     */
     public MilvusClientV2Session session(String clusterId) {
         if (StringUtils.isEmpty(clusterId)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "clusterId cannot be null or empty");
@@ -913,7 +954,7 @@ public class MilvusClientV2 {
      * Gets the collections info in Milvus.
      *
      * @param request describe collections request
-     * @return List<DescribeCollectionResp>
+     * @return {@code List<DescribeCollectionResp>}
      */
     public List<DescribeCollectionResp> batchDescribeCollection(BatchDescribeCollectionReq request) {
         return rpcUtils.retry(() -> collectionService.batchDescribeCollections(this.getRpcStub(), request));
@@ -1590,26 +1631,57 @@ public class MilvusClientV2 {
         rpcUtils.retry(() -> rbacService.createPrivilegeGroup(this.getRpcStub(), request));
     }
 
+    /**
+     * Drops a privilege group.
+     *
+     * @param request {@link DropPrivilegeGroupReq}
+     */
     public void dropPrivilegeGroup(DropPrivilegeGroupReq request) {
         rpcUtils.retry(() -> rbacService.dropPrivilegeGroup(this.getRpcStub(), request));
     }
 
+    /**
+     * Lists all privilege groups.
+     *
+     * @param request {@link ListPrivilegeGroupsReq}
+     * @return {@link ListPrivilegeGroupsResp}
+     */
     public ListPrivilegeGroupsResp listPrivilegeGroups(ListPrivilegeGroupsReq request) {
         return rpcUtils.retry(() -> rbacService.listPrivilegeGroups(this.getRpcStub(), request));
     }
 
+    /**
+     * Adds privileges to a privilege group.
+     *
+     * @param request {@link AddPrivilegesToGroupReq}
+     */
     public void addPrivilegesToGroup(AddPrivilegesToGroupReq request) {
         rpcUtils.retry(() -> rbacService.addPrivilegesToGroup(this.getRpcStub(), request));
     }
 
+    /**
+     * Removes privileges from a privilege group.
+     *
+     * @param request {@link RemovePrivilegesFromGroupReq}
+     */
     public void removePrivilegesFromGroup(RemovePrivilegesFromGroupReq request) {
         rpcUtils.retry(() -> rbacService.removePrivilegesFromGroup(this.getRpcStub(), request));
     }
 
+    /**
+     * Grants a privilege to a user or role.
+     *
+     * @param request {@link GrantPrivilegeReqV2}
+     */
     public void grantPrivilegeV2(GrantPrivilegeReqV2 request) {
         rpcUtils.retry(() -> rbacService.grantPrivilegeV2(this.getRpcStub(), request));
     }
 
+    /**
+     * Revokes a privilege from a user or role.
+     *
+     * @param request {@link RevokePrivilegeReqV2}
+     */
     public void revokePrivilegeV2(RevokePrivilegeReqV2 request) {
         rpcUtils.retry(() -> rbacService.revokePrivilegeV2(this.getRpcStub(), request));
     }
@@ -2218,10 +2290,21 @@ public class MilvusClientV2 {
         return rpcUtils.retry(() -> cdcService.getReplicateInfo(this.getRpcStub(), request));
     }
 
+    /**
+     * Gets the replication configuration of the connected cluster.
+     *
+     * @return {@link GetReplicateConfigurationResp}
+     */
     public GetReplicateConfigurationResp getReplicateConfiguration() {
         return rpcUtils.retry(() -> cdcService.getReplicateConfiguration(this.getRpcStub()));
     }
 
+    /**
+     * Updates the replication configuration of the connected cluster.
+     *
+     * @param request {@link UpdateReplicateConfigurationReq}
+     * @return {@link UpdateReplicateConfigurationResp}
+     */
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(UpdateReplicateConfigurationReq request) {
         return rpcUtils.retry(() -> cdcService.updateReplicateConfiguration(this.getRpcStub(), request));
     }
@@ -2271,6 +2354,11 @@ public class MilvusClientV2 {
         }
     }
 
+    /**
+     * Checks whether the client connection to the Milvus server is ready.
+     *
+     * @return true if the underlying channel is open and usable
+     */
     public boolean clientIsReady() {
         if (globalStub != null) {
             MilvusClientV2 primaryClient = globalStub.getPrimaryClient();

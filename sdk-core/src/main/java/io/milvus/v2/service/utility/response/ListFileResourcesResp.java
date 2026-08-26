@@ -21,6 +21,9 @@ package io.milvus.v2.service.utility.response;
 
 import java.util.List;
 
+/**
+ * Response returned by the {@code listFileResources} API.
+ */
 public class ListFileResourcesResp {
     private final List<FileResourceInfo> resources;
 
@@ -32,6 +35,11 @@ public class ListFileResourcesResp {
         return new ListFileResourcesRespBuilder();
     }
 
+    /**
+     * Returns the registered file resources.
+     *
+     * @return the list of file resources
+     */
     public List<FileResourceInfo> getResources() {
         return resources;
     }
@@ -46,11 +54,22 @@ public class ListFileResourcesResp {
     public static class ListFileResourcesRespBuilder {
         private List<FileResourceInfo> resources;
 
+        /**
+         * Sets the registered file resources.
+         *
+         * @param resources the list of file resources
+         * @return this builder
+         */
         public ListFileResourcesRespBuilder resources(List<FileResourceInfo> resources) {
             this.resources = resources;
             return this;
         }
 
+        /**
+         * Builds the {@code ListFileResourcesResp}.
+         *
+         * @return the constructed {@code ListFileResourcesResp}
+         */
         public ListFileResourcesResp build() {
             return new ListFileResourcesResp(this);
         }

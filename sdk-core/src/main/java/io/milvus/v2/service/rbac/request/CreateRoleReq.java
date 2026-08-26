@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code createRole} API.
+ */
 public class CreateRoleReq {
     private String roleName;
     private String description;
@@ -28,18 +31,38 @@ public class CreateRoleReq {
         this.description = builder.description;
     }
 
+    /**
+     * Returns the role name.
+     *
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Sets the role name.
+     *
+     * @param roleName the role name
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
 
+    /**
+     * Returns the description of the role.
+     *
+     * @return the role description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the role.
+     *
+     * @param description the role description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
@@ -52,6 +75,11 @@ public class CreateRoleReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link CreateRoleReq}.
+     *
+     * @return a new {@link CreateRoleReqBuilder}
+     */
     public static CreateRoleReqBuilder builder() {
         return new CreateRoleReqBuilder();
     }
@@ -63,16 +91,33 @@ public class CreateRoleReq {
         private CreateRoleReqBuilder() {
         }
 
+        /**
+         * Sets the role name.
+         *
+         * @param roleName the role name
+         * @return this builder
+         */
         public CreateRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
+        /**
+         * Sets the description of the role.
+         *
+         * @param description the role description
+         * @return this builder
+         */
         public CreateRoleReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Builds the {@link CreateRoleReq}.
+         *
+         * @return the built request
+         */
         public CreateRoleReq build() {
             return new CreateRoleReq(this);
         }

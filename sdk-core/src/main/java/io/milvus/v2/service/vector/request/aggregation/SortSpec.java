@@ -22,6 +22,10 @@ package io.milvus.v2.service.vector.request.aggregation;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
+/**
+ * A sort rule of a {@code top_hits} aggregation, specifying the field to sort by, the sort
+ * direction, and how {@code null} values are handled.
+ */
 public class SortSpec {
     private final String fieldName;
     private final AggDirection direction;
@@ -41,18 +45,38 @@ public class SortSpec {
         this.nullFirst = builder.nullFirst;
     }
 
+    /**
+     * Creates a new builder for {@link SortSpec}.
+     *
+     * @return a new builder
+     */
     public static SortSpecBuilder builder() {
         return new SortSpecBuilder();
     }
 
+    /**
+     * Returns the name of the field the hits are sorted by.
+     *
+     * @return the field name
+     */
     public String getFieldName() {
         return fieldName;
     }
 
+    /**
+     * Returns the sort direction applied to the field.
+     *
+     * @return the sort direction
+     */
     public AggDirection getDirection() {
         return direction;
     }
 
+    /**
+     * Returns whether {@code null} values are sorted first.
+     *
+     * @return {@code true} if nulls are sorted first, or {@code null} if not specified
+     */
     public Boolean getNullFirst() {
         return nullFirst;
     }
@@ -76,6 +100,9 @@ public class SortSpec {
                 '}';
     }
 
+    /**
+     * Builder for {@link SortSpec}.
+     */
     public static class SortSpecBuilder {
         private String fieldName;
         private AggDirection direction;
@@ -84,21 +111,44 @@ public class SortSpec {
         private SortSpecBuilder() {
         }
 
+        /**
+         * Sets the name of the field the hits are sorted by.
+         *
+         * @param fieldName the field name
+         * @return this builder
+         */
         public SortSpecBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Sets the sort direction applied to the field.
+         *
+         * @param direction the sort direction
+         * @return this builder
+         */
         public SortSpecBuilder direction(AggDirection direction) {
             this.direction = direction;
             return this;
         }
 
+        /**
+         * Sets whether {@code null} values are sorted first.
+         *
+         * @param nullFirst {@code true} to sort nulls first, {@code false} to sort them last
+         * @return this builder
+         */
         public SortSpecBuilder nullFirst(Boolean nullFirst) {
             this.nullFirst = nullFirst;
             return this;
         }
 
+        /**
+         * Builds the {@link SortSpec}.
+         *
+         * @return the built sort rule
+         */
         public SortSpec build() {
             return new SortSpec(this);
         }

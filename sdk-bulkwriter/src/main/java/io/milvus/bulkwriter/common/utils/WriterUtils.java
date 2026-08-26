@@ -24,10 +24,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class for normalizing field values before they are written to bulk data files.
+ */
 public class WriterUtils {
     private WriterUtils() {
     }
 
+    /**
+     * Normalizes a field value so that it can be serialized into a bulk data file. {@link ByteBuffer}
+     * values are converted into a list of unsigned byte integers, and lists and maps are normalized
+     * recursively. Any other value is returned unchanged.
+     *
+     * @param value the field value to normalize
+     * @return the normalized field value
+     */
     public static Object normalizeValue(Object value) {
         if (value instanceof ByteBuffer) {
             ByteBuffer byteBuffer = (ByteBuffer) value;

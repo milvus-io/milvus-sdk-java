@@ -63,6 +63,16 @@ import java.util.concurrent.TimeUnit;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
 
+/**
+ * {@link StorageClient} implementation backed by a {@link MinioAsyncClient} for uploading
+ * bulk-import data files to S3-compatible cloud storage (MinIO, AWS S3, Alibaba Cloud OSS,
+ * Tencent Cloud COS, GCP, and other S3-compatible services).
+ *
+ * <p>The client uploads data files as objects into a cloud-storage bucket. Large files are split
+ * into multipart parts sized to stay within the S3 part count limits, and an optional progress
+ * listener reports upload progress. This class also adjusts the multipart upload completion flow
+ * for full MinIO/S3 compatibility.
+ */
 public class MinioStorageClient extends MinioAsyncClient implements StorageClient {
     private static final Logger logger = LoggerFactory.getLogger(MinioStorageClient.class);
     private static final String UPLOAD_ID = "uploadId";
@@ -76,6 +86,20 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         this.closeHttpClient = closeHttpClient;
     }
 
+    /**
+     * Creates a {@link MinioStorageClient} for the given cloud storage provider.
+     *
+     * @param cloudName the cloud storage name, used to detect GCP and Tencent Cloud behavior
+     * @param endpoint the S3-compatible endpoint URL of the cloud storage service
+     * @param accessKey the access key (not used for GCP when a session token is provided)
+     * @param secretKey the secret key
+     * @param sessionToken the session token, or {@code null}; for GCP this token is sent as a
+     *                     bearer Authorization header
+     * @param region the storage region, or {@code null}
+     * @param httpClient an optional {@link OkHttpClient} to reuse, or {@code null} to create and
+     *                   own one
+     * @return the configured {@link MinioStorageClient}
+     */
     public static MinioStorageClient getStorageClient(String cloudName,
                                                       String endpoint,
                                                       String accessKey,
@@ -130,6 +154,14 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         }
     }
 
+    /**
+     * Returns the size in bytes of the object stored in the bucket.
+     *
+     * @param bucketName the cloud-storage bucket name
+     * @param objectKey the object key
+     * @return the object size in bytes
+     * @throws Exception if the object cannot be statted
+     */
     public Long getObjectEntity(String bucketName, String objectKey) throws Exception {
         StatObjectArgs statObjectArgs = StatObjectArgs.builder()
                 .bucket(bucketName)
@@ -139,16 +171,44 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         return statObject.size();
     }
 
+    /**
+     * Uploads a local data file as an object to the bucket without progress reporting.
+     *
+     * @param file the local data file to upload
+     * @param bucketName the cloud-storage bucket name
+     * @param objectKey the object key
+     * @throws Exception if the upload fails
+     */
     public void putObject(File file, String bucketName, String objectKey) throws Exception {
         putObject(file, bucketName, objectKey, null, 0L);
     }
 
+    /**
+     * Uploads a local data file as an object to the bucket, reporting progress.
+     *
+     * @param file the local data file to upload
+     * @param bucketName the cloud-storage bucket name
+     * @param objectKey the object key
+     * @param progressListener the listener notified of upload progress, or {@code null}
+     * @throws Exception if the upload fails
+     */
     @Override
     public void putObject(File file, String bucketName, String objectKey,
                           UploadProgressListener progressListener) throws Exception {
         putObject(file, bucketName, objectKey, progressListener, 0L);
     }
 
+    /**
+     * Uploads a local data file as an object to the bucket with progress reporting and an
+     * optional explicit multipart part size.
+     *
+     * @param file the local data file to upload
+     * @param bucketName the cloud-storage bucket name
+     * @param objectKey the object key
+     * @param progressListener the listener notified of upload progress, or {@code null}
+     * @param partSizeBytes the multipart part size in bytes, or {@code 0} to auto-calculate
+     * @throws Exception if the upload fails
+     */
     @Override
     public void putObject(File file, String bucketName, String objectKey,
                           UploadProgressListener progressListener, long partSizeBytes) throws Exception {
@@ -164,6 +224,10 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         }
     }
 
+    /**
+     * Releases the resources held by this client. When this client owns its HTTP client, the
+     * connection pool is evicted and the executor service is shut down.
+     */
     @Override
     public void close() {
         if (!closeHttpClient || httpClient == null) {
@@ -210,6 +274,13 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         return (value + divisor - 1) / divisor;
     }
 
+    /**
+     * Checks whether the given bucket exists in the cloud storage.
+     *
+     * @param bucketName the cloud-storage bucket name
+     * @return {@code true} if the bucket exists, {@code false} otherwise
+     * @throws Exception if the bucket existence cannot be determined
+     */
     public boolean checkBucketExist(String bucketName) throws Exception {
         BucketExistsArgs bucketExistsArgs = BucketExistsArgs.builder()
                 .bucket(bucketName)
@@ -217,6 +288,28 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         return bucketExists(bucketExistsArgs).get();
     }
 
+    /**
+     * Completes a multipart upload for S3-compatible cloud storage.
+     *
+     * <p>Because MinIO follows the S3 protocol, the completion flow is adjusted to handle the
+     * {@code uploadId} query parameter and to parse the returned XML into a
+     * {@link CompleteMultipartUploadOutputModel}.
+     *
+     * @param bucketName the bucket name
+     * @param region the storage region
+     * @param objectName the object key
+     * @param uploadId the multipart upload identifier
+     * @param parts the uploaded parts to assemble
+     * @param extraHeaders extra HTTP headers to send
+     * @param extraQueryParams extra query parameters to send
+     * @return a future resolving to the object write response
+     * @throws InsufficientDataException if request data is incomplete
+     * @throws InternalException if an internal MinIO error occurs
+     * @throws InvalidKeyException if the signing key is invalid
+     * @throws IOException if an I/O error occurs
+     * @throws NoSuchAlgorithmException if the signing algorithm is unavailable
+     * @throws XmlParserException if the response XML cannot be parsed
+     */
     @Override
     // Considering MinIO's compatibility with S3, some adjustments have been made here.
     protected CompletableFuture<ObjectWriteResponse> completeMultipartUploadAsync(String bucketName, String region, String objectName, String uploadId, Part[] parts, Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) throws InsufficientDataException, InternalException, InvalidKeyException, IOException, NoSuchAlgorithmException, XmlParserException {

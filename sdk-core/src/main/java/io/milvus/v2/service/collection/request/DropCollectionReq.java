@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code dropCollection} API.
+ */
 public class DropCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -33,42 +36,89 @@ public class DropCollectionReq {
         this.timeout = builder.timeout != null ? builder.timeout : 60000L;
     }
 
+    /**
+     * Creates a new builder for {@link DropCollectionReq}.
+     *
+     * @return the builder
+     */
     public static DropCollectionReqBuilder builder() {
         return new DropCollectionReqBuilder();
     }
 
     // Getters
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns whether the drop operation is asynchronous.
+     *
+     * @return {@code true} if the operation is asynchronous
+     * @deprecated use the timeout to control the wait behavior instead
+     */
     @Deprecated
     public Boolean getAsync() {
         return async;
     }
 
+    /**
+     * Returns the timeout for the drop operation, in milliseconds.
+     *
+     * @return the timeout in milliseconds
+     */
     public Long getTimeout() {
         return timeout;
     }
 
     // Setters
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Sets whether the drop operation is asynchronous.
+     *
+     * @param async {@code true} to run the operation asynchronously
+     * @deprecated use the timeout to control the wait behavior instead
+     */
     @Deprecated
     public void setAsync(Boolean async) {
         this.async = async;
     }
 
+    /**
+     * Sets the timeout for the drop operation, in milliseconds.
+     *
+     * @param timeout the timeout in milliseconds
+     */
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -92,27 +142,57 @@ public class DropCollectionReq {
         private DropCollectionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DropCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DropCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets whether the drop operation is asynchronous.
+         *
+         * @param async {@code true} to run the operation asynchronously
+         * @return this builder
+         * @deprecated use the timeout to control the wait behavior instead
+         */
         @Deprecated
         public DropCollectionReqBuilder async(Boolean async) {
             this.async = async;
             return this;
         }
 
+        /**
+         * Sets the timeout for the drop operation, in milliseconds.
+         *
+         * @param timeout the timeout in milliseconds
+         * @return this builder
+         */
         public DropCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }
 
+        /**
+         * Builds a {@link DropCollectionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public DropCollectionReq build() {
             return new DropCollectionReq(this);
         }

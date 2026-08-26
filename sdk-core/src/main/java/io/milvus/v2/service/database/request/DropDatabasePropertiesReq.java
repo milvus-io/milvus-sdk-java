@@ -22,6 +22,9 @@ package io.milvus.v2.service.database.request;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Request parameters for the {@code dropDatabaseProperties} API.
+ */
 public class DropDatabasePropertiesReq {
     private String databaseName;
     private List<String> propertyKeys;
@@ -31,18 +34,38 @@ public class DropDatabasePropertiesReq {
         this.propertyKeys = builder.propertyKeys;
     }
 
+    /**
+     * Returns the name of the database.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the name of the database.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the keys of the properties to drop from the database.
+     *
+     * @return the property keys to drop
+     */
     public List<String> getPropertyKeys() {
         return propertyKeys;
     }
 
+    /**
+     * Sets the keys of the properties to drop from the database.
+     *
+     * @param propertyKeys the property keys to drop
+     */
     public void setPropertyKeys(List<String> propertyKeys) {
         this.propertyKeys = propertyKeys;
     }
@@ -55,6 +78,11 @@ public class DropDatabasePropertiesReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DropDatabasePropertiesReq}.
+     *
+     * @return a new {@link DropDatabasePropertiesReqBuilder}
+     */
     public static DropDatabasePropertiesReqBuilder builder() {
         return new DropDatabasePropertiesReqBuilder();
     }
@@ -66,16 +94,33 @@ public class DropDatabasePropertiesReq {
         private DropDatabasePropertiesReqBuilder() {
         }
 
+        /**
+         * Sets the name of the database.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DropDatabasePropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the keys of the properties to drop from the database.
+         *
+         * @param propertyKeys the property keys to drop
+         * @return this builder
+         */
         public DropDatabasePropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
         }
 
+        /**
+         * Builds the {@link DropDatabasePropertiesReq}.
+         *
+         * @return the built request
+         */
         public DropDatabasePropertiesReq build() {
             return new DropDatabasePropertiesReq(this);
         }

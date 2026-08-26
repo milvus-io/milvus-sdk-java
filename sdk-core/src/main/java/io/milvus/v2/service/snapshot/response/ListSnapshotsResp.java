@@ -22,6 +22,9 @@ package io.milvus.v2.service.snapshot.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code listSnapshots} API.
+ */
 public class ListSnapshotsResp {
     private List<String> snapshots;
 
@@ -33,10 +36,20 @@ public class ListSnapshotsResp {
         return new ListSnapshotsRespBuilder();
     }
 
+    /**
+     * Returns the list of snapshot names.
+     *
+     * @return the list of snapshot names
+     */
     public List<String> getSnapshots() {
         return snapshots;
     }
 
+    /**
+     * Sets the list of snapshot names.
+     *
+     * @param snapshots the list of snapshot names
+     */
     public void setSnapshots(List<String> snapshots) {
         this.snapshots = snapshots;
     }
@@ -51,11 +64,22 @@ public class ListSnapshotsResp {
     public static class ListSnapshotsRespBuilder {
         private List<String> snapshots = new ArrayList<>();
 
+        /**
+         * Sets the list of snapshot names.
+         *
+         * @param snapshots the list of snapshot names
+         * @return this builder
+         */
         public ListSnapshotsRespBuilder snapshots(List<String> snapshots) {
             this.snapshots = snapshots;
             return this;
         }
 
+        /**
+         * Builds a {@link ListSnapshotsResp}.
+         *
+         * @return the built response
+         */
         public ListSnapshotsResp build() {
             return new ListSnapshotsResp(this);
         }

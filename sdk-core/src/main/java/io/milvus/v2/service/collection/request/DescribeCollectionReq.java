@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code describeCollection} API.
+ */
 public class DescribeCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -30,26 +33,56 @@ public class DescribeCollectionReq {
         this.collectionId = builder.collectionId;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the collection ID.
+     *
+     * @return the collection ID
+     */
     public Long getCollectionId() {
         return collectionId;
     }
 
+    /**
+     * Sets the collection ID.
+     *
+     * @param collectionId the collection ID
+     */
     public void setCollectionId(Long collectionId) {
         this.collectionId = collectionId;
     }
@@ -63,6 +96,11 @@ public class DescribeCollectionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DescribeCollectionReq}.
+     *
+     * @return the builder
+     */
     public static DescribeCollectionReqBuilder builder() {
         return new DescribeCollectionReqBuilder();
     }
@@ -75,21 +113,44 @@ public class DescribeCollectionReq {
         private DescribeCollectionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DescribeCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DescribeCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the collection ID.
+         *
+         * @param collectionId the collection ID
+         * @return this builder
+         */
         public DescribeCollectionReqBuilder collectionId(Long collectionId) {
             this.collectionId = collectionId;
             return this;
         }
 
+        /**
+         * Builds a {@link DescribeCollectionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public DescribeCollectionReq build() {
             return new DescribeCollectionReq(this);
         }

@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code dropCollectionFunction} API.
+ */
 public class DropCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
@@ -30,22 +33,47 @@ public class DropCollectionFunctionReq {
         this.functionName = builder.functionName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the name of the function to drop.
+     *
+     * @return the function name
+     */
     public String getFunctionName() {
         return functionName;
     }
@@ -59,6 +87,11 @@ public class DropCollectionFunctionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DropCollectionFunctionReq}.
+     *
+     * @return the builder
+     */
     public static DropCollectionFunctionReqBuilder builder() {
         return new DropCollectionFunctionReqBuilder();
     }
@@ -71,21 +104,44 @@ public class DropCollectionFunctionReq {
         private DropCollectionFunctionReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DropCollectionFunctionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DropCollectionFunctionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the name of the function to drop.
+         *
+         * @param functionName the function name
+         * @return this builder
+         */
         public DropCollectionFunctionReqBuilder functionName(String functionName) {
             this.functionName = functionName;
             return this;
         }
 
+        /**
+         * Builds a {@link DropCollectionFunctionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public DropCollectionFunctionReq build() {
             return new DropCollectionFunctionReq(this);
         }

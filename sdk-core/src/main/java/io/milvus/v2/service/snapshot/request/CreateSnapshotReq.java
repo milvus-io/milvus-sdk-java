@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.snapshot.request;
 
+/**
+ * Request parameters for the {@code createSnapshot} API.
+ */
 public class CreateSnapshotReq {
     private String databaseName;
     private String collectionName;
@@ -34,46 +37,101 @@ public class CreateSnapshotReq {
         this.compactionProtectionSeconds = builder.compactionProtectionSeconds;
     }
 
+    /**
+     * Creates a new builder for {@code CreateSnapshotReq}.
+     *
+     * @return the builder
+     */
     public static CreateSnapshotReqBuilder builder() {
         return new CreateSnapshotReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the name of the snapshot to be created.
+     *
+     * @return the snapshot name
+     */
     public String getSnapshotName() {
         return snapshotName;
     }
 
+    /**
+     * Sets the name of the snapshot to be created.
+     *
+     * @param snapshotName the snapshot name
+     */
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
 
+    /**
+     * Returns the description of the snapshot.
+     *
+     * @return the snapshot description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the snapshot.
+     *
+     * @param description the snapshot description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Returns the duration in seconds for which the snapshot data is protected from compaction.
+     *
+     * @return the compaction protection duration in seconds
+     */
     public Long getCompactionProtectionSeconds() {
         return compactionProtectionSeconds;
     }
 
+    /**
+     * Sets the duration in seconds for which the snapshot data is protected from compaction.
+     *
+     * @param compactionProtectionSeconds the compaction protection duration in seconds
+     */
     public void setCompactionProtectionSeconds(Long compactionProtectionSeconds) {
         this.compactionProtectionSeconds = compactionProtectionSeconds;
     }
@@ -96,31 +154,66 @@ public class CreateSnapshotReq {
         private String description = "";
         private Long compactionProtectionSeconds = 0L;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public CreateSnapshotReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public CreateSnapshotReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the name of the snapshot to be created.
+         *
+         * @param snapshotName the snapshot name
+         * @return this builder
+         */
         public CreateSnapshotReqBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
         }
 
+        /**
+         * Sets the description of the snapshot.
+         *
+         * @param description the snapshot description
+         * @return this builder
+         */
         public CreateSnapshotReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Sets the duration in seconds for which the snapshot data is protected from compaction.
+         *
+         * @param compactionProtectionSeconds the compaction protection duration in seconds
+         * @return this builder
+         */
         public CreateSnapshotReqBuilder compactionProtectionSeconds(Long compactionProtectionSeconds) {
             this.compactionProtectionSeconds = compactionProtectionSeconds;
             return this;
         }
 
+        /**
+         * Builds the {@code CreateSnapshotReq}.
+         *
+         * @return the built request
+         */
         public CreateSnapshotReq build() {
             return new CreateSnapshotReq(this);
         }

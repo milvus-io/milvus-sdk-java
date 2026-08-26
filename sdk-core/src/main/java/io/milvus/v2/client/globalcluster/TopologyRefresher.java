@@ -31,6 +31,12 @@ import java.util.function.Consumer;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
+/**
+ * Periodically refreshes the global cluster topology and notifies listeners of changes.
+ * <p>
+ * The refresher polls the global endpoint on a fixed interval. When the topology version
+ * changes, the registered callback is invoked so the caller can reconnect to the new primary.
+ */
 public class TopologyRefresher {
     private static final Logger logger = LoggerFactory.getLogger(TopologyRefresher.class);
     private static final long REFRESH_INTERVAL_MINUTES = 5;
@@ -55,6 +61,9 @@ public class TopologyRefresher {
         });
     }
 
+    /**
+     * Starts the periodic topology refresh.
+     */
     public void start() {
         scheduler.scheduleWithFixedDelay(this::refresh, REFRESH_INTERVAL_MINUTES,
                 REFRESH_INTERVAL_MINUTES, TimeUnit.MINUTES);
@@ -62,6 +71,10 @@ public class TopologyRefresher {
                 REFRESH_INTERVAL_MINUTES, redactUriUserInfo(globalEndpoint));
     }
 
+    /**
+     * Triggers an immediate topology refresh outside the scheduled interval.
+     * Refreshes already in progress are skipped.
+     */
     public void triggerRefresh() {
         if (refreshing.getAndSet(true)) {
             logger.debug("Topology refresh already in progress, skipping");
@@ -75,6 +88,9 @@ public class TopologyRefresher {
         }
     }
 
+    /**
+     * Stops the periodic topology refresh and shuts down the scheduler.
+     */
     public void stop() {
         scheduler.shutdownNow();
         logger.info("Global topology refresher stopped for endpoint: {}", redactUriUserInfo(globalEndpoint));

@@ -35,6 +35,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * BulkWriter that writes bulk data files and uploads them to a data volume service.
+ * <p>
+ * Rows are buffered locally into chunked data files, then uploaded to the target volume
+ * through a {@link VolumeFileManager}. The local copies are removed after a successful upload.
+ */
 public class VolumeBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(VolumeBulkWriter.class);
 
@@ -69,25 +75,53 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     }
 
     @Override
+    /**
+    * Appends a single row of data and writes it to the current data file.
+    *
+    * @param rowData the row data as a JSON object
+    * @throws IOException if writing the row fails
+    * @throws InterruptedException if the calling thread is interrupted while committing
+    */
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
 
     @Override
+    /**
+    * Commits the current data file and uploads it to the volume.
+    *
+    * @param async if true, the flush runs in a background thread; otherwise it blocks until done
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     public void commit(boolean async) throws InterruptedException {
         super.commit(async);
     }
 
     @Override
+    /**
+    * Returns the remote path in the volume where the data files are uploaded.
+    *
+    * @return the remote path
+    */
     protected String getDataPath() {
         return remotePath;
     }
 
     @Override
+    /**
+    * Returns the list of committed remote file path batches.
+    *
+    * @return the list of remote file path batches
+    */
     public List<List<String>> getBatchFiles() {
         return remoteFiles;
     }
 
+    /**
+    * Returns the result of the volume upload, including the volume name and target path.
+    *
+    * @return the volume upload result
+    */
     public UploadFilesResult getVolumeUploadResult() {
         return UploadFilesResult.builder()
                 .volumeName(volumeBulkWriterParam.getVolumeName())
@@ -96,6 +130,11 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     }
 
     @Override
+    /**
+    * Commits any remaining buffered rows and waits for the flush threads to finish.
+    *
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     protected void exit() throws InterruptedException {
         super.exit();
         // remove the temp folder "bulk_writer"
@@ -142,11 +181,21 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     }
 
     @Override
+    /**
+    * Uploads the finished local files to the volume and removes the local copies.
+    *
+    * @param fileList the paths of the committed local files
+    */
     protected void callBack(List<String> fileList) {
         serialImportData(fileList);
     }
 
     @Override
+    /**
+    * Executes remaining actions and shuts down the volume file manager gracefully.
+    *
+    * @throws Exception if an error occurs while closing
+    */
     public void close() throws Exception {
         try {
             logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");

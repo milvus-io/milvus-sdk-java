@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code releaseCollection} API.
+ */
 public class ReleaseCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -33,36 +36,78 @@ public class ReleaseCollectionReq {
         this.timeout = builder.timeout;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns whether the release operation is asynchronous.
+     *
+     * @return {@code true} if the operation is asynchronous
+     * @deprecated the async flag is no longer used; control the wait with the timeout instead
+     */
     @Deprecated
     public Boolean getAsync() {
         return async;
     }
 
+    /**
+     * Sets whether the release operation is asynchronous.
+     *
+     * @param async {@code true} to run the operation asynchronously
+     * @deprecated the async flag is no longer used; control the wait with the timeout instead
+     */
     @Deprecated
     public void setAsync(Boolean async) {
         this.async = async;
     }
 
+    /**
+     * Returns the timeout for the release operation, in milliseconds.
+     *
+     * @return the timeout in milliseconds
+     */
     public Long getTimeout() {
         return timeout;
     }
 
+    /**
+     * Sets the timeout for the release operation, in milliseconds.
+     *
+     * @param timeout the timeout in milliseconds
+     */
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -77,6 +122,11 @@ public class ReleaseCollectionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link ReleaseCollectionReq}.
+     *
+     * @return the builder
+     */
     public static ReleaseCollectionReqBuilder builder() {
         return new ReleaseCollectionReqBuilder();
     }
@@ -90,27 +140,57 @@ public class ReleaseCollectionReq {
         private ReleaseCollectionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public ReleaseCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public ReleaseCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets whether the release operation is asynchronous.
+         *
+         * @param async {@code true} to run the operation asynchronously
+         * @return this builder
+         * @deprecated the async flag is no longer used; control the wait with the timeout instead
+         */
         @Deprecated
         public ReleaseCollectionReqBuilder async(Boolean async) {
             this.async = async;
             return this;
         }
 
+        /**
+         * Sets the timeout for the release operation, in milliseconds.
+         *
+         * @param timeout the timeout in milliseconds
+         * @return this builder
+         */
         public ReleaseCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }
 
+        /**
+         * Builds a {@link ReleaseCollectionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public ReleaseCollectionReq build() {
             return new ReleaseCollectionReq(this);
         }

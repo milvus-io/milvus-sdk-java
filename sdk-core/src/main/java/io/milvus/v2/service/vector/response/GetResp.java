@@ -21,6 +21,9 @@ package io.milvus.v2.service.vector.response;
 
 import java.util.List;
 
+/**
+ * Response returned by the {@code get} API.
+ */
 public class GetResp {
     private List<QueryResp.QueryResult> getResults;
 
@@ -28,14 +31,29 @@ public class GetResp {
         this.getResults = builder.getResults;
     }
 
+    /**
+     * Creates a new {@code GetResp} builder.
+     *
+     * @return the builder
+     */
     public static GetRespBuilder builder() {
         return new GetRespBuilder();
     }
 
+    /**
+     * Returns the retrieved entities.
+     *
+     * @return the retrieved entities
+     */
     public List<QueryResp.QueryResult> getGetResults() {
         return getResults;
     }
 
+    /**
+     * Sets the retrieved entities.
+     *
+     * @param getResults the retrieved entities
+     */
     public void setGetResults(List<QueryResp.QueryResult> getResults) {
         this.getResults = getResults;
     }
@@ -50,11 +68,22 @@ public class GetResp {
     public static class GetRespBuilder {
         private List<QueryResp.QueryResult> getResults;
 
+        /**
+         * Sets the retrieved entities.
+         *
+         * @param getResults the retrieved entities
+         * @return this builder
+         */
         public GetRespBuilder getResults(List<QueryResp.QueryResult> getResults) {
             this.getResults = getResults;
             return this;
         }
 
+        /**
+         * Builds the {@link GetResp}.
+         *
+         * @return the response
+         */
         public GetResp build() {
             return new GetResp(this);
         }

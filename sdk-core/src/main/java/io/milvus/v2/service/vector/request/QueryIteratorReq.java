@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code queryIterator} API.
+ */
 public class QueryIteratorReq {
     private String databaseName;
     private String collectionName;
@@ -61,22 +64,47 @@ public class QueryIteratorReq {
         this.cursor = builder.cursor;
     }
 
+    /**
+     * Creates a new {@code QueryIteratorReq} builder.
+     *
+     * @return the builder
+     */
     public static QueryIteratorReqBuilder builder() {
         return new QueryIteratorReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -99,90 +127,200 @@ public class QueryIteratorReq {
         this.clusterId = clusterId;
     }
 
+    /**
+     * Returns the partition names to query.
+     *
+     * @return the partition names
+     */
     public List<String> getPartitionNames() {
         return partitionNames;
     }
 
+    /**
+     * Sets the partition names to query.
+     *
+     * @param partitionNames the partition names
+     */
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
 
+    /**
+     * Returns the fields to return for each queried entity.
+     *
+     * @return the output fields
+     */
     public List<String> getOutputFields() {
         return outputFields;
     }
 
+    /**
+     * Sets the fields to return for each queried entity.
+     *
+     * @param outputFields the output fields
+     */
     public void setOutputFields(List<String> outputFields) {
         this.outputFields = outputFields;
     }
 
+    /**
+     * Returns the query filter expression.
+     *
+     * @return the query expression
+     */
     public String getExpr() {
         return expr;
     }
 
+    /**
+     * Sets the query filter expression.
+     *
+     * @param expr the query expression
+     */
     public void setExpr(String expr) {
         this.expr = expr;
     }
 
+    /**
+     * Returns the consistency level for the query.
+     *
+     * @return the consistency level
+     */
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
 
+    /**
+     * Sets the consistency level for the query.
+     *
+     * @param consistencyLevel the consistency level
+     */
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
 
+    /**
+     * Returns the offset of the first result to return.
+     *
+     * @return the offset
+     */
     public long getOffset() {
         return offset;
     }
 
+    /**
+     * Sets the offset of the first result to return.
+     *
+     * @param offset the offset
+     */
     public void setOffset(long offset) {
         this.offset = offset;
     }
 
+    /**
+     * Returns the maximum number of results to return.
+     *
+     * @return the limit value
+     */
     public long getLimit() {
         return limit;
     }
 
+    /**
+     * Sets the maximum number of results to return.
+     *
+     * @param limit the limit value
+     */
     public void setLimit(long limit) {
         this.limit = limit;
     }
 
+    /**
+     * Returns whether growing segments are ignored.
+     *
+     * @return {@code true} if growing segments are ignored
+     */
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
 
+    /**
+     * Sets whether growing segments are ignored.
+     *
+     * @param ignoreGrowing {@code true} if growing segments are ignored
+     */
     public void setIgnoreGrowing(boolean ignoreGrowing) {
         this.ignoreGrowing = ignoreGrowing;
     }
 
+    /**
+     * Returns the timezone used for timestamp fields in the query expression.
+     *
+     * @return the timezone
+     */
     public String getTimezone() {
         return timezone;
     }
 
+    /**
+     * Returns the number of results fetched per iterator batch.
+     *
+     * @return the batch size
+     */
     public long getBatchSize() {
         return batchSize;
     }
 
+    /**
+     * Sets the number of results fetched per iterator batch.
+     *
+     * @param batchSize the batch size
+     */
     public void setBatchSize(long batchSize) {
         this.batchSize = batchSize;
     }
 
+    /**
+     * Returns whether to stop reducing the query results to the best entities.
+     *
+     * @return {@code true} if stop-for-best is enabled
+     */
     public boolean isReduceStopForBest() {
         return reduceStopForBest;
     }
 
+    /**
+     * Sets whether to stop reducing the query results to the best entities.
+     *
+     * @param reduceStopForBest {@code true} if stop-for-best is enabled
+     */
     public void setReduceStopForBest(boolean reduceStopForBest) {
         this.reduceStopForBest = reduceStopForBest;
     }
 
+    /**
+     * Returns the expression template values used to improve expression parsing performance.
+     *
+     * @return the filter template values
+     */
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
 
+    /**
+     * Returns a previously captured cursor used to resume pagination from its position.
+     *
+     * @return the query iterator cursor
+     */
     public QueryIteratorCursor getCursor() {
         return cursor;
     }
 
+    /**
+     * Sets a previously captured cursor used to resume pagination from its position.
+     *
+     * @param cursor the query iterator cursor
+     */
     public void setCursor(QueryIteratorCursor cursor) {
         this.cursor = cursor;
     }
@@ -224,11 +362,23 @@ public class QueryIteratorReq {
         private Map<String, Object> filterTemplateValues = new HashMap<>();
         private QueryIteratorCursor cursor;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public QueryIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public QueryIteratorReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -244,66 +394,143 @@ public class QueryIteratorReq {
             return this;
         }
 
+        /**
+         * Sets the partition names to query.
+         *
+         * @param partitionNames the partition names
+         * @return this builder
+         */
         public QueryIteratorReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
+        /**
+         * Sets the fields to return for each queried entity.
+         *
+         * @param outputFields the output fields
+         * @return this builder
+         */
         public QueryIteratorReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
         }
 
+        /**
+         * Sets the query filter expression.
+         *
+         * @param expr the query expression
+         * @return this builder
+         */
         public QueryIteratorReqBuilder expr(String expr) {
             this.expr = expr;
             return this;
         }
 
+        /**
+         * Sets the consistency level for the query.
+         *
+         * @param consistencyLevel the consistency level
+         * @return this builder
+         */
         public QueryIteratorReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
+        /**
+         * Sets the offset of the first result to return.
+         *
+         * @param offset the offset
+         * @return this builder
+         */
         public QueryIteratorReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
         }
 
+        /**
+         * Sets the maximum number of results to return.
+         *
+         * @param limit the limit value
+         * @return this builder
+         */
         public QueryIteratorReqBuilder limit(long limit) {
             this.limit = limit;
             return this;
         }
 
+        /**
+         * Sets whether growing segments are ignored.
+         *
+         * @param ignoreGrowing {@code true} if growing segments are ignored
+         * @return this builder
+         */
         public QueryIteratorReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
 
+        /**
+         * Sets the timezone used for timestamp fields in the query expression.
+         *
+         * @param timezone the timezone
+         * @return this builder
+         */
         public QueryIteratorReqBuilder timezone(String timezone) {
             this.timezone = timezone;
             return this;
         }
 
+        /**
+         * Sets the number of results fetched per iterator batch.
+         *
+         * @param batchSize the batch size
+         * @return this builder
+         */
         public QueryIteratorReqBuilder batchSize(long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
 
+        /**
+         * Sets whether to stop reducing the query results to the best entities.
+         *
+         * @param reduceStopForBest {@code true} if stop-for-best is enabled
+         * @return this builder
+         */
         public QueryIteratorReqBuilder reduceStopForBest(boolean reduceStopForBest) {
             this.reduceStopForBest = reduceStopForBest;
             return this;
         }
 
+        /**
+         * Sets the expression template values used to improve expression parsing performance.
+         *
+         * @param filterTemplateValues the filter template values
+         * @return this builder
+         */
         public QueryIteratorReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
         }
 
+        /**
+         * Sets a previously captured cursor used to resume pagination from its position.
+         *
+         * @param cursor the query iterator cursor
+         * @return this builder
+         */
         public QueryIteratorReqBuilder cursor(QueryIteratorCursor cursor) {
             this.cursor = cursor;
             return this;
         }
 
+        /**
+         * Builds the {@link QueryIteratorReq}.
+         *
+         * @return the request
+         */
         public QueryIteratorReq build() {
             return new QueryIteratorReq(this);
         }

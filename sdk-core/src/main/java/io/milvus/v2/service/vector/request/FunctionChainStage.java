@@ -23,12 +23,33 @@ package io.milvus.v2.service.vector.request;
  * Execution stage where a {@link FunctionChain} runs.
  */
 public enum FunctionChainStage {
+    /**
+     * The stage is unspecified or not applicable.
+     */
     UNSPECIFIED(io.milvus.grpc.FunctionChainStage.FunctionChainStageUnspecified),
+    /**
+     * The ingestion stage, where the chain runs while data is ingested.
+     */
     INGESTION(io.milvus.grpc.FunctionChainStage.FunctionChainStageIngestion),
+    /**
+     * The pre-process stage, which runs before the search/rerank pipeline.
+     */
     PRE_PROCESS(io.milvus.grpc.FunctionChainStage.FunctionChainStagePreProcess),
+    /**
+     * The level-0 rerank stage.
+     */
     L0_RERANK(io.milvus.grpc.FunctionChainStage.FunctionChainStageL0Rerank),
+    /**
+     * The level-1 rerank stage.
+     */
     L1_RERANK(io.milvus.grpc.FunctionChainStage.FunctionChainStageL1Rerank),
+    /**
+     * The level-2 rerank stage.
+     */
     L2_RERANK(io.milvus.grpc.FunctionChainStage.FunctionChainStageL2Rerank),
+    /**
+     * The post-process stage, which runs after the search/rerank pipeline.
+     */
     POST_PROCESS(io.milvus.grpc.FunctionChainStage.FunctionChainStagePostProcess);
 
     private final io.milvus.grpc.FunctionChainStage grpcStage;
@@ -37,6 +58,11 @@ public enum FunctionChainStage {
         this.grpcStage = grpcStage;
     }
 
+    /**
+     * Returns the corresponding gRPC function-chain stage.
+     *
+     * @return the gRPC stage
+     */
     public io.milvus.grpc.FunctionChainStage toGrpc() {
         return grpcStage;
     }

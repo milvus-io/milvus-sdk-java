@@ -22,6 +22,9 @@ package io.milvus.v2.service.collection.request;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code alterCollectionField} API.
+ */
 public class AlterCollectionFieldReq {
     private String collectionName;
     private String fieldName;
@@ -37,30 +40,65 @@ public class AlterCollectionFieldReq {
         }
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the name of the field to alter.
+     *
+     * @return the field name
+     */
     public String getFieldName() {
         return fieldName;
     }
 
+    /**
+     * Sets the name of the field to alter.
+     *
+     * @param fieldName the field name
+     */
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the properties to alter on the field.
+     *
+     * @return the field properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -75,6 +113,11 @@ public class AlterCollectionFieldReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AlterCollectionFieldReq}.
+     *
+     * @return the builder
+     */
     public static AlterCollectionFieldReqBuilder builder() {
         return new AlterCollectionFieldReqBuilder();
     }
@@ -88,26 +131,57 @@ public class AlterCollectionFieldReq {
         private AlterCollectionFieldReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AlterCollectionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the name of the field to alter.
+         *
+         * @param fieldName the field name
+         * @return this builder
+         */
         public AlterCollectionFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AlterCollectionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the properties to alter on the field.
+         *
+         * @param properties the field properties
+         * @return this builder
+         */
         public AlterCollectionFieldReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
+        /**
+         * Adds a single property to alter on the field.
+         *
+         * @param key the property key
+         * @param value the property value
+         * @return this builder
+         */
         public AlterCollectionFieldReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -116,6 +190,11 @@ public class AlterCollectionFieldReq {
             return this;
         }
 
+        /**
+         * Builds an {@link AlterCollectionFieldReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public AlterCollectionFieldReq build() {
             return new AlterCollectionFieldReq(this);
         }

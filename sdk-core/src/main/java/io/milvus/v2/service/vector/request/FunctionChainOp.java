@@ -37,8 +37,17 @@ import java.util.Map;
  * expressible.
  */
 public class FunctionChainOp {
+    /**
+     * The {@code map} operation, which computes a new output column from an expression.
+     */
     public static final String OP_MAP = "map";
+    /**
+     * The {@code sort} operation, which sorts the results by the given columns.
+     */
     public static final String OP_SORT = "sort";
+    /**
+     * The {@code limit} operation, which keeps only a subset of the results.
+     */
     public static final String OP_LIMIT = "limit";
 
     private final String op;
@@ -55,30 +64,65 @@ public class FunctionChainOp {
         this.params = new LinkedHashMap<>(builder.params);
     }
 
+    /**
+     * Creates a new builder for {@link FunctionChainOp}.
+     *
+     * @return a new builder
+     */
     public static FunctionChainOpBuilder builder() {
         return new FunctionChainOpBuilder();
     }
 
+    /**
+     * Returns the server-recognized operation name of this operation.
+     *
+     * @return the operation name
+     */
     public String getOp() {
         return op;
     }
 
+    /**
+     * Returns the expression of this operation, if it is an expression-based operation.
+     *
+     * @return the expression, or {@code null} if the operation has no expression
+     */
     public FunctionChainExpr getExpr() {
         return expr;
     }
 
+    /**
+     * Returns the input columns consumed by this operation.
+     *
+     * @return the input columns
+     */
     public List<String> getInputs() {
         return inputs;
     }
 
+    /**
+     * Returns the output columns produced by this operation.
+     *
+     * @return the output columns
+     */
     public List<String> getOutputs() {
         return outputs;
     }
 
+    /**
+     * Returns the parameters of this operation keyed by parameter name.
+     *
+     * @return the operation parameters
+     */
     public Map<String, FunctionParamValue> getParams() {
         return params;
     }
 
+    /**
+     * Converts this operation into the gRPC {@code FunctionChainOp} message.
+     *
+     * @return the gRPC operation
+     */
     public io.milvus.grpc.FunctionChainOp toGrpc() {
         io.milvus.grpc.FunctionChainOp.Builder builder = io.milvus.grpc.FunctionChainOp.newBuilder().setOp(op);
         if (expr != null) {
@@ -134,6 +178,9 @@ public class FunctionChainOp {
         return builder().op(OP_LIMIT).params(params).build();
     }
 
+    /**
+     * Builder for {@link FunctionChainOp}.
+     */
     public static class FunctionChainOpBuilder {
         private String op;
         private FunctionChainExpr expr;
@@ -144,16 +191,36 @@ public class FunctionChainOp {
         private FunctionChainOpBuilder() {
         }
 
+        /**
+         * Sets the server-recognized operation name, for example {@code map}, {@code sort},
+         * or {@code limit}.
+         *
+         * @param op the operation name
+         * @return this builder
+         */
         public FunctionChainOpBuilder op(String op) {
             this.op = op;
             return this;
         }
 
+        /**
+         * Sets the expression evaluated by this operation.
+         *
+         * @param expr the expression
+         * @return this builder
+         */
         public FunctionChainOpBuilder expr(FunctionChainExpr expr) {
             this.expr = expr;
             return this;
         }
 
+        /**
+         * Replaces the input columns consumed by this operation.
+         *
+         * @param inputs the input columns
+         * @return this builder
+         * @throws MilvusClientException if the input list is {@code null}
+         */
         public FunctionChainOpBuilder inputs(List<String> inputs) {
             if (inputs == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -164,6 +231,13 @@ public class FunctionChainOp {
             return this;
         }
 
+        /**
+         * Replaces the output columns produced by this operation.
+         *
+         * @param outputs the output columns
+         * @return this builder
+         * @throws MilvusClientException if the output list is {@code null}
+         */
         public FunctionChainOpBuilder outputs(List<String> outputs) {
             if (outputs == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -174,6 +248,13 @@ public class FunctionChainOp {
             return this;
         }
 
+        /**
+         * Replaces the parameters of this operation keyed by parameter name.
+         *
+         * @param params the operation parameters
+         * @return this builder
+         * @throws MilvusClientException if the parameters map is {@code null}
+         */
         public FunctionChainOpBuilder params(Map<String, FunctionParamValue> params) {
             if (params == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -184,6 +265,12 @@ public class FunctionChainOp {
             return this;
         }
 
+        /**
+         * Builds the {@link FunctionChainOp}.
+         *
+         * @return the built operation
+         * @throws MilvusClientException if the operation name is empty
+         */
         public FunctionChainOp build() {
             if (op == null || op.isEmpty()) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,

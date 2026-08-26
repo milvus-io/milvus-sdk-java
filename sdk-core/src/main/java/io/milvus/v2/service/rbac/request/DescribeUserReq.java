@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code describeUser} API.
+ */
 public class DescribeUserReq {
     private String userName;
 
@@ -26,10 +29,20 @@ public class DescribeUserReq {
         this.userName = builder.userName;
     }
 
+    /**
+     * Returns the user name.
+     *
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Sets the user name.
+     *
+     * @param userName the user name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -41,6 +54,11 @@ public class DescribeUserReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DescribeUserReq}.
+     *
+     * @return a new {@link DescribeUserReqBuilder}
+     */
     public static DescribeUserReqBuilder builder() {
         return new DescribeUserReqBuilder();
     }
@@ -51,11 +69,22 @@ public class DescribeUserReq {
         private DescribeUserReqBuilder() {
         }
 
+        /**
+         * Sets the user name.
+         *
+         * @param userName the user name
+         * @return this builder
+         */
         public DescribeUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
+        /**
+         * Builds the {@link DescribeUserReq}.
+         *
+         * @return the built request
+         */
         public DescribeUserReq build() {
             return new DescribeUserReq(this);
         }

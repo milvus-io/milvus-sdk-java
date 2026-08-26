@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code flushAll} API.
+ */
 public class FlushAllReq {
     private String databaseName;
     private Long waitFlushedTimeoutMs;
@@ -32,18 +35,38 @@ public class FlushAllReq {
         return new FlushAllReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the timeout (in milliseconds) to wait for the flush to complete.
+     *
+     * @return the timeout in milliseconds
+     */
     public Long getWaitFlushedTimeoutMs() {
         return waitFlushedTimeoutMs;
     }
 
+    /**
+     * Sets the timeout (in milliseconds) to wait for the flush to complete.
+     *
+     * @param waitFlushedTimeoutMs the timeout in milliseconds
+     */
     public void setWaitFlushedTimeoutMs(Long waitFlushedTimeoutMs) {
         this.waitFlushedTimeoutMs = waitFlushedTimeoutMs;
     }
@@ -60,16 +83,33 @@ public class FlushAllReq {
         private String databaseName;
         private Long waitFlushedTimeoutMs = 0L;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public FlushAllReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the timeout (in milliseconds) to wait for the flush to complete.
+         *
+         * @param waitFlushedTimeoutMs the timeout in milliseconds
+         * @return this builder
+         */
         public FlushAllReqBuilder waitFlushedTimeoutMs(Long waitFlushedTimeoutMs) {
             this.waitFlushedTimeoutMs = waitFlushedTimeoutMs;
             return this;
         }
 
+        /**
+         * Builds the {@code FlushAllReq}.
+         *
+         * @return the constructed {@code FlushAllReq}
+         */
         public FlushAllReq build() {
             return new FlushAllReq(this);
         }
