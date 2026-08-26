@@ -22,6 +22,9 @@ package io.milvus.v2.service.database.request;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code createDatabase} API.
+ */
 public class CreateDatabaseReq {
     private String databaseName;
     private Map<String, String> properties;
@@ -31,18 +34,38 @@ public class CreateDatabaseReq {
         this.properties = builder.properties;
     }
 
+    /**
+     * Returns the name of the database.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the name of the database.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the properties of the database.
+     *
+     * @return the database properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
 
+    /**
+     * Sets the properties of the database.
+     *
+     * @param properties the database properties
+     */
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -55,6 +78,11 @@ public class CreateDatabaseReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link CreateDatabaseReq}.
+     *
+     * @return a new {@link CreateDatabaseReqBuilder}
+     */
     public static CreateDatabaseReqBuilder builder() {
         return new CreateDatabaseReqBuilder();
     }
@@ -66,16 +94,33 @@ public class CreateDatabaseReq {
         private CreateDatabaseReqBuilder() {
         }
 
+        /**
+         * Sets the name of the database.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public CreateDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the properties of the database.
+         *
+         * @param properties the database properties
+         * @return this builder
+         */
         public CreateDatabaseReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
+        /**
+         * Builds the {@link CreateDatabaseReq}.
+         *
+         * @return the built request
+         */
         public CreateDatabaseReq build() {
             return new CreateDatabaseReq(this);
         }

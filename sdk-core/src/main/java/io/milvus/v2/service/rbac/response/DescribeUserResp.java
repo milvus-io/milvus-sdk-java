@@ -22,6 +22,9 @@ package io.milvus.v2.service.rbac.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code describeUser} API.
+ */
 public class DescribeUserResp {
     private String userName;
     private List<String> roles;
@@ -33,26 +36,56 @@ public class DescribeUserResp {
         this.description = builder.description;
     }
 
+    /**
+     * Returns the user name.
+     *
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Sets the user name.
+     *
+     * @param userName the user name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Returns the roles granted to the user.
+     *
+     * @return the roles of the user
+     */
     public List<String> getRoles() {
         return roles;
     }
 
+    /**
+     * Sets the roles granted to the user.
+     *
+     * @param roles the roles of the user
+     */
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
 
+    /**
+     * Returns the description of the user.
+     *
+     * @return the user description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the user.
+     *
+     * @param description the user description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
@@ -66,6 +99,11 @@ public class DescribeUserResp {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DescribeUserResp}.
+     *
+     * @return a new {@link DescribeUserRespBuilder}
+     */
     public static DescribeUserRespBuilder builder() {
         return new DescribeUserRespBuilder();
     }
@@ -78,21 +116,44 @@ public class DescribeUserResp {
         private DescribeUserRespBuilder() {
         }
 
+        /**
+         * Sets the user name.
+         *
+         * @param userName the user name
+         * @return this builder
+         */
         public DescribeUserRespBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
+        /**
+         * Sets the roles granted to the user.
+         *
+         * @param roles the roles of the user
+         * @return this builder
+         */
         public DescribeUserRespBuilder roles(List<String> roles) {
             this.roles = roles;
             return this;
         }
 
+        /**
+         * Sets the description of the user.
+         *
+         * @param description the user description
+         * @return this builder
+         */
         public DescribeUserRespBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Builds the {@link DescribeUserResp}.
+         *
+         * @return the built response
+         */
         public DescribeUserResp build() {
             return new DescribeUserResp(this);
         }

@@ -22,6 +22,10 @@ package io.milvus.v2.service.cdc.response;
 import java.util.Collections;
 import java.util.Iterator;
 
+/**
+ * Response returned by the {@code dumpMessages} CDC API, exposing the dumped messages as an
+ * iterable stream.
+ */
 public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
     private final Iterable<DumpMessageInfo> messages;
 
@@ -29,14 +33,29 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
         this.messages = builder.messages != null ? builder.messages : Collections.emptyList();
     }
 
+    /**
+     * Creates a new {@code DumpMessagesResp} builder.
+     *
+     * @return the builder
+     */
     public static DumpMessagesRespBuilder builder() {
         return new DumpMessagesRespBuilder();
     }
 
+    /**
+     * Returns the dumped messages.
+     *
+     * @return the dumped messages
+     */
     public Iterable<DumpMessageInfo> getMessages() {
         return messages;
     }
 
+    /**
+     * Returns an iterator over the dumped messages.
+     *
+     * @return an iterator over the dumped messages
+     */
     @Override
     public Iterator<DumpMessageInfo> iterator() {
         return messages.iterator();
@@ -50,11 +69,22 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
     public static class DumpMessagesRespBuilder {
         private Iterable<DumpMessageInfo> messages;
 
+        /**
+         * Sets the dumped messages.
+         *
+         * @param messages the dumped messages
+         * @return this builder
+         */
         public DumpMessagesRespBuilder messages(Iterable<DumpMessageInfo> messages) {
             this.messages = messages;
             return this;
         }
 
+        /**
+         * Builds the {@link DumpMessagesResp}.
+         *
+         * @return the response
+         */
         public DumpMessagesResp build() {
             return new DumpMessagesResp(this);
         }

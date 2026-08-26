@@ -19,12 +19,25 @@
 
 package io.milvus.bulkwriter.request.volume;
 
+/**
+ * Request parameters for describing a cloud storage volume.
+ *
+ * <p>It identifies the volume to describe through its volume name.</p>
+ */
 public class DescribeVolumeRequest {
     private String volumeName;
 
+    /**
+     * Constructs an empty {@code DescribeVolumeRequest}.
+     */
     public DescribeVolumeRequest() {
     }
 
+    /**
+     * Constructs a {@code DescribeVolumeRequest} with the given volume name.
+     *
+     * @param volumeName the name of the volume to describe
+     */
     public DescribeVolumeRequest(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -33,10 +46,20 @@ public class DescribeVolumeRequest {
         this.volumeName = builder.volumeName;
     }
 
+    /**
+     * Returns the name of the volume to describe.
+     *
+     * @return the volume name
+     */
     public String getVolumeName() {
         return volumeName;
     }
 
+    /**
+     * Sets the name of the volume to describe.
+     *
+     * @param volumeName the volume name
+     */
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -48,10 +71,18 @@ public class DescribeVolumeRequest {
                 '}';
     }
 
+    /**
+     * Returns a new builder for a {@link DescribeVolumeRequest}.
+     *
+     * @return a {@code DescribeVolumeRequest} builder
+     */
     public static DescribeVolumeRequestBuilder builder() {
         return new DescribeVolumeRequestBuilder();
     }
 
+    /**
+     * Builder for {@link DescribeVolumeRequest}.
+     */
     public static class DescribeVolumeRequestBuilder {
         private String volumeName;
 
@@ -59,11 +90,22 @@ public class DescribeVolumeRequest {
             this.volumeName = "";
         }
 
+        /**
+         * Sets the name of the volume to describe.
+         *
+         * @param volumeName the volume name
+         * @return this builder
+         */
         public DescribeVolumeRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
         }
 
+        /**
+         * Builds the {@link DescribeVolumeRequest} instance.
+         *
+         * @return the built {@code DescribeVolumeRequest}
+         */
         public DescribeVolumeRequest build() {
             return new DescribeVolumeRequest(this);
         }

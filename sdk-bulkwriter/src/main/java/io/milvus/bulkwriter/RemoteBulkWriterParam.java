@@ -50,26 +50,56 @@ public class RemoteBulkWriterParam {
         this.config = builder.config;
     }
 
+    /**
+    * Returns the collection schema.
+    *
+    * @return the collection schema
+    */
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
 
+    /**
+    * Returns the cloud storage connection parameters.
+    *
+    * @return the cloud storage connection parameters
+    */
     public StorageConnectParam getConnectParam() {
         return connectParam;
     }
 
+    /**
+    * Returns the remote path where data files are uploaded.
+    *
+    * @return the remote path where data files are uploaded
+    */
     public String getRemotePath() {
         return remotePath;
     }
 
+    /**
+    * Returns the chunk size threshold in bytes.
+    *
+    * @return the chunk size threshold in bytes
+    */
     public long getChunkSize() {
         return chunkSize;
     }
 
+    /**
+    * Returns the bulk data file type.
+    *
+    * @return the bulk data file type
+    */
     public BulkFileType getFileType() {
         return fileType;
     }
 
+    /**
+    * Returns the writer configuration map.
+    *
+    * @return the writer configuration map
+    */
     public Map<String, Object> getConfig() {
         return config;
     }
@@ -124,6 +154,12 @@ public class RemoteBulkWriterParam {
             return this;
         }
 
+        /**
+        * Sets the cloud storage connection parameters.
+        *
+        * @param c the cloud storage connection parameters
+        * @return this builder
+        */
         public Builder withConnectParam(StorageConnectParam connectParam) {
             this.connectParam = connectParam;
             return this;
@@ -135,21 +171,46 @@ public class RemoteBulkWriterParam {
          * @param remotePath remote path
          * @return <code>Builder</code>
          */
+        /**
+        * Sets the remote path where data files are uploaded.
+        *
+        * @param r the remote path where data files are uploaded
+        * @return this builder
+        */
         public Builder withRemotePath(String remotePath) {
             this.remotePath = remotePath;
             return this;
         }
 
+        /**
+        * Sets the chunk size threshold in bytes.
+        *
+        * @param c the chunk size threshold in bytes
+        * @return this builder
+        */
         public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
         }
 
+        /**
+        * Sets the bulk data file type.
+        *
+        * @param f the bulk data file type
+        * @return this builder
+        */
         public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
         }
 
+        /**
+        * Sets a writer configuration entry.
+        *
+        * @param key a writer configuration entry
+        * @param val the value
+        * @return this builder
+        */
         public Builder withConfig(String key, Object val) {
             this.config.put(key, val);
             return this;

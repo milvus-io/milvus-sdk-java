@@ -22,6 +22,9 @@ package io.milvus.v2.service.cdc.response;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * A single dumped message returned by the {@code dumpMessages} API.
+ */
 public class DumpMessageInfo {
     private final GetReplicateInfoResp.MessageID messageID;
     private final byte[] payload;
@@ -33,18 +36,38 @@ public class DumpMessageInfo {
         this.properties = builder.properties != null ? builder.properties : Collections.emptyMap();
     }
 
+    /**
+     * Creates a new {@code DumpMessageInfo} builder.
+     *
+     * @return the builder
+     */
     public static DumpMessageInfoBuilder builder() {
         return new DumpMessageInfoBuilder();
     }
 
+    /**
+     * Returns the ID of the dumped message.
+     *
+     * @return the message ID
+     */
     public GetReplicateInfoResp.MessageID getMessageID() {
         return messageID;
     }
 
+    /**
+     * Returns the raw payload of the dumped message.
+     *
+     * @return the message payload
+     */
     public byte[] getPayload() {
         return payload;
     }
 
+    /**
+     * Returns the properties of the dumped message.
+     *
+     * @return the message properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -58,26 +81,52 @@ public class DumpMessageInfo {
                 '}';
     }
 
+    /**
+     * Builder for {@link DumpMessageInfo}.
+     */
     public static class DumpMessageInfoBuilder {
         private GetReplicateInfoResp.MessageID messageID;
         private byte[] payload;
         private Map<String, String> properties;
 
+        /**
+         * Sets the ID of the dumped message.
+         *
+         * @param messageID the message ID
+         * @return this builder
+         */
         public DumpMessageInfoBuilder messageID(GetReplicateInfoResp.MessageID messageID) {
             this.messageID = messageID;
             return this;
         }
 
+        /**
+         * Sets the raw payload of the dumped message.
+         *
+         * @param payload the message payload
+         * @return this builder
+         */
         public DumpMessageInfoBuilder payload(byte[] payload) {
             this.payload = payload;
             return this;
         }
 
+        /**
+         * Sets the properties of the dumped message.
+         *
+         * @param properties the message properties
+         * @return this builder
+         */
         public DumpMessageInfoBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
+        /**
+         * Builds the {@link DumpMessageInfo}.
+         *
+         * @return the dumped message
+         */
         public DumpMessageInfo build() {
             return new DumpMessageInfo(this);
         }

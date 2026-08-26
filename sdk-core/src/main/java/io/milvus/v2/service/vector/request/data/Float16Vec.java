@@ -25,13 +25,27 @@ import io.milvus.grpc.PlaceholderType;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+/**
+ * A float16 vector used in search and insert requests, stored in half-precision so that
+ * each two bytes represent one dimension of the vector.
+ */
 public class Float16Vec implements BaseVector {
     private final ByteBuffer data;
 
+    /**
+     * Constructs a float16 vector from a {@link ByteBuffer}.
+     *
+     * @param data the float16 vector data
+     */
     public Float16Vec(ByteBuffer data) {
         this.data = data;
     }
 
+    /**
+     * Constructs a float16 vector from a byte array.
+     *
+     * @param data the float16 vector data
+     */
     public Float16Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }
@@ -46,11 +60,21 @@ public class Float16Vec implements BaseVector {
         this.data = Float16Utils.f32VectorToFp16Buffer(data);
     }
 
+    /**
+     * Returns the placeholder type of a float16 vector.
+     *
+     * @return the {@link PlaceholderType#Float16Vector} placeholder type
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.Float16Vector;
     }
 
+    /**
+     * Returns the float16 vector data.
+     *
+     * @return the vector data as a {@link ByteBuffer}
+     */
     @Override
     public Object getData() {
         return this.data;

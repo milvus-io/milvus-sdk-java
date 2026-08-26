@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code hasCollection} API.
+ */
 public class HasCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -28,18 +31,38 @@ public class HasCollectionReq {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -52,6 +75,11 @@ public class HasCollectionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link HasCollectionReq}.
+     *
+     * @return the builder
+     */
     public static HasCollectionReqBuilder builder() {
         return new HasCollectionReqBuilder();
     }
@@ -63,16 +91,33 @@ public class HasCollectionReq {
         private HasCollectionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public HasCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public HasCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds a {@link HasCollectionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public HasCollectionReq build() {
             return new HasCollectionReq(this);
         }

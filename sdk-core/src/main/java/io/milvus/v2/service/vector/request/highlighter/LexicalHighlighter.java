@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A lexical highlighter used by the {@code search} API to highlight the terms of the
+ * search query that match the returned text fields, based on lexical (BM25) matching.
+ */
 public class LexicalHighlighter implements Highlighter {
     private final List<HighlightQuery> highlightQueries;
     private final Boolean highlightSearchText;
@@ -34,6 +38,11 @@ public class LexicalHighlighter implements Highlighter {
     private final Integer fragmentSize;
     private final Integer numOfFragments;
 
+    /**
+     * Constructs a {@link LexicalHighlighter} from the given builder.
+     *
+     * @param builder the builder holding the highlighter settings
+     */
     public LexicalHighlighter(LexicalHighlighterBuilder builder) {
         this.highlightQueries = builder.highlightQueries;
         this.highlightSearchText = builder.highlightSearchText;
@@ -44,11 +53,21 @@ public class LexicalHighlighter implements Highlighter {
         this.numOfFragments = builder.numOfFragments;
     }
 
+    /**
+     * Returns the highlight type name, {@code Lexical}.
+     *
+     * @return the highlight type name
+     */
     @Override
     public String highlightType() {
         return "Lexical";
     }
 
+    /**
+     * Returns the lexical highlight parameters as a map of parameter name to value.
+     *
+     * @return the highlight parameters
+     */
     @Override
     public Map<String, String> getParams() {
         Map<String, String> params = new java.util.HashMap<>();
@@ -77,11 +96,31 @@ public class LexicalHighlighter implements Highlighter {
         return params;
     }
 
+    /**
+     * A single highlight query that specifies the field to highlight and the query text
+     * used to match the highlighted terms.
+     */
     public static class HighlightQuery {
+        /**
+         * The query type, for example {@code match} or {@code match_phrase}.
+         */
         public String type;
+        /**
+         * The name of the field to highlight.
+         */
         public String field;
+        /**
+         * The query text used for matching.
+         */
         public String text;
 
+        /**
+         * Constructs a highlight query.
+         *
+         * @param type  the query type
+         * @param field the field to highlight
+         * @param query the query text
+         */
         public HighlightQuery(String type, String field, String query) {
             this.type = type;
             this.field = field;
@@ -94,6 +133,9 @@ public class LexicalHighlighter implements Highlighter {
         }
     }
 
+    /**
+     * Builder for {@link LexicalHighlighter}.
+     */
     public static class LexicalHighlighterBuilder {
         private List<HighlightQuery> highlightQueries;
         private Boolean highlightSearchText;
@@ -106,64 +148,134 @@ public class LexicalHighlighter implements Highlighter {
         public LexicalHighlighterBuilder() {
         }
 
+        /**
+         * Sets the highlight queries used to highlight the matched terms.
+         *
+         * @param queries the highlight queries
+         * @return this builder
+         */
         public LexicalHighlighterBuilder highlightQueries(List<HighlightQuery> queries) {
             this.highlightQueries = queries;
             return this;
         }
 
+        /**
+         * Adds a single highlight query to the highlighter.
+         *
+         * @param q the highlight query
+         * @return this builder
+         */
         public LexicalHighlighterBuilder addHighlightQuery(HighlightQuery q) {
             if (this.highlightQueries == null) this.highlightQueries = new ArrayList<>();
             this.highlightQueries.add(q);
             return this;
         }
 
+        /**
+         * Sets whether the original search text should also be highlighted.
+         *
+         * @param highlightSearchText {@code true} to highlight the search text
+         * @return this builder
+         */
         public LexicalHighlighterBuilder highlightSearchText(Boolean highlightSearchText) {
             this.highlightSearchText = highlightSearchText;
             return this;
         }
 
+        /**
+         * Sets the tags prepended to the highlighted terms.
+         *
+         * @param preTags the pre-tags
+         * @return this builder
+         */
         public LexicalHighlighterBuilder preTags(List<String> preTags) {
             this.preTags = preTags;
             return this;
         }
 
+        /**
+         * Adds a single pre-tag to the highlighter.
+         *
+         * @param tag the pre-tag
+         * @return this builder
+         */
         public LexicalHighlighterBuilder addPreTag(String tag) {
             if (this.preTags == null) this.preTags = new ArrayList<>();
             this.preTags.add(tag);
             return this;
         }
 
+        /**
+         * Sets the tags appended to the highlighted terms.
+         *
+         * @param postTags the post-tags
+         * @return this builder
+         */
         public LexicalHighlighterBuilder postTags(List<String> postTags) {
             this.postTags = postTags;
             return this;
         }
 
+        /**
+         * Adds a single post-tag to the highlighter.
+         *
+         * @param tag the post-tag
+         * @return this builder
+         */
         public LexicalHighlighterBuilder addPostTag(String tag) {
             if (this.postTags == null) this.postTags = new ArrayList<>();
             this.postTags.add(tag);
             return this;
         }
 
+        /**
+         * Sets the offset at which a highlighted fragment starts.
+         *
+         * @param offset the fragment offset
+         * @return this builder
+         */
         public LexicalHighlighterBuilder fragmentOffset(Integer offset) {
             this.fragmentOffset = offset;
             return this;
         }
 
+        /**
+         * Sets the size of each highlighted fragment.
+         *
+         * @param size the fragment size
+         * @return this builder
+         */
         public LexicalHighlighterBuilder fragmentSize(Integer size) {
             this.fragmentSize = size;
             return this;
         }
 
+        /**
+         * Sets the number of fragments to return per field.
+         *
+         * @param num the number of fragments
+         * @return this builder
+         */
         public LexicalHighlighterBuilder numOfFragments(Integer num) {
             this.numOfFragments = num;
             return this;
         }
 
+        /**
+         * Builds the {@link LexicalHighlighter}.
+         *
+         * @return the built highlighter
+         */
         public LexicalHighlighter build() {
             return new LexicalHighlighter(this);
         }
     }
 
+    /**
+     * Creates a new builder for {@link LexicalHighlighter}.
+     *
+     * @return a new builder
+     */
     public static LexicalHighlighterBuilder builder() {
         return new LexicalHighlighterBuilder();
     }

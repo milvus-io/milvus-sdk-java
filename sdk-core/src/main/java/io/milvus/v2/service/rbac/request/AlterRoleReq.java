@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code alterRole} API.
+ */
 public class AlterRoleReq {
     private String roleName;
     private String description;
@@ -28,18 +31,38 @@ public class AlterRoleReq {
         this.description = builder.description;
     }
 
+    /**
+     * Returns the role name.
+     *
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Sets the role name.
+     *
+     * @param roleName the role name
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
 
+    /**
+     * Returns the description of the role.
+     *
+     * @return the role description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the role.
+     *
+     * @param description the role description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
@@ -52,6 +75,11 @@ public class AlterRoleReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AlterRoleReq}.
+     *
+     * @return a new {@link AlterRoleReqBuilder}
+     */
     public static AlterRoleReqBuilder builder() {
         return new AlterRoleReqBuilder();
     }
@@ -63,16 +91,33 @@ public class AlterRoleReq {
         private AlterRoleReqBuilder() {
         }
 
+        /**
+         * Sets the role name.
+         *
+         * @param roleName the role name
+         * @return this builder
+         */
         public AlterRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
+        /**
+         * Sets the description of the role.
+         *
+         * @param description the role description
+         * @return this builder
+         */
         public AlterRoleReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Builds the {@link AlterRoleReq}.
+         *
+         * @return the built request
+         */
         public AlterRoleReq build() {
             return new AlterRoleReq(this);
         }

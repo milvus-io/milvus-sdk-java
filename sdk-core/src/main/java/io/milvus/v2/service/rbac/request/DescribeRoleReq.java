@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code describeRole} API.
+ */
 public class DescribeRoleReq {
     private String roleName;
     private String dbName;
@@ -28,18 +31,38 @@ public class DescribeRoleReq {
         this.dbName = builder.dbName;
     }
 
+    /**
+     * Returns the role name.
+     *
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Sets the role name.
+     *
+     * @param roleName the role name
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
 
+    /**
+     * Returns the name of the database that the role applies to.
+     *
+     * @return the database name
+     */
     public String getDbName() {
         return dbName;
     }
 
+    /**
+     * Sets the name of the database that the role applies to.
+     *
+     * @param dbName the database name
+     */
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -52,6 +75,11 @@ public class DescribeRoleReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DescribeRoleReq}.
+     *
+     * @return a new {@link DescribeRoleReqBuilder}
+     */
     public static DescribeRoleReqBuilder builder() {
         return new DescribeRoleReqBuilder();
     }
@@ -63,16 +91,33 @@ public class DescribeRoleReq {
         private DescribeRoleReqBuilder() {
         }
 
+        /**
+         * Sets the role name.
+         *
+         * @param roleName the role name
+         * @return this builder
+         */
         public DescribeRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
+        /**
+         * Sets the name of the database that the role applies to.
+         *
+         * @param dbName the database name
+         * @return this builder
+         */
         public DescribeRoleReqBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
 
+        /**
+         * Builds the {@link DescribeRoleReq}.
+         *
+         * @return the built request
+         */
         public DescribeRoleReq build() {
             return new DescribeRoleReq(this);
         }

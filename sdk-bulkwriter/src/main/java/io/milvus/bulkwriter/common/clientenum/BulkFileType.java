@@ -19,9 +19,16 @@
 
 package io.milvus.bulkwriter.common.clientenum;
 
+/**
+ * The bulk data file types supported by the Milvus BulkWriter, together with their numeric codes and
+ * file name suffixes.
+ */
 public enum BulkFileType {
+    /** Parquet bulk file. */
     PARQUET(1, ".parquet"),
+    /** JSON bulk file. */
     JSON(2, ".json"),
+    /** CSV bulk file. */
     CSV(3, ".csv"),
     ;
 
@@ -33,10 +40,20 @@ public enum BulkFileType {
         this.suffix = suffix;
     }
 
+    /**
+     * Returns the numeric code of this bulk file type.
+     *
+     * @return the bulk file type code
+     */
     public Integer getCode() {
         return code;
     }
 
+    /**
+     * Returns the file name suffix of this bulk file type.
+     *
+     * @return the file name suffix
+     */
     public String getSuffix() {
         return suffix;
     }

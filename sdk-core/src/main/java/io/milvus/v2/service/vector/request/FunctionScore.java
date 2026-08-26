@@ -26,6 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A function score definition used by the {@code search} API to re-rank or modify the
+ * scores of search results, combining one or more collection functions with a set of
+ * parameters.
+ */
 public class FunctionScore {
     private List<CreateCollectionReq.Function> functions;
     private Map<String, String> params;
@@ -37,24 +42,49 @@ public class FunctionScore {
     }
 
     // Static method to create builder
+    /**
+     * Creates a new builder for {@link FunctionScore}.
+     *
+     * @return a new builder
+     */
     public static FunctionScoreBuilder builder() {
         return new FunctionScoreBuilder();
     }
 
     // Getter methods
+    /**
+     * Returns the functions used by this function score.
+     *
+     * @return the functions
+     */
     public List<CreateCollectionReq.Function> getFunctions() {
         return functions;
     }
 
+    /**
+     * Returns the parameters of this function score.
+     *
+     * @return the parameters
+     */
     public Map<String, String> getParams() {
         return params;
     }
 
     // Setter methods
+    /**
+     * Sets the functions used by this function score.
+     *
+     * @param functions the functions
+     */
     public void setFunctions(List<CreateCollectionReq.Function> functions) {
         this.functions = functions;
     }
 
+    /**
+     * Sets the parameters of this function score.
+     *
+     * @param params the parameters
+     */
     public void setParams(Map<String, String> params) {
         this.params = params;
     }
@@ -68,6 +98,9 @@ public class FunctionScore {
     }
 
     // Builder class
+    /**
+     * Builder for {@link FunctionScore}.
+     */
     public static class FunctionScoreBuilder {
         private List<CreateCollectionReq.Function> functions;
         private Map<String, String> params;
@@ -77,16 +110,34 @@ public class FunctionScore {
             this.params = new HashMap<>();
         }
 
+        /**
+         * Sets the functions used by this function score.
+         *
+         * @param functions the functions
+         * @return this builder
+         */
         public FunctionScoreBuilder functions(List<CreateCollectionReq.Function> functions) {
             this.functions = functions;
             return this;
         }
 
+        /**
+         * Sets the parameters of this function score.
+         *
+         * @param params the parameters
+         * @return this builder
+         */
         public FunctionScoreBuilder params(Map<String, String> params) {
             this.params = params;
             return this;
         }
 
+        /**
+         * Adds a single function to this function score.
+         *
+         * @param func the function to add
+         * @return this builder
+         */
         public FunctionScoreBuilder addFunction(CreateCollectionReq.Function func) {
             if (this.functions == null) {
                 this.functions = new ArrayList<>();
@@ -95,6 +146,11 @@ public class FunctionScore {
             return this;
         }
 
+        /**
+         * Builds the {@link FunctionScore}.
+         *
+         * @return the built function score
+         */
         public FunctionScore build() {
             return new FunctionScore(this);
         }

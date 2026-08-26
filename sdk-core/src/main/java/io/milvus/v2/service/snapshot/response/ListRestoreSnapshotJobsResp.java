@@ -22,6 +22,9 @@ package io.milvus.v2.service.snapshot.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code listRestoreSnapshotJobs} API.
+ */
 public class ListRestoreSnapshotJobsResp {
     private List<RestoreSnapshotJobInfo> jobs;
 
@@ -33,10 +36,20 @@ public class ListRestoreSnapshotJobsResp {
         return new ListRestoreSnapshotJobsRespBuilder();
     }
 
+    /**
+     * Returns the list of restore snapshot jobs.
+     *
+     * @return the list of restore snapshot jobs
+     */
     public List<RestoreSnapshotJobInfo> getJobs() {
         return jobs;
     }
 
+    /**
+     * Sets the list of restore snapshot jobs.
+     *
+     * @param jobs the list of restore snapshot jobs
+     */
     public void setJobs(List<RestoreSnapshotJobInfo> jobs) {
         this.jobs = jobs;
     }
@@ -51,11 +64,22 @@ public class ListRestoreSnapshotJobsResp {
     public static class ListRestoreSnapshotJobsRespBuilder {
         private List<RestoreSnapshotJobInfo> jobs = new ArrayList<>();
 
+        /**
+         * Sets the list of restore snapshot jobs.
+         *
+         * @param jobs the list of restore snapshot jobs
+         * @return this builder
+         */
         public ListRestoreSnapshotJobsRespBuilder jobs(List<RestoreSnapshotJobInfo> jobs) {
             this.jobs = jobs;
             return this;
         }
 
+        /**
+         * Builds a {@link ListRestoreSnapshotJobsResp}.
+         *
+         * @return the built response
+         */
         public ListRestoreSnapshotJobsResp build() {
             return new ListRestoreSnapshotJobsResp(this);
         }

@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.response;
 
+/**
+ * Response returned by the {@code refreshExternalCollection} API.
+ */
 public class RefreshExternalCollectionResp {
     private final long jobId;
 
@@ -30,6 +33,11 @@ public class RefreshExternalCollectionResp {
         return new RefreshExternalCollectionRespBuilder();
     }
 
+    /**
+     * Returns the ID of the refresh external collection job.
+     *
+     * @return the refresh job ID
+     */
     public long getJobId() {
         return jobId;
     }
@@ -44,11 +52,22 @@ public class RefreshExternalCollectionResp {
     public static class RefreshExternalCollectionRespBuilder {
         private long jobId;
 
+        /**
+         * Sets the ID of the refresh external collection job.
+         *
+         * @param jobId the refresh job ID
+         * @return this builder
+         */
         public RefreshExternalCollectionRespBuilder jobId(long jobId) {
             this.jobId = jobId;
             return this;
         }
 
+        /**
+         * Builds the {@code RefreshExternalCollectionResp}.
+         *
+         * @return the constructed {@code RefreshExternalCollectionResp}
+         */
         public RefreshExternalCollectionResp build() {
             return new RefreshExternalCollectionResp(this);
         }

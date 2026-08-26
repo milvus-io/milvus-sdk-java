@@ -34,26 +34,56 @@ public class DropFunctionFieldReq {
         this.functionName = builder.functionName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the name of the function to drop.
+     *
+     * @return the function name
+     */
     public String getFunctionName() {
         return functionName;
     }
 
+    /**
+     * Sets the name of the function to drop.
+     *
+     * @param functionName the function name
+     */
     public void setFunctionName(String functionName) {
         this.functionName = functionName;
     }
@@ -67,6 +97,11 @@ public class DropFunctionFieldReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DropFunctionFieldReq}.
+     *
+     * @return the builder
+     */
     public static DropFunctionFieldReqBuilder builder() {
         return new DropFunctionFieldReqBuilder();
     }
@@ -79,21 +114,44 @@ public class DropFunctionFieldReq {
         private DropFunctionFieldReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DropFunctionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DropFunctionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the name of the function to drop.
+         *
+         * @param functionName the function name
+         * @return this builder
+         */
         public DropFunctionFieldReqBuilder functionName(String functionName) {
             this.functionName = functionName;
             return this;
         }
 
+        /**
+         * Builds a {@link DropFunctionFieldReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public DropFunctionFieldReq build() {
             return new DropFunctionFieldReq(this);
         }

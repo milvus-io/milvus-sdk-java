@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.snapshot.response;
 
+/**
+ * Response returned by the {@code getRestoreSnapshotState} API.
+ */
 public class GetRestoreSnapshotStateResp {
     private RestoreSnapshotJobInfo jobInfo;
 
@@ -30,10 +33,20 @@ public class GetRestoreSnapshotStateResp {
         return new GetRestoreSnapshotStateRespBuilder();
     }
 
+    /**
+     * Returns the restore snapshot job information.
+     *
+     * @return the restore snapshot job information
+     */
     public RestoreSnapshotJobInfo getJobInfo() {
         return jobInfo;
     }
 
+    /**
+     * Sets the restore snapshot job information.
+     *
+     * @param jobInfo the restore snapshot job information
+     */
     public void setJobInfo(RestoreSnapshotJobInfo jobInfo) {
         this.jobInfo = jobInfo;
     }
@@ -48,11 +61,22 @@ public class GetRestoreSnapshotStateResp {
     public static class GetRestoreSnapshotStateRespBuilder {
         private RestoreSnapshotJobInfo jobInfo;
 
+        /**
+         * Sets the restore snapshot job information.
+         *
+         * @param jobInfo the restore snapshot job information
+         * @return this builder
+         */
         public GetRestoreSnapshotStateRespBuilder jobInfo(RestoreSnapshotJobInfo jobInfo) {
             this.jobInfo = jobInfo;
             return this;
         }
 
+        /**
+         * Builds a {@link GetRestoreSnapshotStateResp}.
+         *
+         * @return the built response
+         */
         public GetRestoreSnapshotStateResp build() {
             return new GetRestoreSnapshotStateResp(this);
         }

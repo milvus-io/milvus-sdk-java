@@ -23,6 +23,13 @@ import java.util.stream.Collectors;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
+/**
+ * {@link FormatFileWriter} implementation that writes bulk-import data rows to a Parquet data file.
+ *
+ * <p>The writer maps each field of the collection schema to the corresponding Parquet type and
+ * appends array, vector, and struct fields as nested Parquet groups. Data rows are buffered into
+ * row groups and flushed to the file on {@link #close()}.
+ */
 public class ParquetFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(ParquetFileWriter.class);
 
@@ -33,6 +40,14 @@ public class ParquetFileWriter implements FormatFileWriter {
     private Map<String, CreateCollectionReq.FieldSchema> nameFieldType;
     private Map<String, CreateCollectionReq.StructFieldSchema> nameStructFieldType;
 
+    /**
+     * Creates a Parquet data file writer.
+     *
+     * @param collectionSchema the collection schema describing the fields to be written
+     * @param filePathPrefix the file path prefix; the {@code .parquet} extension is appended to
+     *                       form the data file path
+     * @throws IOException if the Parquet data file cannot be created
+     */
     public ParquetFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix) throws IOException {
         this.collectionSchema = collectionSchema;
         initFilePath(filePathPrefix);
@@ -85,6 +100,14 @@ public class ParquetFileWriter implements FormatFileWriter {
                 .collect(Collectors.toMap(CreateCollectionReq.StructFieldSchema::getName, e -> e));
     }
 
+    /**
+     * Appends a row of values to the Parquet data file.
+     *
+     * @param rowValues the row values keyed by field name
+     * @param firstWrite {@code true} if this is the first row written to the data file chunk,
+     *                   {@code false} otherwise; ignored for Parquet since no header row is needed
+     * @throws IOException if the row cannot be written to the Parquet file
+     */
     @Override
     public void appendRow(Map<String, Object> rowValues, boolean firstWrite) throws IOException {
         rowValues.keySet().removeIf(key -> key.equals(DYNAMIC_FIELD_NAME) && !this.collectionSchema.isEnableDynamicField());
@@ -109,11 +132,21 @@ public class ParquetFileWriter implements FormatFileWriter {
         }
     }
 
+    /**
+     * Returns the file path of the Parquet data file being written.
+     *
+     * @return the file path of the Parquet data file
+     */
     @Override
     public String getFilePath() {
         return filePath;
     }
 
+    /**
+     * Closes the Parquet data file, flushing any buffered rows and releasing resources.
+     *
+     * @throws IOException if the Parquet data file cannot be closed
+     */
     @Override
     public void close() throws IOException {
         this.writer.close();

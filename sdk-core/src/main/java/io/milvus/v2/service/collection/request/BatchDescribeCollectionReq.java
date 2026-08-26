@@ -21,6 +21,9 @@ package io.milvus.v2.service.collection.request;
 
 import java.util.List;
 
+/**
+ * Request parameters for the {@code batchDescribeCollection} API.
+ */
 public class BatchDescribeCollectionReq {
     private String databaseName;
     private List<String> collectionNames;
@@ -34,32 +37,67 @@ public class BatchDescribeCollectionReq {
     }
 
     // Static method to create builder
+    /**
+     * Creates a new builder for {@link BatchDescribeCollectionReq}.
+     *
+     * @return the builder
+     */
     public static BatchDescribeCollectionReqBuilder builder() {
         return new BatchDescribeCollectionReqBuilder();
     }
 
     // Getter methods
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the names of the collections to describe.
+     *
+     * @return the collection names
+     */
     public List<String> getCollectionNames() {
         return collectionNames;
     }
 
+    /**
+     * Returns the IDs of the collections to describe.
+     *
+     * @return the collection IDs
+     */
     public List<Long> getCollectionIds() {
         return collectionIds;
     }
 
     // Setter methods
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Sets the names of the collections to describe.
+     *
+     * @param collectionNames the collection names
+     */
     public void setCollectionNames(List<String> collectionNames) {
         this.collectionNames = collectionNames;
     }
 
+    /**
+     * Sets the IDs of the collections to describe.
+     *
+     * @param collectionIds the collection IDs
+     */
     public void setCollectionIds(List<Long> collectionIds) {
         this.collectionIds = collectionIds;
     }
@@ -79,21 +117,44 @@ public class BatchDescribeCollectionReq {
         private List<String> collectionNames;
         private List<Long> collectionIds;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public BatchDescribeCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the names of the collections to describe.
+         *
+         * @param collectionNames the collection names
+         * @return this builder
+         */
         public BatchDescribeCollectionReqBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
+        /**
+         * Sets the IDs of the collections to describe.
+         *
+         * @param collectionIds the collection IDs
+         * @return this builder
+         */
         public BatchDescribeCollectionReqBuilder collectionIds(List<Long> collectionIds) {
             this.collectionIds = collectionIds;
             return this;
         }
 
+        /**
+         * Builds a {@link BatchDescribeCollectionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public BatchDescribeCollectionReq build() {
             return new BatchDescribeCollectionReq(this);
         }

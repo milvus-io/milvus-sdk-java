@@ -19,6 +19,12 @@
 
 package io.milvus.v2.exception;
 
+/**
+ * Runtime exception thrown by the Milvus Java SDK v2 when a client or server-side error occurs.
+ *
+ * <p>The exception carries an {@link ErrorCode} describing the failure category, and optionally
+ * the raw error codes returned by the Milvus server.</p>
+ */
 public class MilvusClientException extends RuntimeException {
 
     private final ErrorCode errorCode;
@@ -26,16 +32,37 @@ public class MilvusClientException extends RuntimeException {
     private int serverErrCode = 0;
     private int legacyServerCode = 0;
 
+    /**
+     * Constructs a {@code MilvusClientException} with the given error code and message.
+     *
+     * @param errorCode the error code of this exception
+     * @param message   the detail message
+     */
     public MilvusClientException(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
     }
 
+    /**
+     * Constructs a {@code MilvusClientException} with the given error code and cause.
+     *
+     * @param errorCode the error code of this exception
+     * @param e         the underlying cause of this exception
+     */
     public MilvusClientException(ErrorCode errorCode, Throwable e) {
         super(e);
         this.errorCode = errorCode;
     }
 
+    /**
+     * Constructs a {@code MilvusClientException} with the given error code, message, and server
+     * error codes.
+     *
+     * @param errorCode       the error code of this exception
+     * @param message         the detail message
+     * @param serverErrCode   the error code returned by the Milvus server
+     * @param legacyServerCode the legacy error code returned by older Milvus server versions
+     */
     public MilvusClientException(ErrorCode errorCode, String message, int serverErrCode, int legacyServerCode) {
         super(message);
         this.errorCode = errorCode;
@@ -44,14 +71,30 @@ public class MilvusClientException extends RuntimeException {
     }
 
     // Getters
+    /**
+     * Returns the error code of this exception.
+     *
+     * @return the error code of this exception
+     */
     public ErrorCode getErrorCode() {
         return errorCode;
     }
 
+    /**
+     * Returns the error code returned by the Milvus server, or {@code 0} if not set.
+     *
+     * @return the server error code
+     */
     public int getServerErrCode() {
         return serverErrCode;
     }
 
+    /**
+     * Returns the legacy error code returned by older Milvus server versions, or {@code 0} if not
+     * set.
+     *
+     * @return the legacy server error code
+     */
     public int getLegacyServerCode() {
         return legacyServerCode;
     }

@@ -21,6 +21,9 @@ package io.milvus.v2.service.rbac.request;
 
 import static io.milvus.common.utils.RedactCredential.redactCredential;
 
+/**
+ * Request parameters for the {@code createUser} API.
+ */
 public class CreateUserReq {
     private String userName;
     private String password;
@@ -32,26 +35,56 @@ public class CreateUserReq {
         this.description = builder.description;
     }
 
+    /**
+     * Returns the user name.
+     *
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Sets the user name.
+     *
+     * @param userName the user name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Returns the password of the user.
+     *
+     * @return the user password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Sets the password of the user.
+     *
+     * @param password the user password
+     */
     public void setPassword(String password) {
         this.password = password;
     }
 
+    /**
+     * Returns the description of the user.
+     *
+     * @return the user description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the user.
+     *
+     * @param description the user description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
@@ -65,6 +98,11 @@ public class CreateUserReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link CreateUserReq}.
+     *
+     * @return a new {@link CreateUserReqBuilder}
+     */
     public static CreateUserReqBuilder builder() {
         return new CreateUserReqBuilder();
     }
@@ -77,21 +115,44 @@ public class CreateUserReq {
         private CreateUserReqBuilder() {
         }
 
+        /**
+         * Sets the user name.
+         *
+         * @param userName the user name
+         * @return this builder
+         */
         public CreateUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
+        /**
+         * Sets the password of the user.
+         *
+         * @param password the user password
+         * @return this builder
+         */
         public CreateUserReqBuilder password(String password) {
             this.password = password;
             return this;
         }
 
+        /**
+         * Sets the description of the user.
+         *
+         * @param description the user description
+         * @return this builder
+         */
         public CreateUserReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Builds the {@link CreateUserReq}.
+         *
+         * @return the built request
+         */
         public CreateUserReq build() {
             return new CreateUserReq(this);
         }

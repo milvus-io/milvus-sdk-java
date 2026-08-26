@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code getLoadState} API.
+ */
 public class GetLoadStateReq {
     private String databaseName;
     private String collectionName;
@@ -30,26 +33,56 @@ public class GetLoadStateReq {
         this.partitionName = builder.partitionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the name of the partition to check the load state of.
+     *
+     * @return the partition name
+     */
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Sets the name of the partition to check the load state of.
+     *
+     * @param partitionName the partition name
+     */
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -63,6 +96,11 @@ public class GetLoadStateReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link GetLoadStateReq}.
+     *
+     * @return the builder
+     */
     public static GetLoadStateReqBuilder builder() {
         return new GetLoadStateReqBuilder();
     }
@@ -75,21 +113,44 @@ public class GetLoadStateReq {
         private GetLoadStateReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public GetLoadStateReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public GetLoadStateReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the name of the partition to check the load state of.
+         *
+         * @param partitionName the partition name
+         * @return this builder
+         */
         public GetLoadStateReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Builds a {@link GetLoadStateReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public GetLoadStateReq build() {
             return new GetLoadStateReq(this);
         }

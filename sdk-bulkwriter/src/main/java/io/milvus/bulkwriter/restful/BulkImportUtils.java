@@ -28,6 +28,13 @@ import io.milvus.common.utils.JsonUtils;
 
 import java.util.Map;
 
+/**
+ * REST helper for driving bulk-import jobs on the Milvus vector database.
+ *
+ * <p>Provides methods to create, monitor, list, commit, and abort bulk-import jobs through the
+ * Milvus {@code /v2/vectordb/jobs/import} REST API. The bulk writer uses these endpoints to submit
+ * the uploaded data files for import and to commit the job once all chunks have been flushed.
+ */
 public class BulkImportUtils extends BaseRestful {
     private static final int CONNECT_TIMEOUT_MS = 60 * 1000;
 
@@ -41,26 +48,61 @@ public class BulkImportUtils extends BaseRestful {
         return body;
     }
 
+    /**
+     * Creates a bulk-import job from the given request.
+     *
+     * @param url the Milvus REST API base URL
+     * @param request the create-import request
+     * @return the JSON response body of the create-import call
+     */
     public static String bulkImport(String url, BaseImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/create";
         return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 
+    /**
+     * Queries the progress of a bulk-import job.
+     *
+     * @param url the Milvus REST API base URL
+     * @param request the describe-import request
+     * @return the JSON response body of the describe-import call
+     */
     public static String getImportProgress(String url, BaseDescribeImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/describe";
         return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 
+    /**
+     * Lists the bulk-import jobs matching the given request.
+     *
+     * @param url the Milvus REST API base URL
+     * @param request the list-import-jobs request
+     * @return the JSON response body of the list-import call
+     */
     public static String listImportJobs(String url, BaseListImportJobsRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/list";
         return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 
+    /**
+     * Commits a bulk-import job once all its data files have been uploaded and flushed.
+     *
+     * @param url the Milvus REST API base URL
+     * @param request the describe-import request identifying the job to commit
+     * @return the JSON response body of the commit-import call
+     */
     public static String commitImport(String url, BaseDescribeImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/commit";
         return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 
+    /**
+     * Aborts a bulk-import job.
+     *
+     * @param url the Milvus REST API base URL
+     * @param request the describe-import request identifying the job to abort
+     * @return the JSON response body of the abort-import call
+     */
     public static String abortImport(String url, BaseDescribeImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/abort";
         return postImportJobRequest(requestURL, request.getApiKey(), request);

@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code updateUser} API.
+ */
 public class UpdateUserReq {
     private String userName;
     private String description;
@@ -28,18 +31,38 @@ public class UpdateUserReq {
         this.description = builder.description;
     }
 
+    /**
+     * Returns the user name.
+     *
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Sets the user name.
+     *
+     * @param userName the user name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Returns the description of the user.
+     *
+     * @return the user description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the user.
+     *
+     * @param description the user description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
@@ -52,6 +75,11 @@ public class UpdateUserReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link UpdateUserReq}.
+     *
+     * @return a new {@link UpdateUserReqBuilder}
+     */
     public static UpdateUserReqBuilder builder() {
         return new UpdateUserReqBuilder();
     }
@@ -63,16 +91,33 @@ public class UpdateUserReq {
         private UpdateUserReqBuilder() {
         }
 
+        /**
+         * Sets the user name.
+         *
+         * @param userName the user name
+         * @return this builder
+         */
         public UpdateUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
+        /**
+         * Sets the description of the user.
+         *
+         * @param description the user description
+         * @return this builder
+         */
         public UpdateUserReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Builds the {@link UpdateUserReq}.
+         *
+         * @return the built request
+         */
         public UpdateUserReq build() {
             return new UpdateUserReq(this);
         }

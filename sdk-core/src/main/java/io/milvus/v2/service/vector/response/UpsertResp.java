@@ -22,6 +22,9 @@ package io.milvus.v2.service.vector.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code upsert} API.
+ */
 public class UpsertResp {
     private long upsertCnt;
 
@@ -38,26 +41,56 @@ public class UpsertResp {
     }
 
     // Getters and Setters
+    /**
+     * Returns the number of entities upserted.
+     *
+     * @return the upsert count
+     */
     public long getUpsertCnt() {
         return upsertCnt;
     }
 
+    /**
+     * Sets the number of entities upserted.
+     *
+     * @param upsertCnt the upsert count
+     */
     public void setUpsertCnt(long upsertCnt) {
         this.upsertCnt = upsertCnt;
     }
 
+    /**
+     * Returns the primary keys of the upserted entities.
+     *
+     * @return the upserted primary keys
+     */
     public List<Object> getPrimaryKeys() {
         return primaryKeys;
     }
 
+    /**
+     * Sets the primary keys of the upserted entities.
+     *
+     * @param primaryKeys the upserted primary keys
+     */
     public void setPrimaryKeys(List<Object> primaryKeys) {
         this.primaryKeys = primaryKeys;
     }
 
+    /**
+     * Returns the time cost of the upsert operation.
+     *
+     * @return the cost
+     */
     public Long getCost() {
         return cost;
     }
 
+    /**
+     * Sets the time cost of the upsert operation.
+     *
+     * @param cost the cost
+     */
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -71,6 +104,11 @@ public class UpsertResp {
                 '}';
     }
 
+    /**
+     * Creates a new {@code UpsertResp} builder.
+     *
+     * @return the builder
+     */
     public static UpsertRespBuilder builder() {
         return new UpsertRespBuilder();
     }
@@ -83,21 +121,44 @@ public class UpsertResp {
         private UpsertRespBuilder() {
         }
 
+        /**
+         * Sets the number of entities upserted.
+         *
+         * @param upsertCnt the upsert count
+         * @return this builder
+         */
         public UpsertRespBuilder upsertCnt(long upsertCnt) {
             this.upsertCnt = upsertCnt;
             return this;
         }
 
+        /**
+         * Sets the primary keys of the upserted entities.
+         *
+         * @param primaryKeys the upserted primary keys
+         * @return this builder
+         */
         public UpsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
         }
 
+        /**
+         * Sets the time cost of the upsert operation.
+         *
+         * @param cost the cost
+         * @return this builder
+         */
         public UpsertRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
         }
 
+        /**
+         * Builds the {@link UpsertResp}.
+         *
+         * @return the response
+         */
         public UpsertResp build() {
             return new UpsertResp(this);
         }

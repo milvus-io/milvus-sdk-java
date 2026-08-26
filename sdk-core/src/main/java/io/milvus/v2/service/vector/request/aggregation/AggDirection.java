@@ -22,8 +22,17 @@ package io.milvus.v2.service.vector.request.aggregation;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
+/**
+ * The sort direction used by a {@code group-by} search aggregation ordering rule.
+ */
 public enum AggDirection {
+    /**
+     * Ascending sort order.
+     */
     ASC("asc"),
+    /**
+     * Descending sort order.
+     */
     DESC("desc");
 
     private final String value;
@@ -32,10 +41,23 @@ public enum AggDirection {
         this.value = value;
     }
 
+    /**
+     * Returns the string value of this direction.
+     *
+     * @return the string value
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * Converts a string value into an {@link AggDirection}.
+     *
+     * @param value     the string value, either {@code asc} or {@code desc}
+     * @param fieldName the field name used in the error message when the value is invalid
+     * @return the matching direction
+     * @throws MilvusClientException if the value is neither {@code asc} nor {@code desc}
+     */
     public static AggDirection fromValue(String value, String fieldName) {
         for (AggDirection direction : values()) {
             if (direction.value.equals(value)) {

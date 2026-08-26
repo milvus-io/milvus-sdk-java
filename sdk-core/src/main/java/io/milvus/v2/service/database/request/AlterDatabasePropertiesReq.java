@@ -22,6 +22,9 @@ package io.milvus.v2.service.database.request;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code alterDatabaseProperties} API.
+ */
 public class AlterDatabasePropertiesReq {
     private String databaseName;
     private Map<String, String> properties;
@@ -31,18 +34,38 @@ public class AlterDatabasePropertiesReq {
         this.properties = builder.properties;
     }
 
+    /**
+     * Returns the name of the database.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the name of the database.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the properties to alter on the database.
+     *
+     * @return the database properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
 
+    /**
+     * Sets the properties to alter on the database.
+     *
+     * @param properties the database properties
+     */
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -55,6 +78,11 @@ public class AlterDatabasePropertiesReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AlterDatabasePropertiesReq}.
+     *
+     * @return a new {@link AlterDatabasePropertiesReqBuilder}
+     */
     public static AlterDatabasePropertiesReqBuilder builder() {
         return new AlterDatabasePropertiesReqBuilder();
     }
@@ -66,16 +94,35 @@ public class AlterDatabasePropertiesReq {
         private AlterDatabasePropertiesReqBuilder() {
         }
 
+        /**
+         * Sets the name of the database.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AlterDatabasePropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the properties to alter on the database.
+         *
+         * @param properties the database properties
+         * @return this builder
+         */
         public AlterDatabasePropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
+        /**
+         * Adds a single property to alter on the database.
+         *
+         * @param key the property key
+         * @param value the property value
+         * @return this builder
+         */
         public AlterDatabasePropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -84,6 +131,11 @@ public class AlterDatabasePropertiesReq {
             return this;
         }
 
+        /**
+         * Builds the {@link AlterDatabasePropertiesReq}.
+         *
+         * @return the built request
+         */
         public AlterDatabasePropertiesReq build() {
             return new AlterDatabasePropertiesReq(this);
         }

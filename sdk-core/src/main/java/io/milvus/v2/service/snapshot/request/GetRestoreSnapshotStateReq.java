@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.snapshot.request;
 
+/**
+ * Request parameters for the {@code getRestoreSnapshotState} API.
+ */
 public class GetRestoreSnapshotStateReq {
     private Long jobId;
 
@@ -26,14 +29,29 @@ public class GetRestoreSnapshotStateReq {
         this.jobId = builder.jobId;
     }
 
+    /**
+     * Creates a new builder for {@code GetRestoreSnapshotStateReq}.
+     *
+     * @return the builder
+     */
     public static GetRestoreSnapshotStateReqBuilder builder() {
         return new GetRestoreSnapshotStateReqBuilder();
     }
 
+    /**
+     * Returns the ID of the restore snapshot job.
+     *
+     * @return the restore job ID
+     */
     public Long getJobId() {
         return jobId;
     }
 
+    /**
+     * Sets the ID of the restore snapshot job.
+     *
+     * @param jobId the restore job ID
+     */
     public void setJobId(Long jobId) {
         this.jobId = jobId;
     }

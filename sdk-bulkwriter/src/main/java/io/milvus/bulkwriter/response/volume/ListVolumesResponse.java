@@ -22,15 +22,32 @@ package io.milvus.bulkwriter.response.volume;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A response containing a paginated list of cloud storage volumes.
+ *
+ * <p>It carries the total count of volumes, the pagination information, and the list of
+ * {@link VolumeInfo} entries on the current page.</p>
+ */
 public class ListVolumesResponse {
     private Integer count;
     private Integer currentPage;
     private Integer pageSize;
     private List<VolumeInfo> volumes;
 
+    /**
+     * Constructs an empty {@code ListVolumesResponse}.
+     */
     public ListVolumesResponse() {
     }
 
+    /**
+     * Constructs a {@code ListVolumesResponse} with the given pagination information and volumes.
+     *
+     * @param count       the total number of volumes
+     * @param currentPage the current page number
+     * @param pageSize    the number of volumes per page
+     * @param volumes     the list of volumes on the current page
+     */
     public ListVolumesResponse(Integer count, Integer currentPage, Integer pageSize, List<VolumeInfo> volumes) {
         this.count = count;
         this.currentPage = currentPage;
@@ -45,34 +62,74 @@ public class ListVolumesResponse {
         this.volumes = builder.volumes;
     }
 
+    /**
+     * Returns the total number of volumes.
+     *
+     * @return the total number of volumes
+     */
     public Integer getCount() {
         return count;
     }
 
+    /**
+     * Sets the total number of volumes.
+     *
+     * @param count the total number of volumes
+     */
     public void setCount(Integer count) {
         this.count = count;
     }
 
+    /**
+     * Returns the current page number.
+     *
+     * @return the current page number
+     */
     public Integer getCurrentPage() {
         return currentPage;
     }
 
+    /**
+     * Sets the current page number.
+     *
+     * @param currentPage the current page number
+     */
     public void setCurrentPage(Integer currentPage) {
         this.currentPage = currentPage;
     }
 
+    /**
+     * Returns the number of volumes per page.
+     *
+     * @return the page size
+     */
     public Integer getPageSize() {
         return pageSize;
     }
 
+    /**
+     * Sets the number of volumes per page.
+     *
+     * @param pageSize the page size
+     */
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
 
+    /**
+     * Returns the list of volumes on the current page.
+     *
+     * @return the list of volumes
+     */
     public List<VolumeInfo> getVolumes() {
         return volumes;
     }
 
+    /**
+     * Sets the list of volumes on the current page.
+     *
+     * @param volumes the list of volumes
+     */
     public void setVolumes(List<VolumeInfo> volumes) {
         this.volumes = volumes;
     }
@@ -86,10 +143,18 @@ public class ListVolumesResponse {
                 '}';
     }
 
+    /**
+     * Returns a new builder for a {@link ListVolumesResponse}.
+     *
+     * @return a {@code ListVolumesResponse} builder
+     */
     public static ListVolumesResponseBuilder builder() {
         return new ListVolumesResponseBuilder();
     }
 
+    /**
+     * Builder for {@link ListVolumesResponse}.
+     */
     public static class ListVolumesResponseBuilder {
         private Integer count;
         private Integer currentPage;
@@ -103,26 +168,55 @@ public class ListVolumesResponse {
             this.volumes = new ArrayList<>();
         }
 
+        /**
+         * Sets the total number of volumes.
+         *
+         * @param count the total number of volumes
+         * @return this builder
+         */
         public ListVolumesResponseBuilder count(Integer count) {
             this.count = count;
             return this;
         }
 
+        /**
+         * Sets the current page number.
+         *
+         * @param currentPage the current page number
+         * @return this builder
+         */
         public ListVolumesResponseBuilder currentPage(Integer currentPage) {
             this.currentPage = currentPage;
             return this;
         }
 
+        /**
+         * Sets the number of volumes per page.
+         *
+         * @param pageSize the page size
+         * @return this builder
+         */
         public ListVolumesResponseBuilder pageSize(Integer pageSize) {
             this.pageSize = pageSize;
             return this;
         }
 
+        /**
+         * Sets the list of volumes on the current page.
+         *
+         * @param volumes the list of volumes
+         * @return this builder
+         */
         public ListVolumesResponseBuilder volumes(List<VolumeInfo> volumes) {
             this.volumes = volumes;
             return this;
         }
 
+        /**
+         * Builds the {@link ListVolumesResponse} instance.
+         *
+         * @return the built {@code ListVolumesResponse}
+         */
         public ListVolumesResponse build() {
             return new ListVolumesResponse(this);
         }

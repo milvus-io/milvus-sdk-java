@@ -39,6 +39,8 @@ public class VolumeManager {
 
     /**
      * Create a volume under the specified project and regionId.
+     *
+     * @param request the create volume request
      */
     public void createVolume(CreateVolumeRequest request) {
         DataVolumeUtils.createVolume(cloudEndpoint, apiKey, request);
@@ -46,6 +48,9 @@ public class VolumeManager {
 
     /**
      * Get detailed information about a specific volume.
+     *
+     * @param request the describe volume request
+     * @return the volume information
      */
     public VolumeInfo describeVolume(DescribeVolumeRequest request) {
         String result = DataVolumeUtils.describeVolume(cloudEndpoint, apiKey, request);
@@ -54,6 +59,8 @@ public class VolumeManager {
 
     /**
      * Delete a volume.
+     *
+     * @param request the delete volume request
      */
     public void deleteVolume(DeleteVolumeRequest request) {
         DataVolumeUtils.deleteVolume(cloudEndpoint, apiKey, request);
@@ -61,6 +68,9 @@ public class VolumeManager {
 
     /**
      * Paginated query of the volume list under a specified projectId.
+     *
+     * @param request the list volumes request
+     * @return the list of volumes
      */
     public ListVolumesResponse listVolumes(ListVolumesRequest request) {
         String result = DataVolumeUtils.listVolumes(cloudEndpoint, apiKey, request);

@@ -21,6 +21,9 @@ package io.milvus.v2.service.resourcegroup.request;
 
 import io.milvus.common.resourcegroup.ResourceGroupConfig;
 
+/**
+ * Request parameters for the {@code createResourceGroup} API.
+ */
 public class CreateResourceGroupReq {
     private String groupName;
     private ResourceGroupConfig config;
@@ -30,22 +33,47 @@ public class CreateResourceGroupReq {
         this.config = builder.config;
     }
 
+    /**
+     * Creates a new builder for {@code CreateResourceGroupReq}.
+     *
+     * @return the builder
+     */
     public static CreateResourceGroupReqBuilder builder() {
         return new CreateResourceGroupReqBuilder();
     }
 
+    /**
+     * Returns the name of the resource group to be created.
+     *
+     * @return the resource group name
+     */
     public String getGroupName() {
         return groupName;
     }
 
+    /**
+     * Sets the name of the resource group to be created.
+     *
+     * @param groupName the resource group name
+     */
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
 
+    /**
+     * Returns the configuration of the resource group.
+     *
+     * @return the resource group config
+     */
     public ResourceGroupConfig getConfig() {
         return config;
     }
 
+    /**
+     * Sets the configuration of the resource group.
+     *
+     * @param config the resource group config
+     */
     public void setConfig(ResourceGroupConfig config) {
         this.config = config;
     }
@@ -62,16 +90,33 @@ public class CreateResourceGroupReq {
         private String groupName;
         private ResourceGroupConfig config;
 
+        /**
+         * Sets the name of the resource group to be created.
+         *
+         * @param groupName the resource group name
+         * @return this builder
+         */
         public CreateResourceGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
+        /**
+         * Sets the configuration of the resource group.
+         *
+         * @param config the resource group config
+         * @return this builder
+         */
         public CreateResourceGroupReqBuilder config(ResourceGroupConfig config) {
             this.config = config;
             return this;
         }
 
+        /**
+         * Builds the {@code CreateResourceGroupReq}.
+         *
+         * @return the built request
+         */
         public CreateResourceGroupReq build() {
             return new CreateResourceGroupReq(this);
         }

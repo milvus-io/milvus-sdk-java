@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.snapshot.request;
 
+/**
+ * Request parameters for the {@code unpinSnapshotData} API.
+ */
 public class UnpinSnapshotDataReq {
     private Long pinId;
 
@@ -30,10 +33,20 @@ public class UnpinSnapshotDataReq {
         return new UnpinSnapshotDataReqBuilder();
     }
 
+    /**
+     * Returns the ID of the pinned snapshot data to unpin.
+     *
+     * @return the pin ID
+     */
     public Long getPinId() {
         return pinId;
     }
 
+    /**
+     * Sets the ID of the pinned snapshot data to unpin.
+     *
+     * @param pinId the pin ID
+     */
     public void setPinId(Long pinId) {
         this.pinId = pinId;
     }
@@ -48,11 +61,22 @@ public class UnpinSnapshotDataReq {
     public static class UnpinSnapshotDataReqBuilder {
         private Long pinId;
 
+        /**
+         * Sets the ID of the pinned snapshot data to unpin.
+         *
+         * @param pinId the pin ID
+         * @return this builder
+         */
         public UnpinSnapshotDataReqBuilder pinId(Long pinId) {
             this.pinId = pinId;
             return this;
         }
 
+        /**
+         * Builds an {@link UnpinSnapshotDataReq}.
+         *
+         * @return the built request
+         */
         public UnpinSnapshotDataReq build() {
             return new UnpinSnapshotDataReq(this);
         }

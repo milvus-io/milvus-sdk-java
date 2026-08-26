@@ -27,10 +27,20 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-// EmbeddingList is mainly for searching vectors in struct field
+/**
+ * A collection of vectors that is mainly used for searching vectors stored in a struct
+ * field. All vectors in the list must share the same vector type.
+ */
 public class EmbeddingList implements BaseVector {
     private List<BaseVector> data = new ArrayList<>();
 
+    /**
+     * Adds a vector to the embedding list.
+     *
+     * @param vector the vector to add
+     * @throws MilvusClientException if the vector type differs from the type of the
+     *                               vectors already in the list
+     */
     public void add(BaseVector vector) {
         if (!data.isEmpty() && data.get(0).getPlaceholderType() != vector.getPlaceholderType()) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Not allow to add different types of vector");
@@ -38,6 +48,13 @@ public class EmbeddingList implements BaseVector {
         data.add(vector);
     }
 
+    /**
+     * Returns the placeholder type of the embedded vector list, derived from the type of
+     * the contained vectors.
+     *
+     * @return the placeholder type, or {@link PlaceholderType#None} if the list is empty
+     * @throws MilvusClientException if the contained vector type is not supported
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         if (data.isEmpty()) {
@@ -62,6 +79,15 @@ public class EmbeddingList implements BaseVector {
         }
     }
 
+    /**
+     * Returns the vectors of the list flattened into a single object, either as a list of
+     * float values for float vectors or as a merged {@link ByteBuffer} for binary, float16,
+     * bfloat16, and int8 vectors.
+     *
+     * @return the flattened vector data
+     * @throws MilvusClientException if the list is empty or the contained vector type is
+     *                               not supported
+     */
     @Override
     public Object getData() {
         if (data.isEmpty()) {

@@ -19,10 +19,25 @@
 
 package io.milvus.v2.common;
 
+/**
+ * Consistency level for search and query operations on a collection.
+ */
 public enum ConsistencyLevel {
+    /**
+     * Reads always see the latest data after a write completes.
+     */
     STRONG("Strong", 0),
+    /**
+     * Reads within the same session see the effects of writes from that session.
+     */
     SESSION("Session", 1),
+    /**
+     * Reads see acknowledged writes and tolerate bounded staleness.
+     */
     BOUNDED("Bounded", 2),
+    /**
+     * Reads are eventually consistent and may serve stale data.
+     */
     EVENTUALLY("Eventually", 3),
     ;
     private final String name;
@@ -33,14 +48,30 @@ public enum ConsistencyLevel {
         this.code = code;
     }
 
+    /**
+     * Returns the display name of the consistency level.
+     *
+     * @return the display name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the numeric code of the consistency level.
+     *
+     * @return the numeric code
+     */
     public int getCode() {
         return code;
     }
 
+    /**
+     * Returns the consistency level that matches the given display name.
+     *
+     * @param name the display name of the consistency level
+     * @return the matching consistency level, or {@code null} if none matches
+     */
     public static ConsistencyLevel fromName(String name) {
         for (ConsistencyLevel level : ConsistencyLevel.values()) {
             if (level.getName().equals(name)) {

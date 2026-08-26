@@ -19,6 +19,10 @@
 
 package io.milvus.v2.service.utility.response;
 
+/**
+ * A file resource that can be attached to a collection, as returned by the {@code listFileResources}
+ * API.
+ */
 public class FileResourceInfo {
     private final String name;
     private final String path;
@@ -28,14 +32,29 @@ public class FileResourceInfo {
         this.path = builder.path;
     }
 
+    /**
+     * Creates a new {@code FileResourceInfo} builder.
+     *
+     * @return the builder
+     */
     public static FileResourceInfoBuilder builder() {
         return new FileResourceInfoBuilder();
     }
 
+    /**
+     * Returns the name of the file resource.
+     *
+     * @return the file resource name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the path of the file resource.
+     *
+     * @return the file resource path
+     */
     public String getPath() {
         return path;
     }
@@ -48,20 +67,40 @@ public class FileResourceInfo {
                 '}';
     }
 
+    /**
+     * Builder for {@link FileResourceInfo}.
+     */
     public static class FileResourceInfoBuilder {
         private String name;
         private String path;
 
+        /**
+         * Sets the name of the file resource.
+         *
+         * @param name the file resource name
+         * @return this builder
+         */
         public FileResourceInfoBuilder name(String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Sets the path of the file resource.
+         *
+         * @param path the file resource path
+         * @return this builder
+         */
         public FileResourceInfoBuilder path(String path) {
             this.path = path;
             return this;
         }
 
+        /**
+         * Builds the {@link FileResourceInfo}.
+         *
+         * @return the file resource information
+         */
         public FileResourceInfo build() {
             return new FileResourceInfo(this);
         }

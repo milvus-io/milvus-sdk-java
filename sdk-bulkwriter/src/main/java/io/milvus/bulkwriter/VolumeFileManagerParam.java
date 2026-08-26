@@ -39,18 +39,38 @@ public class VolumeFileManagerParam {
         this.connectType = builder.connectType;
     }
 
+    /**
+    * Returns the cloud endpoint of the volume service.
+    *
+    * @return the cloud endpoint of the volume service
+    */
     public String getCloudEndpoint() {
         return cloudEndpoint;
     }
 
+    /**
+    * Returns the API key for the volume service.
+    *
+    * @return the API key for the volume service
+    */
     public String getApiKey() {
         return apiKey;
     }
 
+    /**
+    * Returns the name of the target volume.
+    *
+    * @return the name of the target volume
+    */
     public String getVolumeName() {
         return volumeName;
     }
 
+    /**
+    * Returns the connection type for the volume service.
+    *
+    * @return the connection type for the volume service
+    */
     public ConnectType getConnectType() {
         return connectType;
     }
@@ -88,16 +108,34 @@ public class VolumeFileManagerParam {
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
          */
+        /**
+        * Sets the cloud endpoint of the volume service.
+        *
+        * @param c the cloud endpoint of the volume service
+        * @return this builder
+        */
         public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
+        /**
+        * Sets the API key for the volume service.
+        *
+        * @param a the API key for the volume service
+        * @return this builder
+        */
         public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
 
+        /**
+        * Sets the name of the target volume.
+        *
+        * @param v the name of the target volume
+        * @return this builder
+        */
         public Builder withVolumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;

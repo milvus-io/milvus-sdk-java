@@ -32,7 +32,21 @@ import io.milvus.common.utils.JsonUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST helper for managing Milvus data volumes used by the bulk writer.
+ *
+ * <p>Provides methods to apply, list, create, describe, and delete data volumes through the
+ * Milvus {@code /v2/volumes} REST API. Volume operations let the bulk writer allocate and manage
+ * the remote storage volume that holds the uploaded data files.
+ */
 public class DataVolumeUtils extends BaseRestful {
+    /**
+     * Applies for a data volume.
+     *
+     * @param url the Milvus REST API base URL
+     * @param request the apply-volume request
+     * @return the JSON string of the applied volume data
+     */
     public static String applyVolume(String url, BaseVolumeRequest request) {
         String requestURL = url + "/v2/volumes/apply";
 
@@ -45,6 +59,14 @@ public class DataVolumeUtils extends BaseRestful {
         return new Gson().toJson(response.getData());
     }
 
+    /**
+     * Lists the data volumes visible to the given API key.
+     *
+     * @param url the Milvus REST API base URL
+     * @param apiKey the API key used for authentication
+     * @param request the list-volumes request
+     * @return the JSON string of the listed volumes data
+     */
     public static String listVolumes(String url, String apiKey, ListVolumesRequest request) {
         String requestURL = url + "/v2/volumes";
 
@@ -57,6 +79,13 @@ public class DataVolumeUtils extends BaseRestful {
         return new Gson().toJson(response.getData());
     }
 
+    /**
+     * Creates a data volume.
+     *
+     * @param url the Milvus REST API base URL
+     * @param apiKey the API key used for authentication
+     * @param request the create-volume request
+     */
     public static void createVolume(String url, String apiKey, CreateVolumeRequest request) {
         String requestURL = url + "/v2/volumes/create";
 
@@ -68,6 +97,14 @@ public class DataVolumeUtils extends BaseRestful {
         handleResponse(requestURL, response);
     }
 
+    /**
+     * Describes the data volume with the given name.
+     *
+     * @param url the Milvus REST API base URL
+     * @param apiKey the API key used for authentication
+     * @param request the describe-volume request
+     * @return the JSON string of the volume data
+     */
     public static String describeVolume(String url, String apiKey, DescribeVolumeRequest request) {
         String requestURL = url + "/v2/volumes/" + request.getVolumeName();
 
@@ -79,6 +116,13 @@ public class DataVolumeUtils extends BaseRestful {
         return new Gson().toJson(response.getData());
     }
 
+    /**
+     * Deletes the data volume with the given name.
+     *
+     * @param url the Milvus REST API base URL
+     * @param apiKey the API key used for authentication
+     * @param request the delete-volume request
+     */
     public static void deleteVolume(String url, String apiKey, DeleteVolumeRequest request) {
         String requestURL = url + "/v2/volumes/" + request.getVolumeName();
 

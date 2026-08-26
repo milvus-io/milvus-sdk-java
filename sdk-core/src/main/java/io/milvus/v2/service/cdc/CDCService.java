@@ -49,7 +49,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Service for CDC (change data capture) operations, such as querying replication information
+ * and dumping messages.
+ */
 public class CDCService extends BaseService {
+    /**
+     * Returns the replication information for the given source cluster and target physical channel.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param requestParam the get replicate info request
+     * @return the get replicate info response
+     */
     public GetReplicateInfoResp getReplicateInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReplicateInfoReq requestParam) {
         if (StringUtils.isEmpty(requestParam.getSourceClusterId())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "sourceClusterId cannot be null or empty");
@@ -70,6 +81,12 @@ public class CDCService extends BaseService {
                 .build();
     }
 
+    /**
+     * Returns the current replication configuration.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @return the get replicate configuration response
+     */
     public GetReplicateConfigurationResp getReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         GetReplicateConfigurationRequest request = GetReplicateConfigurationRequest.newBuilder().build();
 
@@ -82,6 +99,13 @@ public class CDCService extends BaseService {
                 .build();
     }
 
+    /**
+     * Updates the replication configuration, optionally forcing a promotion of the replica.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param requestParam the update replicate configuration request
+     * @return the update replicate configuration response
+     */
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateReplicateConfigurationReq requestParam) {
         UpdateReplicateConfigurationRequest request = UpdateReplicateConfigurationRequest.newBuilder()
                 .setReplicateConfiguration(requestParam.getReplicateConfiguration().toGRPC())
@@ -95,6 +119,14 @@ public class CDCService extends BaseService {
         return UpdateReplicateConfigurationResp.builder().build();
     }
 
+    /**
+     * Dumps messages from the given physical channel, optionally bounded by a start/end timetick,
+     * returning an iterable stream of messages.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the dump messages request
+     * @return the dump messages response containing the message stream
+     */
     public DumpMessagesResp dumpMessages(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                          DumpMessagesReq request) {
         if (StringUtils.isEmpty(request.getPchannel())) {

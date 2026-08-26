@@ -71,51 +71,112 @@ public class DecayRanker extends CreateCollectionReq.Function {
         this.decay = builder.decay;
     }
 
+    /**
+     * Returns the decay function, for example {@code gauss}, {@code exp}, or {@code linear}.
+     *
+     * @return the decay function
+     */
     public String getFunction() {
         return function;
     }
 
+    /**
+     * Sets the decay function, for example {@code gauss}, {@code exp}, or {@code linear}.
+     *
+     * @param function the decay function
+     */
     public void setFunction(String function) {
         this.function = function;
     }
 
+    /**
+     * Returns the reference point from which the decay is computed.
+     *
+     * @return the decay origin
+     */
     public Number getOrigin() {
         return origin;
     }
 
+    /**
+     * Sets the reference point from which the decay is computed.
+     *
+     * @param origin the decay origin
+     */
     public void setOrigin(Number origin) {
         this.origin = origin;
     }
 
+    /**
+     * Returns the offset that defines the range in which the score is not decayed.
+     *
+     * @return the decay offset
+     */
     public Number getOffset() {
         return offset;
     }
 
+    /**
+     * Sets the offset that defines the range in which the score is not decayed.
+     *
+     * @param offset the decay offset
+     */
     public void setOffset(Number offset) {
         this.offset = offset;
     }
 
+    /**
+     * Returns the scale of the decay curve.
+     *
+     * @return the decay scale
+     */
     public Number getScale() {
         return scale;
     }
 
+    /**
+     * Sets the scale of the decay curve.
+     *
+     * @param scale the decay scale
+     */
     public void setScale(Number scale) {
         this.scale = scale;
     }
 
+    /**
+     * Returns the decay rate that controls how quickly the score decays.
+     *
+     * @return the decay rate
+     */
     public Number getDecay() {
         return decay;
     }
 
+    /**
+     * Sets the decay rate that controls how quickly the score decays.
+     *
+     * @param decay the decay rate
+     */
     public void setDecay(Number decay) {
         this.decay = decay;
     }
 
+    /**
+     * Returns the function type of this ranker.
+     *
+     * @return {@link FunctionType#RERANK}
+     */
     @Override
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    /**
+     * Returns the ranker parameters as a map of parameter name to value, including the
+     * decay function, origin, offset, scale, and decay rate.
+     *
+     * @return the ranker parameters
+     */
     @Override
     public Map<String, String> getParams() {
         // the parent params might contain "offset" and "decay"
@@ -154,10 +215,18 @@ public class DecayRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DecayRanker}.
+     *
+     * @return a new builder
+     */
     public static DecayRankerBuilder builder() {
         return new DecayRankerBuilder();
     }
 
+    /**
+     * Builder for {@link DecayRanker}.
+     */
     public static class DecayRankerBuilder extends Function.FunctionBuilder<DecayRankerBuilder> {
         private String function = "gauss";
         private Number origin;
@@ -168,31 +237,67 @@ public class DecayRanker extends CreateCollectionReq.Function {
         private DecayRankerBuilder() {
         }
 
+        /**
+         * Sets the decay function, for example {@code gauss}, {@code exp}, or {@code linear}.
+         * Defaults to {@code gauss}.
+         *
+         * @param function the decay function
+         * @return this builder
+         */
         public DecayRankerBuilder function(String function) {
             this.function = function;
             return this;
         }
 
+        /**
+         * Sets the reference point from which the decay is computed.
+         *
+         * @param origin the decay origin
+         * @return this builder
+         */
         public DecayRankerBuilder origin(Number origin) {
             this.origin = origin;
             return this;
         }
 
+        /**
+         * Sets the offset that defines the range in which the score is not decayed.
+         *
+         * @param offset the decay offset
+         * @return this builder
+         */
         public DecayRankerBuilder offset(Number offset) {
             this.offset = offset;
             return this;
         }
 
+        /**
+         * Sets the scale of the decay curve.
+         *
+         * @param scale the decay scale
+         * @return this builder
+         */
         public DecayRankerBuilder scale(Number scale) {
             this.scale = scale;
             return this;
         }
 
+        /**
+         * Sets the decay rate that controls how quickly the score decays.
+         *
+         * @param decay the decay rate
+         * @return this builder
+         */
         public DecayRankerBuilder decay(Number decay) {
             this.decay = decay;
             return this;
         }
 
+        /**
+         * Builds the {@link DecayRanker}.
+         *
+         * @return the built ranker
+         */
         @Override
         public DecayRanker build() {
             return new DecayRanker(this);

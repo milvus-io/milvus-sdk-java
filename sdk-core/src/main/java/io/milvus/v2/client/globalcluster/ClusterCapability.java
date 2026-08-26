@@ -19,9 +19,15 @@
 
 package io.milvus.v2.client.globalcluster;
 
+/**
+ * Bit flags describing the capabilities of a cluster in a global cluster deployment.
+ */
 public class ClusterCapability {
+    /** The cluster can serve read requests. */
     public static final int READABLE = 0b01;
+    /** The cluster can serve write requests. */
     public static final int WRITABLE = 0b10;
+    /** The cluster is the primary, capable of both reads and writes. */
     public static final int PRIMARY = READABLE | WRITABLE; // 0b11
 
     private ClusterCapability() {
