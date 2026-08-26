@@ -35,6 +35,13 @@ public class FunctionChainArg {
         this.literal = literal;
     }
 
+    /**
+     * Creates a column-reference argument that resolves to the given column at runtime.
+     *
+     * @param name the column name
+     * @return the column argument
+     * @throws MilvusClientException if the column name is empty
+     */
     public static FunctionChainArg col(String name) {
         if (name == null || name.isEmpty()) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Column name must not be empty");
@@ -42,22 +49,48 @@ public class FunctionChainArg {
         return new FunctionChainArg(name, null);
     }
 
+    /**
+     * Creates a literal argument from the given value.
+     *
+     * @param value the literal value
+     * @return the literal argument
+     */
     public static FunctionChainArg literal(Object value) {
         return new FunctionChainArg(null, FunctionParamValue.from(value));
     }
 
+    /**
+     * Returns whether this argument is a column reference rather than a literal.
+     *
+     * @return {@code true} if this argument is a column reference
+     */
     public boolean isColumn() {
         return columnName != null;
     }
 
+    /**
+     * Returns the column name of this argument, if it is a column reference.
+     *
+     * @return the column name, or {@code null} if this is a literal argument
+     */
     public String getColumnName() {
         return columnName;
     }
 
+    /**
+     * Returns the literal value of this argument, if it is a literal.
+     *
+     * @return the literal value, or {@code null} if this is a column argument
+     */
     public FunctionParamValue getLiteral() {
         return literal;
     }
 
+    /**
+     * Converts this argument into the gRPC {@code FunctionChainExprArg} message.
+     *
+     * @return the gRPC argument
+     */
     public io.milvus.grpc.FunctionChainExprArg toGrpc() {
         if (columnName != null) {
             return io.milvus.grpc.FunctionChainExprArg.newBuilder()

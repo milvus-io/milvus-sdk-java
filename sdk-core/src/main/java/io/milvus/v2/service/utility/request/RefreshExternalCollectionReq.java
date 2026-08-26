@@ -21,6 +21,9 @@ package io.milvus.v2.service.utility.request;
 
 import com.google.gson.JsonObject;
 
+/**
+ * Request parameters for the {@code refreshExternalCollection} API.
+ */
 public class RefreshExternalCollectionReq {
     private final String databaseName;
     private final String collectionName;
@@ -38,18 +41,38 @@ public class RefreshExternalCollectionReq {
         return new RefreshExternalCollectionReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the external data source.
+     *
+     * @return the external source name
+     */
     public String getExternalSource() {
         return externalSource;
     }
 
+    /**
+     * Returns the external data source specification.
+     *
+     * @return the external source specification
+     */
     public JsonObject getExternalSpec() {
         return externalSpec;
     }
@@ -70,26 +93,55 @@ public class RefreshExternalCollectionReq {
         private String externalSource;
         private JsonObject externalSpec;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public RefreshExternalCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public RefreshExternalCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the external data source.
+         *
+         * @param externalSource the external source name
+         * @return this builder
+         */
         public RefreshExternalCollectionReqBuilder externalSource(String externalSource) {
             this.externalSource = externalSource;
             return this;
         }
 
+        /**
+         * Sets the external data source specification.
+         *
+         * @param externalSpec the external source specification
+         * @return this builder
+         */
         public RefreshExternalCollectionReqBuilder externalSpec(JsonObject externalSpec) {
             this.externalSpec = externalSpec;
             return this;
         }
 
+        /**
+         * Builds the {@code RefreshExternalCollectionReq}.
+         *
+         * @return the constructed {@code RefreshExternalCollectionReq}
+         */
         public RefreshExternalCollectionReq build() {
             return new RefreshExternalCollectionReq(this);
         }

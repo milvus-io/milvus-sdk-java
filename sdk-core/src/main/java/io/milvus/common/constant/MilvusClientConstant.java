@@ -19,18 +19,43 @@
 
 package io.milvus.common.constant;
 
+/**
+ * Constants used across the Milvus SDK client, including URI prefixes and commonly used string
+ * values.
+ */
 public class MilvusClientConstant {
 
+    /**
+     * Constants related to the Milvus connection endpoint.
+     */
     public static class MilvusConsts {
+        /**
+         * The {@code "https://"} scheme prefix of a URI.
+         */
         public final static String HOST_HTTPS_PREFIX = "https://";
 
+        /**
+         * The {@code "http://"} scheme prefix of a URI.
+         */
         public final static String HOST_HTTP_PREFIX = "http://";
 
+        /**
+         * Regular expression matching Zilliz Cloud serverless endpoints.
+         */
         public final static String CLOUD_SERVERLESS_URI_REGEX = "^(https://in03-.{20,}zilliz.*.(com|cn))|(https://in0\\d{1}-.{15,}serverless.*zilliz.*.(com|cn))$";
     }
 
+    /**
+     * Commonly used string values.
+     */
     public static class StringValue {
+        /**
+         * A single colon character.
+         */
         public final static String COLON = ":";
+        /**
+         * A double slash.
+         */
         public final static String DOUBLE_SLASH = "//";
     }
 

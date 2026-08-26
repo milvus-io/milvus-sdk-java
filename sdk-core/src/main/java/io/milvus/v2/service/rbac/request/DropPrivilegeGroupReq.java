@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code dropPrivilegeGroup} API.
+ */
 public class DropPrivilegeGroupReq {
     private String groupName;
 
@@ -26,10 +29,20 @@ public class DropPrivilegeGroupReq {
         this.groupName = builder.groupName;
     }
 
+    /**
+     * Returns the name of the privilege group.
+     *
+     * @return the privilege group name
+     */
     public String getGroupName() {
         return groupName;
     }
 
+    /**
+     * Sets the name of the privilege group.
+     *
+     * @param groupName the privilege group name
+     */
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
@@ -41,6 +54,11 @@ public class DropPrivilegeGroupReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DropPrivilegeGroupReq}.
+     *
+     * @return a new {@link DropPrivilegeGroupReqBuilder}
+     */
     public static DropPrivilegeGroupReqBuilder builder() {
         return new DropPrivilegeGroupReqBuilder();
     }
@@ -51,11 +69,22 @@ public class DropPrivilegeGroupReq {
         private DropPrivilegeGroupReqBuilder() {
         }
 
+        /**
+         * Sets the name of the privilege group.
+         *
+         * @param groupName the privilege group name
+         * @return this builder
+         */
         public DropPrivilegeGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
+        /**
+         * Builds the {@link DropPrivilegeGroupReq}.
+         *
+         * @return the built request
+         */
         public DropPrivilegeGroupReq build() {
             return new DropPrivilegeGroupReq(this);
         }

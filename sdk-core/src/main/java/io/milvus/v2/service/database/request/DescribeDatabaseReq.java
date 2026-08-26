@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.database.request;
 
+/**
+ * Request parameters for the {@code describeDatabase} API.
+ */
 public class DescribeDatabaseReq {
     private String databaseName;
 
@@ -26,10 +29,20 @@ public class DescribeDatabaseReq {
         this.databaseName = builder.databaseName;
     }
 
+    /**
+     * Returns the name of the database.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the name of the database.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -41,6 +54,11 @@ public class DescribeDatabaseReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DescribeDatabaseReq}.
+     *
+     * @return a new {@link DescribeDatabaseReqBuilder}
+     */
     public static DescribeDatabaseReqBuilder builder() {
         return new DescribeDatabaseReqBuilder();
     }
@@ -51,11 +69,22 @@ public class DescribeDatabaseReq {
         private DescribeDatabaseReqBuilder() {
         }
 
+        /**
+         * Sets the name of the database.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DescribeDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Builds the {@link DescribeDatabaseReq}.
+         *
+         * @return the built request
+         */
         public DescribeDatabaseReq build() {
             return new DescribeDatabaseReq(this);
         }

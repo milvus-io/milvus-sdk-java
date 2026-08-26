@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code addFileResource} API.
+ */
 public class AddFileResourceReq {
     private final String name;
     private final String path;
@@ -32,10 +35,20 @@ public class AddFileResourceReq {
         return new AddFileResourceReqBuilder();
     }
 
+    /**
+     * Returns the name of the file resource.
+     *
+     * @return the name of the file resource
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the path of the file resource.
+     *
+     * @return the path of the file resource
+     */
     public String getPath() {
         return path;
     }
@@ -52,16 +65,33 @@ public class AddFileResourceReq {
         private String name;
         private String path;
 
+        /**
+         * Sets the name of the file resource.
+         *
+         * @param name the name of the file resource
+         * @return this builder
+         */
         public AddFileResourceReqBuilder name(String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Sets the path of the file resource.
+         *
+         * @param path the path of the file resource
+         * @return this builder
+         */
         public AddFileResourceReqBuilder path(String path) {
             this.path = path;
             return this;
         }
 
+        /**
+         * Builds the {@code AddFileResourceReq}.
+         *
+         * @return the constructed {@code AddFileResourceReq}
+         */
         public AddFileResourceReq build() {
             return new AddFileResourceReq(this);
         }

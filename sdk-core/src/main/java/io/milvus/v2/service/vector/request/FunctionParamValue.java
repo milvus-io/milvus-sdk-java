@@ -43,40 +43,93 @@ public class FunctionParamValue {
         this.grpcValue = grpcValue;
     }
 
+    /**
+     * Converts this value into the gRPC {@code FunctionParamValue} message.
+     *
+     * @return the gRPC value
+     */
     public io.milvus.grpc.FunctionParamValue toGrpc() {
         return grpcValue;
     }
 
+    /**
+     * Creates a parameter value wrapping a boolean.
+     *
+     * @param value the boolean value
+     * @return the parameter value
+     */
     public static FunctionParamValue of(boolean value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setBoolValue(value).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a 64-bit integer.
+     *
+     * @param value the integer value
+     * @return the parameter value
+     */
     public static FunctionParamValue of(long value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setInt64Value(value).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a double.
+     *
+     * @param value the double value
+     * @return the parameter value
+     */
     public static FunctionParamValue of(double value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setDoubleValue(value).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a string.
+     *
+     * @param value the string value
+     * @return the parameter value
+     */
     public static FunctionParamValue of(String value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setStringValue(value).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a byte array.
+     *
+     * @param value the byte array value
+     * @return the parameter value
+     */
     public static FunctionParamValue of(byte[] value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setBytesValue(ByteString.copyFrom(value)).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a {@link ByteString}.
+     *
+     * @param value the byte string value
+     * @return the parameter value
+     */
     public static FunctionParamValue of(ByteString value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setBytesValue(value).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a list of nested parameter values.
+     *
+     * @param values the list elements
+     * @return the parameter value
+     */
     public static FunctionParamValue ofArray(List<FunctionParamValue> values) {
         io.milvus.grpc.FunctionParamArray.Builder builder = io.milvus.grpc.FunctionParamArray.newBuilder();
         values.forEach(v -> builder.addValues(v.toGrpc()));
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setArrayValue(builder.build()).build());
     }
 
+    /**
+     * Creates a parameter value wrapping a map of nested parameter values.
+     *
+     * @param fields the object fields
+     * @return the parameter value
+     */
     public static FunctionParamValue ofObject(Map<String, FunctionParamValue> fields) {
         io.milvus.grpc.FunctionParamObject.Builder builder = io.milvus.grpc.FunctionParamObject.newBuilder();
         fields.forEach((k, v) -> builder.putFields(k, v.toGrpc()));

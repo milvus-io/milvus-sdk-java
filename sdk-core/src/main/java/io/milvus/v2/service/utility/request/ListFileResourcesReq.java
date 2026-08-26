@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code listFileResources} API.
+ */
 public class ListFileResourcesReq {
 
     private ListFileResourcesReq(ListFileResourcesReqBuilder builder) {
@@ -35,6 +38,11 @@ public class ListFileResourcesReq {
 
     public static class ListFileResourcesReqBuilder {
 
+        /**
+         * Builds the {@code ListFileResourcesReq}.
+         *
+         * @return the constructed {@code ListFileResourcesReq}
+         */
         public ListFileResourcesReq build() {
             return new ListFileResourcesReq(this);
         }

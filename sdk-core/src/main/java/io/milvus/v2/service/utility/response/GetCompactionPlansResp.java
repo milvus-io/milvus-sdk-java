@@ -25,6 +25,9 @@ import io.milvus.v2.common.CompactionState;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code getCompactionPlans} API.
+ */
 public class GetCompactionPlansResp {
     private Long compactionId;
     private CompactionState state;
@@ -40,18 +43,38 @@ public class GetCompactionPlansResp {
         return new GetCompactionPlansRespBuilder();
     }
 
+    /**
+     * Returns the compaction ID.
+     *
+     * @return the compaction ID
+     */
     public Long getCompactionId() {
         return compactionId;
     }
 
+    /**
+     * Sets the compaction ID.
+     *
+     * @param compactionId the compaction ID
+     */
     public void setCompactionId(Long compactionId) {
         this.compactionId = compactionId;
     }
 
+    /**
+     * Returns the compaction state.
+     *
+     * @return the compaction state
+     */
     public CompactionState getState() {
         return state;
     }
 
+    /**
+     * Returns the compaction plans of the compaction.
+     *
+     * @return the list of compaction plans
+     */
     public List<CompactionPlan> getPlans() {
         return plans;
     }
@@ -71,21 +94,44 @@ public class GetCompactionPlansResp {
         private CompactionState state = CompactionState.UndefiedState;
         private List<CompactionPlan> plans = new ArrayList<>();
 
+        /**
+         * Sets the compaction ID.
+         *
+         * @param compactionId the compaction ID
+         * @return this builder
+         */
         public GetCompactionPlansRespBuilder compactionId(Long compactionId) {
             this.compactionId = compactionId;
             return this;
         }
 
+        /**
+         * Sets the compaction state.
+         *
+         * @param state the compaction state
+         * @return this builder
+         */
         public GetCompactionPlansRespBuilder state(CompactionState state) {
             this.state = state;
             return this;
         }
 
+        /**
+         * Sets the compaction plans of the compaction.
+         *
+         * @param plans the list of compaction plans
+         * @return this builder
+         */
         public GetCompactionPlansRespBuilder plans(List<CompactionPlan> plans) {
             this.plans = plans;
             return this;
         }
 
+        /**
+         * Builds the {@code GetCompactionPlansResp}.
+         *
+         * @return the constructed {@code GetCompactionPlansResp}
+         */
         public GetCompactionPlansResp build() {
             return new GetCompactionPlansResp(this);
         }

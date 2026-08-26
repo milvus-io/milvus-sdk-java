@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.snapshot.request;
 
+/**
+ * Request parameters for the {@code listRestoreSnapshotJobs} API.
+ */
 public class ListRestoreSnapshotJobsReq {
     private String databaseName;
     private String collectionName;
@@ -32,18 +35,38 @@ public class ListRestoreSnapshotJobsReq {
         return new ListRestoreSnapshotJobsReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -60,16 +83,33 @@ public class ListRestoreSnapshotJobsReq {
         private String databaseName = "";
         private String collectionName = "";
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public ListRestoreSnapshotJobsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public ListRestoreSnapshotJobsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds a {@link ListRestoreSnapshotJobsReq}.
+         *
+         * @return the built request
+         */
         public ListRestoreSnapshotJobsReq build() {
             return new ListRestoreSnapshotJobsReq(this);
         }

@@ -21,6 +21,9 @@ package io.milvus.v2.service.cdc.request;
 
 import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 
+/**
+ * Request parameters for the {@code dumpMessages} CDC API.
+ */
 public class DumpMessagesReq {
     private final String pchannel;
     private final GetReplicateInfoResp.MessageID startMessageID;
@@ -36,29 +39,56 @@ public class DumpMessagesReq {
         this.includeStartMessage = builder.includeStartMessage;
     }
 
+    /**
+     * Creates a new {@code DumpMessagesReq} builder.
+     *
+     * @return the builder
+     */
     public static DumpMessagesReqBuilder builder() {
         return new DumpMessagesReqBuilder();
     }
 
+    /**
+     * Returns the physical channel to dump messages from.
+     *
+     * @return the physical channel
+     */
     public String getPchannel() {
         return pchannel;
     }
 
     /**
      * Start position in WAL. Its walName supports: RocksMQ, Pulsar, Kafka, WoodPecker.
+     *
+     * @return the start message ID
      */
     public GetReplicateInfoResp.MessageID getStartMessageID() {
         return startMessageID;
     }
 
+    /**
+     * Returns the start timetick of the message range to dump.
+     *
+     * @return the start timetick
+     */
     public Long getStartTimetick() {
         return startTimetick;
     }
 
+    /**
+     * Returns the end timetick of the message range to dump.
+     *
+     * @return the end timetick
+     */
     public Long getEndTimetick() {
         return endTimetick;
     }
 
+    /**
+     * Returns whether the message at the start position is included in the dump.
+     *
+     * @return {@code true} if the start message is included
+     */
     public Boolean getIncludeStartMessage() {
         return includeStartMessage;
     }
@@ -81,31 +111,66 @@ public class DumpMessagesReq {
         private Long endTimetick = 0L;
         private Boolean includeStartMessage = Boolean.TRUE;
 
+        /**
+         * Sets the physical channel to dump messages from.
+         *
+         * @param pchannel the physical channel
+         * @return this builder
+         */
         public DumpMessagesReqBuilder pchannel(String pchannel) {
             this.pchannel = pchannel;
             return this;
         }
 
+        /**
+         * Sets the start position in WAL.
+         *
+         * @param startMessageID the start message ID
+         * @return this builder
+         */
         public DumpMessagesReqBuilder startMessageID(GetReplicateInfoResp.MessageID startMessageID) {
             this.startMessageID = startMessageID;
             return this;
         }
 
+        /**
+         * Sets the start timetick of the message range to dump.
+         *
+         * @param startTimetick the start timetick
+         * @return this builder
+         */
         public DumpMessagesReqBuilder startTimetick(Long startTimetick) {
             this.startTimetick = startTimetick;
             return this;
         }
 
+        /**
+         * Sets the end timetick of the message range to dump.
+         *
+         * @param endTimetick the end timetick
+         * @return this builder
+         */
         public DumpMessagesReqBuilder endTimetick(Long endTimetick) {
             this.endTimetick = endTimetick;
             return this;
         }
 
+        /**
+         * Sets whether the message at the start position is included in the dump.
+         *
+         * @param includeStartMessage {@code true} if the start message is included
+         * @return this builder
+         */
         public DumpMessagesReqBuilder includeStartMessage(Boolean includeStartMessage) {
             this.includeStartMessage = includeStartMessage;
             return this;
         }
 
+        /**
+         * Builds the {@link DumpMessagesReq}.
+         *
+         * @return the request
+         */
         public DumpMessagesReq build() {
             return new DumpMessagesReq(this);
         }

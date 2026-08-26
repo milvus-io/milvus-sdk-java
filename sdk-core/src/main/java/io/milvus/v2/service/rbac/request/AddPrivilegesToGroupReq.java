@@ -22,6 +22,9 @@ package io.milvus.v2.service.rbac.request;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Request parameters for the {@code addPrivilegesToGroup} API.
+ */
 public class AddPrivilegesToGroupReq {
     private String groupName;
     private List<String> privileges = new ArrayList<>();
@@ -31,18 +34,38 @@ public class AddPrivilegesToGroupReq {
         this.privileges = builder.privileges;
     }
 
+    /**
+     * Returns the name of the privilege group.
+     *
+     * @return the privilege group name
+     */
     public String getGroupName() {
         return groupName;
     }
 
+    /**
+     * Sets the name of the privilege group.
+     *
+     * @param groupName the privilege group name
+     */
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
 
+    /**
+     * Returns the privileges to add to the group.
+     *
+     * @return the privileges to add to the group
+     */
     public List<String> getPrivileges() {
         return privileges;
     }
 
+    /**
+     * Sets the privileges to add to the group.
+     *
+     * @param privileges the privileges to add to the group
+     */
     public void setPrivileges(List<String> privileges) {
         this.privileges = privileges;
     }
@@ -55,6 +78,11 @@ public class AddPrivilegesToGroupReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AddPrivilegesToGroupReq}.
+     *
+     * @return a new {@link AddPrivilegesToGroupReqBuilder}
+     */
     public static AddPrivilegesToGroupReqBuilder builder() {
         return new AddPrivilegesToGroupReqBuilder();
     }
@@ -66,16 +94,33 @@ public class AddPrivilegesToGroupReq {
         private AddPrivilegesToGroupReqBuilder() {
         }
 
+        /**
+         * Sets the name of the privilege group.
+         *
+         * @param groupName the privilege group name
+         * @return this builder
+         */
         public AddPrivilegesToGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
+        /**
+         * Sets the privileges to add to the group.
+         *
+         * @param privileges the privileges to add to the group
+         * @return this builder
+         */
         public AddPrivilegesToGroupReqBuilder privileges(List<String> privileges) {
             this.privileges = privileges;
             return this;
         }
 
+        /**
+         * Builds the {@link AddPrivilegesToGroupReq}.
+         *
+         * @return the built request
+         */
         public AddPrivilegesToGroupReq build() {
             return new AddPrivilegesToGroupReq(this);
         }

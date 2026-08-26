@@ -27,7 +27,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Utility methods for building query expressions from primary key values.
+ */
 public class VectorUtils {
+    /**
+     * Converts a list of primary key values into a filter expression of the form
+     * {@code <primaryField> in [...]}. The primary field is detected from the collection schema
+     * wrapped by the given descriptor.
+     *
+     * <p>Int64 primary keys are rendered as plain integers while VarChar primary keys are quoted.
+     *
+     * @param primaryIds the primary key values of the rows to match
+     * @param wrapper    the collection schema descriptor used to locate the primary key field
+     * @return the primary key filter expression
+     * @throws io.milvus.exception.ParamException if no primary key field is found or the primary key
+     *         type is neither {@code Int64} nor {@code VarChar}
+     */
     public static String convertPksExpr(List<?> primaryIds, DescCollResponseWrapper wrapper) {
         Optional<FieldType> optional = wrapper.getFields().stream().filter(FieldType::isPrimaryKey).findFirst();
         String expr;
@@ -51,6 +67,16 @@ public class VectorUtils {
         return expr;
     }
 
+    /**
+     * Converts a list of primary key values into a filter expression of the form
+     * {@code <primaryFieldName> in [id1,id2,...]}.
+     *
+     * <p>The values are rendered with {@link Object#toString()} and joined by commas.
+     *
+     * @param primaryIds        the primary key values of the rows to match
+     * @param primaryFieldName  the name of the primary key field
+     * @return the primary key filter expression
+     */
     public static String convertPksExpr(List<?> primaryIds, String primaryFieldName) {
         String strIDs = primaryIds.stream().map(Object::toString).collect(Collectors.joining(","));
         return primaryFieldName + " in [" + strIDs + "]";

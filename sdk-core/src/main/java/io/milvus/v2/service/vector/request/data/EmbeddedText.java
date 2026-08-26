@@ -21,18 +21,37 @@ package io.milvus.v2.service.vector.request.data;
 
 import io.milvus.grpc.PlaceholderType;
 
+/**
+ * An embedded text used for searching text stored in a struct field of a collection,
+ * where the text is embedded on the server side during the search.
+ */
 public class EmbeddedText implements BaseVector {
     private final String data;
 
+    /**
+     * Constructs an embedded text from a string.
+     *
+     * @param data the text data
+     */
     public EmbeddedText(String data) {
         this.data = data;
     }
 
+    /**
+     * Returns the placeholder type of an embedded text.
+     *
+     * @return the {@link PlaceholderType#VarChar} placeholder type
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.VarChar;
     }
 
+    /**
+     * Returns the embedded text data.
+     *
+     * @return the text data as a string
+     */
     @Override
     public Object getData() {
         return this.data;

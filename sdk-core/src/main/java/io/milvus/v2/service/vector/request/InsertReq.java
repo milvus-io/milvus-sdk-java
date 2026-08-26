@@ -23,6 +23,9 @@ import com.google.gson.JsonObject;
 
 import java.util.List;
 
+/**
+ * Request parameters for the {@code insert} API.
+ */
 public class InsertReq {
     //private List<> fields;
 
@@ -62,38 +65,83 @@ public class InsertReq {
         this.partitionName = builder.partitionName;
     }
 
+    /**
+     * Creates a new {@code InsertReq} builder.
+     *
+     * @return the builder
+     */
     public static InsertReqBuilder builder() {
         return new InsertReqBuilder();
     }
 
+    /**
+     * Returns the row data to insert.
+     *
+     * @return the row data
+     */
     public List<JsonObject> getData() {
         return data;
     }
 
+    /**
+     * Sets the row data to insert.
+     *
+     * @param data the row data
+     */
     public void setData(List<JsonObject> data) {
         this.data = data;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the partition name to insert into.
+     *
+     * @return the partition name
+     */
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Sets the partition name to insert into.
+     *
+     * @param partitionName the partition name
+     */
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -114,26 +162,55 @@ public class InsertReq {
         private String collectionName;
         private String partitionName = "";
 
+        /**
+         * Sets the row data to insert.
+         *
+         * @param data the row data
+         * @return this builder
+         */
         public InsertReqBuilder data(List<JsonObject> data) {
             this.data = data;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public InsertReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public InsertReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the partition name to insert into.
+         *
+         * @param partitionName the partition name
+         * @return this builder
+         */
         public InsertReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Builds the {@link InsertReq}.
+         *
+         * @return the request
+         */
         public InsertReq build() {
             return new InsertReq(this);
         }

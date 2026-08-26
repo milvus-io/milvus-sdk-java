@@ -54,6 +54,13 @@ public class RRFRanker extends CreateCollectionReq.Function {
     //  new RRFRanker(10)
     // Now it is deprecated, user should create a RRFRanker by builder style:
     //  RRFRanker.builder().k(10).build()
+    /**
+     * Constructs a reciprocal rank fusion ranker with the given {@code k} value. This
+     * constructor is deprecated; use {@link #builder()} instead.
+     *
+     * @param k the rank fusion constant
+     * @deprecated use {@link #builder()} instead
+     */
     @Deprecated
     public RRFRanker(int k) {
         super(CreateCollectionReq.Function.builder());
@@ -65,19 +72,42 @@ public class RRFRanker extends CreateCollectionReq.Function {
         this.k = builder.k;
     }
 
+    /**
+     * Returns the rank fusion constant {@code k}, which controls how strongly the rank
+     * position influences the fused score.
+     *
+     * @return the rank fusion constant
+     */
     public int getK() {
         return k;
     }
 
+    /**
+     * Sets the rank fusion constant {@code k}, which controls how strongly the rank
+     * position influences the fused score.
+     *
+     * @param k the rank fusion constant
+     */
     public void setK(int k) {
         this.k = k;
     }
 
+    /**
+     * Returns the function type of this ranker.
+     *
+     * @return {@link FunctionType#RERANK}
+     */
     @Override
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    /**
+     * Returns the ranker parameters as a map of parameter name to value, including the
+     * strategy and the rank fusion constant.
+     *
+     * @return the ranker parameters
+     */
     @Override
     public Map<String, String> getParams() {
         JsonObject params = new JsonObject();
@@ -102,21 +132,40 @@ public class RRFRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link RRFRanker}.
+     *
+     * @return a new builder
+     */
     public static RRFRankerBuilder builder() {
         return new RRFRankerBuilder();
     }
 
+    /**
+     * Builder for {@link RRFRanker}.
+     */
     public static class RRFRankerBuilder extends Function.FunctionBuilder<RRFRankerBuilder> {
         private int k = 60;
 
         private RRFRankerBuilder() {
         }
 
+        /**
+         * Sets the rank fusion constant {@code k}. Defaults to {@code 60}.
+         *
+         * @param k the rank fusion constant
+         * @return this builder
+         */
         public RRFRankerBuilder k(int k) {
             this.k = k;
             return this;
         }
 
+        /**
+         * Builds the {@link RRFRanker}.
+         *
+         * @return the built ranker
+         */
         @Override
         public RRFRanker build() {
             return new RRFRanker(this);

@@ -30,7 +30,18 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service for snapshot-related operations, including creating, dropping, listing, describing,
+ * restoring snapshots, and pinning snapshot data.
+ */
 public class SnapshotService extends BaseService {
+    /**
+     * Creates a snapshot of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the create snapshot request
+     * @return {@code null}
+     */
     public Void createSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -53,6 +64,13 @@ public class SnapshotService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the specified snapshot of a collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop snapshot request
+     * @return {@code null}
+     */
     public Void dropSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -72,6 +90,13 @@ public class SnapshotService extends BaseService {
         return null;
     }
 
+    /**
+     * Lists the snapshots of the given collection or database.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the list snapshots request
+     * @return the list snapshots response
+     */
     public ListSnapshotsResp listSnapshots(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListSnapshotsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -91,6 +116,13 @@ public class SnapshotService extends BaseService {
                 .build();
     }
 
+    /**
+     * Describes the specified snapshot, returning its metadata.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the describe snapshot request
+     * @return the describe snapshot response
+     */
     public DescribeSnapshotResp describeSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -117,6 +149,13 @@ public class SnapshotService extends BaseService {
                 .build();
     }
 
+    /**
+     * Restores a snapshot into a target collection and returns the restore job ID.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the restore snapshot request
+     * @return the restore snapshot response
+     */
     public RestoreSnapshotResp restoreSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RestoreSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getSourceCollectionName(), "Source collection name cannot be null or empty");
@@ -142,6 +181,13 @@ public class SnapshotService extends BaseService {
                 .build();
     }
 
+    /**
+     * Returns the state of a snapshot restore job.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get restore snapshot state request
+     * @return the get restore snapshot state response
+     */
     public GetRestoreSnapshotStateResp getRestoreSnapshotState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                                GetRestoreSnapshotStateReq request) {
         requirePositive(request.getJobId(), "Restore snapshot job ID must be positive");
@@ -157,6 +203,13 @@ public class SnapshotService extends BaseService {
                 .build();
     }
 
+    /**
+     * Lists the snapshot restore jobs of the given collection or database.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the list restore snapshot jobs request
+     * @return the list restore snapshot jobs response
+     */
     public ListRestoreSnapshotJobsResp listRestoreSnapshotJobs(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                                ListRestoreSnapshotJobsReq request) {
         String dbName = request.getDatabaseName();
@@ -181,6 +234,14 @@ public class SnapshotService extends BaseService {
                 .build();
     }
 
+    /**
+     * Pins the data of a snapshot for the given TTL so it is protected from compaction and
+     * garbage collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the pin snapshot data request
+     * @return the pin snapshot data response
+     */
     public PinSnapshotDataResp pinSnapshotData(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, PinSnapshotDataReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -204,6 +265,13 @@ public class SnapshotService extends BaseService {
                 .build();
     }
 
+    /**
+     * Unpins snapshot data previously pinned by a pin ID.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the unpin snapshot data request
+     * @return {@code null}
+     */
     public Void unpinSnapshotData(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UnpinSnapshotDataReq request) {
         requirePositive(request.getPinId(), "Snapshot pin ID must be positive");
         String title = String.format("UnpinSnapshotData pinId: %d", request.getPinId());

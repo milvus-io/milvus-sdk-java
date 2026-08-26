@@ -156,11 +156,20 @@ public class VolumeFileManager {
 
     /**
      * Synchronously uploads a local file or directory to the specified path within the Volume.
+     *
+     * @param request the upload request containing the source local file or directory path
+     *                and the target directory path in the Volume
+     * @return the upload result
+     * @throws ExecutionException if an error occurs during the upload process
+     * @throws InterruptedException if the calling thread is interrupted while waiting
      */
     public UploadFilesResult uploadFiles(UploadFilesRequest request) throws ExecutionException, InterruptedException {
         return uploadFilesAsync(request).get();
     }
 
+    /**
+    * Shuts down the volume file manager gracefully, waiting for pending uploads.
+    */
     public void shutdownGracefully() {
         VolumeSession session = lastVolumeSession;
         lastVolumeSession = null;
@@ -255,10 +264,22 @@ public class VolumeFileManager {
         return session;
     }
 
+    /**
+    * Applies for a volume and returns the volume access response.
+    *
+    * @param applyVolumeRequest the apply volume request
+    * @return the apply volume response
+    */
     protected String applyVolume(ApplyVolumeRequest applyVolumeRequest) {
         return DataVolumeUtils.applyVolume(cloudEndpoint, applyVolumeRequest);
     }
 
+    /**
+    * Creates a storage client for the applied volume.
+    *
+    * @param applyVolumeResponse the apply volume response
+    * @return the storage client
+    */
     protected StorageClient createStorageClient(ApplyVolumeResponse applyVolumeResponse) {
         String endpoint = EndpointResolver.resolveEndpoint(applyVolumeResponse.getEndpoint(), applyVolumeResponse.getCloud(),
                 applyVolumeResponse.getRegion(), connectType);
@@ -651,6 +672,11 @@ public class VolumeFileManager {
         }
 
         @Override
+        /**
+        * Reports upload progress in bytes.
+        *
+        * @param bytes the number of bytes transferred
+        */
         public void onProgress(long bytes) {
             progressTracker.updateFile(filePath, fileSize, bytes);
         }

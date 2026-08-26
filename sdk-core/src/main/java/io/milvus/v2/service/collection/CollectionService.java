@@ -49,11 +49,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Service for collection-related operations, such as creating, loading, and describing collections.
+ */
 public class CollectionService extends BaseService {
     private static final String ALLOW_INSERT_AUTO_ID = "allow_insert_auto_id";
 
     public IndexService indexService = new IndexService();
 
+    /**
+     * Creates a collection. When a {@code collectionSchema} is provided the collection is
+     * created from the schema; otherwise a simple schema is built from the request parameters.
+     * An index is created on the vector field and the collection is loaded afterwards.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the create collection request
+     * @return {@code null}
+     */
     public Void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         if (request.getCollectionSchema() != null) {
             //create collections with schema
@@ -132,6 +144,14 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Creates a collection with the provided {@code CreateCollectionReq.CollectionSchema}.
+     * Indices are created for the given index parameters and the collection is loaded afterwards.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the create collection request
+     * @return {@code null}
+     */
     public Void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -206,6 +226,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Lists the collections in the given database.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param dbName the database name
+     * @return the list collections response
+     */
     public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName) {
         String title = String.format("List collections in database: '%s'", dbName);
         ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder();
@@ -234,6 +261,13 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
+    /**
+     * Drops the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop collection request
+     * @return {@code null}
+     */
     public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -251,6 +285,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Truncates all data in the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the truncate collection request
+     * @return {@code null}
+     */
     public Void truncateCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, TruncateCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -267,6 +308,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Alters the properties of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the alter collection properties request
+     * @return {@code null}
+     */
     public Void alterCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -291,6 +339,14 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Adds a field to the specified collection. Falls back to the legacy
+     * {@code addCollectionField} RPC when the server does not support schema alteration.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the add collection field request
+     * @return {@code null}
+     */
     public Void addCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -340,6 +396,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Adds a struct field to the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the add collection struct field request
+     * @return {@code null}
+     */
     public Void addCollectionStructField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionStructFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -359,6 +422,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Alters the properties of a field in the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the alter collection field request
+     * @return {@code null}
+     */
     public Void alterCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -381,6 +451,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops a field from the specified collection, identified by either a field name or a field ID.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop collection field request
+     * @return {@code null}
+     */
     public Void dropCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -416,6 +493,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the specified properties from the collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop collection properties request
+     * @return {@code null}
+     */
     public Void dropCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -437,6 +521,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the specified properties from a field of the collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop collection field properties request
+     * @return {@code null}
+     */
     public Void dropCollectionFieldProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -459,6 +550,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Checks whether the specified collection exists.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the has collection request
+     * @return {@code true} if the collection exists, otherwise {@code false}
+     */
     public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -473,6 +571,13 @@ public class CollectionService extends BaseService {
         return response.getValue();
     }
 
+    /**
+     * Describes the specified collection by name or collection ID.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the describe collection request
+     * @return the describe collection response
+     */
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -494,6 +599,13 @@ public class CollectionService extends BaseService {
         return convertUtils.convertDescCollectionResp(response);
     }
 
+    /**
+     * Describes multiple collections by names or collection IDs in a single request.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the batch describe collection request
+     * @return the list of describe collection responses
+     */
     public List<DescribeCollectionResp> batchDescribeCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BatchDescribeCollectionReq request) {
         String dbName = request.getDatabaseName();
         List<String> collectionNames = request.getCollectionNames();
@@ -515,6 +627,13 @@ public class CollectionService extends BaseService {
         return convertUtils.convertDescCollectionsResp(response);
     }
 
+    /**
+     * Renames the specified collection, optionally moving it to a target database.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the rename collection request
+     * @return {@code null}
+     */
     public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -542,6 +661,14 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Loads the specified collection into memory. When {@code sync} is enabled, waits until
+     * the load progress reaches 100%.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the load collection request
+     * @return {@code null}
+     */
     public Void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -572,6 +699,14 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Refreshes the loaded collection data so that newly flushed data becomes searchable.
+     * When {@code sync} is enabled, waits until the refresh load completes.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the refresh load request
+     * @return {@code null}
+     */
     public Void refreshLoad(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RefreshLoadReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -596,6 +731,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Releases the specified collection from memory.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the release collection request
+     * @return {@code null}
+     */
     public Void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -611,10 +753,25 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Returns the load state of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get load state request
+     * @return {@code true} when the collection is loaded, otherwise {@code false}
+     */
     public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
         return getLoadStateResponse(blockingStub, request).getState() == LoadState.LoadStateLoaded;
     }
 
+    /**
+     * Returns the load state of the specified collection together with the loading progress
+     * when the collection is still loading.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get load state request
+     * @return the get load state response
+     */
     public GetLoadStateResp getLoadStateV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
         GetLoadStateResponse response = getLoadStateResponse(blockingStub, request);
         GetLoadStateResp.GetLoadStateRespBuilder respBuilder = GetLoadStateResp.builder()
@@ -685,6 +842,13 @@ public class CollectionService extends BaseService {
         return response;
     }
 
+    /**
+     * Returns the statistics of the specified collection, including the row count.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get collection stats request
+     * @return the collection statistics response
+     */
     public GetCollectionStatsResp getCollectionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetCollectionStatsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -706,11 +870,23 @@ public class CollectionService extends BaseService {
         return getCollectionStatsResp;
     }
 
+    /**
+     * Creates an empty {@code CollectionSchema} builder result for use with the create collection API.
+     *
+     * @return an empty collection schema
+     */
     public static CreateCollectionReq.CollectionSchema createSchema() {
         return CreateCollectionReq.CollectionSchema.builder()
                 .build();
     }
 
+    /**
+     * Describes the replicas of the specified collection, including their shard replicas.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the describe replicas request
+     * @return the describe replicas response
+     */
     public DescribeReplicasResp describeReplicas(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                  DescribeReplicasReq request) {
         String dbName = request.getDatabaseName();
@@ -760,6 +936,13 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
+    /**
+     * Adds a function (for example BM25) to the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the add collection function request
+     * @return {@code null}
+     */
     public Void addCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                       AddCollectionFunctionReq request) {
         if (request.getFunction() == null) {
@@ -782,6 +965,14 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Adds a function output field together with its bound index to the specified collection.
+     * Only BM25 (with SparseFloatVector) and MINHASH (with BinaryVector) function fields are supported.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the add function field request
+     * @return {@code null}
+     */
     public Void addFunctionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                  AddFunctionFieldReq request) {
         if (request.getFunction() == null) {
@@ -880,6 +1071,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Alters a function of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the alter collection function request
+     * @return {@code null}
+     */
     public Void alterCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                         AlterCollectionFunctionReq request) {
         if (request.getFunction() == null) {
@@ -903,6 +1101,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops a function from the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop collection function request
+     * @return {@code null}
+     */
     public Void dropCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                        DropCollectionFunctionReq request) {
         if (StringUtils.isEmpty(request.getFunctionName())) {
@@ -926,6 +1131,13 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the output fields of a function from the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop function field request
+     * @return {@code null}
+     */
     public Void dropFunctionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                   DropFunctionFieldReq request) {
         if (StringUtils.isEmpty(request.getFunctionName())) {

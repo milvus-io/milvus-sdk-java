@@ -51,21 +51,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class used internally by the Milvus Java SDK v2 to convert query, search, and hybrid
+ * search requests into the gRPC protobuf requests sent to the Milvus server.
+ *
+ * <p>Also provides helpers for building filter expression templates and primary key filter
+ * expressions.</p>
+ */
 public class VectorUtils {
     private String endpoint = "";
     private String currentDbName;
 
+    /**
+     * Constructs a new {@code VectorUtils}.
+     */
     public VectorUtils() {
     }
 
+    /**
+     * Sets the server endpoint, used to look up the session guarantee timestamp from the collection
+     * timestamp cache.
+     *
+     * @param endpoint the server endpoint
+     */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint == null ? "" : endpoint;
     }
 
+    /**
+     * Sets the current database name.
+     *
+     * @param currentDbName the current database name
+     */
     public void setCurrentDbName(String currentDbName) {
         this.currentDbName = currentDbName;
     }
 
+    /**
+     * Converts an SDK v2 {@link QueryReq} into a gRPC {@link QueryRequest}.
+     *
+     * <p>Maps the filter expression, partition names, output fields, consistency level, query
+     * parameters, offset, limit, and timezone onto the gRPC request.</p>
+     *
+     * @param request the SDK v2 query request
+     * @return the gRPC query request
+     * @throws NullPointerException if {@code request} is null
+     */
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request) {
         if (request == null) {
             throw new NullPointerException("request cannot be null");
@@ -263,6 +294,16 @@ public class VectorUtils {
         }
     }
 
+    /**
+     * Converts an SDK v2 {@link SearchReq} into a gRPC {@link SearchRequest}.
+     *
+     * <p>Maps the search targets (vectors or IDs), filter expression, search parameters, output
+     * fields, consistency level, ranker/function score, function chains, and highlighter onto the
+     * gRPC request.</p>
+     *
+     * @param request the SDK v2 search request
+     * @return the gRPC search request
+     */
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -534,6 +575,18 @@ public class VectorUtils {
         }
     }
 
+    /**
+     * Deduces the gRPC template value type from a Java value and creates the corresponding
+     * {@link TemplateValue}.
+     *
+     * <p>Supported types are {@link Boolean}, {@link Integer}/{@link Long}, {@link Double},
+     * {@link String}, {@code byte[]}, and {@link List}. Lists are converted recursively into
+     * template array values.</p>
+     *
+     * @param value the value used as a filter expression template parameter
+     * @return the gRPC template value
+     * @throws MilvusClientException if the value type is not supported
+     */
     public static TemplateValue deduceAndCreateTemplateValue(Object value) {
         if (value instanceof Boolean) {
             return TemplateValue.newBuilder()
@@ -570,6 +623,17 @@ public class VectorUtils {
         }
     }
 
+    /**
+     * Converts an {@link AnnSearchReq} into a gRPC {@link SearchRequest}.
+     *
+     * <p>Maps the target vectors, search parameters, filter expression, and consistency level onto
+     * the gRPC request.</p>
+     *
+     * @param annSearchReq     the ANN search request
+     * @param consistencyLevel the consistency level to apply, may be {@code null}
+     * @return the gRPC search request
+     * @throws NullPointerException if {@code annSearchReq} is null
+     */
     public static SearchRequest convertAnnSearchParam(AnnSearchReq annSearchReq,
                                                       ConsistencyLevel consistencyLevel) {
         if (annSearchReq == null) {
@@ -651,6 +715,18 @@ public class VectorUtils {
         return builder.build();
     }
 
+    /**
+     * Converts an SDK v2 {@link HybridSearchReq} into a gRPC {@link HybridSearchRequest}.
+     *
+     * <p>Converts each sub-request via {@link #convertAnnSearchParam(AnnSearchReq, ConsistencyLevel)}
+     * and maps the ranker/function score, group-by settings, output fields, and consistency level
+     * onto the gRPC request.</p>
+     *
+     * @param request the SDK v2 hybrid search request
+     * @return the gRPC hybrid search request
+     * @throws MilvusClientException if the sub-request list is empty or both a ranker and a function
+     *                               score are set
+     */
     public HybridSearchRequest ConvertToGrpcHybridSearchRequest(HybridSearchReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -780,6 +856,14 @@ public class VectorUtils {
         return builder.build();
     }
 
+    /**
+     * Builds a filter expression of the form {@code primaryFieldName in [...]} from the given
+     * primary key values. String IDs are quoted, other ID types are rendered as-is.
+     *
+     * @param primaryFieldName the primary key field name
+     * @param ids              the list of primary key values
+     * @return the built filter expression
+     */
     public String getExprById(String primaryFieldName, List<?> ids) {
         StringBuilder sb = new StringBuilder();
         sb.append(primaryFieldName).append(" in [");

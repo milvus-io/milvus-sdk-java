@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.response;
 
+/**
+ * Response returned by the {@code flushAll} API.
+ */
 public class FlushAllResp {
     private Long flushAllTs;
 
@@ -30,10 +33,20 @@ public class FlushAllResp {
         return new FlushAllRespBuilder();
     }
 
+    /**
+     * Returns the flush-all timestamp.
+     *
+     * @return the flush-all timestamp
+     */
     public Long getFlushAllTs() {
         return flushAllTs;
     }
 
+    /**
+     * Sets the flush-all timestamp.
+     *
+     * @param flushAllTs the flush-all timestamp
+     */
     public void setFlushAllTs(Long flushAllTs) {
         this.flushAllTs = flushAllTs;
     }
@@ -48,11 +61,22 @@ public class FlushAllResp {
     public static class FlushAllRespBuilder {
         private Long flushAllTs = 0L;
 
+        /**
+         * Sets the flush-all timestamp.
+         *
+         * @param flushAllTs the flush-all timestamp
+         * @return this builder
+         */
         public FlushAllRespBuilder flushAllTs(Long flushAllTs) {
             this.flushAllTs = flushAllTs;
             return this;
         }
 
+        /**
+         * Builds the {@code FlushAllResp}.
+         *
+         * @return the constructed {@code FlushAllResp}
+         */
         public FlushAllResp build() {
             return new FlushAllResp(this);
         }

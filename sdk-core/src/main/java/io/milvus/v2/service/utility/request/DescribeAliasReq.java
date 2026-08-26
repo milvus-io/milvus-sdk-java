@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code describeAlias} API.
+ */
 public class DescribeAliasReq {
     private String databaseName;
     private String alias;
@@ -32,18 +35,38 @@ public class DescribeAliasReq {
         return new DescribeAliasReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the alias.
+     *
+     * @return the alias
+     */
     public String getAlias() {
         return alias;
     }
 
+    /**
+     * Sets the alias.
+     *
+     * @param alias the alias
+     */
     public void setAlias(String alias) {
         this.alias = alias;
     }
@@ -60,16 +83,33 @@ public class DescribeAliasReq {
         private String databaseName;
         private String alias;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DescribeAliasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the alias.
+         *
+         * @param alias the alias
+         * @return this builder
+         */
         public DescribeAliasReqBuilder alias(String alias) {
             this.alias = alias;
             return this;
         }
 
+        /**
+         * Builds the {@code DescribeAliasReq}.
+         *
+         * @return the constructed {@code DescribeAliasReq}
+         */
         public DescribeAliasReq build() {
             return new DescribeAliasReq(this);
         }

@@ -30,6 +30,13 @@ import java.util.function.Consumer;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
+/**
+ * Manages the client connection to the primary cluster of a global cluster deployment.
+ * <p>
+ * On construction the stub fetches the global topology, connects to the primary cluster, and
+ * starts a background {@link TopologyRefresher}. When the topology changes, the stub swaps to a
+ * new client for the new primary endpoint and notifies the registered primary-change callback.
+ */
 public class GlobalStub {
     private static final Logger logger = LoggerFactory.getLogger(GlobalStub.class);
 
@@ -80,18 +87,36 @@ public class GlobalStub {
         this.clientFactory = clientFactory;
     }
 
+    /**
+     * Returns the client connected to the current primary cluster.
+     *
+     * @return the primary client
+     */
     public MilvusClientV2 getPrimaryClient() {
         return innerClient;
     }
 
+    /**
+     * Returns the most recently fetched global topology.
+     *
+     * @return the current topology
+     */
     public GlobalTopology getTopology() {
         return topology;
     }
 
+    /**
+     * Returns the endpoint of the current primary cluster.
+     *
+     * @return the primary endpoint
+     */
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
     }
 
+    /**
+     * Triggers an immediate topology refresh, which may swap the primary client.
+     */
     public void triggerRefresh() {
         if (refresher != null) {
             refresher.triggerRefresh();
@@ -121,6 +146,9 @@ public class GlobalStub {
         }
     }
 
+    /**
+     * Stops the topology refresher and closes the current primary client.
+     */
     public void close() {
         lock.lock();
         try {

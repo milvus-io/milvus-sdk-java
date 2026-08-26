@@ -30,7 +30,17 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Service for partition-related operations, such as creating, loading, and listing partitions.
+ */
 public class PartitionService extends BaseService {
+    /**
+     * Creates a partition in the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the create partition request
+     * @return {@code null}
+     */
     public Void createPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePartitionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -50,6 +60,13 @@ public class PartitionService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the specified partition from the collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop partition request
+     * @return {@code null}
+     */
     public Void dropPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropPartitionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -69,6 +86,13 @@ public class PartitionService extends BaseService {
         return null;
     }
 
+    /**
+     * Checks whether the specified partition exists in the collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the has partition request
+     * @return {@code true} if the partition exists, otherwise {@code false}
+     */
     public Boolean hasPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasPartitionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -88,6 +112,13 @@ public class PartitionService extends BaseService {
         return boolResponse.getValue();
     }
 
+    /**
+     * Lists the partitions of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the list partitions request
+     * @return the list of partition names
+     */
     public List<String> listPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListPartitionsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -104,6 +135,13 @@ public class PartitionService extends BaseService {
         return showPartitionsResponse.getPartitionNamesList();
     }
 
+    /**
+     * Returns the statistics of the specified partition, including the row count.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get partition stats request
+     * @return the partition statistics response
+     */
     public GetPartitionStatsResp getPartitionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                    GetPartitionStatsReq request) {
         String dbName = request.getDatabaseName();
@@ -130,6 +168,14 @@ public class PartitionService extends BaseService {
         return getPartitionStatsResp;
     }
 
+    /**
+     * Loads the specified partitions into memory. When {@code sync} is enabled, waits until
+     * the load progress reaches 100%.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the load partitions request
+     * @return {@code null}
+     */
     public Void loadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadPartitionsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -165,6 +211,13 @@ public class PartitionService extends BaseService {
         return null;
     }
 
+    /**
+     * Releases the specified partitions from memory.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the release partitions request
+     * @return {@code null}
+     */
     public Void releasePartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleasePartitionsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();

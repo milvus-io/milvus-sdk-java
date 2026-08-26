@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code delete} API.
+ */
 public class DeleteReq {
     private String databaseName;
     private String collectionName;
@@ -49,54 +52,119 @@ public class DeleteReq {
         this.filterTemplateValues = builder.filterTemplateValues;
     }
 
+    /**
+     * Creates a new {@code DeleteReq} builder.
+     *
+     * @return the builder
+     */
     public static DeleteReqBuilder builder() {
         return new DeleteReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the partition name to delete from.
+     *
+     * @return the partition name
+     */
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Sets the partition name to delete from.
+     *
+     * @param partitionName the partition name
+     */
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
 
+    /**
+     * Returns the filter expression that selects the entities to delete.
+     *
+     * @return the filter expression
+     */
     public String getFilter() {
         return filter;
     }
 
+    /**
+     * Sets the filter expression that selects the entities to delete.
+     *
+     * @param filter the filter expression
+     */
     public void setFilter(String filter) {
         this.filter = filter;
     }
 
+    /**
+     * Returns the primary key values of the entities to delete.
+     *
+     * @return the primary key values
+     */
     public List<Object> getIds() {
         return ids;
     }
 
+    /**
+     * Sets the primary key values of the entities to delete.
+     *
+     * @param ids the primary key values
+     */
     public void setIds(List<Object> ids) {
         this.ids = ids;
     }
 
+    /**
+     * Returns the expression template values used to improve expression parsing performance.
+     *
+     * @return the filter template values
+     */
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
 
+    /**
+     * Sets the expression template values used to improve expression parsing performance.
+     *
+     * @param filterTemplateValues the filter template values
+     */
     public void setFilterTemplateValues(Map<String, Object> filterTemplateValues) {
         this.filterTemplateValues = filterTemplateValues;
     }
@@ -121,36 +189,77 @@ public class DeleteReq {
         private List<Object> ids;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DeleteReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DeleteReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the partition name to delete from.
+         *
+         * @param partitionName the partition name
+         * @return this builder
+         */
         public DeleteReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Sets the filter expression that selects the entities to delete.
+         *
+         * @param filter the filter expression
+         * @return this builder
+         */
         public DeleteReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
+        /**
+         * Sets the primary key values of the entities to delete.
+         *
+         * @param ids the primary key values
+         * @return this builder
+         */
         public DeleteReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
         }
 
+        /**
+         * Sets the expression template values used to improve expression parsing performance.
+         *
+         * @param filterTemplateValues the filter template values
+         * @return this builder
+         */
         public DeleteReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
         }
 
+        /**
+         * Builds the {@link DeleteReq}.
+         *
+         * @return the request
+         */
         public DeleteReq build() {
             return new DeleteReq(this);
         }

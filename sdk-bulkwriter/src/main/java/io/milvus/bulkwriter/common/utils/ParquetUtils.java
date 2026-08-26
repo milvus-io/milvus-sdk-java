@@ -30,6 +30,10 @@ import java.util.List;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
+/**
+ * Utility class that builds Parquet {@link MessageType} schemas from a Milvus collection schema and
+ * provides the Hadoop configuration used when reading Parquet bulk files.
+ */
 public class ParquetUtils {
     private static void setMessageType(Types.BaseGroupBuilder<?, ?> builder,
                                        PrimitiveType.PrimitiveTypeName primitiveName,
@@ -62,6 +66,15 @@ public class ParquetUtils {
         }
     }
 
+    /**
+     * Builds a Parquet {@link MessageType} schema from the given Milvus collection schema. Fields that
+     * are auto-generated primary keys or function output fields are omitted, vector, array and struct
+     * fields are mapped to their Parquet equivalents, and a dynamic field is appended when dynamic
+     * fields are enabled.
+     *
+     * @param collectionSchema the Milvus collection schema to convert
+     * @return the resulting Parquet message type
+     */
     public static MessageType parseCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
         List<CreateCollectionReq.FieldSchema> fields = collectionSchema.getFieldSchemaList();
         List<String> outputFieldNames = V2AdapterUtils.getOutputFieldNames(collectionSchema);
@@ -217,6 +230,12 @@ public class ParquetUtils {
         groupBuilder.named(struct.getName());
     }
 
+    /**
+     * Returns a Hadoop configuration for reading local Parquet files, with local file system caching
+     * disabled to avoid stale file handles.
+     *
+     * @return the Hadoop configuration
+     */
     public static Configuration getParquetConfiguration() {
         // set fs.file.impl.disable.cache to true for this issue: https://github.com/milvus-io/milvus-sdk-java/issues/1381
         Configuration configuration = new Configuration();

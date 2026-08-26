@@ -16,6 +16,13 @@ import java.util.Map;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
+/**
+ * {@link FormatFileWriter} implementation that writes bulk-import data rows to a CSV data file.
+ *
+ * <p>The writer produces a CSV file with a header row (emitted on the first row of each chunk),
+ * quotes string values and serializes {@link java.util.List} and {@link java.util.Map} values as
+ * JSON. Separator and null placeholder values are taken from the supplied configuration.
+ */
 public class CSVFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(CSVFileWriter.class);
 
@@ -24,6 +31,16 @@ public class CSVFileWriter implements FormatFileWriter {
     private String filePath;
     private Map<String, Object> config;
 
+    /**
+     * Creates a CSV data file writer.
+     *
+     * @param collectionSchema the collection schema describing the fields to be written
+     * @param filePathPrefix the file path prefix; the CSV extension is appended to form the data
+     *                       file path
+     * @param config the writer configuration, supporting {@code sep} (column separator) and
+     *               {@code nullkey} (placeholder for null values)
+     * @throws IOException if the CSV data file cannot be created
+     */
     public CSVFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix, Map<String, Object> config) throws IOException {
         this.collectionSchema = collectionSchema;
         this.config = config;
@@ -39,6 +56,14 @@ public class CSVFileWriter implements FormatFileWriter {
         this.writer = new BufferedWriter(new java.io.FileWriter(filePath));
     }
 
+    /**
+     * Appends a row of values to the CSV data file.
+     *
+     * @param rowValues the row values keyed by field name
+     * @param firstWrite {@code true} if this is the first row written to the data file chunk, in
+     *                   which case the header row is emitted
+     * @throws IOException if the row cannot be written to the CSV file
+     */
     @Override
     public void appendRow(Map<String, Object> rowValues, boolean firstWrite) throws IOException {
         rowValues.keySet().removeIf(key -> key.equals(DYNAMIC_FIELD_NAME) && !this.collectionSchema.isEnableDynamicField());
@@ -89,11 +114,21 @@ public class CSVFileWriter implements FormatFileWriter {
         }
     }
 
+    /**
+     * Returns the file path of the CSV data file being written.
+     *
+     * @return the file path of the CSV data file
+     */
     @Override
     public String getFilePath() {
         return filePath;
     }
 
+    /**
+     * Closes the CSV data file and releases the underlying writer resources.
+     *
+     * @throws IOException if the CSV data file cannot be closed
+     */
     @Override
     public void close() throws IOException {
         this.writer.close();

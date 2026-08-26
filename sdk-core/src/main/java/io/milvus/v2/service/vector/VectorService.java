@@ -56,6 +56,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Service for vector operations, such as insert, upsert, search, hybrid search, query, get,
+ * delete, and iterators.
+ */
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
     private DescribeCollectionResponse describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
@@ -115,6 +119,13 @@ public class VectorService extends BaseService {
         return rpcRequest.toBuilder().setSchemaTimestamp(descResp.getUpdateTimestamp()).build();
     }
 
+    /**
+     * Inserts entities into the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the insert request
+     * @return the insert response
+     */
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
         return insert(blockingStub, request, true);
     }
@@ -177,6 +188,13 @@ public class VectorService extends BaseService {
         return rpcRequest.toBuilder().setSchemaTimestamp(descResp.getUpdateTimestamp()).build();
     }
 
+    /**
+     * Upserts entities into the specified collection, inserting or updating them by primary key.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the upsert request
+     * @return the upsert response
+     */
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
         return upsert(blockingStub, request, true);
     }
@@ -249,10 +267,25 @@ public class VectorService extends BaseService {
         return queryRequest;
     }
 
+    /**
+     * Queries entities from the specified collection by filter expression or primary keys.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the query request
+     * @return the query response
+     */
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
         return query(blockingStub, request, null);
     }
 
+    /**
+     * Queries entities from the specified collection, optionally routing the request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the query request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the query response
+     */
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                            QueryReq request, String clusterId) {
         QueryRequest queryRequest = withQueryClusterId(buildQueryRequest(blockingStub, request), clusterId);
@@ -262,6 +295,15 @@ public class VectorService extends BaseService {
         return convertQueryResponse(title, response);
     }
 
+    /**
+     * Queries entities asynchronously, with retry support.
+     *
+     * @param futureStubSupplier supplies the gRPC future stub for each retry attempt
+     * @param request the query request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @param retryUtils the retry utility used to retry failed queries
+     * @return a future resolving to the query response
+     */
     public CompletableFuture<QueryResp> queryAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             QueryReq request, String clusterId, RpcUtils retryUtils) {
@@ -347,10 +389,25 @@ public class VectorService extends BaseService {
         return 0L;
     }
 
+    /**
+     * Searches the specified collection for the nearest neighbors of the query vectors.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the search request
+     * @return the search response
+     */
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
         return search(blockingStub, request, null);
     }
 
+    /**
+     * Searches the specified collection, optionally routing the request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the search request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the search response
+     */
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                              SearchReq request, String clusterId) {
         String dbName = request.getDatabaseName();
@@ -367,6 +424,15 @@ public class VectorService extends BaseService {
         return convertSearchResponse(title, blockingStub.search(effectiveRequest), true);
     }
 
+    /**
+     * Searches asynchronously, with retry support.
+     *
+     * @param futureStubSupplier supplies the gRPC future stub for each retry attempt
+     * @param request the search request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @param retryUtils the retry utility used to retry failed searches
+     * @return a future resolving to the search response
+     */
     public CompletableFuture<SearchResp> searchAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             SearchReq request, String clusterId, RpcUtils retryUtils) {
@@ -401,10 +467,25 @@ public class VectorService extends BaseService {
         return respBuilder.build();
     }
 
+    /**
+     * Performs a hybrid search across multiple vector fields of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the hybrid search request
+     * @return the hybrid search response
+     */
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HybridSearchReq request) {
         return hybridSearch(blockingStub, request, null);
     }
 
+    /**
+     * Performs a hybrid search, optionally routing the request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the hybrid search request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the hybrid search response
+     */
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                    HybridSearchReq request, String clusterId) {
         String dbName = request.getDatabaseName();
@@ -421,6 +502,15 @@ public class VectorService extends BaseService {
         return convertSearchResponse(title, blockingStub.hybridSearch(effectiveRequest), false);
     }
 
+    /**
+     * Performs a hybrid search asynchronously, with retry support.
+     *
+     * @param futureStubSupplier supplies the gRPC future stub for each retry attempt
+     * @param request the hybrid search request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @param retryUtils the retry utility used to retry failed searches
+     * @return a future resolving to the hybrid search response
+     */
     public CompletableFuture<SearchResp> hybridSearchAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             HybridSearchReq request, String clusterId, RpcUtils retryUtils) {
@@ -618,11 +708,27 @@ public class VectorService extends BaseService {
         }
     }
 
+    /**
+     * Creates a query iterator over the entities of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub wrapper
+     * @param request the query iterator request
+     * @return the query iterator
+     */
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request) {
         return queryIterator(blockingStub, request, null);
     }
 
+    /**
+     * Creates a query iterator over the entities of the specified collection, optionally
+     * routing the request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub wrapper
+     * @param request the query iterator request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the query iterator
+     */
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request, String clusterId) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
@@ -632,11 +738,27 @@ public class VectorService extends BaseService {
         return new QueryIterator(request, blockingStub, pkField, respR.getCollectionID(), clusterId);
     }
 
+    /**
+     * Creates a search iterator over the search results of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub wrapper
+     * @param request the search iterator request
+     * @return the search iterator
+     */
     public SearchIterator searchIterator(RpcStubWrapper blockingStub,
                                          SearchIteratorReq request) {
         return searchIterator(blockingStub, request, null);
     }
 
+    /**
+     * Creates a search iterator over the search results of the specified collection, optionally
+     * routing the request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub wrapper
+     * @param request the search iterator request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the search iterator
+     */
     public SearchIterator searchIterator(RpcStubWrapper blockingStub,
                                          SearchIteratorReq request, String clusterId) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
@@ -646,16 +768,39 @@ public class VectorService extends BaseService {
         return new SearchIterator(request, blockingStub, pkField, clusterId);
     }
 
+    /**
+     * Creates a V2 search iterator over the search results of the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub wrapper
+     * @param request the search iterator V2 request
+     * @return the search iterator V2
+     */
     public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
                                              SearchIteratorReqV2 request) {
         return searchIteratorV2(blockingStub, request, null);
     }
 
+    /**
+     * Creates a V2 search iterator over the search results of the specified collection, optionally
+     * routing the request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub wrapper
+     * @param request the search iterator V2 request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the search iterator V2
+     */
     public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
                                              SearchIteratorReqV2 request, String clusterId) {
         return new SearchIteratorV2(request, blockingStub, clusterId);
     }
 
+    /**
+     * Deletes entities from the specified collection by filter expression or primary keys.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the delete request
+     * @return the delete response
+     */
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DeleteReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -697,10 +842,26 @@ public class VectorService extends BaseService {
                 .build();
     }
 
+    /**
+     * Gets entities from the specified collection by primary keys.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get request
+     * @return the get response
+     */
     public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReq request) {
         return get(blockingStub, request, null);
     }
 
+    /**
+     * Gets entities from the specified collection by primary keys, optionally routing the
+     * request to a cluster.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the get request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @return the get response
+     */
     public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                        GetReq request, String clusterId) {
         String dbName = request.getDatabaseName();
@@ -715,6 +876,15 @@ public class VectorService extends BaseService {
                 .build();
     }
 
+    /**
+     * Gets entities from the specified collection asynchronously, with retry support.
+     *
+     * @param futureStubSupplier supplies the gRPC future stub for each retry attempt
+     * @param request the get request
+     * @param clusterId the target cluster ID, or {@code null} to use the default routing
+     * @param retryUtils the retry utility used to retry failed queries
+     * @return a future resolving to the get response
+     */
     public CompletableFuture<GetResp> getAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             GetReq request, String clusterId, RpcUtils retryUtils) {
@@ -759,6 +929,13 @@ public class VectorService extends BaseService {
         return queryReq;
     }
 
+    /**
+     * Runs the configured analyzer on the given texts and returns the analyzed tokens.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the run analyzer request
+     * @return the run analyzer response
+     */
     public RunAnalyzerResp runAnalyzer(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RunAnalyzerReq request) {
         String title = "RunAnalyzer";
         if (request.getTexts().isEmpty()) {

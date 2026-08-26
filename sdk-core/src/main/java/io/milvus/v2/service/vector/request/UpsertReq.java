@@ -23,6 +23,9 @@ import com.google.gson.JsonObject;
 
 import java.util.List;
 
+/**
+ * Request parameters for the {@code upsert} API.
+ */
 public class UpsertReq {
     /**
      * Sets the row data to insert. The rows list cannot be empty.
@@ -64,42 +67,92 @@ public class UpsertReq {
         this.fieldOps = builder.fieldOps;
     }
 
+    /**
+     * Creates a new {@code UpsertReq} builder.
+     *
+     * @return the builder
+     */
     public static UpsertReqBuilder builder() {
         return new UpsertReqBuilder();
     }
 
+    /**
+     * Returns the row data to upsert.
+     *
+     * @return the row data
+     */
     public List<JsonObject> getData() {
         return data;
     }
 
+    /**
+     * Sets the row data to upsert.
+     *
+     * @param data the row data
+     */
     public void setData(List<JsonObject> data) {
         this.data = data;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the partition name to upsert into.
+     *
+     * @return the partition name
+     */
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Sets the partition name to upsert into.
+     *
+     * @param partitionName the partition name
+     */
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
 
+    /**
+     * Returns whether the upsert performs a partial update.
+     *
+     * @return {@code true} if the upsert performs a partial update
+     */
     public boolean isPartialUpdate() {
         if (partialUpdate || fieldOps == null) {
             return partialUpdate;
@@ -113,14 +166,29 @@ public class UpsertReq {
         return partialUpdate;
     }
 
+    /**
+     * Sets whether the upsert performs a partial update.
+     *
+     * @param partialUpdate {@code true} if the upsert performs a partial update
+     */
     public void setPartialUpdate(boolean partialUpdate) {
         this.partialUpdate = partialUpdate;
     }
 
+    /**
+     * Returns the per-field update operations for a partial update.
+     *
+     * @return the field update operations
+     */
     public List<FieldPartialUpdateOp> getFieldOps() {
         return fieldOps;
     }
 
+    /**
+     * Sets the per-field update operations for a partial update.
+     *
+     * @param fieldOps the field update operations
+     */
     public void setFieldOps(List<FieldPartialUpdateOp> fieldOps) {
         this.fieldOps = fieldOps;
     }
@@ -145,41 +213,85 @@ public class UpsertReq {
         private boolean partialUpdate = false; // default value
         private List<FieldPartialUpdateOp> fieldOps = null;
 
+        /**
+         * Sets the row data to upsert.
+         *
+         * @param data the row data
+         * @return this builder
+         */
         public UpsertReqBuilder data(List<JsonObject> data) {
             this.data = data;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public UpsertReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public UpsertReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the partition name to upsert into.
+         *
+         * @param partitionName the partition name
+         * @return this builder
+         */
         public UpsertReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Sets whether the upsert performs a partial update.
+         *
+         * @param partialUpdate {@code true} if the upsert performs a partial update
+         * @return this builder
+         */
         public UpsertReqBuilder partialUpdate(boolean partialUpdate) {
             this.partialUpdate = partialUpdate;
             return this;
         }
 
+        /**
+         * Sets the per-field update operations for a partial update.
+         *
+         * @param fieldOps the field update operations
+         * @return this builder
+         */
         public UpsertReqBuilder fieldOps(List<FieldPartialUpdateOp> fieldOps) {
             this.fieldOps = fieldOps;
             return this;
         }
 
+        /**
+         * Builds the {@link UpsertReq}.
+         *
+         * @return the request
+         */
         public UpsertReq build() {
             return new UpsertReq(this);
         }
     }
 
+    /**
+     * Describes a per-field update operation applied during a partial update.
+     */
     public static class FieldPartialUpdateOp {
         private String fieldName;
         private OpType opType;
@@ -189,22 +301,47 @@ public class UpsertReq {
             this.opType = builder.opType;
         }
 
+        /**
+         * Creates a new {@code FieldPartialUpdateOp} builder.
+         *
+         * @return the builder
+         */
         public static FieldPartialUpdateOpBuilder builder() {
             return new FieldPartialUpdateOpBuilder();
         }
 
+        /**
+         * Returns the name of the field to update.
+         *
+         * @return the field name
+         */
         public String getFieldName() {
             return fieldName;
         }
 
+        /**
+         * Sets the name of the field to update.
+         *
+         * @param fieldName the field name
+         */
         public void setFieldName(String fieldName) {
             this.fieldName = fieldName;
         }
 
+        /**
+         * Returns the update operation type.
+         *
+         * @return the operation type
+         */
         public OpType getOpType() {
             return opType;
         }
 
+        /**
+         * Sets the update operation type.
+         *
+         * @param opType the operation type
+         */
         public void setOpType(OpType opType) {
             this.opType = opType;
         }
@@ -217,6 +354,9 @@ public class UpsertReq {
                     '}';
         }
 
+        /**
+         * The type of operation applied to a field during a partial update.
+         */
         public enum OpType {
             REPLACE,
             ARRAY_APPEND,
@@ -227,16 +367,33 @@ public class UpsertReq {
             private String fieldName;
             private OpType opType = OpType.REPLACE;
 
+            /**
+             * Sets the name of the field to update.
+             *
+             * @param fieldName the field name
+             * @return this builder
+             */
             public FieldPartialUpdateOpBuilder fieldName(String fieldName) {
                 this.fieldName = fieldName;
                 return this;
             }
 
+            /**
+             * Sets the update operation type.
+             *
+             * @param opType the operation type
+             * @return this builder
+             */
             public FieldPartialUpdateOpBuilder opType(OpType opType) {
                 this.opType = opType;
                 return this;
             }
 
+            /**
+             * Builds the {@link FieldPartialUpdateOp}.
+             *
+             * @return the field update operation
+             */
             public FieldPartialUpdateOp build() {
                 return new FieldPartialUpdateOp(this);
             }

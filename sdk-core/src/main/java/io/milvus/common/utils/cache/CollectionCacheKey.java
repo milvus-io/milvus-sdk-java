@@ -23,6 +23,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
+/**
+ * Immutable cache key that uniquely identifies a collection across the client pool and iterator
+ * caches. The key is composed of a normalized endpoint, database name and collection name.
+ *
+ * <p>An empty database name is normalized to {@code "default"}, and the endpoint is normalized to a
+ * lower-case {@code host:port} form so that the same server address expressed in different ways maps
+ * to the same key.
+ */
 public final class CollectionCacheKey {
     private final String endpoint;
     private final String databaseName;
@@ -34,18 +42,41 @@ public final class CollectionCacheKey {
         this.collectionName = collectionName == null ? "" : collectionName;
     }
 
+    /**
+     * Creates a cache key for the given endpoint, database name and collection name.
+     *
+     * @param endpoint       the server endpoint, such as {@code "localhost:19530"}
+     * @param databaseName   the database name; empty is normalized to {@code "default"}
+     * @param collectionName the collection name
+     * @return the cache key
+     */
     public static CollectionCacheKey create(String endpoint, String databaseName, String collectionName) {
         return new CollectionCacheKey(endpoint, databaseName, collectionName);
     }
 
+    /**
+     * Returns the normalized endpoint of the key.
+     *
+     * @return the endpoint
+     */
     public String getEndpoint() {
         return endpoint;
     }
 
+    /**
+     * Returns the database name of the key.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collection name of the key.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }

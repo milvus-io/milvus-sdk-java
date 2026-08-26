@@ -34,6 +34,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+/**
+ * {@link StorageClient} implementation backed by the Azure Blob Storage SDK for uploading
+ * bulk-import data files to Azure cloud storage.
+ *
+ * <p>The client connects to Azure Blob Storage using either a connection string, an account
+ * endpoint, or a token credential, and maps cloud-storage buckets and object keys onto Azure blob
+ * containers and blobs.
+ */
 public class AzureStorageClient implements StorageClient {
     private static final Logger logger = LoggerFactory.getLogger(AzureStorageClient.class);
 
@@ -43,6 +51,14 @@ public class AzureStorageClient implements StorageClient {
         this.blobServiceClient = blobServiceClient;
     }
 
+    /**
+     * Creates an {@link AzureStorageClient} from the given connection parameters.
+     *
+     * @param connStr the Azure storage connection string, or {@code null}
+     * @param accountUrl the Azure blob service endpoint, or {@code null}
+     * @param credential the token credential, or {@code null}
+     * @return the configured {@link AzureStorageClient}
+     */
     public static AzureStorageClient getStorageClient(String connStr,
                                                       String accountUrl,
                                                       TokenCredential credential) {
@@ -63,17 +79,38 @@ public class AzureStorageClient implements StorageClient {
         return new AzureStorageClient(blobServiceClient);
     }
 
+    /**
+     * Returns the size in bytes of the blob stored in the container.
+     *
+     * @param bucketName the Azure blob container name
+     * @param objectKey the blob name
+     * @return the blob size in bytes
+     */
     public Long getObjectEntity(String bucketName, String objectKey) {
         BlobClient blobClient = blobServiceClient.getBlobContainerClient(bucketName).getBlobClient(objectKey);
         return blobClient.getProperties().getBlobSize();
     }
 
+    /**
+     * Uploads a local data file as a blob to the container.
+     *
+     * @param file the local data file to upload
+     * @param bucketName the Azure blob container name
+     * @param objectKey the blob name
+     * @throws FileNotFoundException if the local data file does not exist
+     */
     public void putObject(File file, String bucketName, String objectKey) throws FileNotFoundException {
         FileInputStream fileInputStream = new FileInputStream(file);
         BlobClient blobClient = blobServiceClient.getBlobContainerClient(bucketName).getBlobClient(objectKey);
         blobClient.upload(fileInputStream, file.length());
     }
 
+    /**
+     * Checks whether the given blob container exists in the storage account.
+     *
+     * @param bucketName the Azure blob container name
+     * @return {@code true} if the container exists, {@code false} otherwise
+     */
     public boolean checkBucketExist(String bucketName) {
         BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(bucketName);
         return blobContainerClient.exists();

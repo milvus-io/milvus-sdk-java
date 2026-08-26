@@ -23,6 +23,9 @@ package io.milvus.v2.service.partition.response;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Response returned by the {@code getPartitionStats} API.
+ */
 public class GetPartitionStatsResp {
     private Long numOfEntities;
     private Map<String, String> stats;
@@ -32,18 +35,38 @@ public class GetPartitionStatsResp {
         this.stats = builder.stats;
     }
 
+    /**
+     * Returns the number of entities in the partition.
+     *
+     * @return the number of entities
+     */
     public Long getNumOfEntities() {
         return numOfEntities;
     }
 
+    /**
+     * Returns the statistics of the partition.
+     *
+     * @return the partition statistics
+     */
     public Map<String, String> getStats() {
         return stats;
     }
 
+    /**
+     * Sets the number of entities in the partition.
+     *
+     * @param numOfEntities the number of entities
+     */
     public void setNumOfEntities(Long numOfEntities) {
         this.numOfEntities = numOfEntities;
     }
 
+    /**
+     * Sets the statistics of the partition.
+     *
+     * @param stats the partition statistics
+     */
     public void setStats(Map<String, String> stats) {
         this.stats = stats;
     }
@@ -56,6 +79,11 @@ public class GetPartitionStatsResp {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code GetPartitionStatsResp}.
+     *
+     * @return the builder
+     */
     public static GetPartitionStatsRespBuilder builder() {
         return new GetPartitionStatsRespBuilder();
     }
@@ -67,16 +95,33 @@ public class GetPartitionStatsResp {
         private GetPartitionStatsRespBuilder() {
         }
 
+        /**
+         * Sets the number of entities in the partition.
+         *
+         * @param numOfEntities the number of entities
+         * @return this builder
+         */
         public GetPartitionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
             return this;
         }
 
+        /**
+         * Sets the statistics of the partition.
+         *
+         * @param stats the partition statistics
+         * @return this builder
+         */
         public GetPartitionStatsRespBuilder stats(Map<String, String> stats) {
             this.stats = stats;
             return this;
         }
 
+        /**
+         * Builds the {@code GetPartitionStatsResp}.
+         *
+         * @return the built response
+         */
         public GetPartitionStatsResp build() {
             return new GetPartitionStatsResp(this);
         }

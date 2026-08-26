@@ -22,6 +22,10 @@ package io.milvus.v2.service.vector.request.aggregation;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
+/**
+ * An ordering rule of a {@code group-by} search aggregation, specifying the sort key,
+ * the sort direction, and how {@code null} values are handled.
+ */
 public class OrderSpec {
     private final String key;
     private final AggDirection direction;
@@ -41,18 +45,39 @@ public class OrderSpec {
         this.nullFirst = builder.nullFirst;
     }
 
+    /**
+     * Creates a new builder for {@link OrderSpec}.
+     *
+     * @return a new builder
+     */
     public static OrderSpecBuilder builder() {
         return new OrderSpecBuilder();
     }
 
+    /**
+     * Returns the sort key, which is a metric alias or one of the special keys
+     * {@code _count} or {@code _key}.
+     *
+     * @return the sort key
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * Returns the sort direction of the ordering rule.
+     *
+     * @return the sort direction
+     */
     public AggDirection getDirection() {
         return direction;
     }
 
+    /**
+     * Returns whether {@code null} values are ordered first.
+     *
+     * @return {@code true} if nulls are ordered first, or {@code null} if not specified
+     */
     public Boolean getNullFirst() {
         return nullFirst;
     }
@@ -76,6 +101,9 @@ public class OrderSpec {
                 '}';
     }
 
+    /**
+     * Builder for {@link OrderSpec}.
+     */
     public static class OrderSpecBuilder {
         private String key;
         private AggDirection direction;
@@ -84,21 +112,45 @@ public class OrderSpec {
         private OrderSpecBuilder() {
         }
 
+        /**
+         * Sets the sort key, which is a metric alias or one of the special keys
+         * {@code _count} or {@code _key}.
+         *
+         * @param key the sort key
+         * @return this builder
+         */
         public OrderSpecBuilder key(String key) {
             this.key = key;
             return this;
         }
 
+        /**
+         * Sets the sort direction of the ordering rule.
+         *
+         * @param direction the sort direction
+         * @return this builder
+         */
         public OrderSpecBuilder direction(AggDirection direction) {
             this.direction = direction;
             return this;
         }
 
+        /**
+         * Sets whether {@code null} values are ordered first.
+         *
+         * @param nullFirst {@code true} to order nulls first, {@code false} to order them last
+         * @return this builder
+         */
         public OrderSpecBuilder nullFirst(Boolean nullFirst) {
             this.nullFirst = nullFirst;
             return this;
         }
 
+        /**
+         * Builds the {@link OrderSpec}.
+         *
+         * @return the built ordering rule
+         */
         public OrderSpec build() {
             return new OrderSpec(this);
         }

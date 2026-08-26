@@ -21,6 +21,10 @@ package io.milvus.v2.service.collection.request;
 
 import io.milvus.v2.common.IndexParam;
 
+/**
+ * Request parameters for the {@code addFunctionField} API, which adds a function
+ * and its output field together with an optional index on the output field.
+ */
 public class AddFunctionFieldReq extends AddFieldReq {
     private String collectionName;
     private String databaseName;
@@ -35,34 +39,74 @@ public class AddFunctionFieldReq extends AddFieldReq {
         this.indexParam = builder.indexParam;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the function to add to the collection.
+     *
+     * @return the function
+     */
     public CreateCollectionReq.Function getFunction() {
         return function;
     }
 
+    /**
+     * Sets the function to add to the collection.
+     *
+     * @param function the function
+     */
     public void setFunction(CreateCollectionReq.Function function) {
         this.function = function;
     }
 
+    /**
+     * Returns the index parameters for the function output field.
+     *
+     * @return the index parameters
+     */
     public IndexParam getIndexParam() {
         return indexParam;
     }
 
+    /**
+     * Sets the index parameters for the function output field.
+     *
+     * @param indexParam the index parameters
+     */
     public void setIndexParam(IndexParam indexParam) {
         this.indexParam = indexParam;
     }
@@ -78,6 +122,11 @@ public class AddFunctionFieldReq extends AddFieldReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AddFunctionFieldReq}.
+     *
+     * @return the builder
+     */
     public static AddFunctionFieldReqBuilder builder() {
         return new AddFunctionFieldReqBuilder();
     }
@@ -91,26 +140,55 @@ public class AddFunctionFieldReq extends AddFieldReq {
         private AddFunctionFieldReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AddFunctionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AddFunctionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the function to add to the collection.
+         *
+         * @param function the function
+         * @return this builder
+         */
         public AddFunctionFieldReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
             return this;
         }
 
+        /**
+         * Sets the index parameters for the function output field.
+         *
+         * @param indexParam the index parameters
+         * @return this builder
+         */
         public AddFunctionFieldReqBuilder indexParam(IndexParam indexParam) {
             this.indexParam = indexParam;
             return this;
         }
 
+        /**
+         * Builds an {@link AddFunctionFieldReq} with the configured parameters.
+         *
+         * @return the request
+         */
         @Override
         public AddFunctionFieldReq build() {
             return new AddFunctionFieldReq(this);

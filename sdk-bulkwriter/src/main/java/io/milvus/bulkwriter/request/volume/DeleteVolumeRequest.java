@@ -19,12 +19,25 @@
 
 package io.milvus.bulkwriter.request.volume;
 
+/**
+ * Request parameters for deleting a cloud storage volume.
+ *
+ * <p>It identifies the volume to delete through its volume name.</p>
+ */
 public class DeleteVolumeRequest {
     private String volumeName;
 
+    /**
+     * Constructs an empty {@code DeleteVolumeRequest}.
+     */
     public DeleteVolumeRequest() {
     }
 
+    /**
+     * Constructs a {@code DeleteVolumeRequest} with the given volume name.
+     *
+     * @param volumeName the name of the volume to delete
+     */
     public DeleteVolumeRequest(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -33,10 +46,20 @@ public class DeleteVolumeRequest {
         this.volumeName = builder.volumeName;
     }
 
+    /**
+     * Returns the name of the volume to delete.
+     *
+     * @return the volume name
+     */
     public String getVolumeName() {
         return volumeName;
     }
 
+    /**
+     * Sets the name of the volume to delete.
+     *
+     * @param volumeName the volume name
+     */
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -48,10 +71,18 @@ public class DeleteVolumeRequest {
                 '}';
     }
 
+    /**
+     * Returns a new builder for a {@link DeleteVolumeRequest}.
+     *
+     * @return a {@code DeleteVolumeRequest} builder
+     */
     public static DeleteVolumeRequestBuilder builder() {
         return new DeleteVolumeRequestBuilder();
     }
 
+    /**
+     * Builder for {@link DeleteVolumeRequest}.
+     */
     public static class DeleteVolumeRequestBuilder {
         private String volumeName;
 
@@ -59,11 +90,22 @@ public class DeleteVolumeRequest {
             this.volumeName = "";
         }
 
+        /**
+         * Sets the name of the volume to delete.
+         *
+         * @param volumeName the volume name
+         * @return this builder
+         */
         public DeleteVolumeRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
         }
 
+        /**
+         * Builds the {@link DeleteVolumeRequest} instance.
+         *
+         * @return the built {@code DeleteVolumeRequest}
+         */
         public DeleteVolumeRequest build() {
             return new DeleteVolumeRequest(this);
         }

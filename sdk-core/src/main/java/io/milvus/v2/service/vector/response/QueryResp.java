@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Response returned by the {@code query} API.
+ */
 public class QueryResp {
     private List<QueryResult> queryResults;
     private long sessionTs; // default eventually ts
@@ -35,30 +38,65 @@ public class QueryResp {
         this.cost = builder.cost;
     }
 
+    /**
+     * Creates a new {@code QueryResp} builder.
+     *
+     * @return the builder
+     */
     public static QueryRespBuilder builder() {
         return new QueryRespBuilder();
     }
 
+    /**
+     * Returns the queried entities.
+     *
+     * @return the query results
+     */
     public List<QueryResult> getQueryResults() {
         return queryResults;
     }
 
+    /**
+     * Sets the queried entities.
+     *
+     * @param queryResults the query results
+     */
     public void setQueryResults(List<QueryResult> queryResults) {
         this.queryResults = queryResults;
     }
 
+    /**
+     * Returns the session timestamp.
+     *
+     * @return the session timestamp
+     */
     public long getSessionTs() {
         return sessionTs;
     }
 
+    /**
+     * Sets the session timestamp.
+     *
+     * @param sessionTs the session timestamp
+     */
     public void setSessionTs(long sessionTs) {
         this.sessionTs = sessionTs;
     }
 
+    /**
+     * Returns the time cost of the query operation.
+     *
+     * @return the cost
+     */
     public Long getCost() {
         return cost;
     }
 
+    /**
+     * Sets the time cost of the query operation.
+     *
+     * @param cost the cost
+     */
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -77,26 +115,52 @@ public class QueryResp {
         private long sessionTs = 1L; // default eventually ts
         private Long cost;
 
+        /**
+         * Sets the queried entities.
+         *
+         * @param queryResults the query results
+         * @return this builder
+         */
         public QueryRespBuilder queryResults(List<QueryResult> queryResults) {
             this.queryResults = queryResults;
             return this;
         }
 
+        /**
+         * Sets the session timestamp.
+         *
+         * @param sessionTs the session timestamp
+         * @return this builder
+         */
         public QueryRespBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
             return this;
         }
 
+        /**
+         * Sets the time cost of the query operation.
+         *
+         * @param cost the cost
+         * @return this builder
+         */
         public QueryRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
         }
 
+        /**
+         * Builds the {@link QueryResp}.
+         *
+         * @return the response
+         */
         public QueryResp build() {
             return new QueryResp(this);
         }
     }
 
+    /**
+     * A single entity returned by the {@code query} API.
+     */
     public static class QueryResult {
         private Map<String, Object> entity;
 
@@ -120,22 +184,47 @@ public class QueryResp {
             this.elementOffset = builder.elementOffset;
         }
 
+        /**
+         * Creates a new {@code QueryResult} builder.
+         *
+         * @return the builder
+         */
         public static QueryResultBuilder builder() {
             return new QueryResultBuilder();
         }
 
+        /**
+         * Returns the entity data.
+         *
+         * @return the entity map
+         */
         public Map<String, Object> getEntity() {
             return entity;
         }
 
+        /**
+         * Sets the entity data.
+         *
+         * @param entity the entity map
+         */
         public void setEntity(Map<String, Object> entity) {
             this.entity = entity;
         }
 
+        /**
+         * Returns the matched element's index within the array for element-level queries.
+         *
+         * @return the element offset, or {@code null} for ordinary queries
+         */
         public Long getElementOffset() {
             return elementOffset;
         }
 
+        /**
+         * Sets the matched element's index within the array for element-level queries.
+         *
+         * @param elementOffset the element offset
+         */
         public void setElementOffset(Long elementOffset) {
             this.elementOffset = elementOffset;
         }
@@ -152,16 +241,33 @@ public class QueryResp {
             private Map<String, Object> entity = new HashMap<>();
             private Long elementOffset;
 
+            /**
+             * Sets the entity data.
+             *
+             * @param entity the entity map
+             * @return this builder
+             */
             public QueryResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
                 return this;
             }
 
+            /**
+             * Sets the matched element's index within the array for element-level queries.
+             *
+             * @param elementOffset the element offset
+             * @return this builder
+             */
             public QueryResultBuilder elementOffset(Long elementOffset) {
                 this.elementOffset = elementOffset;
                 return this;
             }
 
+            /**
+             * Builds the {@link QueryResult}.
+             *
+             * @return the query result
+             */
             public QueryResult build() {
                 return new QueryResult(this);
             }

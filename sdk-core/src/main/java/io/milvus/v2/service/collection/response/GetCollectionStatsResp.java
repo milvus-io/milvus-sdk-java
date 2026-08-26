@@ -22,6 +22,9 @@ package io.milvus.v2.service.collection.response;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Response of the {@code getCollectionStats} API, holding the statistics of a collection.
+ */
 public class GetCollectionStatsResp {
     private Long numOfEntities;
     private Map<String, String> stats;
@@ -31,24 +34,49 @@ public class GetCollectionStatsResp {
         this.stats = builder.stats;
     }
 
+    /**
+     * Creates a new builder for {@link GetCollectionStatsResp}.
+     *
+     * @return the builder
+     */
     public static GetCollectionStatsRespBuilder builder() {
         return new GetCollectionStatsRespBuilder();
     }
 
     // Getter
+    /**
+     * Returns the number of entities in the collection.
+     *
+     * @return the number of entities
+     */
     public Long getNumOfEntities() {
         return numOfEntities;
     }
 
+    /**
+     * Returns the statistics of the collection as key-value pairs.
+     *
+     * @return the collection stats
+     */
     public Map<String, String> getStats() {
         return stats;
     }
 
     // Setter
+    /**
+     * Sets the number of entities in the collection.
+     *
+     * @param numOfEntities the number of entities
+     */
     public void setNumOfEntities(Long numOfEntities) {
         this.numOfEntities = numOfEntities;
     }
 
+    /**
+     * Sets the statistics of the collection as key-value pairs.
+     *
+     * @param stats the collection stats
+     */
     public void setStats(Map<String, String> stats) {
         this.stats = stats;
     }
@@ -65,16 +93,33 @@ public class GetCollectionStatsResp {
         private Long numOfEntities;
         private Map<String, String> stats = new HashMap<>();
 
+        /**
+         * Sets the number of entities in the collection.
+         *
+         * @param numOfEntities the number of entities
+         * @return this builder
+         */
         public GetCollectionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
             return this;
         }
 
+        /**
+         * Sets the statistics of the collection as key-value pairs.
+         *
+         * @param stats the collection stats
+         * @return this builder
+         */
         public GetCollectionStatsRespBuilder stats(Map<String, String> stats) {
             this.stats = stats;
             return this;
         }
 
+        /**
+         * Builds a {@link GetCollectionStatsResp} with the configured parameters.
+         *
+         * @return the response
+         */
         public GetCollectionStatsResp build() {
             return new GetCollectionStatsResp(this);
         }

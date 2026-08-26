@@ -23,6 +23,10 @@ import io.milvus.grpc.MetricAggSpec;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
+/**
+ * A metric aggregation spec of a {@code group-by} search aggregation, defining an
+ * aggregation operation ({@link MetricOps}) applied to a field.
+ */
 public class MetricSpec {
     private final MetricOps op;
     private final String fieldName;
@@ -44,14 +48,29 @@ public class MetricSpec {
         this.fieldName = builder.fieldName;
     }
 
+    /**
+     * Creates a new builder for {@link MetricSpec}.
+     *
+     * @return a new builder
+     */
     public static MetricSpecBuilder builder() {
         return new MetricSpecBuilder();
     }
 
+    /**
+     * Returns the aggregation operation of this metric spec.
+     *
+     * @return the aggregation operation
+     */
     public MetricOps getOp() {
         return op;
     }
 
+    /**
+     * Returns the name of the field the aggregation operation is applied to.
+     *
+     * @return the field name
+     */
     public String getFieldName() {
         return fieldName;
     }
@@ -71,6 +90,9 @@ public class MetricSpec {
                 '}';
     }
 
+    /**
+     * Builder for {@link MetricSpec}.
+     */
     public static class MetricSpecBuilder {
         private MetricOps op;
         private String fieldName;
@@ -78,16 +100,34 @@ public class MetricSpec {
         private MetricSpecBuilder() {
         }
 
+        /**
+         * Sets the aggregation operation of this metric spec.
+         *
+         * @param op the aggregation operation
+         * @return this builder
+         */
         public MetricSpecBuilder op(MetricOps op) {
             this.op = op;
             return this;
         }
 
+        /**
+         * Sets the name of the field the aggregation operation is applied to. For count
+         * metrics, {@code "*"} is accepted to count all entities.
+         *
+         * @param fieldName the field name
+         * @return this builder
+         */
         public MetricSpecBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Builds the {@link MetricSpec}.
+         *
+         * @return the built metric spec
+         */
         public MetricSpec build() {
             return new MetricSpec(this);
         }
