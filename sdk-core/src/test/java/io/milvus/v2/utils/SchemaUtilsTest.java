@@ -301,6 +301,74 @@ public class SchemaUtilsTest {
     }
 
     @Test
+    void testConvertFromGrpcFieldSchemaPreservesIndexParams() {
+        FieldSchema rpcSchema = FieldSchema.newBuilder()
+                .setName("vector")
+                .setDataType(DataType.FloatVector)
+                .addIndexParams(KeyValuePair.newBuilder()
+                        .setKey("index_type")
+                        .setValue("HNSW")
+                        .build())
+                .addIndexParams(KeyValuePair.newBuilder()
+                        .setKey("metric_type")
+                        .setValue("L2")
+                        .build())
+                .addIndexParams(KeyValuePair.newBuilder()
+                        .setKey("params")
+                        .setValue("{\"M\":16,\"efConstruction\":200}")
+                        .build())
+                .build();
+
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFromGrpcFieldSchema(rpcSchema);
+
+        Assertions.assertNotNull(fieldSchema.getIndexes());
+        Assertions.assertEquals(1, fieldSchema.getIndexes().size());
+        Map<String, Object> index = fieldSchema.getIndexes().get(0);
+        Assertions.assertEquals("HNSW", index.get("index_type"));
+        Assertions.assertEquals("L2", index.get("metric_type"));
+        Map<?, ?> indexParams = (Map<?, ?>) index.get("params");
+        Assertions.assertEquals(16L, ((Number) indexParams.get("M")).longValue());
+        Assertions.assertEquals(200L, ((Number) indexParams.get("efConstruction")).longValue());
+    }
+
+    @Test
+    void testConvertFromGrpcFieldSchemaInitializesEmptyIndexes() {
+        FieldSchema rpcSchema = FieldSchema.newBuilder()
+                .setName("id")
+                .setDataType(DataType.Int64)
+                .build();
+
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFromGrpcFieldSchema(rpcSchema);
+
+        Assertions.assertNotNull(fieldSchema.getIndexes());
+        Assertions.assertTrue(fieldSchema.getIndexes().isEmpty());
+    }
+
+    @Test
+    void testConvertFromGrpcFieldSchemaSkipsMalformedIndexParams() {
+        FieldSchema rpcSchema = FieldSchema.newBuilder()
+                .setName("vector")
+                .setDataType(DataType.FloatVector)
+                .addIndexParams(KeyValuePair.newBuilder()
+                        .setKey("index_type")
+                        .setValue("HNSW")
+                        .build())
+                .addIndexParams(KeyValuePair.newBuilder()
+                        .setKey("params")
+                        .setValue("not-a-json-object")
+                        .build())
+                .build();
+
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFromGrpcFieldSchema(rpcSchema);
+
+        Assertions.assertNotNull(fieldSchema.getIndexes());
+        Assertions.assertEquals(1, fieldSchema.getIndexes().size());
+        Map<String, Object> index = fieldSchema.getIndexes().get(0);
+        Assertions.assertEquals("HNSW", index.get("index_type"));
+        Assertions.assertFalse(index.containsKey("params"));
+    }
+
+    @Test
     void testConvertFromGrpcFieldSchema() {
         CreateCollectionReq.CollectionSchema collectionSchema = buildSchema();
         List<CreateCollectionReq.FieldSchema> fieldSchemaList = collectionSchema.getFieldSchemaList();

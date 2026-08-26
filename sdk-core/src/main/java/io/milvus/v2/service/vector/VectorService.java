@@ -678,8 +678,21 @@ public class VectorService extends BaseService {
         // update the last write timestamp for SESSION consistency
         updateTsCache(dbName, collectionName, response.getTimestamp());
 
+        // Modern Milvus servers (>= 2.3.2) no longer return the deleted primary keys in the
+        // delete response, so primaryKeys will be empty against them. Only older servers
+        // echo the keys back, and a success response may omit the IDs field entirely.
+        List<Object> primaryKeys = new ArrayList<>();
+        if (response.hasIDs()) {
+            if (response.getIDs().hasIntId()) {
+                primaryKeys = new ArrayList<>(response.getIDs().getIntId().getDataList());
+            } else if (response.getIDs().hasStrId()) {
+                primaryKeys = new ArrayList<>(response.getIDs().getStrId().getDataList());
+            }
+        }
+
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
+                .primaryKeys(primaryKeys)
                 .cost(getCost(response.getStatus()))
                 .build();
     }

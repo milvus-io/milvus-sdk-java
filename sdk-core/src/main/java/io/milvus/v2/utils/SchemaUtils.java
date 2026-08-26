@@ -289,6 +289,30 @@ public class SchemaUtils {
             typeParams.put(keyValuePair.getKey(), keyValuePair.getValue());
         }
         schema.setTypeParams(typeParams);
+
+        Map<String, Object> indexParams = new HashMap<>();
+        for (KeyValuePair keyValuePair : fieldSchema.getIndexParamsList()) {
+            if (io.milvus.param.Constant.PARAMS.equals(keyValuePair.getKey())) {
+                try {
+                    indexParams.put(keyValuePair.getKey(), JsonUtils.fromJson(keyValuePair.getValue(),
+                            new TypeToken<Map<String, Object>>() {
+                            }.getType()));
+                } catch (Exception e) {
+                    /**
+                     * The kernel does not enforce validation on the input index `params`, so this conversion may throw an exception.
+                     * To prevent normal `descCollection` from malfunctioning, we wrap it here in a `try/catch` block.
+                     */
+                    logger.error("Failed to convert the index params value of {} , key:{}, value:{}", fieldSchema.getName(), keyValuePair.getKey(), keyValuePair.getValue());
+                }
+            } else {
+                indexParams.put(keyValuePair.getKey(), keyValuePair.getValue());
+            }
+        }
+        if (!indexParams.isEmpty()) {
+            schema.setIndexes(Collections.singletonList(indexParams));
+        } else {
+            schema.setIndexes(new ArrayList<>());
+        }
         return schema;
     }
 
