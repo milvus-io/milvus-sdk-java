@@ -19,6 +19,9 @@
 
 package io.milvus.param;
 
+/**
+ * Represents the log levels supported by Milvus.
+ */
 public enum LogLevel {
     Debug,
     Info,

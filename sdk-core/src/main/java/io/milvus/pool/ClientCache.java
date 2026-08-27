@@ -14,8 +14,28 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Per-key client cache that dynamically scales the number of active Milvus clients based on the
+ * observed call rate (QPS).
+ *
+ * <p>The cache keeps a set of borrowed clients from the underlying {@link GenericKeyedObjectPool}.
+ * {@link #getClient()} returns the least-loaded client and increases its reference count, while
+ * {@link #returnClient} decreases the count. A periodic timer samples the QPS: when the per-client
+ * call rate exceeds {@link #THRESHOLD_INCREASE}, more clients are borrowed from the pool; when it
+ * drops below {@link #THRESHOLD_DECREASE}, the most loaded client is retired and returned to the
+ * pool once its reference count reaches zero. This prevents a single HTTP/2 connection from
+ * exceeding its concurrent-stream limit under high load.
+ *
+ * @param <T> the client type, such as {@code MilvusClient} or {@code MilvusClientV2}
+ */
 public class ClientCache<T> {
+    /**
+     * Per-client calls per second above which the cache borrows additional clients.
+     */
     public static final int THRESHOLD_INCREASE = 100;
+    /**
+     * Per-client calls per second below which the cache retires a client.
+     */
     public static final int THRESHOLD_DECREASE = 50;
 
     private static final Logger logger = LoggerFactory.getLogger(ClientCache.class);
@@ -48,6 +68,13 @@ public class ClientCache<T> {
         startTimer(1000L);
     }
 
+    /**
+     * Pre-creates the configured minimum number of idle clients for this key and adds them to the
+     * active client list.
+     *
+     * <p>Calling this method before the first business request reduces the latency of the first
+     * {@link #getClient()} call.
+     */
     public void preparePool() {
         try {
             // preparePool() will create minIdlePerKey MilvusClient objects in advance
@@ -202,6 +229,9 @@ public class ClientCache<T> {
         }, interval, interval, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Stops the periodic QPS-check timer and returns all active and retired clients to the pool.
+     */
     public void stopTimer() {
         // Stop scheduled tasks and wait for any in-flight checkQPS() execution to finish
         scheduler.shutdownNow();
@@ -222,6 +252,16 @@ public class ClientCache<T> {
         retireClientList.clear();
     }
 
+    /**
+     * Returns a client from the cache, increasing its reference count.
+     *
+     * <p>The client with the minimum reference count is selected to balance the load across all
+     * cached clients. If the active client list is empty, a client is fetched from the underlying
+     * pool first. A {@code null} value is returned when no client can be fetched, for example when
+     * the pool limit is reached.
+     *
+     * @return a client object, or {@code null} if no client could be fetched
+     */
     public T getClient() {
         if (activeClientList.isEmpty()) {
             // multiple threads can run into this section, add a lock to ensure only one thread can fetch the first
@@ -266,6 +306,15 @@ public class ClientCache<T> {
         return wrapper.getClient();
     }
 
+    /**
+     * Returns a client, decreasing its reference count.
+     *
+     * <p>The client is not returned to the pool immediately; the QPS-check timer retires it when
+     * the load is low. Callers should ensure the client is returned, otherwise it stays in the
+     * active list and cannot be reused.
+     *
+     * @param grpcClient the client to return
+     */
     public void returnClient(T grpcClient) {
         // for-loop of CopyOnWriteArrayList is thread safe
         // this method only decrements the call number, the checkQPS timer will retire client accordingly
@@ -311,6 +360,11 @@ public class ClientCache<T> {
         }
     }
 
+    /**
+     * Returns the number of client fetches per second measured by the last QPS check.
+     *
+     * @return the fetch rate per second
+     */
     public float fetchClientPerSecond() {
         return this.fetchClientPerSecond;
     }

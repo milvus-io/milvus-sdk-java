@@ -21,6 +21,9 @@ package io.milvus.v2.service.utility.response;
 
 import java.util.List;
 
+/**
+ * Response returned by the {@code listRefreshExternalCollectionJobs} API.
+ */
 public class ListRefreshExternalCollectionJobsResp {
     private final List<RefreshExternalCollectionJobInfo> jobs;
 
@@ -32,6 +35,11 @@ public class ListRefreshExternalCollectionJobsResp {
         return new ListRefreshExternalCollectionJobsRespBuilder();
     }
 
+    /**
+     * Returns the refresh external collection jobs.
+     *
+     * @return the list of refresh jobs
+     */
     public List<RefreshExternalCollectionJobInfo> getJobs() {
         return jobs;
     }
@@ -46,11 +54,22 @@ public class ListRefreshExternalCollectionJobsResp {
     public static class ListRefreshExternalCollectionJobsRespBuilder {
         private List<RefreshExternalCollectionJobInfo> jobs;
 
+        /**
+         * Sets the refresh external collection jobs.
+         *
+         * @param jobs the list of refresh jobs
+         * @return this builder
+         */
         public ListRefreshExternalCollectionJobsRespBuilder jobs(List<RefreshExternalCollectionJobInfo> jobs) {
             this.jobs = jobs;
             return this;
         }
 
+        /**
+         * Builds the {@code ListRefreshExternalCollectionJobsResp}.
+         *
+         * @return the constructed {@code ListRefreshExternalCollectionJobsResp}
+         */
         public ListRefreshExternalCollectionJobsResp build() {
             return new ListRefreshExternalCollectionJobsResp(this);
         }

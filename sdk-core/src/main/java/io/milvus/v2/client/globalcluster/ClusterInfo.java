@@ -19,6 +19,9 @@
 
 package io.milvus.v2.client.globalcluster;
 
+/**
+ * Describes a single cluster discovered in a global cluster deployment.
+ */
 public class ClusterInfo {
     private final String clusterId;
     private final String endpoint;
@@ -30,18 +33,38 @@ public class ClusterInfo {
         this.capability = capability;
     }
 
+    /**
+     * Returns the cluster ID.
+     *
+     * @return the cluster ID
+     */
     public String getClusterId() {
         return clusterId;
     }
 
+    /**
+     * Returns the endpoint of the cluster.
+     *
+     * @return the cluster endpoint
+     */
     public String getEndpoint() {
         return endpoint;
     }
 
+    /**
+     * Returns the capability bit flags of the cluster.
+     *
+     * @return the capability bit flags
+     */
     public int getCapability() {
         return capability;
     }
 
+    /**
+     * Returns whether this cluster is the primary (writable) cluster.
+     *
+     * @return true if the cluster is writable
+     */
     public boolean isPrimary() {
         return (capability & ClusterCapability.WRITABLE) != 0;
     }

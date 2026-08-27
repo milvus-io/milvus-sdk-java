@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code grantRole} API.
+ */
 public class GrantRoleReq {
     private String userName;
     private String roleName;
@@ -28,18 +31,38 @@ public class GrantRoleReq {
         this.roleName = builder.roleName;
     }
 
+    /**
+     * Returns the user name.
+     *
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Sets the user name.
+     *
+     * @param userName the user name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Returns the role name to grant to the user.
+     *
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Sets the role name to grant to the user.
+     *
+     * @param roleName the role name
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -52,6 +75,11 @@ public class GrantRoleReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link GrantRoleReq}.
+     *
+     * @return a new {@link GrantRoleReqBuilder}
+     */
     public static GrantRoleReqBuilder builder() {
         return new GrantRoleReqBuilder();
     }
@@ -63,16 +91,33 @@ public class GrantRoleReq {
         private GrantRoleReqBuilder() {
         }
 
+        /**
+         * Sets the user name.
+         *
+         * @param userName the user name
+         * @return this builder
+         */
         public GrantRoleReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
+        /**
+         * Sets the role name to grant to the user.
+         *
+         * @param roleName the role name
+         * @return this builder
+         */
         public GrantRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
+        /**
+         * Builds the {@link GrantRoleReq}.
+         *
+         * @return the built request
+         */
         public GrantRoleReq build() {
             return new GrantRoleReq(this);
         }

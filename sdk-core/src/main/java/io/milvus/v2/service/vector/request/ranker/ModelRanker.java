@@ -57,35 +57,76 @@ public class ModelRanker extends CreateCollectionReq.Function {
         this.endpoint = builder.endpoint;
     }
 
+    /**
+     * Returns the provider of the rerank model, for example {@code tei} or {@code vllm}.
+     *
+     * @return the model provider
+     */
     public String getProvider() {
         return provider;
     }
 
+    /**
+     * Sets the provider of the rerank model, for example {@code tei} or {@code vllm}.
+     *
+     * @param provider the model provider
+     */
     public void setProvider(String provider) {
         this.provider = provider;
     }
 
+    /**
+     * Returns the queries used by the model to compute relevance scores.
+     *
+     * @return the rerank queries
+     */
     public List<String> getQueries() {
         return queries;
     }
 
+    /**
+     * Sets the queries used by the model to compute relevance scores.
+     *
+     * @param queries the rerank queries
+     */
     public void setQueries(List<String> queries) {
         this.queries = queries;
     }
 
+    /**
+     * Returns the endpoint of the deployed rerank model service.
+     *
+     * @return the model endpoint
+     */
     public String getEndpoint() {
         return endpoint;
     }
 
+    /**
+     * Sets the endpoint of the deployed rerank model service.
+     *
+     * @param endpoint the model endpoint
+     */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
+    /**
+     * Returns the function type of this ranker.
+     *
+     * @return {@link FunctionType#RERANK}
+     */
     @Override
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    /**
+     * Returns the ranker parameters as a map of parameter name to value, including the
+     * provider, queries, and endpoint.
+     *
+     * @return the ranker parameters
+     */
     @Override
     public Map<String, String> getParams() {
         // the parent params might contain "offset" and "decay"
@@ -116,10 +157,18 @@ public class ModelRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link ModelRanker}.
+     *
+     * @return a new builder
+     */
     public static ModelRankerBuilder builder() {
         return new ModelRankerBuilder();
     }
 
+    /**
+     * Builder for {@link ModelRanker}.
+     */
     public static class ModelRankerBuilder extends Function.FunctionBuilder<ModelRankerBuilder> {
         private String provider = "tei";
         private List<String> queries = new ArrayList<>();
@@ -128,21 +177,45 @@ public class ModelRanker extends CreateCollectionReq.Function {
         private ModelRankerBuilder() {
         }
 
+        /**
+         * Sets the provider of the rerank model, for example {@code tei} or {@code vllm}.
+         * Defaults to {@code tei}.
+         *
+         * @param provider the model provider
+         * @return this builder
+         */
         public ModelRankerBuilder provider(String provider) {
             this.provider = provider;
             return this;
         }
 
+        /**
+         * Sets the queries used by the model to compute relevance scores.
+         *
+         * @param queries the rerank queries
+         * @return this builder
+         */
         public ModelRankerBuilder queries(List<String> queries) {
             this.queries = queries;
             return this;
         }
 
+        /**
+         * Sets the endpoint of the deployed rerank model service.
+         *
+         * @param endpoint the model endpoint
+         * @return this builder
+         */
         public ModelRankerBuilder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
 
+        /**
+         * Builds the {@link ModelRanker}.
+         *
+         * @return the built ranker
+         */
         @Override
         public ModelRanker build() {
             return new ModelRanker(this);

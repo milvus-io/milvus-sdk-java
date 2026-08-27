@@ -19,6 +19,12 @@
 
 package io.milvus.v2.exception;
 
+/**
+ * Enumerates the error codes returned by the Milvus Java SDK v2 APIs.
+ *
+ * <p>The error code is carried by {@link MilvusClientException} to indicate the category of the
+ * failure, such as invalid parameters, collection not found, or a server-side error.</p>
+ */
 public enum ErrorCode {
     SUCCESS(0),
     COLLECTION_NOT_FOUND(1),
@@ -34,6 +40,11 @@ public enum ErrorCode {
         this.code = i;
     }
 
+    /**
+     * Returns the numeric value of this error code.
+     *
+     * @return the numeric value of this error code
+     */
     public int getCode() {
         return code;
     }

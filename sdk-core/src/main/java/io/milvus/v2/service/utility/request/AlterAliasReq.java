@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code alterAlias} API.
+ */
 public class AlterAliasReq {
     private String databaseName;
     private String collectionName;
@@ -34,26 +37,56 @@ public class AlterAliasReq {
         return new AlterAliasReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the alias.
+     *
+     * @return the alias
+     */
     public String getAlias() {
         return alias;
     }
 
+    /**
+     * Sets the alias.
+     *
+     * @param alias the alias
+     */
     public void setAlias(String alias) {
         this.alias = alias;
     }
@@ -72,21 +105,44 @@ public class AlterAliasReq {
         private String collectionName;
         private String alias;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AlterAliasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AlterAliasReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the alias.
+         *
+         * @param alias the alias
+         * @return this builder
+         */
         public AlterAliasReqBuilder alias(String alias) {
             this.alias = alias;
             return this;
         }
 
+        /**
+         * Builds the {@code AlterAliasReq}.
+         *
+         * @return the constructed {@code AlterAliasReq}
+         */
         public AlterAliasReq build() {
             return new AlterAliasReq(this);
         }

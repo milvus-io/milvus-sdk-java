@@ -22,6 +22,9 @@ package io.milvus.v2.service.index.request;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Request parameters for the {@code dropIndexProperties} API.
+ */
 public class DropIndexPropertiesReq {
     private String collectionName;
     private String databaseName;
@@ -35,34 +38,74 @@ public class DropIndexPropertiesReq {
         this.propertyKeys = builder.propertyKeys;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the index name.
+     *
+     * @return the index name
+     */
     public String getIndexName() {
         return indexName;
     }
 
+    /**
+     * Sets the index name.
+     *
+     * @param indexName the index name
+     */
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
 
+    /**
+     * Returns the property keys to be removed from the index.
+     *
+     * @return the list of property keys
+     */
     public List<String> getPropertyKeys() {
         return propertyKeys;
     }
 
+    /**
+     * Sets the property keys to be removed from the index.
+     *
+     * @param propertyKeys the list of property keys
+     */
     public void setPropertyKeys(List<String> propertyKeys) {
         this.propertyKeys = propertyKeys;
     }
@@ -77,6 +120,11 @@ public class DropIndexPropertiesReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code DropIndexPropertiesReq}.
+     *
+     * @return the builder
+     */
     public static DropIndexPropertiesReqBuilder builder() {
         return new DropIndexPropertiesReqBuilder();
     }
@@ -90,26 +138,55 @@ public class DropIndexPropertiesReq {
         private DropIndexPropertiesReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DropIndexPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DropIndexPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the index name.
+         *
+         * @param indexName the index name
+         * @return this builder
+         */
         public DropIndexPropertiesReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
 
+        /**
+         * Sets the property keys to be removed from the index.
+         *
+         * @param propertyKeys the list of property keys
+         * @return this builder
+         */
         public DropIndexPropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
         }
 
+        /**
+         * Builds the {@code DropIndexPropertiesReq}.
+         *
+         * @return the built request
+         */
         public DropIndexPropertiesReq build() {
             return new DropIndexPropertiesReq(this);
         }

@@ -21,13 +21,27 @@ package io.milvus.bulkwriter.response;
 
 import java.io.Serializable;
 
+/**
+ * A response representing the result of submitting a bulk import job.
+ *
+ * <p>It carries the unique ID of the created import job, which can later be used to
+ * describe, commit, or abort the import.</p>
+ */
 public class BulkImportResponse implements Serializable {
     private static final long serialVersionUID = -7162743560382861611L;
     private String jobId;
 
+    /**
+     * Constructs an empty {@code BulkImportResponse}.
+     */
     public BulkImportResponse() {
     }
 
+    /**
+     * Constructs a {@code BulkImportResponse} with the given job ID.
+     *
+     * @param jobId the ID of the created bulk import job
+     */
     public BulkImportResponse(String jobId) {
         this.jobId = jobId;
     }
@@ -36,10 +50,20 @@ public class BulkImportResponse implements Serializable {
         this.jobId = builder.jobId;
     }
 
+    /**
+     * Returns the ID of the created bulk import job.
+     *
+     * @return the import job ID
+     */
     public String getJobId() {
         return jobId;
     }
 
+    /**
+     * Sets the ID of the created bulk import job.
+     *
+     * @param jobId the import job ID
+     */
     public void setJobId(String jobId) {
         this.jobId = jobId;
     }
@@ -51,10 +75,18 @@ public class BulkImportResponse implements Serializable {
                 '}';
     }
 
+    /**
+     * Returns a new builder for a {@link BulkImportResponse}.
+     *
+     * @return a {@code BulkImportResponse} builder
+     */
     public static BulkImportResponseBuilder builder() {
         return new BulkImportResponseBuilder();
     }
 
+    /**
+     * Builder for {@link BulkImportResponse}.
+     */
     public static class BulkImportResponseBuilder {
         private String jobId;
 
@@ -62,11 +94,22 @@ public class BulkImportResponse implements Serializable {
             this.jobId = "";
         }
 
+        /**
+         * Sets the ID of the created bulk import job.
+         *
+         * @param jobId the import job ID
+         * @return this builder
+         */
         public BulkImportResponseBuilder jobId(String jobId) {
             this.jobId = jobId;
             return this;
         }
 
+        /**
+         * Builds the {@link BulkImportResponse} instance.
+         *
+         * @return the built {@code BulkImportResponse}
+         */
         public BulkImportResponse build() {
             return new BulkImportResponse(this);
         }

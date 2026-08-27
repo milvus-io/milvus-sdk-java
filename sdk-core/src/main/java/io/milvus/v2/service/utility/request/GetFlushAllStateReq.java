@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code getFlushAllState} API.
+ */
 public class GetFlushAllStateReq {
     private String databaseName;
     private Long flushAllTs;
@@ -32,18 +35,38 @@ public class GetFlushAllStateReq {
         return new GetFlushAllStateReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the flush-all timestamp.
+     *
+     * @return the flush-all timestamp
+     */
     public Long getFlushAllTs() {
         return flushAllTs;
     }
 
+    /**
+     * Sets the flush-all timestamp.
+     *
+     * @param flushAllTs the flush-all timestamp
+     */
     public void setFlushAllTs(Long flushAllTs) {
         this.flushAllTs = flushAllTs;
     }
@@ -60,16 +83,33 @@ public class GetFlushAllStateReq {
         private String databaseName;
         private Long flushAllTs = 0L;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public GetFlushAllStateReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the flush-all timestamp.
+         *
+         * @param flushAllTs the flush-all timestamp
+         * @return this builder
+         */
         public GetFlushAllStateReqBuilder flushAllTs(Long flushAllTs) {
             this.flushAllTs = flushAllTs;
             return this;
         }
 
+        /**
+         * Builds the {@code GetFlushAllStateReq}.
+         *
+         * @return the constructed {@code GetFlushAllStateReq}
+         */
         public GetFlushAllStateReq build() {
             return new GetFlushAllStateReq(this);
         }

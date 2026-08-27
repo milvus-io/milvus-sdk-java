@@ -19,11 +19,32 @@
 
 package io.milvus.v2.common;
 
+/**
+ * State of an index build task.
+ */
 public enum IndexBuildState {
+    /**
+     * The index build state is not set.
+     */
     IndexStateNone,
+    /**
+     * The index build task has not been issued yet.
+     */
     Unissued,
+    /**
+     * The index build task is in progress.
+     */
     InProgress,
+    /**
+     * The index build task has finished successfully.
+     */
     Finished,
+    /**
+     * The index build task has failed.
+     */
     Failed,
+    /**
+     * The index build task will be retried.
+     */
     Retry,
 }

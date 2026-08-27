@@ -22,6 +22,9 @@ package io.milvus.v2.service.index.request;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code alterIndexProperties} API.
+ */
 public class AlterIndexPropertiesReq {
     private String collectionName;
     private String databaseName;
@@ -35,34 +38,74 @@ public class AlterIndexPropertiesReq {
         this.properties = builder.properties;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the index name.
+     *
+     * @return the index name
+     */
     public String getIndexName() {
         return indexName;
     }
 
+    /**
+     * Sets the index name.
+     *
+     * @param indexName the index name
+     */
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
 
+    /**
+     * Returns the index properties to be altered.
+     *
+     * @return the index properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
 
+    /**
+     * Sets the index properties to be altered.
+     *
+     * @param properties the index properties
+     */
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -77,6 +120,11 @@ public class AlterIndexPropertiesReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code AlterIndexPropertiesReq}.
+     *
+     * @return the builder
+     */
     public static AlterIndexPropertiesReqBuilder builder() {
         return new AlterIndexPropertiesReqBuilder();
     }
@@ -90,26 +138,57 @@ public class AlterIndexPropertiesReq {
         private AlterIndexPropertiesReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AlterIndexPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AlterIndexPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the index name.
+         *
+         * @param indexName the index name
+         * @return this builder
+         */
         public AlterIndexPropertiesReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
 
+        /**
+         * Sets the index properties to be altered.
+         *
+         * @param properties the index properties
+         * @return this builder
+         */
         public AlterIndexPropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
+        /**
+         * Adds a single index property to be altered.
+         *
+         * @param key the property key
+         * @param value the property value
+         * @return this builder
+         */
         public AlterIndexPropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -118,6 +197,11 @@ public class AlterIndexPropertiesReq {
             return this;
         }
 
+        /**
+         * Builds the {@code AlterIndexPropertiesReq}.
+         *
+         * @return the built request
+         */
         public AlterIndexPropertiesReq build() {
             return new AlterIndexPropertiesReq(this);
         }

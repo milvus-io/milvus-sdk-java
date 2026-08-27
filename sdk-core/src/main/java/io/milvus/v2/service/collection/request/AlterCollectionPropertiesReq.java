@@ -22,6 +22,9 @@ package io.milvus.v2.service.collection.request;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code alterCollectionProperties} API.
+ */
 public class AlterCollectionPropertiesReq {
     private String collectionName;
     private String databaseName;
@@ -35,22 +38,47 @@ public class AlterCollectionPropertiesReq {
         }
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the properties to alter on the collection.
+     *
+     * @return the collection properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -64,6 +92,11 @@ public class AlterCollectionPropertiesReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AlterCollectionPropertiesReq}.
+     *
+     * @return the builder
+     */
     public static AlterCollectionPropertiesReqBuilder builder() {
         return new AlterCollectionPropertiesReqBuilder();
     }
@@ -76,21 +109,46 @@ public class AlterCollectionPropertiesReq {
         private AlterCollectionPropertiesReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AlterCollectionPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AlterCollectionPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the properties to alter on the collection.
+         *
+         * @param properties the collection properties
+         * @return this builder
+         */
         public AlterCollectionPropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
+        /**
+         * Adds a single property to alter on the collection.
+         *
+         * @param key the property key
+         * @param value the property value
+         * @return this builder
+         */
         public AlterCollectionPropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -99,6 +157,11 @@ public class AlterCollectionPropertiesReq {
             return this;
         }
 
+        /**
+         * Builds an {@link AlterCollectionPropertiesReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public AlterCollectionPropertiesReq build() {
             return new AlterCollectionPropertiesReq(this);
         }

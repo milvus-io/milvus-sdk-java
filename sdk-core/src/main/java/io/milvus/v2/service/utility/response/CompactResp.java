@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.response;
 
+/**
+ * Response returned by the {@code compact} API.
+ */
 public class CompactResp {
     private Long compactionID;
 
@@ -30,10 +33,20 @@ public class CompactResp {
         return new CompactRespBuilder();
     }
 
+    /**
+     * Returns the compaction ID.
+     *
+     * @return the compaction ID
+     */
     public Long getCompactionID() {
         return compactionID;
     }
 
+    /**
+     * Sets the compaction ID.
+     *
+     * @param compactionID the compaction ID
+     */
     public void setCompactionID(Long compactionID) {
         this.compactionID = compactionID;
     }
@@ -48,11 +61,22 @@ public class CompactResp {
     public static class CompactRespBuilder {
         private Long compactionID = 0L;
 
+        /**
+         * Sets the compaction ID.
+         *
+         * @param compactionID the compaction ID
+         * @return this builder
+         */
         public CompactRespBuilder compactionID(Long compactionID) {
             this.compactionID = compactionID;
             return this;
         }
 
+        /**
+         * Builds the {@code CompactResp}.
+         *
+         * @return the constructed {@code CompactResp}
+         */
         public CompactResp build() {
             return new CompactResp(this);
         }

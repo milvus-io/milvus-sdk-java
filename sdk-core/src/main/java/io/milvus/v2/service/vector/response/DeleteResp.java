@@ -22,6 +22,9 @@ package io.milvus.v2.service.vector.response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code delete} API.
+ */
 public class DeleteResp {
     private long deleteCnt;
     /**
@@ -38,30 +41,65 @@ public class DeleteResp {
         this.cost = builder.cost;
     }
 
+    /**
+     * Creates a new {@code DeleteResp} builder.
+     *
+     * @return the builder
+     */
     public static DeleteRespBuilder builder() {
         return new DeleteRespBuilder();
     }
 
+    /**
+     * Returns the number of entities deleted.
+     *
+     * @return the delete count
+     */
     public long getDeleteCnt() {
         return deleteCnt;
     }
 
+    /**
+     * Sets the number of entities deleted.
+     *
+     * @param deleteCnt the delete count
+     */
     public void setDeleteCnt(long deleteCnt) {
         this.deleteCnt = deleteCnt;
     }
 
+    /**
+     * Returns the primary keys of the deleted entities.
+     *
+     * @return the deleted primary keys
+     */
     public List<Object> getPrimaryKeys() {
         return primaryKeys;
     }
 
+    /**
+     * Sets the primary keys of the deleted entities.
+     *
+     * @param primaryKeys the deleted primary keys
+     */
     public void setPrimaryKeys(List<Object> primaryKeys) {
         this.primaryKeys = primaryKeys;
     }
 
+    /**
+     * Returns the time cost of the delete operation.
+     *
+     * @return the cost
+     */
     public Long getCost() {
         return cost;
     }
 
+    /**
+     * Sets the time cost of the delete operation.
+     *
+     * @param cost the cost
+     */
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -80,21 +118,44 @@ public class DeleteResp {
         private List<Object> primaryKeys = new ArrayList<>();
         private Long cost;
 
+        /**
+         * Sets the number of entities deleted.
+         *
+         * @param deleteCnt the delete count
+         * @return this builder
+         */
         public DeleteRespBuilder deleteCnt(long deleteCnt) {
             this.deleteCnt = deleteCnt;
             return this;
         }
 
+        /**
+         * Sets the primary keys of the deleted entities.
+         *
+         * @param primaryKeys the deleted primary keys
+         * @return this builder
+         */
         public DeleteRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
         }
 
+        /**
+         * Sets the time cost of the delete operation.
+         *
+         * @param cost the cost
+         * @return this builder
+         */
         public DeleteRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
         }
 
+        /**
+         * Builds the {@link DeleteResp}.
+         *
+         * @return the response
+         */
         public DeleteResp build() {
             return new DeleteResp(this);
         }

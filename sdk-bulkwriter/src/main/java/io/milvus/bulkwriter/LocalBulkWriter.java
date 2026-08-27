@@ -38,6 +38,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * BulkWriter that writes bulk data files to the local filesystem.
+ * <p>
+ * Rows are appended into chunked data files under a local directory. When a file reaches
+ * the configured chunk size, it is committed and handed to {@link #callBack(List)}.
+ */
 public class LocalBulkWriter extends BulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(LocalBulkWriter.class);
 
@@ -64,11 +70,24 @@ public class LocalBulkWriter extends BulkWriter {
     }
 
     @Override
+    /**
+    * Appends a single row of data and writes it to the current data file.
+    *
+    * @param rowData the row data as a JSON object
+    * @throws IOException if writing the row fails
+    * @throws InterruptedException if the calling thread is interrupted while committing
+    */
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
 
     @Override
+    /**
+    * Persists the finished data files, optionally waiting for the flush to complete.
+    *
+    * @param filePaths the paths of the finished files
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     protected void callBackIfCommitReady(List<String> filePaths) throws InterruptedException {
 //        only one thread can enter this section to persist data,
 //        in the _flush() method, the buffer will be swapped to a new one.
@@ -79,11 +98,23 @@ public class LocalBulkWriter extends BulkWriter {
         workingThreadLock.unlock();
     }
 
+    /**
+    * Commits the current data file and persists it locally.
+    *
+    * @param async if true, the flush runs in a background thread; otherwise it blocks until done
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     public void commit(boolean async) throws InterruptedException {
         List<String> filePath = commitIfFileReady(false);
         callBack(async, filePath);
     }
 
+    /**
+    * Commits the current file if it contains rows, and optionally creates a new file writer.
+    *
+    * @param createNewFile whether to create a new file writer for subsequent rows
+    * @return the paths of the committed files, or null if nothing was committed
+    */
     protected List<String> commitIfFileReady(boolean createNewFile) {
         if (super.getTotalRowCount() <= 0) {
             String msg = "current_file_total_row_count less than 0, no need to generator a file";
@@ -150,18 +181,38 @@ public class LocalBulkWriter extends BulkWriter {
         logger.info(msg);
     }
 
+    /**
+    * Callback invoked after the finished files are persisted locally.
+    *
+    * @param fileList the paths of the committed files
+    */
     protected void callBack(List<String> fileList) {
     }
 
     @Override
+    /**
+    * Returns the local directory where the data files are written.
+    *
+    * @return the local data path
+    */
     protected String getDataPath() {
         return localPath;
     }
 
+    /**
+    * Returns the list of committed file path batches.
+    *
+    * @return the list of file path batches
+    */
     public List<List<String>> getBatchFiles() {
         return localFiles;
     }
 
+    /**
+    * Commits any remaining buffered rows and waits for the flush threads to finish.
+    *
+    * @throws InterruptedException if the calling thread is interrupted while waiting
+    */
     protected void exit() throws InterruptedException {
         // if still has data in memory, default commit
         workingThreadLock.lock();
@@ -202,11 +253,21 @@ public class LocalBulkWriter extends BulkWriter {
         }
     }
 
+    /**
+    * Returns the unique ID generated for this writer instance.
+    *
+    * @return the UUID
+    */
     protected String getUUID() {
         return uuid;
     }
 
     @Override
+    /**
+    * Executes remaining actions to prevent loss of buffered data and cleans up empty directories.
+    *
+    * @throws Exception if an error occurs while closing
+    */
     public void close() throws Exception {
         logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
         exit();

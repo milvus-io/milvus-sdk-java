@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code alterCollectionFunction} API.
+ */
 public class AlterCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
@@ -30,22 +33,47 @@ public class AlterCollectionFunctionReq {
         this.function = builder.function;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the function with the updated definition.
+     *
+     * @return the function
+     */
     public CreateCollectionReq.Function getFunction() {
         return function;
     }
@@ -59,6 +87,11 @@ public class AlterCollectionFunctionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AlterCollectionFunctionReq}.
+     *
+     * @return the builder
+     */
     public static AlterCollectionFunctionReqBuilder builder() {
         return new AlterCollectionFunctionReqBuilder();
     }
@@ -71,21 +104,44 @@ public class AlterCollectionFunctionReq {
         private AlterCollectionFunctionReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AlterCollectionFunctionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AlterCollectionFunctionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the function with the updated definition.
+         *
+         * @param function the function
+         * @return this builder
+         */
         public AlterCollectionFunctionReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
             return this;
         }
 
+        /**
+         * Builds an {@link AlterCollectionFunctionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public AlterCollectionFunctionReq build() {
             return new AlterCollectionFunctionReq(this);
         }

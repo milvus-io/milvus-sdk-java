@@ -58,6 +58,13 @@ public class WeightedRanker extends CreateCollectionReq.Function {
     //  new WeightedRanker(weights)
     // Now it is deprecated, user should create a WeightedRanker by builder style:
     //  WeightedRanker.builder().weights(weights).build()
+    /**
+     * Constructs a weighted ranker with the given weights. This constructor is deprecated;
+     * use {@link #builder()} instead.
+     *
+     * @param weights the weight of each search result list
+     * @deprecated use {@link #builder()} instead
+     */
     @Deprecated
     public WeightedRanker(List<Float> weights) {
         super(CreateCollectionReq.Function.builder());
@@ -69,19 +76,40 @@ public class WeightedRanker extends CreateCollectionReq.Function {
         this.weights = builder.weights;
     }
 
+    /**
+     * Returns the weight of each search result list.
+     *
+     * @return the weights
+     */
     public List<Float> getWeights() {
         return weights;
     }
 
+    /**
+     * Sets the weight of each search result list.
+     *
+     * @param weights the weights
+     */
     public void setWeights(List<Float> weights) {
         this.weights = weights;
     }
 
+    /**
+     * Returns the function type of this ranker.
+     *
+     * @return {@link FunctionType#RERANK}
+     */
     @Override
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    /**
+     * Returns the ranker parameters as a map of parameter name to value, including the
+     * strategy and the weighted-scoring weights.
+     *
+     * @return the ranker parameters
+     */
     @Override
     public Map<String, String> getParams() {
         JsonObject params = new JsonObject();
@@ -106,21 +134,40 @@ public class WeightedRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link WeightedRanker}.
+     *
+     * @return a new builder
+     */
     public static WeightedRankerBuilder builder() {
         return new WeightedRankerBuilder();
     }
 
+    /**
+     * Builder for {@link WeightedRanker}.
+     */
     public static class WeightedRankerBuilder extends Function.FunctionBuilder<WeightedRankerBuilder> {
         private List<Float> weights = new ArrayList<>();
 
         private WeightedRankerBuilder() {
         }
 
+        /**
+         * Sets the weight of each search result list.
+         *
+         * @param weights the weights
+         * @return this builder
+         */
         public WeightedRankerBuilder weights(List<Float> weights) {
             this.weights = weights;
             return this;
         }
 
+        /**
+         * Builds the {@link WeightedRanker}.
+         *
+         * @return the built ranker
+         */
         @Override
         public WeightedRanker build() {
             return new WeightedRanker(this);

@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code listRefreshExternalCollectionJobs} API.
+ */
 public class ListRefreshExternalCollectionJobsReq {
     private final String databaseName;
     private final String collectionName;
@@ -32,10 +35,20 @@ public class ListRefreshExternalCollectionJobsReq {
         return new ListRefreshExternalCollectionJobsReqBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
@@ -52,16 +65,33 @@ public class ListRefreshExternalCollectionJobsReq {
         private String databaseName;
         private String collectionName;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public ListRefreshExternalCollectionJobsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public ListRefreshExternalCollectionJobsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds the {@code ListRefreshExternalCollectionJobsReq}.
+         *
+         * @return the constructed {@code ListRefreshExternalCollectionJobsReq}
+         */
         public ListRefreshExternalCollectionJobsReq build() {
             return new ListRefreshExternalCollectionJobsReq(this);
         }

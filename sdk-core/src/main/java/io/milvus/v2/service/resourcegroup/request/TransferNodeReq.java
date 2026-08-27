@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.resourcegroup.request;
 
+/**
+ * Request parameters for the {@code transferNode} API.
+ */
 public class TransferNodeReq {
     private String sourceGroupName;
     private String targetGroupName;
@@ -30,30 +33,65 @@ public class TransferNodeReq {
         this.numOfNodes = builder.numOfNodes;
     }
 
+    /**
+     * Creates a new builder for {@code TransferNodeReq}.
+     *
+     * @return the builder
+     */
     public static TransferNodeReqBuilder builder() {
         return new TransferNodeReqBuilder();
     }
 
+    /**
+     * Returns the name of the source resource group.
+     *
+     * @return the source resource group name
+     */
     public String getSourceGroupName() {
         return sourceGroupName;
     }
 
+    /**
+     * Sets the name of the source resource group.
+     *
+     * @param sourceGroupName the source resource group name
+     */
     public void setSourceGroupName(String sourceGroupName) {
         this.sourceGroupName = sourceGroupName;
     }
 
+    /**
+     * Returns the name of the target resource group.
+     *
+     * @return the target resource group name
+     */
     public String getTargetGroupName() {
         return targetGroupName;
     }
 
+    /**
+     * Sets the name of the target resource group.
+     *
+     * @param targetGroupName the target resource group name
+     */
     public void setTargetGroupName(String targetGroupName) {
         this.targetGroupName = targetGroupName;
     }
 
+    /**
+     * Returns the number of query nodes to be transferred.
+     *
+     * @return the number of nodes
+     */
     public Integer getNumOfNodes() {
         return numOfNodes;
     }
 
+    /**
+     * Sets the number of query nodes to be transferred.
+     *
+     * @param numOfNodes the number of nodes
+     */
     public void setNumOfNodes(Integer numOfNodes) {
         this.numOfNodes = numOfNodes;
     }
@@ -72,21 +110,44 @@ public class TransferNodeReq {
         private String targetGroupName;
         private Integer numOfNodes;
 
+        /**
+         * Sets the name of the source resource group.
+         *
+         * @param sourceGroupName the source resource group name
+         * @return this builder
+         */
         public TransferNodeReqBuilder sourceGroupName(String sourceGroupName) {
             this.sourceGroupName = sourceGroupName;
             return this;
         }
 
+        /**
+         * Sets the name of the target resource group.
+         *
+         * @param targetGroupName the target resource group name
+         * @return this builder
+         */
         public TransferNodeReqBuilder targetGroupName(String targetGroupName) {
             this.targetGroupName = targetGroupName;
             return this;
         }
 
+        /**
+         * Sets the number of query nodes to be transferred.
+         *
+         * @param numOfNodes the number of nodes
+         * @return this builder
+         */
         public TransferNodeReqBuilder numOfNodes(Integer numOfNodes) {
             this.numOfNodes = numOfNodes;
             return this;
         }
 
+        /**
+         * Builds the {@code TransferNodeReq}.
+         *
+         * @return the built request
+         */
         public TransferNodeReq build() {
             return new TransferNodeReq(this);
         }

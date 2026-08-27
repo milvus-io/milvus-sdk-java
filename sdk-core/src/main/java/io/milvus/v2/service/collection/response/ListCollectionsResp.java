@@ -24,6 +24,9 @@ import io.milvus.v2.service.collection.CollectionInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response of the {@code listCollections} API, holding the collections in a database.
+ */
 public class ListCollectionsResp {
     private List<String> collectionNames;
     private List<CollectionInfo> collectionInfos;
@@ -33,24 +36,49 @@ public class ListCollectionsResp {
         this.collectionInfos = builder.collectionInfos != null ? builder.collectionInfos : new ArrayList<>();
     }
 
+    /**
+     * Creates a new builder for {@link ListCollectionsResp}.
+     *
+     * @return the builder
+     */
     public static ListCollectionsRespBuilder builder() {
         return new ListCollectionsRespBuilder();
     }
 
     // Getters
+    /**
+     * Returns the names of the collections in the database.
+     *
+     * @return the collection names
+     */
     public List<String> getCollectionNames() {
         return collectionNames;
     }
 
+    /**
+     * Returns the information of the collections in the database.
+     *
+     * @return the collection information
+     */
     public List<CollectionInfo> getCollectionInfos() {
         return collectionInfos;
     }
 
     // Setters
+    /**
+     * Sets the names of the collections in the database.
+     *
+     * @param collectionNames the collection names
+     */
     public void setCollectionNames(List<String> collectionNames) {
         this.collectionNames = collectionNames;
     }
 
+    /**
+     * Sets the information of the collections in the database.
+     *
+     * @param collectionInfos the collection information
+     */
     public void setCollectionInfos(List<CollectionInfo> collectionInfos) {
         this.collectionInfos = collectionInfos;
     }
@@ -67,16 +95,33 @@ public class ListCollectionsResp {
         private List<String> collectionNames;
         private List<CollectionInfo> collectionInfos;
 
+        /**
+         * Sets the names of the collections in the database.
+         *
+         * @param collectionNames the collection names
+         * @return this builder
+         */
         public ListCollectionsRespBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
+        /**
+         * Sets the information of the collections in the database.
+         *
+         * @param collectionInfos the collection information
+         * @return this builder
+         */
         public ListCollectionsRespBuilder collectionInfos(List<CollectionInfo> collectionInfos) {
             this.collectionInfos = collectionInfos;
             return this;
         }
 
+        /**
+         * Builds a {@link ListCollectionsResp} with the configured parameters.
+         *
+         * @return the response
+         */
         public ListCollectionsResp build() {
             return new ListCollectionsResp(this);
         }

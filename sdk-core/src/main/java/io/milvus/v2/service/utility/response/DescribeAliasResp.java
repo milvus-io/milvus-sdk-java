@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.response;
 
+/**
+ * Response returned by the {@code describeAlias} API.
+ */
 public class DescribeAliasResp {
     private String databaseName;
     private String collectionName;
@@ -34,26 +37,56 @@ public class DescribeAliasResp {
         return new DescribeAliasRespBuilder();
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name the alias points to.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name the alias points to.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the alias.
+     *
+     * @return the alias
+     */
     public String getAlias() {
         return alias;
     }
 
+    /**
+     * Sets the alias.
+     *
+     * @param alias the alias
+     */
     public void setAlias(String alias) {
         this.alias = alias;
     }
@@ -72,21 +105,44 @@ public class DescribeAliasResp {
         private String collectionName;
         private String alias;
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DescribeAliasRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name the alias points to.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DescribeAliasRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the alias.
+         *
+         * @param alias the alias
+         * @return this builder
+         */
         public DescribeAliasRespBuilder alias(String alias) {
             this.alias = alias;
             return this;
         }
 
+        /**
+         * Builds the {@code DescribeAliasResp}.
+         *
+         * @return the constructed {@code DescribeAliasResp}
+         */
         public DescribeAliasResp build() {
             return new DescribeAliasResp(this);
         }

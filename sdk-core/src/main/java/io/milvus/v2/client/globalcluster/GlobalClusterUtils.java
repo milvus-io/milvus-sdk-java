@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Utility methods for detecting global cluster endpoints and fetching the global cluster topology.
+ */
 public class GlobalClusterUtils {
     private static final Logger logger = LoggerFactory.getLogger(GlobalClusterUtils.class);
 
@@ -49,6 +52,12 @@ public class GlobalClusterUtils {
     private GlobalClusterUtils() {
     }
 
+    /**
+     * Returns whether the given URI points to a global cluster endpoint.
+     *
+     * @param uri the connection URI
+     * @return true if the URI is a global cluster endpoint
+     */
     public static boolean isGlobalEndpoint(String uri) {
         if (uri == null) {
             return false;
@@ -56,6 +65,14 @@ public class GlobalClusterUtils {
         return uri.toLowerCase().contains(GLOBAL_CLUSTER_MARKER);
     }
 
+    /**
+     * Fetches the global cluster topology from the given endpoint, retrying with backoff on failure.
+     *
+     * @param globalEndpoint the global cluster endpoint
+     * @param token the authentication token, or null
+     * @return the fetched topology
+     * @throws RuntimeException if the topology cannot be fetched after all retries
+     */
     public static GlobalTopology fetchTopology(String globalEndpoint, String token) {
         String topologyUrl = buildTopologyUrl(globalEndpoint);
 
@@ -81,6 +98,12 @@ public class GlobalClusterUtils {
         throw new RuntimeException("Failed to fetch global topology after " + MAX_RETRIES + " attempts", lastException);
     }
 
+    /**
+     * Builds the topology REST API URL for the given global endpoint.
+     *
+     * @param globalEndpoint the global cluster endpoint
+     * @return the topology API URL
+     */
     static String buildTopologyUrl(String globalEndpoint) {
         // Normalize the URI: ensure HTTPS scheme, trim whitespace, remove trailing slash.
         // The host and port are preserved as-is — the topology REST API is expected to be
@@ -101,6 +124,14 @@ public class GlobalClusterUtils {
         return base + TOPOLOGY_PATH;
     }
 
+    /**
+     * Performs an HTTP GET request and returns the response body.
+     *
+     * @param urlStr the request URL
+     * @param token the authentication token, or null
+     * @return the response body
+     * @throws IOException if the request fails or returns a non-200 status
+     */
     static String doHttpGet(String urlStr, String token) throws IOException {
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -132,6 +163,13 @@ public class GlobalClusterUtils {
         }
     }
 
+    /**
+     * Parses a global topology API response into a {@link GlobalTopology}.
+     *
+     * @param responseBody the raw JSON response body
+     * @return the parsed topology
+     * @throws RuntimeException if the API returns an error code or the payload is malformed
+     */
     static GlobalTopology parseTopologyResponse(String responseBody) {
         JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
         int code = root.get("code").getAsInt();

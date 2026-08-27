@@ -24,6 +24,13 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Wrapper around a Milvus gRPC blocking stub that carries the endpoint and database name of the
+ * client it was created from, and applies the per-call RPC deadline used by the iterators.
+ *
+ * <p>The wrapped stub is reused across iterator calls; each call to {@link #get()} returns a stub
+ * with the deadline reset so the deadline applies to that single call.
+ */
 public class RpcStubWrapper {
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
@@ -34,6 +41,15 @@ public class RpcStubWrapper {
     private final String endpoint;
     private final String databaseName;
 
+    /**
+     * Creates a stub wrapper for the given blocking stub.
+     *
+     * @param blockingStub the Milvus gRPC blocking stub, must not be {@code null}
+     * @param rpcDeadlineMs the per-call RPC deadline in milliseconds, or {@code 0} for no deadline
+     * @param endpoint the server endpoint, must not be empty
+     * @param databaseName the database name; empty is normalized to {@code "default"}
+     * @throws IllegalArgumentException if {@code endpoint} is empty
+     */
     public RpcStubWrapper(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                           long rpcDeadlineMs,
                           String endpoint,
@@ -47,6 +63,15 @@ public class RpcStubWrapper {
         this.databaseName = databaseName == null || databaseName.isEmpty() ? "default" : databaseName;
     }
 
+    /**
+     * Returns the blocking stub, optionally with the configured RPC deadline applied.
+     *
+     * <p>When {@code rpcDeadlineMs} is greater than zero, a new stub with a fresh
+     * {@code withDeadlineAfter} is returned for each call so that the deadline applies to a single
+     * call instead of the lifetime of the stub.
+     *
+     * @return the blocking stub
+     */
     public MilvusServiceGrpc.MilvusServiceBlockingStub get() {
         if (rpcDeadlineMs > 0) {
             return blockingStub.withDeadlineAfter(rpcDeadlineMs, TimeUnit.MILLISECONDS);
@@ -55,10 +80,20 @@ public class RpcStubWrapper {
         }
     }
 
+    /**
+     * Returns the server endpoint.
+     *
+     * @return the endpoint
+     */
     public String getEndpoint() {
         return endpoint;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }

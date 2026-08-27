@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code getCollectionStats} API.
+ */
 public class GetCollectionStatsReq {
     private String databaseName;
     private String collectionName;
@@ -28,18 +31,38 @@ public class GetCollectionStatsReq {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -52,6 +75,11 @@ public class GetCollectionStatsReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link GetCollectionStatsReq}.
+     *
+     * @return the builder
+     */
     public static GetCollectionStatsReqBuilder builder() {
         return new GetCollectionStatsReqBuilder();
     }
@@ -63,16 +91,33 @@ public class GetCollectionStatsReq {
         private GetCollectionStatsReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public GetCollectionStatsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public GetCollectionStatsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds a {@link GetCollectionStatsReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public GetCollectionStatsReq build() {
             return new GetCollectionStatsReq(this);
         }

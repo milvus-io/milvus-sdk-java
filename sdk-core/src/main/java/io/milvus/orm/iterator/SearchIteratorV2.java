@@ -41,6 +41,17 @@ import java.util.function.Function;
 import static io.milvus.param.Constant.MAX_BATCH_SIZE;
 import static io.milvus.param.Constant.UNLIMITED;
 
+/**
+ * Server-side iterator for paginating vector search results using the Search Iterator V2 protocol.
+ *
+ * <p>Unlike the v1 search iterator, pagination is driven by a server-issued token: the first probe
+ * returns a token and the iterator passes it back in subsequent calls together with the last-bound
+ * distance to fetch the next page. The iterator requires a Milvus server of version 2.5.2 or later.
+ *
+ * <p>Results can be post-filtered by an external filter function; in that case the iterator keeps
+ * probing until a batch that satisfies the filter is collected. The configured limit caps the total
+ * number of returned rows, and {@link #next()} returns an empty list once the limit is reached.
+ */
 public class SearchIteratorV2 {
     private static final Logger logger = LoggerFactory.getLogger(SearchIteratorV2.class);
     private final RpcStubWrapper blockingStub;
@@ -58,12 +69,28 @@ public class SearchIteratorV2 {
     private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = null;
     private List<SearchResp.SearchResult> cache = new ArrayList<>();
 
-    // to support V2
+    /**
+     * Creates a Search Iterator V2 from the given request.
+     *
+     * <p>The iterator is probed for server compatibility during construction.
+     *
+     * @param searchIteratorReq the search iterator request
+     * @param blockingStub      the gRPC stub wrapper used to perform searches
+     */
     public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
                             RpcStubWrapper blockingStub) {
         this(searchIteratorReq, blockingStub, null);
     }
 
+    /**
+     * Creates a Search Iterator V2 from the given request.
+     *
+     * <p>The iterator is probed for server compatibility during construction.
+     *
+     * @param searchIteratorReq the search iterator request
+     * @param blockingStub      the gRPC stub wrapper used to perform searches
+     * @param clusterId         the cluster ID for global cluster routing, may be empty
+     */
     public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
                             RpcStubWrapper blockingStub,
                             String clusterId) {
@@ -177,6 +204,16 @@ public class SearchIteratorV2 {
         }
     }
 
+    /**
+     * Returns the next batch of search results.
+     *
+     * <p>The returned list contains up to {@code batchSize} rows. When an external filter function
+     * is configured, the iterator continues fetching pages until the batch satisfies the filter or
+     * the server has no more results. Once the configured limit is reached, an empty list is
+     * returned.
+     *
+     * @return the next batch of rows, or an empty list if the iteration is finished
+     */
     public List<SearchResp.SearchResult> next() {
         if (leftResCnt != null && leftResCnt <= 0) {
             cache.clear();
@@ -263,6 +300,9 @@ public class SearchIteratorV2 {
         return res;
     }
 
+    /**
+     * Clears the internal cache of buffered search results.
+     */
     public void close() {
         cache.clear();
     }

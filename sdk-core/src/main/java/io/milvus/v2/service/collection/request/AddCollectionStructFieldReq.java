@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code addCollectionStructField} API.
+ */
 public class AddCollectionStructFieldReq {
     private String collectionName;
     private String databaseName;
@@ -51,70 +54,156 @@ public class AddCollectionStructFieldReq {
         this.typeParams = builder.typeParams;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the name of the struct field to add.
+     *
+     * @return the field name
+     */
     public String getFieldName() {
         return fieldName;
     }
 
+    /**
+     * Sets the name of the struct field to add.
+     *
+     * @param fieldName the field name
+     */
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
 
+    /**
+     * Returns the description of the struct field.
+     *
+     * @return the field description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the struct field.
+     *
+     * @param description the field description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Returns the maximum number of elements the struct field can hold.
+     *
+     * @return the max capacity
+     */
     public Integer getMaxCapacity() {
         return maxCapacity;
     }
 
+    /**
+     * Sets the maximum number of elements the struct field can hold.
+     *
+     * @param maxCapacity the max capacity
+     */
     public void setMaxCapacity(Integer maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
 
+    /**
+     * Returns whether the struct field is nullable.
+     *
+     * @return {@code true} if the field is nullable
+     */
     public Boolean getNullable() {
         return nullable;
     }
 
+    /**
+     * Sets whether the struct field is nullable.
+     *
+     * @param nullable {@code true} to make the field nullable
+     */
     public void setNullable(Boolean nullable) {
         this.nullable = nullable;
     }
 
+    /**
+     * Returns the sub-fields of the struct field.
+     *
+     * @return the struct sub-fields
+     */
     public List<FieldSchema> getStructFields() {
         return structFields;
     }
 
+    /**
+     * Sets the sub-fields of the struct field.
+     *
+     * @param structFields the struct sub-fields
+     */
     public void setStructFields(List<FieldSchema> structFields) {
         this.structFields = structFields;
     }
 
+    /**
+     * Returns the type parameters of the struct field.
+     *
+     * @return the type parameters
+     */
     public Map<String, String> getTypeParams() {
         return typeParams;
     }
 
+    /**
+     * Sets the type parameters of the struct field.
+     *
+     * @param typeParams the type parameters
+     */
     public void setTypeParams(Map<String, String> typeParams) {
         this.typeParams = typeParams;
     }
 
+    /**
+     * Converts this request into a {@link CreateCollectionReq.StructFieldSchema}.
+     *
+     * @return the struct field schema
+     * @throws MilvusClientException if the field is not nullable or the schema conversion fails
+     */
     public CreateCollectionReq.StructFieldSchema toStructFieldSchema() {
         if (Boolean.FALSE.equals(nullable)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -151,6 +240,11 @@ public class AddCollectionStructFieldReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AddCollectionStructFieldReq}.
+     *
+     * @return the builder
+     */
     public static AddCollectionStructFieldReqBuilder builder() {
         return new AddCollectionStructFieldReqBuilder();
     }
@@ -168,41 +262,90 @@ public class AddCollectionStructFieldReq {
         private AddCollectionStructFieldReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the name of the struct field to add.
+         *
+         * @param fieldName the field name
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Sets the description of the struct field.
+         *
+         * @param description the field description
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Sets the maximum number of elements the struct field can hold.
+         *
+         * @param maxCapacity the max capacity
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder maxCapacity(Integer maxCapacity) {
             this.maxCapacity = maxCapacity;
             return this;
         }
 
+        /**
+         * Sets whether the struct field is nullable.
+         *
+         * @param nullable {@code true} to make the field nullable
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder nullable(Boolean nullable) {
             this.nullable = nullable;
             return this;
         }
 
+        /**
+         * Sets the sub-fields of the struct field.
+         *
+         * @param structFields the struct sub-fields
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder structFields(List<FieldSchema> structFields) {
             this.structFields = structFields;
             return this;
         }
 
+        /**
+         * Converts the given field request into a {@link FieldSchema} and appends it
+         * to the struct sub-fields.
+         *
+         * @param addFieldReq the field request
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder addStructField(AddFieldReq addFieldReq) {
             if (this.structFields == null) {
                 this.structFields = new ArrayList<>();
@@ -211,11 +354,24 @@ public class AddCollectionStructFieldReq {
             return this;
         }
 
+        /**
+         * Sets the type parameters of the struct field.
+         *
+         * @param typeParams the type parameters
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder typeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
             return this;
         }
 
+        /**
+         * Adds a single type parameter to the struct field.
+         *
+         * @param key the parameter key
+         * @param value the parameter value
+         * @return this builder
+         */
         public AddCollectionStructFieldReqBuilder typeParam(String key, String value) {
             if (this.typeParams == null) {
                 this.typeParams = new HashMap<>();
@@ -224,6 +380,11 @@ public class AddCollectionStructFieldReq {
             return this;
         }
 
+        /**
+         * Builds an {@link AddCollectionStructFieldReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public AddCollectionStructFieldReq build() {
             return new AddCollectionStructFieldReq(this);
         }

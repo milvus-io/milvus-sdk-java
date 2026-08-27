@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code dropCollectionField} API.
+ */
 public class DropCollectionFieldReq {
     private String collectionName;
     private String databaseName;
@@ -32,34 +35,74 @@ public class DropCollectionFieldReq {
         this.fieldId = builder.fieldId;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the name of the field to drop.
+     *
+     * @return the field name
+     */
     public String getFieldName() {
         return fieldName;
     }
 
+    /**
+     * Sets the name of the field to drop.
+     *
+     * @param fieldName the field name
+     */
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
 
+    /**
+     * Returns the ID of the field to drop.
+     *
+     * @return the field ID
+     */
     public Long getFieldId() {
         return fieldId;
     }
 
+    /**
+     * Sets the ID of the field to drop.
+     *
+     * @param fieldId the field ID
+     */
     public void setFieldId(Long fieldId) {
         this.fieldId = fieldId;
     }
@@ -74,6 +117,11 @@ public class DropCollectionFieldReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DropCollectionFieldReq}.
+     *
+     * @return the builder
+     */
     public static DropCollectionFieldReqBuilder builder() {
         return new DropCollectionFieldReqBuilder();
     }
@@ -87,26 +135,55 @@ public class DropCollectionFieldReq {
         private DropCollectionFieldReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public DropCollectionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public DropCollectionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the name of the field to drop.
+         *
+         * @param fieldName the field name
+         * @return this builder
+         */
         public DropCollectionFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Sets the ID of the field to drop.
+         *
+         * @param fieldId the field ID
+         * @return this builder
+         */
         public DropCollectionFieldReqBuilder fieldId(Long fieldId) {
             this.fieldId = fieldId;
             return this;
         }
 
+        /**
+         * Builds a {@link DropCollectionFieldReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public DropCollectionFieldReq build() {
             return new DropCollectionFieldReq(this);
         }

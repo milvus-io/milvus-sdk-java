@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code getServerVersion} API.
+ */
 public class GetServerVersionReq {
     private Boolean detail = Boolean.FALSE;
 
@@ -30,10 +33,20 @@ public class GetServerVersionReq {
         return new GetServerVersionReqBuilder();
     }
 
+    /**
+     * Returns whether detailed version information should be returned.
+     *
+     * @return {@code true} to include detailed build information, {@code false} otherwise
+     */
     public Boolean getDetail() {
         return detail;
     }
 
+    /**
+     * Sets whether detailed version information should be returned.
+     *
+     * @param detail {@code true} to include detailed build information, {@code false} otherwise
+     */
     public void setDetail(Boolean detail) {
         this.detail = detail;
     }
@@ -48,11 +61,22 @@ public class GetServerVersionReq {
     public static class GetServerVersionReqBuilder {
         private Boolean detail = Boolean.FALSE;
 
+        /**
+         * Sets whether detailed version information should be returned.
+         *
+         * @param detail {@code true} to include detailed build information, {@code false} otherwise
+         * @return this builder
+         */
         public GetServerVersionReqBuilder detail(Boolean detail) {
             this.detail = detail;
             return this;
         }
 
+        /**
+         * Builds the {@code GetServerVersionReq}.
+         *
+         * @return the constructed {@code GetServerVersionReq}
+         */
         public GetServerVersionReq build() {
             return new GetServerVersionReq(this);
         }

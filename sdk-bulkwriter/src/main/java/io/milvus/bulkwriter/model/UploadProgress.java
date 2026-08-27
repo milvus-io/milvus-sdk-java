@@ -19,6 +19,12 @@
 
 package io.milvus.bulkwriter.model;
 
+/**
+ * A snapshot of the progress of a file upload to a cloud storage volume.
+ *
+ * <p>It reports the uploaded and total bytes, the number of completed files, the file
+ * currently being uploaded, and the overall upload percentage.</p>
+ */
 public class UploadProgress {
     private final long uploadedBytes;
     private final long totalBytes;
@@ -29,6 +35,18 @@ public class UploadProgress {
     private final long currentFileTotalBytes;
     private final double percent;
 
+    /**
+     * Constructs an {@code UploadProgress} with the given upload statistics.
+     *
+     * @param uploadedBytes            the total number of bytes uploaded so far
+     * @param totalBytes               the total number of bytes to upload
+     * @param completedFiles           the number of files fully uploaded
+     * @param totalFiles               the total number of files to upload
+     * @param currentFile              the name of the file currently being uploaded
+     * @param currentFileUploadedBytes the number of bytes uploaded for the current file
+     * @param currentFileTotalBytes    the total size of the current file in bytes
+     * @param percent                  the overall upload percentage
+     */
     public UploadProgress(long uploadedBytes, long totalBytes, int completedFiles, long totalFiles,
                           String currentFile, long currentFileUploadedBytes,
                           long currentFileTotalBytes, double percent) {
@@ -42,34 +60,74 @@ public class UploadProgress {
         this.percent = percent;
     }
 
+    /**
+     * Returns the total number of bytes uploaded so far.
+     *
+     * @return the number of uploaded bytes
+     */
     public long getUploadedBytes() {
         return uploadedBytes;
     }
 
+    /**
+     * Returns the total number of bytes to upload.
+     *
+     * @return the total number of bytes to upload
+     */
     public long getTotalBytes() {
         return totalBytes;
     }
 
+    /**
+     * Returns the number of files fully uploaded.
+     *
+     * @return the number of completed files
+     */
     public int getCompletedFiles() {
         return completedFiles;
     }
 
+    /**
+     * Returns the total number of files to upload.
+     *
+     * @return the total number of files to upload
+     */
     public long getTotalFiles() {
         return totalFiles;
     }
 
+    /**
+     * Returns the name of the file currently being uploaded.
+     *
+     * @return the current file name
+     */
     public String getCurrentFile() {
         return currentFile;
     }
 
+    /**
+     * Returns the number of bytes uploaded for the current file.
+     *
+     * @return the number of uploaded bytes of the current file
+     */
     public long getCurrentFileUploadedBytes() {
         return currentFileUploadedBytes;
     }
 
+    /**
+     * Returns the total size of the current file in bytes.
+     *
+     * @return the total size of the current file
+     */
     public long getCurrentFileTotalBytes() {
         return currentFileTotalBytes;
     }
 
+    /**
+     * Returns the overall upload percentage.
+     *
+     * @return the upload percentage
+     */
     public double getPercent() {
         return percent;
     }

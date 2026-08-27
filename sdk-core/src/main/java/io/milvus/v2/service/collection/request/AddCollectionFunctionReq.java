@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.collection.request;
 
+/**
+ * Request parameters for the {@code addCollectionFunction} API.
+ */
 public class AddCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
@@ -30,22 +33,47 @@ public class AddCollectionFunctionReq {
         this.function = builder.function;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the function to add to the collection.
+     *
+     * @return the function
+     */
     public CreateCollectionReq.Function getFunction() {
         return function;
     }
@@ -59,6 +87,11 @@ public class AddCollectionFunctionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link AddCollectionFunctionReq}.
+     *
+     * @return the builder
+     */
     public static AddCollectionFunctionReqBuilder builder() {
         return new AddCollectionFunctionReqBuilder();
     }
@@ -71,21 +104,44 @@ public class AddCollectionFunctionReq {
         private AddCollectionFunctionReqBuilder() {
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public AddCollectionFunctionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public AddCollectionFunctionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the function to add to the collection.
+         *
+         * @param function the function
+         * @return this builder
+         */
         public AddCollectionFunctionReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
             return this;
         }
 
+        /**
+         * Builds an {@link AddCollectionFunctionReq} with the configured parameters.
+         *
+         * @return the request
+         */
         public AddCollectionFunctionReq build() {
             return new AddCollectionFunctionReq(this);
         }

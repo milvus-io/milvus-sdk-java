@@ -21,6 +21,12 @@ package io.milvus.v2.client.globalcluster;
 
 import java.util.List;
 
+/**
+ * Represents the discovered topology of a global cluster deployment.
+ * <p>
+ * The topology is identified by a version number and contains the list of known clusters.
+ * The primary (writable) cluster can be retrieved via {@link #getPrimary()}.
+ */
 public class GlobalTopology {
     private final long version;
     private final List<ClusterInfo> clusters;
@@ -30,14 +36,30 @@ public class GlobalTopology {
         this.clusters = clusters;
     }
 
+    /**
+     * Returns the topology version.
+     *
+     * @return the topology version
+     */
     public long getVersion() {
         return version;
     }
 
+    /**
+     * Returns the list of clusters in the topology.
+     *
+     * @return the list of clusters
+     */
     public List<ClusterInfo> getClusters() {
         return clusters;
     }
 
+    /**
+     * Returns the primary (writable) cluster of the topology.
+     *
+     * @return the primary cluster
+     * @throws IllegalStateException if no writable cluster is found
+     */
     public ClusterInfo getPrimary() {
         for (ClusterInfo cluster : clusters) {
             if (cluster.isPrimary()) {

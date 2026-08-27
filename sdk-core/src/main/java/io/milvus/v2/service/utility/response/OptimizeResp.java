@@ -21,6 +21,9 @@ package io.milvus.v2.service.utility.response;
 
 import java.util.List;
 
+/**
+ * Response returned by the {@code optimize} API.
+ */
 public class OptimizeResp {
     private String status;
     private String collectionName;
@@ -40,22 +43,47 @@ public class OptimizeResp {
         return new OptimizeRespBuilder();
     }
 
+    /**
+     * Returns the status of the optimization.
+     *
+     * @return the optimization status
+     */
     public String getStatus() {
         return status;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the ID of the compaction triggered by the optimization.
+     *
+     * @return the compaction ID
+     */
     public Long getCompactionId() {
         return compactionId;
     }
 
+    /**
+     * Returns the target segment size of the optimization.
+     *
+     * @return the target segment size
+     */
     public String getTargetSize() {
         return targetSize;
     }
 
+    /**
+     * Returns the progress of the optimization.
+     *
+     * @return the list of progress messages
+     */
     public List<String> getProgress() {
         return progress;
     }
@@ -78,31 +106,66 @@ public class OptimizeResp {
         private String targetSize;
         private List<String> progress;
 
+        /**
+         * Sets the status of the optimization.
+         *
+         * @param status the optimization status
+         * @return this builder
+         */
         public OptimizeRespBuilder status(String status) {
             this.status = status;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public OptimizeRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the ID of the compaction triggered by the optimization.
+         *
+         * @param compactionId the compaction ID
+         * @return this builder
+         */
         public OptimizeRespBuilder compactionId(Long compactionId) {
             this.compactionId = compactionId;
             return this;
         }
 
+        /**
+         * Sets the target segment size of the optimization.
+         *
+         * @param targetSize the target segment size
+         * @return this builder
+         */
         public OptimizeRespBuilder targetSize(String targetSize) {
             this.targetSize = targetSize;
             return this;
         }
 
+        /**
+         * Sets the progress of the optimization.
+         *
+         * @param progress the list of progress messages
+         * @return this builder
+         */
         public OptimizeRespBuilder progress(List<String> progress) {
             this.progress = progress;
             return this;
         }
 
+        /**
+         * Builds the {@code OptimizeResp}.
+         *
+         * @return the constructed {@code OptimizeResp}
+         */
         public OptimizeResp build() {
             return new OptimizeResp(this);
         }

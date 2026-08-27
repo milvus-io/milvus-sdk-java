@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.partition.request;
 
+/**
+ * Request parameters for the {@code hasPartition} API.
+ */
 public class HasPartitionReq {
     private String databaseName;
     private String collectionName;
@@ -30,26 +33,56 @@ public class HasPartitionReq {
         this.partitionName = builder.partitionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the name of the partition to be checked.
+     *
+     * @return the partition name
+     */
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Sets the name of the partition to be checked.
+     *
+     * @param partitionName the partition name
+     */
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -63,6 +96,11 @@ public class HasPartitionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code HasPartitionReq}.
+     *
+     * @return the builder
+     */
     public static HasPartitionReqBuilder builder() {
         return new HasPartitionReqBuilder();
     }
@@ -75,21 +113,44 @@ public class HasPartitionReq {
         private HasPartitionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public HasPartitionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public HasPartitionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the name of the partition to be checked.
+         *
+         * @param partitionName the partition name
+         * @return this builder
+         */
         public HasPartitionReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Builds the {@code HasPartitionReq}.
+         *
+         * @return the built request
+         */
         public HasPartitionReq build() {
             return new HasPartitionReq(this);
         }

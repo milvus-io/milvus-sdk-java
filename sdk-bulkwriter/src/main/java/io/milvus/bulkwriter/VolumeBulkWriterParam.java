@@ -58,38 +58,83 @@ public class VolumeBulkWriterParam {
         this.connectType = builder.connectType;
     }
 
+    /**
+    * Returns the collection schema.
+    *
+    * @return the collection schema
+    */
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
 
+    /**
+    * Returns the remote path where data files are uploaded.
+    *
+    * @return the remote path where data files are uploaded
+    */
     public String getRemotePath() {
         return remotePath;
     }
 
+    /**
+    * Returns the chunk size threshold in bytes.
+    *
+    * @return the chunk size threshold in bytes
+    */
     public long getChunkSize() {
         return chunkSize;
     }
 
+    /**
+    * Returns the bulk data file type.
+    *
+    * @return the bulk data file type
+    */
     public BulkFileType getFileType() {
         return fileType;
     }
 
+    /**
+    * Returns the writer configuration map.
+    *
+    * @return the writer configuration map
+    */
     public Map<String, Object> getConfig() {
         return config;
     }
 
+    /**
+    * Returns the cloud endpoint of the volume service.
+    *
+    * @return the cloud endpoint of the volume service
+    */
     public String getCloudEndpoint() {
         return cloudEndpoint;
     }
 
+    /**
+    * Returns the API key for the volume service.
+    *
+    * @return the API key for the volume service
+    */
     public String getApiKey() {
         return apiKey;
     }
 
+    /**
+    * Returns the name of the target volume.
+    *
+    * @return the name of the target volume
+    */
     public String getVolumeName() {
         return volumeName;
     }
 
+    /**
+    * Returns the connection type for the volume service.
+    *
+    * @return the connection type for the volume service
+    */
     public ConnectType getConnectType() {
         return connectType;
     }
@@ -159,41 +204,90 @@ public class VolumeBulkWriterParam {
          * @param remotePath remote path
          * @return <code>Builder</code>
          */
+        /**
+        * Sets the remote path where data files are uploaded.
+        *
+        * @param r the remote path where data files are uploaded
+        * @return this builder
+        */
         public Builder withRemotePath(String remotePath) {
             this.remotePath = remotePath;
             return this;
         }
 
+        /**
+        * Sets the chunk size threshold in bytes.
+        *
+        * @param c the chunk size threshold in bytes
+        * @return this builder
+        */
         public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
         }
 
+        /**
+        * Sets the bulk data file type.
+        *
+        * @param f the bulk data file type
+        * @return this builder
+        */
         public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
         }
 
+        /**
+        * Sets a writer configuration entry.
+        *
+        * @param key a writer configuration entry
+        * @param val the value
+        * @return this builder
+        */
         public Builder withConfig(String key, Object val) {
             this.config.put(key, val);
             return this;
         }
 
+        /**
+        * Sets the cloud endpoint of the volume service.
+        *
+        * @param c the cloud endpoint of the volume service
+        * @return this builder
+        */
         public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
+        /**
+        * Sets the API key for the volume service.
+        *
+        * @param a the API key for the volume service
+        * @return this builder
+        */
         public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
 
+        /**
+        * Sets the name of the target volume.
+        *
+        * @param v the name of the target volume
+        * @return this builder
+        */
         public Builder withVolumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
         }
 
+        /**
+        * Sets the connection type for the volume service.
+        *
+        * @param c the connection type for the volume service
+        * @return this builder
+        */
         public Builder withConnectType(ConnectType connectType) {
             this.connectType = connectType;
             return this;

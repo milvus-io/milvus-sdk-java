@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.utility.request;
 
+/**
+ * Request parameters for the {@code getRefreshExternalCollectionProgress} API.
+ */
 public class GetRefreshExternalCollectionProgressReq {
     private final long jobId;
 
@@ -30,6 +33,11 @@ public class GetRefreshExternalCollectionProgressReq {
         return new GetRefreshExternalCollectionProgressReqBuilder();
     }
 
+    /**
+     * Returns the ID of the refresh external collection job.
+     *
+     * @return the refresh job ID
+     */
     public long getJobId() {
         return jobId;
     }
@@ -44,11 +52,22 @@ public class GetRefreshExternalCollectionProgressReq {
     public static class GetRefreshExternalCollectionProgressReqBuilder {
         private long jobId;
 
+        /**
+         * Sets the ID of the refresh external collection job.
+         *
+         * @param jobId the refresh job ID
+         * @return this builder
+         */
         public GetRefreshExternalCollectionProgressReqBuilder jobId(long jobId) {
             this.jobId = jobId;
             return this;
         }
 
+        /**
+         * Builds the {@code GetRefreshExternalCollectionProgressReq}.
+         *
+         * @return the constructed {@code GetRefreshExternalCollectionProgressReq}
+         */
         public GetRefreshExternalCollectionProgressReq build() {
             return new GetRefreshExternalCollectionProgressReq(this);
         }

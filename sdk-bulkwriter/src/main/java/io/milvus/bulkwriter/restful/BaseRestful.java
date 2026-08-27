@@ -27,7 +27,23 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Base class providing HTTP helpers for the Milvus REST API used by the bulk writer.
+ *
+ * <p>Supplies POST, DELETE, and GET request wrappers that attach common headers, inject bulk-writer
+ * identification options when an API key is present (cloud calls), and raise exceptions for
+ * non-successful HTTP responses.
+ */
 public class BaseRestful {
+    /**
+     * Sends a POST request with a JSON body and returns the response body.
+     *
+     * @param url the request URL
+     * @param apiKey the API key used for authentication, or {@code null}
+     * @param params the request parameters serialized as the JSON body
+     * @param timeout the connect timeout in milliseconds
+     * @return the response body
+     */
     protected static String postRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             setDefaultOptionsIfCallCloud(params, apiKey);
@@ -46,6 +62,15 @@ public class BaseRestful {
         return null;
     }
 
+    /**
+     * Sends a DELETE request and returns the response body.
+     *
+     * @param url the request URL
+     * @param apiKey the API key used for authentication, or {@code null}
+     * @param params the request parameters used to set default cloud options
+     * @param timeout the connect timeout in milliseconds
+     * @return the response body
+     */
     protected static String deleteRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             setDefaultOptionsIfCallCloud(params, apiKey);
@@ -64,6 +89,15 @@ public class BaseRestful {
         return null;
     }
 
+    /**
+     * Sends a GET request with query parameters and returns the response body.
+     *
+     * @param url the request URL
+     * @param apiKey the API key used for authentication, or {@code null}
+     * @param params the request parameters serialized as query string parameters
+     * @param timeout the connect timeout in milliseconds
+     * @return the response body
+     */
     protected static String getRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             kong.unirest.HttpResponse<String> response = Unirest.get(url)
@@ -82,6 +116,13 @@ public class BaseRestful {
     }
 
 
+    /**
+     * Builds the common HTTP headers for REST calls, including a bearer Authorization header when
+     * an API key is present.
+     *
+     * @param apiKey the API key used for authentication, or {@code null}
+     * @return the header map
+     */
     protected static Map<String, String> httpHeaders(String apiKey) {
         Map<String, String> header = new HashMap<>();
         header.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) " +
@@ -97,6 +138,12 @@ public class BaseRestful {
         return header;
     }
 
+    /**
+     * Validates a REST response and throws an exception when the response code is not zero.
+     *
+     * @param url the request URL, used for the error message
+     * @param res the REST response to validate
+     */
     protected static void handleResponse(String url, RestfulResponse res) {
         int innerCode = res.getCode();
         if (innerCode != 0) {

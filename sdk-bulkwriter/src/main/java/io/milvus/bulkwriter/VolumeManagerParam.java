@@ -34,10 +34,20 @@ public class VolumeManagerParam {
         this.apiKey = builder.apiKey;
     }
 
+    /**
+    * Returns the cloud endpoint of the volume service.
+    *
+    * @return the cloud endpoint of the volume service
+    */
     public String getCloudEndpoint() {
         return cloudEndpoint;
     }
 
+    /**
+    * Returns the API key for the volume service.
+    *
+    * @return the API key for the volume service
+    */
     public String getApiKey() {
         return apiKey;
     }
@@ -69,11 +79,23 @@ public class VolumeManagerParam {
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
          */
+        /**
+        * Sets the cloud endpoint of the volume service.
+        *
+        * @param c the cloud endpoint of the volume service
+        * @return this builder
+        */
         public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
+        /**
+        * Sets the API key for the volume service.
+        *
+        * @param a the API key for the volume service
+        * @return this builder
+        */
         public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;

@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code grantPrivilege} API.
+ */
 public class GrantPrivilegeReq {
     private String roleName;
     private String dbName;
@@ -34,42 +37,92 @@ public class GrantPrivilegeReq {
         this.objectName = builder.objectName;
     }
 
+    /**
+     * Returns the role name.
+     *
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Sets the role name.
+     *
+     * @param roleName the role name
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
 
+    /**
+     * Returns the name of the database to which the privilege applies.
+     *
+     * @return the database name
+     */
     public String getDbName() {
         return dbName;
     }
 
+    /**
+     * Sets the name of the database to which the privilege applies.
+     *
+     * @param dbName the database name
+     */
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
 
+    /**
+     * Returns the type of the object to which the privilege applies.
+     *
+     * @return the object type
+     */
     public String getObjectType() {
         return objectType;
     }
 
+    /**
+     * Sets the type of the object to which the privilege applies.
+     *
+     * @param objectType the object type
+     */
     public void setObjectType(String objectType) {
         this.objectType = objectType;
     }
 
+    /**
+     * Returns the privilege to grant.
+     *
+     * @return the privilege to grant
+     */
     public String getPrivilege() {
         return privilege;
     }
 
+    /**
+     * Sets the privilege to grant.
+     *
+     * @param privilege the privilege to grant
+     */
     public void setPrivilege(String privilege) {
         this.privilege = privilege;
     }
 
+    /**
+     * Returns the name of the object to which the privilege applies.
+     *
+     * @return the object name
+     */
     public String getObjectName() {
         return objectName;
     }
 
+    /**
+     * Sets the name of the object to which the privilege applies.
+     *
+     * @param objectName the object name
+     */
     public void setObjectName(String objectName) {
         this.objectName = objectName;
     }
@@ -85,6 +138,11 @@ public class GrantPrivilegeReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link GrantPrivilegeReq}.
+     *
+     * @return a new {@link GrantPrivilegeReqBuilder}
+     */
     public static GrantPrivilegeReqBuilder builder() {
         return new GrantPrivilegeReqBuilder();
     }
@@ -99,31 +157,66 @@ public class GrantPrivilegeReq {
         private GrantPrivilegeReqBuilder() {
         }
 
+        /**
+         * Sets the role name.
+         *
+         * @param roleName the role name
+         * @return this builder
+         */
         public GrantPrivilegeReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
+        /**
+         * Sets the name of the database to which the privilege applies.
+         *
+         * @param dbName the database name
+         * @return this builder
+         */
         public GrantPrivilegeReqBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
 
+        /**
+         * Sets the type of the object to which the privilege applies.
+         *
+         * @param objectType the object type
+         * @return this builder
+         */
         public GrantPrivilegeReqBuilder objectType(String objectType) {
             this.objectType = objectType;
             return this;
         }
 
+        /**
+         * Sets the privilege to grant.
+         *
+         * @param privilege the privilege to grant
+         * @return this builder
+         */
         public GrantPrivilegeReqBuilder privilege(String privilege) {
             this.privilege = privilege;
             return this;
         }
 
+        /**
+         * Sets the name of the object to which the privilege applies.
+         *
+         * @param objectName the object name
+         * @return this builder
+         */
         public GrantPrivilegeReqBuilder objectName(String objectName) {
             this.objectName = objectName;
             return this;
         }
 
+        /**
+         * Builds the {@link GrantPrivilegeReq}.
+         *
+         * @return the built request
+         */
         public GrantPrivilegeReq build() {
             return new GrantPrivilegeReq(this);
         }

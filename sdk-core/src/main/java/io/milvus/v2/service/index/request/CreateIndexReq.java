@@ -23,6 +23,9 @@ import io.milvus.v2.common.IndexParam;
 
 import java.util.List;
 
+/**
+ * Request parameters for the {@code createIndex} API.
+ */
 public class CreateIndexReq {
     private String databaseName;
     private String collectionName;
@@ -41,18 +44,39 @@ public class CreateIndexReq {
         this.timeout = builder.timeout;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     * @throws IllegalArgumentException if the collection name is null
+     */
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -60,26 +84,56 @@ public class CreateIndexReq {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the index parameters to be created.
+     *
+     * @return the list of index parameters
+     */
     public List<IndexParam> getIndexParams() {
         return indexParams;
     }
 
+    /**
+     * Sets the index parameters to be created.
+     *
+     * @param indexParams the list of index parameters
+     */
     public void setIndexParams(List<IndexParam> indexParams) {
         this.indexParams = indexParams;
     }
 
+    /**
+     * Returns whether the call waits until the index is built.
+     *
+     * @return {@code true} to wait for the index to complete
+     */
     public Boolean getSync() {
         return sync;
     }
 
+    /**
+     * Sets whether the call waits until the index is built.
+     *
+     * @param sync {@code true} to wait for the index to complete
+     */
     public void setSync(Boolean sync) {
         this.sync = sync;
     }
 
+    /**
+     * Returns the timeout in milliseconds for waiting the index to complete.
+     *
+     * @return the timeout value in milliseconds
+     */
     public Long getTimeout() {
         return timeout;
     }
 
+    /**
+     * Sets the timeout in milliseconds for waiting the index to complete.
+     *
+     * @param timeout the timeout value in milliseconds
+     */
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -95,6 +149,11 @@ public class CreateIndexReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code CreateIndexReq}.
+     *
+     * @return the builder
+     */
     public static CreateIndexReqBuilder builder() {
         return new CreateIndexReqBuilder();
     }
@@ -109,11 +168,24 @@ public class CreateIndexReq {
         private CreateIndexReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
         public CreateIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         * @throws IllegalArgumentException if the collection name is null
+         */
         public CreateIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -122,21 +194,44 @@ public class CreateIndexReq {
             return this;
         }
 
+        /**
+         * Sets the index parameters to be created.
+         *
+         * @param indexParams the list of index parameters
+         * @return this builder
+         */
         public CreateIndexReqBuilder indexParams(List<IndexParam> indexParams) {
             this.indexParams = indexParams;
             return this;
         }
 
+        /**
+         * Sets whether the call waits until the index is built.
+         *
+         * @param sync {@code true} to wait for the index to complete
+         * @return this builder
+         */
         public CreateIndexReqBuilder sync(Boolean sync) {
             this.sync = sync;
             return this;
         }
 
+        /**
+         * Sets the timeout in milliseconds for waiting the index to complete.
+         *
+         * @param timeout the timeout value in milliseconds
+         * @return this builder
+         */
         public CreateIndexReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }
 
+        /**
+         * Builds the {@code CreateIndexReq}.
+         *
+         * @return the built request
+         */
         public CreateIndexReq build() {
             return new CreateIndexReq(this);
         }

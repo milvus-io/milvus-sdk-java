@@ -19,16 +19,33 @@
 
 package io.milvus.common.utils;
 
+/**
+ * Utility methods that mask credentials and other sensitive URI information in log messages.
+ */
 public final class RedactCredential {
     private static final String REDACTED_CREDENTIAL = "<redacted>";
 
     private RedactCredential() {
     }
 
+    /**
+     * Returns a fixed redacted placeholder for the given credential so that secrets never appear in
+     * logs.
+     *
+     * @param credential the credential value to redact, may be {@code null}
+     * @return the redacted placeholder, or {@code null} if the credential is {@code null}
+     */
     public static String redactCredential(String credential) {
         return credential == null ? null : REDACTED_CREDENTIAL;
     }
 
+    /**
+     * Masks the user-info part of a URI, for example {@code "user:password@host:19530"} becomes
+     * {@code "<redacted>@host:19530"}.
+     *
+     * @param uri the URI to redact, may be {@code null}
+     * @return the redacted URI, or {@code null} if the URI is {@code null}
+     */
     public static String redactUriUserInfo(String uri) {
         return uri == null ? null : uri.replaceAll(
                 "^([^:/?#]+://)?[^/?#]*@", "$1" + REDACTED_CREDENTIAL + "@");
