@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 3.0.8 (2026-08-26)
+### Feature
+- Support FunctionChain in search requests
+- Support element-level query offsets for struct-array fields
+- Support query iterator cursor
+- Add client telemetry support
+
+### Improvement
+- Align delete response, describeCollection index params, and compact target-size handling with PyMilvus
+- Add comprehensive Javadoc to V2 API and BulkWriter
+
 ## milvus-sdk-java 3.0.7 (2026-08-21)
 ### Feature
 - Support async DQL interfaces for MilvusClientV2

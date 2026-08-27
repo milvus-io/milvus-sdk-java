@@ -28,6 +28,7 @@ on:
         description: 'Source branch (the commit is cherry-picked FROM this branch)'
         required: true
         type: choice
+        default: master
         options:
           - master
           - 2.6
@@ -36,6 +37,7 @@ on:
         description: 'Target branch (the commit is cherry-picked INTO this branch)'
         required: true
         type: choice
+        default: 3.0
         options:
           - master
           - 2.6
