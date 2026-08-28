@@ -21,6 +21,8 @@ package io.milvus.v2.service.index;
 
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.request.DropIndexReq;
@@ -33,8 +35,28 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 class IndexTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(IndexTest.class);
+
+    @Test
+    void testCreateIndexValidatesIndexParams() {
+        MilvusClientException exception = assertThrows(MilvusClientException.class,
+                () -> client_v2.createIndex(CreateIndexReq.builder()
+                        .collectionName("test")
+                        .indexParams(new ArrayList<>())
+                        .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+
+        MilvusClientException nullException = assertThrows(MilvusClientException.class,
+                () -> client_v2.createIndex(CreateIndexReq.builder()
+                        .collectionName("test")
+                        .indexParams(null)
+                        .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, nullException.getErrorCode());
+    }
 
     @Test
     void testCreateIndex() {
