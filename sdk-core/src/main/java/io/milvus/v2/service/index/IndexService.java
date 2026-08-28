@@ -53,7 +53,11 @@ public class IndexService extends BaseService {
     public Void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        for (IndexParam indexParam : request.getIndexParams()) {
+        List<IndexParam> indexParams = request.getIndexParams();
+        if (CollectionUtils.isEmpty(indexParams)) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Index params cannot be null or empty");
+        }
+        for (IndexParam indexParam : indexParams) {
             String fieldName = indexParam.getFieldName();
             String indexName = indexParam.getIndexName();
             String title = String.format("Create index for field: '%s' in collection: '%s' in database: '%s'",
