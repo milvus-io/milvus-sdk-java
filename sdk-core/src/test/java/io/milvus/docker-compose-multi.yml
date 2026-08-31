@@ -9,9 +9,9 @@ services:
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
-    command: etcd -advertise-client-urls=http://etcd1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    command: etcd -advertise-client-urls=http://etcd1:12379 -listen-client-urls http://0.0.0.0:12379 --data-dir /etcd
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: ["CMD", "etcdctl", "--endpoints=http://localhost:12379", "endpoint", "health"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -37,7 +37,7 @@ services:
     security_opt:
     - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: etcd1:2379
+      ETCD_ENDPOINTS: etcd1:12379
       MINIO_ADDRESS: minio1:9000
       MQ_TYPE: woodpecker
     healthcheck:
@@ -47,8 +47,8 @@ services:
       timeout: 20s
       retries: 3
     ports:
-      - "19530:19530"
-      - "9091:9091"
+      - "29530:19530"
+      - "19091:9091"
     depends_on:
       - "etcd1"
       - "minio1"
@@ -61,9 +61,9 @@ services:
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
-    command: etcd -advertise-client-urls=http://etcd2:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    command: etcd -advertise-client-urls=http://etcd2:12379 -listen-client-urls http://0.0.0.0:12379 --data-dir /etcd
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: ["CMD", "etcdctl", "--endpoints=http://localhost:12379", "endpoint", "health"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -89,7 +89,7 @@ services:
     security_opt:
     - seccomp:unconfined
     environment:
-      ETCD_ENDPOINTS: etcd2:2379
+      ETCD_ENDPOINTS: etcd2:12379
       MINIO_ADDRESS: minio2:9000
       MQ_TYPE: woodpecker
     healthcheck:
@@ -99,8 +99,8 @@ services:
       timeout: 20s
       retries: 3
     ports:
-      - "19531:19530"
-      - "9092:9091"
+      - "29531:19530"
+      - "19092:9091"
     depends_on:
       - "etcd2"
       - "minio2"

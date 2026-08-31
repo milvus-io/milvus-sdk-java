@@ -24,6 +24,7 @@ import io.milvus.grpc.AddCollectionStructFieldRequest;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.StructArrayFieldSchema;
+import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.common.DataType;
@@ -298,8 +299,7 @@ class CollectionTest extends BaseTest {
                         .build())
                 .build();
 
-        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class, request::toStructFieldSchema);
-        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        ParamException exception = Assertions.assertThrows(ParamException.class, request::toStructFieldSchema);
         Assertions.assertTrue(exception.getMessage().contains("cannot be nullable"));
     }
 

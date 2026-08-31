@@ -20,6 +20,7 @@
 package io.milvus.v2;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.v1.CommonUtils;
@@ -173,6 +174,9 @@ public class StructExample {
                         .build())
                 .build());
 
+        // make the clips struct field nullable so null rows can be inserted and read back
+        collectionSchema.getStructField(STRUCT_FIELD).setNullable(true);
+
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
@@ -242,24 +246,29 @@ public class StructExample {
         System.out.println(resp.getCollectionSchema());
     }
 
-    private static JsonObject buildBaseRow(long id) {
+    private static JsonObject buildBaseRow(long id, boolean withClips) {
         JsonObject row = new JsonObject();
         row.addProperty(ID_FIELD, id);
         row.addProperty(NAME_FIELD, "film_" + id);
 
-        JsonArray structArr = new JsonArray();
-        for (int k = 0; k < 5; k++) {
-            JsonObject struct = new JsonObject();
-            struct.addProperty(FRAME_FIELD, RANDOM.nextInt(10000));
-            struct.addProperty(DESC_FIELD, "clip_description_" + id);
-            struct.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
-            struct.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
-            struct.add(FLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, false).array()));
-            struct.add(BFLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, true).array()));
-            struct.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
-            structArr.add(struct);
+        if (withClips) {
+            JsonArray structArr = new JsonArray();
+            for (int k = 0; k < 5; k++) {
+                JsonObject struct = new JsonObject();
+                struct.addProperty(FRAME_FIELD, RANDOM.nextInt(10000));
+                struct.addProperty(DESC_FIELD, "clip_description_" + id);
+                struct.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+                struct.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+                struct.add(FLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, false).array()));
+                struct.add(BFLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, true).array()));
+                struct.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
+                structArr.add(struct);
+            }
+            row.add(STRUCT_FIELD, structArr);
+        } else {
+            // the clips struct field is nullable; store a null row for it
+            row.add(STRUCT_FIELD, JsonNull.INSTANCE);
         }
-        row.add(STRUCT_FIELD, structArr);
 
         JsonArray simplifyClips = new JsonArray();
         for (int k = 0; k < 2; k++) {
@@ -278,7 +287,9 @@ public class StructExample {
             int nextBatch = Math.min(batchSize, rowCount - insertedCount);
             List<JsonObject> rows = new ArrayList<>();
             for (int i = 0; i < nextBatch; i++) {
-                rows.add(buildBaseRow(insertedCount + i));
+                long id = insertedCount + i;
+                // insert null clips struct for every 100th row
+                rows.add(buildBaseRow(id, id % 100 != 0));
             }
 
             InsertResp insertResp = client.insert(InsertReq.builder()
@@ -347,6 +358,10 @@ public class StructExample {
         List<BaseVector> searchData = new ArrayList<>();
         for (QueryResp.QueryResult result : queryResults) {
             List<Map<String, Object>> structs = (List<Map<String, Object>>) result.getEntity().get(STRUCT_FIELD);
+            if (structs == null) {
+                // this row holds a null (nullable) struct field, so it has no embeddings to search on
+                continue;
+            }
             EmbeddingList embList = new EmbeddingList();
             for (Map<String, Object> struct : structs) {
                 embList.add(converter.apply(struct));
@@ -516,7 +531,7 @@ public class StructExample {
             System.out.println(result.getEntity());
         }
 
-        JsonObject newRow = buildBaseRow(EXTRA_ROW_ID);
+        JsonObject newRow = buildBaseRow(EXTRA_ROW_ID, true);
         newRow.add(EXTRA_STRUCT_FIELD, buildMetadataStructArray());
         client.insert(InsertReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -548,10 +563,74 @@ public class StructExample {
         }
     }
 
+    private static void verifyNullableStruct() {
+        System.out.println("===================================================");
+        System.out.println("Verify nullable struct field '" + STRUCT_FIELD + "' returns null data");
+
+        // rows with id % 100 == 0 were inserted with clips = null
+        List<Long> nullIds = Arrays.asList(0L, 100L, 200L, 300L);
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " in " + nullIds)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(ID_FIELD, NAME_FIELD, STRUCT_FIELD, SIMPLIFY_STRUCT_FIELD))
+                .build());
+        for (QueryResp.QueryResult result : queryResp.getQueryResults()) {
+            long id = (Long) result.getEntity().get(ID_FIELD);
+            Object clips = result.getEntity().get(STRUCT_FIELD);
+            Object simplifyClips = result.getEntity().get(SIMPLIFY_STRUCT_FIELD);
+            System.out.println("query result id=" + id + ", clips=" + clips
+                    + ", simplify_clips.size=" + ((List<?>) simplifyClips).size());
+            if (id % 100 == 0 && clips != null) {
+                throw new IllegalStateException("Expected null clips for id=" + id + ", got: " + clips);
+            }
+        }
+
+        // take the simplify_clips vector of a null-clips row and search on it element-level;
+        // the top-1 hit should be that row itself and its clips output must decode back to null
+        QueryResp vectorQuery = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " == 100")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Collections.singletonList(SIMPLIFY_STRUCT_FIELD))
+                .build());
+        List<Map<String, Object>> simplifyStructs = (List<Map<String, Object>>)
+                vectorQuery.getQueryResults().get(0).getEntity().get(SIMPLIFY_STRUCT_FIELD);
+        List<Float> queryVector = (List<Float>) simplifyStructs.get(0).get(FLOAT_VECTOR_FIELD);
+
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .annsField(String.format("%s[%s]", SIMPLIFY_STRUCT_FIELD, FLOAT_VECTOR_FIELD))
+                .data(Collections.singletonList(new FloatVec(queryVector)))
+                .limit(5)
+                .metricType(IndexParam.MetricType.L2)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .outputFields(Arrays.asList(ID_FIELD, STRUCT_FIELD))
+                .build());
+        boolean foundNullRow = false;
+        for (SearchResp.SearchResult result : searchResp.getSearchResults().get(0)) {
+            long id = (Long) result.getEntity().get(ID_FIELD);
+            Object clips = result.getEntity().get(STRUCT_FIELD);
+            System.out.println("search result id=" + id + ", clips=" + clips);
+            if (id == 100L) {
+                if (clips != null) {
+                    throw new IllegalStateException("Expected null clips for id=100 in search result, got: " + clips);
+                }
+                foundNullRow = true;
+            }
+        }
+        if (!foundNullRow) {
+            throw new IllegalStateException("The null-clips row id=100 was not returned by search");
+        }
+
+        System.out.println("Nullable struct verification passed");
+    }
+
     public static void main(String[] args) {
         try {
             createCollection();
             insertData(2000);
+            verifyNullableStruct();
 
             searchFloatVectorField(ID_FIELD + " in [5, 8]");
 
