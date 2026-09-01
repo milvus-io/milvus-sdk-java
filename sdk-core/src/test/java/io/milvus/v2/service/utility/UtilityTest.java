@@ -20,7 +20,10 @@
 package io.milvus.v2.service.utility;
 
 import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.grpc.ManualCompactionRequest;
+import io.milvus.grpc.Status;
 import io.milvus.v2.BaseTest;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import io.milvus.v2.service.utility.response.GetPersistentSegmentInfoResp;
@@ -29,11 +32,17 @@ import io.milvus.v2.service.utility.response.ListAliasResp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UtilityTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(UtilityTest.class);
@@ -94,6 +103,109 @@ class UtilityTest extends BaseTest {
     }
 
     @Test
+    void testListAliasesWithDbName() {
+        io.milvus.grpc.ListAliasesResponse response = io.milvus.grpc.ListAliasesResponse.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .setDbName("test_db")
+                .setCollectionName("test")
+                .addAliases("test_alias")
+                .build();
+        when(blockingStub.listAliases(any())).thenReturn(response);
+
+        ListAliasResp resp = client_v2.listAliases(ListAliasesReq.builder()
+                .collectionName("test")
+                .build());
+        assertEquals("test_db", resp.getDbName());
+        assertEquals("test", resp.getCollectionName());
+        assertEquals(1, resp.getAlias().size());
+    }
+
+    @Test
+    void testCompactTargetSizeUnit() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(1L)
+                .targetSizeUnit("gb")
+                .build();
+        client_v2.compact(req);
+
+        ArgumentCaptor<ManualCompactionRequest> captor = ArgumentCaptor.forClass(ManualCompactionRequest.class);
+        verify(blockingStub).manualCompaction(captor.capture());
+        assertEquals(1024L, captor.getValue().getTargetSize());
+    }
+
+    @Test
+    void testCompactInvalidTargetSizeRejected() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(0L)
+                .build();
+        assertThrows(MilvusClientException.class, () -> client_v2.compact(req));
+        verify(blockingStub, never()).manualCompaction(any(ManualCompactionRequest.class));
+    }
+
+    @Test
+    void testCompactInvalidTargetSizeUnitRejected() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(1L)
+                .targetSizeUnit("xx")
+                .build();
+        assertThrows(MilvusClientException.class, () -> client_v2.compact(req));
+        verify(blockingStub, never()).manualCompaction(any(ManualCompactionRequest.class));
+    }
+
+    @Test
+    void testCompactBlankTargetSizeUnitDefaultsToMb() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(2L)
+                .targetSizeUnit(" ")
+                .build();
+        client_v2.compact(req);
+
+        ArgumentCaptor<ManualCompactionRequest> captor = ArgumentCaptor.forClass(ManualCompactionRequest.class);
+        verify(blockingStub).manualCompaction(captor.capture());
+        assertEquals(2L, captor.getValue().getTargetSize());
+    }
+
+    @Test
+    void testCompactTooSmallTargetSizeRejected() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(1L)
+                .targetSizeUnit("kb")
+                .build();
+        assertThrows(MilvusClientException.class, () -> client_v2.compact(req));
+        verify(blockingStub, never()).manualCompaction(any(ManualCompactionRequest.class));
+    }
+
+    @Test
+    void testCompactLargeTargetSizeNoOverflow() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(1000L)
+                .targetSizeUnit("tb")
+                .build();
+        client_v2.compact(req);
+
+        ArgumentCaptor<ManualCompactionRequest> captor = ArgumentCaptor.forClass(ManualCompactionRequest.class);
+        verify(blockingStub).manualCompaction(captor.capture());
+        assertEquals(1000L * 1024L * 1024L, captor.getValue().getTargetSize());
+    }
+
+    @Test
+    void testCompactOversizeTargetSizeRejected() {
+        CompactReq req = CompactReq.builder()
+                .collectionName("test")
+                .targetSize(Long.MAX_VALUE)
+                .targetSizeUnit("pb")
+                .build();
+        assertThrows(MilvusClientException.class, () -> client_v2.compact(req));
+        verify(blockingStub, never()).manualCompaction(any(ManualCompactionRequest.class));
+    }
+
+    @Test
     void testGetPersistentSegmentInfo() {
         GetPersistentSegmentInfoResp resp = client_v2.getPersistentSegmentInfo(GetPersistentSegmentInfoReq.builder()
                 .collectionName("test")
@@ -133,5 +245,6 @@ class UtilityTest extends BaseTest {
         assertEquals(12L, info.getNodeIDs().get(0));
         assertEquals(13L, info.getStorageVersion());
         assertTrue(info.getIsSorted());
+        assertEquals("test", info.getCollectionName());
     }
 }

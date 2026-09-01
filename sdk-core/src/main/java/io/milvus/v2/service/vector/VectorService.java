@@ -124,6 +124,14 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Insert to collection: '%s' in database: '%s'", collectionName, dbName);
 
+        // PyMilvus returns an empty result without issuing the RPC when the data is empty.
+        if (CollectionUtils.isEmpty(request.getData())) {
+            return InsertResp.builder()
+                    .InsertCnt(0)
+                    .primaryKeys(Collections.emptyList())
+                    .build();
+        }
+
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
 
         // To handle this bug: https://github.com/milvus-io/milvus/issues/41688
@@ -184,6 +192,14 @@ public class VectorService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Upsert to collection: '%s' in database: '%s'", collectionName, dbName);
+
+        // PyMilvus returns an empty result without issuing the RPC when the data is empty.
+        if (CollectionUtils.isEmpty(request.getData())) {
+            return UpsertResp.builder()
+                    .upsertCnt(0)
+                    .primaryKeys(Collections.emptyList())
+                    .build();
+        }
 
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
 
@@ -342,6 +358,11 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Search collection: '%s' in database: '%s'", collectionName, dbName);
 
+        if (request.getLimit() <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "limit must be a positive integer, got " + request.getLimit());
+        }
+
         //checkCollectionExist(blockingStub, request.getCollectionName());
 
         // reset the db name so that the timestamp cache can set correct key for this collection
@@ -364,6 +385,10 @@ public class VectorService extends BaseService {
             SearchReq request, RpcUtils retryUtils) {
         final SearchRequest searchRequest;
         try {
+            if (request.getLimit() <= 0) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "limit must be a positive integer, got " + request.getLimit());
+            }
             searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request).toBuilder()
                     .setDbName(actualDbName(request.getDatabaseName()))
                     .build();
@@ -393,6 +418,11 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Hybrid search collection: '%s' in database: '%s'", collectionName, dbName);
 
+        if (request.getLimit() <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "limit must be a positive integer, got " + request.getLimit());
+        }
+
         //checkCollectionExist(blockingStub, request.getCollectionName());
 
         // reset the db name so that the timestamp cache can set correct key for this collection
@@ -415,6 +445,10 @@ public class VectorService extends BaseService {
             HybridSearchReq request, RpcUtils retryUtils) {
         final HybridSearchRequest searchRequest;
         try {
+            if (request.getLimit() <= 0) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "limit must be a positive integer, got " + request.getLimit());
+            }
             searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request).toBuilder()
                     .setDbName(actualDbName(request.getDatabaseName()))
                     .build();
@@ -497,6 +531,12 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
         logger.debug(title);
+        // PyMilvus returns an empty result without issuing the RPC when the ids are empty.
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            return GetResp.builder()
+                    .getResults(Collections.emptyList())
+                    .build();
+        }
         // call query to get the result
         QueryResp queryResp = query(blockingStub, toQueryReq(request));
 
@@ -512,6 +552,12 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
         logger.debug(title);
+        // PyMilvus returns an empty result without issuing the RPC when the ids are empty.
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            return CompletableFuture.completedFuture(GetResp.builder()
+                    .getResults(Collections.emptyList())
+                    .build());
+        }
         final QueryReq queryReq;
         try {
             queryReq = toQueryReq(request);

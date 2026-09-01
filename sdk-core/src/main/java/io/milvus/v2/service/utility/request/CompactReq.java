@@ -24,7 +24,8 @@ public class CompactReq {
     private String collectionName;
     private Boolean isClustering = Boolean.FALSE;
     private Boolean isL0 = Boolean.FALSE;
-    private Long targetSize; // in MB, null means server default
+    private Long targetSize; // target size of compacted segments, null means server default
+    private String targetSizeUnit = "mb"; // unit of targetSize: "b", "kb", "mb" (default), "gb", "tb", "pb"
 
     private CompactReq(CompactReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -32,6 +33,7 @@ public class CompactReq {
         this.isClustering = builder.isClustering;
         this.isL0 = builder.isL0;
         this.targetSize = builder.targetSize;
+        this.targetSizeUnit = builder.targetSizeUnit;
     }
 
     public static CompactReqBuilder builder() {
@@ -78,6 +80,14 @@ public class CompactReq {
         this.targetSize = targetSize;
     }
 
+    public String getTargetSizeUnit() {
+        return targetSizeUnit;
+    }
+
+    public void setTargetSizeUnit(String targetSizeUnit) {
+        this.targetSizeUnit = targetSizeUnit;
+    }
+
     @Override
     public String toString() {
         return "CompactReq{" +
@@ -86,6 +96,7 @@ public class CompactReq {
                 ", isClustering=" + isClustering +
                 ", isL0=" + isL0 +
                 ", targetSize=" + targetSize +
+                ", targetSizeUnit='" + targetSizeUnit + '\'' +
                 '}';
     }
 
@@ -95,6 +106,7 @@ public class CompactReq {
         private Boolean isClustering = Boolean.FALSE;
         private Boolean isL0 = Boolean.FALSE;
         private Long targetSize;
+        private String targetSizeUnit = "mb";
 
         public CompactReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -118,6 +130,11 @@ public class CompactReq {
 
         public CompactReqBuilder targetSize(Long targetSize) {
             this.targetSize = targetSize;
+            return this;
+        }
+
+        public CompactReqBuilder targetSizeUnit(String targetSizeUnit) {
+            this.targetSizeUnit = targetSizeUnit;
             return this;
         }
 

@@ -224,6 +224,7 @@ public class BaseTest {
         when(blockingStub.alterAlias(any())).thenReturn(successStatus);
         when(blockingStub.describeAlias(any())).thenReturn(DescribeAliasResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus).addAliases("test").build());
+        when(blockingStub.manualCompaction(any())).thenReturn(ManualCompactionResponse.newBuilder().setStatus(successStatus).setCompactionID(1L).build());
         when(blockingStub.allocTimestamp(any())).thenReturn(AllocTimestampResponse.newBuilder().setStatus(successStatus).setTimestamp(1L).build());
 
         // cdc api

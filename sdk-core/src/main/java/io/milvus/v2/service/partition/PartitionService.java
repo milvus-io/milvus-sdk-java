@@ -151,6 +151,10 @@ public class PartitionService extends BaseService {
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
+        if (StringUtils.isNotEmpty(request.getPriority())) {
+            // normalize to lowercase: the proxy only maps the exact lowercase "low" to LOW priority
+            builder.putLoadParams("load_priority", request.getPriority().toLowerCase());
+        }
 
         MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub = blockingStub;
         if (request.getTimeout() != null && request.getTimeout() > 0) {
