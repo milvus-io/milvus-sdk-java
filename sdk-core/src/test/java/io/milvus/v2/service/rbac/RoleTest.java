@@ -131,6 +131,23 @@ class RoleTest extends BaseTest {
     }
 
     @Test
+    void testGrantPrivilegeWithDbName() {
+        GrantPrivilegeReq request = GrantPrivilegeReq.builder()
+                .roleName("db_rw")
+                .dbName("test_db")
+                .objectName("test")
+                .objectType("Collection")
+                .privilege("Search")
+                .build();
+        client_v2.grantPrivilege(request);
+
+        ArgumentCaptor<io.milvus.grpc.OperatePrivilegeRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.OperatePrivilegeRequest.class);
+        verify(blockingStub).operatePrivilege(captor.capture());
+        assertEquals("test_db", captor.getValue().getEntity().getDbName());
+    }
+
+    @Test
     void testRevokePrivilege() {
         RevokePrivilegeReq request = RevokePrivilegeReq.builder()
                 .roleName("db_rw")
@@ -139,6 +156,23 @@ class RoleTest extends BaseTest {
                 .privilege("")
                 .build();
         client_v2.revokePrivilege(request);
+    }
+
+    @Test
+    void testRevokePrivilegeWithDbName() {
+        RevokePrivilegeReq request = RevokePrivilegeReq.builder()
+                .roleName("db_rw")
+                .dbName("test_db")
+                .objectName("test")
+                .objectType("Collection")
+                .privilege("Search")
+                .build();
+        client_v2.revokePrivilege(request);
+
+        ArgumentCaptor<io.milvus.grpc.OperatePrivilegeRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.OperatePrivilegeRequest.class);
+        verify(blockingStub).operatePrivilege(captor.capture());
+        assertEquals("test_db", captor.getValue().getEntity().getDbName());
     }
 
     @Test

@@ -101,6 +101,111 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testInsertEmptyDataNoRpc() {
+        InsertReq request = InsertReq.builder()
+                .collectionName("test")
+                .data(Collections.emptyList())
+                .build();
+        InsertResp resp = client_v2.insert(request);
+        Assertions.assertEquals(0L, resp.getInsertCnt());
+        Assertions.assertTrue(resp.getPrimaryKeys().isEmpty());
+        verify(blockingStub, never()).insert(any(InsertRequest.class));
+        verify(blockingStub, never()).describeCollection(any(DescribeCollectionRequest.class));
+    }
+
+    @Test
+    void testUpsertEmptyDataNoRpc() {
+        UpsertReq request = UpsertReq.builder()
+                .collectionName("test")
+                .data(Collections.emptyList())
+                .build();
+        UpsertResp resp = client_v2.upsert(request);
+        Assertions.assertEquals(0L, resp.getUpsertCnt());
+        Assertions.assertTrue(resp.getPrimaryKeys().isEmpty());
+        verify(blockingStub, never()).upsert(any(UpsertRequest.class));
+        verify(blockingStub, never()).describeCollection(any(DescribeCollectionRequest.class));
+    }
+
+    @Test
+    void testGetEmptyIdsNoRpc() {
+        GetReq request = GetReq.builder()
+                .collectionName("test")
+                .ids(Collections.emptyList())
+                .build();
+        GetResp resp = client_v2.get(request);
+        Assertions.assertTrue(resp.getGetResults().isEmpty());
+        verify(blockingStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
+    void testSearchInvalidLimitRejected() {
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(0)
+                .build();
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.search(request));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        verify(blockingStub, never()).search(any(SearchRequest.class));
+    }
+
+    @Test
+    void testHybridSearchInvalidLimitRejected() {
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq request = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(0)
+                .build();
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.hybridSearch(request));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        verify(blockingStub, never()).hybridSearch(any(HybridSearchRequest.class));
+    }
+
+    @Test
+    void testSearchAsyncInvalidLimitReturnsFailedFuture() throws Exception {
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(0)
+                .build();
+        CompletableFuture<SearchResp> future = client_v2.searchAsync(request);
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> future.get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+        verify(futureStub, never()).search(any(SearchRequest.class));
+    }
+
+    @Test
+    void testHybridSearchAsyncInvalidLimitReturnsFailedFuture() throws Exception {
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq request = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(0)
+                .build();
+        CompletableFuture<SearchResp> future = client_v2.hybridSearchAsync(request);
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> future.get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+        verify(futureStub, never()).hybridSearch(any(HybridSearchRequest.class));
+    }
+
+    @Test
     void testUpsertWithFieldOps() {
         JsonObject jsonObject = new JsonObject();
         List<Float> vectorList = new ArrayList<>();

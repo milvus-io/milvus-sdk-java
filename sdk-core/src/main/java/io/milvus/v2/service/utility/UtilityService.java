@@ -30,6 +30,8 @@ import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -205,7 +207,7 @@ public class UtilityService extends BaseService {
             builder.setDbName(dbName);
         }
         if (request.getTargetSize() != null) {
-            builder.setTargetSize(request.getTargetSize());
+            builder.setTargetSize(convertTargetSizeToMB(request));
         }
         ManualCompactionResponse response = blockingStub.manualCompaction(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
@@ -213,6 +215,65 @@ public class UtilityService extends BaseService {
         return CompactResp.builder()
                 .compactionID(response.getCompactionID())
                 .build();
+    }
+
+    /**
+     * Converts the requested {@code target_size} (with an optional unit, default MB) into MB before
+     * it is sent to the server, and rejects non-positive values and values that are too small to
+     * reach 1 MB. Supported units: b, kb, mb, gb, tb, pb.
+     * This mirrors the PyMilvus {@code parse_target_size} behavior.
+     */
+    private long convertTargetSizeToMB(CompactReq request) {
+        Long targetSize = request.getTargetSize();
+        if (targetSize <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "targetSize must be a positive integer, got " + targetSize);
+        }
+        // blank/whitespace-only unit means "unset", default to MB
+        String unit = StringUtils.isBlank(request.getTargetSizeUnit())
+                ? "mb" : request.getTargetSizeUnit().trim().toLowerCase();
+        long unitBytes;
+        switch (unit) {
+            case "b":
+                unitBytes = 1L;
+                break;
+            case "kb":
+                unitBytes = 1024L;
+                break;
+            case "mb":
+                unitBytes = 1024L * 1024L;
+                break;
+            case "gb":
+                unitBytes = 1024L * 1024L * 1024L;
+                break;
+            case "tb":
+                unitBytes = 1024L * 1024L * 1024L * 1024L;
+                break;
+            case "pb":
+                unitBytes = 1024L * 1024L * 1024L * 1024L * 1024L;
+                break;
+            default:
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Invalid targetSizeUnit: '" + request.getTargetSizeUnit()
+                                + "'. Supported units: b, kb, mb, gb, tb, pb");
+        }
+        // Overflow-safe conversion: use BigDecimal so large values (e.g. tb/pb) do not overflow long.
+        // Reject values exceeding the int64 range, mirroring PyMilvus parse_target_size.
+        BigDecimal sizeMbBd = BigDecimal.valueOf(targetSize)
+                .multiply(BigDecimal.valueOf(unitBytes))
+                .divide(BigDecimal.valueOf(1024L * 1024L), 0, RoundingMode.FLOOR);
+        if (sizeMbBd.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "target size too large: " + targetSize + request.getTargetSizeUnit()
+                            + ", must be at most " + Long.MAX_VALUE + "MB");
+        }
+        long sizeMb = sizeMbBd.longValue();
+        if (sizeMb <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "target size too small: " + targetSize + request.getTargetSizeUnit()
+                            + ", must be at least 1MB");
+        }
+        return sizeMb;
     }
 
     public GetCompactionStateResp getCompactionState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
@@ -350,6 +411,7 @@ public class UtilityService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
         return ListAliasResp.builder()
                 .collectionName(response.getCollectionName())
+                .dbName(response.getDbName())
                 .alias(response.getAliasesList())
                 .build();
     }
@@ -428,6 +490,7 @@ public class UtilityService extends BaseService {
                     .nodeIDs(info.getNodeIdsList())
                     .storageVersion(info.getStorageVersion())
                     .isSorted(info.getIsSorted())
+                    .collectionName(collectionName)
                     .build());
         });
         return GetQuerySegmentInfoResp.builder()

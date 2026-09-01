@@ -19,17 +19,22 @@
 
 package io.milvus.v2.service.partition;
 
+import io.milvus.grpc.LoadPartitionsRequest;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.partition.response.GetPartitionStatsResp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 class PartitionTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(PartitionTest.class);
@@ -80,6 +85,38 @@ class PartitionTest extends BaseTest {
                 .build();
         client_v2.loadPartitions(req);
 
+    }
+
+    @Test
+    void testLoadPartitionWithPriority() {
+        List<String> partitionNames = new ArrayList<>();
+        partitionNames.add("test");
+        LoadPartitionsReq req = LoadPartitionsReq.builder()
+                .collectionName("test")
+                .partitionNames(partitionNames)
+                .priority("Low")
+                .build();
+        client_v2.loadPartitions(req);
+
+        ArgumentCaptor<LoadPartitionsRequest> captor = ArgumentCaptor.forClass(LoadPartitionsRequest.class);
+        verify(blockingStub).loadPartitions(captor.capture());
+        assertEquals("low", captor.getValue().getLoadParamsMap().get("load_priority"));
+    }
+
+    @Test
+    void testLoadPartitionPriorityLowercased() {
+        List<String> partitionNames = new ArrayList<>();
+        partitionNames.add("test");
+        LoadPartitionsReq req = LoadPartitionsReq.builder()
+                .collectionName("test")
+                .partitionNames(partitionNames)
+                .priority("HIGH")
+                .build();
+        client_v2.loadPartitions(req);
+
+        ArgumentCaptor<LoadPartitionsRequest> captor = ArgumentCaptor.forClass(LoadPartitionsRequest.class);
+        verify(blockingStub).loadPartitions(captor.capture());
+        assertEquals("high", captor.getValue().getLoadParamsMap().get("load_priority"));
     }
 
     @Test

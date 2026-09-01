@@ -33,6 +33,7 @@ public class LoadPartitionsReq {
     private List<String> loadFields;
     private Boolean skipLoadDynamicField;
     private List<String> resourceGroups;
+    private String priority;
 
     private LoadPartitionsReq(LoadPartitionsReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -45,6 +46,7 @@ public class LoadPartitionsReq {
         this.loadFields = builder.loadFields;
         this.skipLoadDynamicField = builder.skipLoadDynamicField;
         this.resourceGroups = builder.resourceGroups;
+        this.priority = builder.priority;
     }
 
     public String getDatabaseName() {
@@ -127,6 +129,14 @@ public class LoadPartitionsReq {
         this.resourceGroups = resourceGroups;
     }
 
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
     @Override
     public String toString() {
         return "LoadPartitionsReq{" +
@@ -140,6 +150,7 @@ public class LoadPartitionsReq {
                 ", loadFields=" + loadFields +
                 ", skipLoadDynamicField=" + skipLoadDynamicField +
                 ", resourceGroups=" + resourceGroups +
+                ", priority='" + priority + '\'' +
                 '}';
     }
 
@@ -158,6 +169,7 @@ public class LoadPartitionsReq {
         private List<String> loadFields = new ArrayList<>();
         private Boolean skipLoadDynamicField = Boolean.FALSE;
         private List<String> resourceGroups = new ArrayList<>();
+        private String priority;
 
         private LoadPartitionsReqBuilder() {
         }
@@ -209,6 +221,11 @@ public class LoadPartitionsReq {
 
         public LoadPartitionsReqBuilder resourceGroups(List<String> resourceGroups) {
             this.resourceGroups = resourceGroups;
+            return this;
+        }
+
+        public LoadPartitionsReqBuilder priority(String priority) {
+            this.priority = priority;
             return this;
         }
 

@@ -126,17 +126,19 @@ public class RBACService extends BaseService {
 
     public Void grantPrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantPrivilegeReq request) {
         String title = String.format("Grant privilege for role: '%s'", request.getRoleName());
-        GrantEntity entity = GrantEntity.newBuilder()
+        GrantEntity.Builder entityBuilder = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
                         .setName(request.getRoleName())
                         .build())
                 .setObjectName(request.getObjectName())
                 .setObject(ObjectEntity.newBuilder().setName(request.getObjectType()).build())
                 .setGrantor(GrantorEntity.newBuilder()
-                        .setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build())
-                .build();
+                        .setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build());
+        if (StringUtils.isNotEmpty(request.getDbName())) {
+            entityBuilder.setDbName(request.getDbName());
+        }
         OperatePrivilegeRequest operatePrivilegeRequest = OperatePrivilegeRequest.newBuilder()
-                .setEntity(entity)
+                .setEntity(entityBuilder.build())
                 .setType(OperatePrivilegeType.Grant)
                 .build();
         Status status = blockingStub.operatePrivilege(operatePrivilegeRequest);
@@ -147,17 +149,19 @@ public class RBACService extends BaseService {
 
     public Void revokePrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokePrivilegeReq request) {
         String title = String.format("Revoke privilege for role: '%s'", request.getRoleName());
-        GrantEntity entity = GrantEntity.newBuilder()
+        GrantEntity.Builder entityBuilder = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
                         .setName(request.getRoleName())
                         .build())
                 .setObjectName(request.getObjectName())
                 .setObject(ObjectEntity.newBuilder().setName(request.getObjectType()).build())
                 .setGrantor(GrantorEntity.newBuilder()
-                        .setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build())
-                .build();
+                        .setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build());
+        if (StringUtils.isNotEmpty(request.getDbName())) {
+            entityBuilder.setDbName(request.getDbName());
+        }
         OperatePrivilegeRequest operatePrivilegeRequest = OperatePrivilegeRequest.newBuilder()
-                .setEntity(entity)
+                .setEntity(entityBuilder.build())
                 .setType(OperatePrivilegeType.Revoke)
                 .build();
         Status status = blockingStub.operatePrivilege(operatePrivilegeRequest);

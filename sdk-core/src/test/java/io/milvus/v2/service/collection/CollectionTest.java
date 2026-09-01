@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection;
 
+import io.milvus.grpc.LoadCollectionRequest;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -29,6 +30,7 @@ import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 class CollectionTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(CollectionTest.class);
@@ -230,6 +234,32 @@ class CollectionTest extends BaseTest {
                 .build();
         client_v2.loadCollection(req);
 
+    }
+
+    @Test
+    void testLoadCollectionWithPriority() {
+        LoadCollectionReq req = LoadCollectionReq.builder()
+                .collectionName("test")
+                .priority("High")
+                .build();
+        client_v2.loadCollection(req);
+
+        ArgumentCaptor<LoadCollectionRequest> captor = ArgumentCaptor.forClass(LoadCollectionRequest.class);
+        verify(blockingStub).loadCollection(captor.capture());
+        assertEquals("high", captor.getValue().getLoadParamsMap().get("load_priority"));
+    }
+
+    @Test
+    void testLoadCollectionPriorityLowercased() {
+        LoadCollectionReq req = LoadCollectionReq.builder()
+                .collectionName("test")
+                .priority("LOW")
+                .build();
+        client_v2.loadCollection(req);
+
+        ArgumentCaptor<LoadCollectionRequest> captor = ArgumentCaptor.forClass(LoadCollectionRequest.class);
+        verify(blockingStub).loadCollection(captor.capture());
+        assertEquals("low", captor.getValue().getLoadParamsMap().get("load_priority"));
     }
 
     @Test

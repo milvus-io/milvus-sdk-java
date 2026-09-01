@@ -34,6 +34,7 @@ public class LoadCollectionReq {
     private List<String> loadFields = new ArrayList<>();
     private Boolean skipLoadDynamicField = Boolean.FALSE;
     private List<String> resourceGroups = new ArrayList<>();
+    private String priority;
 
     private LoadCollectionReq(LoadCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -46,6 +47,7 @@ public class LoadCollectionReq {
         this.loadFields = builder.loadFields;
         this.skipLoadDynamicField = builder.skipLoadDynamicField;
         this.resourceGroups = builder.resourceGroups;
+        this.priority = builder.priority;
     }
 
     public String getDatabaseName() {
@@ -132,6 +134,14 @@ public class LoadCollectionReq {
         this.resourceGroups = resourceGroups;
     }
 
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
     @Override
     public String toString() {
         return "LoadCollectionReq{" +
@@ -145,6 +155,7 @@ public class LoadCollectionReq {
                 ", loadFields=" + loadFields +
                 ", skipLoadDynamicField=" + skipLoadDynamicField +
                 ", resourceGroups=" + resourceGroups +
+                ", priority='" + priority + '\'' +
                 '}';
     }
 
@@ -163,6 +174,7 @@ public class LoadCollectionReq {
         private List<String> loadFields = new ArrayList<>();
         private Boolean skipLoadDynamicField = Boolean.FALSE;
         private List<String> resourceGroups = new ArrayList<>();
+        private String priority;
 
         private LoadCollectionReqBuilder() {
         }
@@ -217,6 +229,11 @@ public class LoadCollectionReq {
 
         public LoadCollectionReqBuilder resourceGroups(List<String> resourceGroups) {
             this.resourceGroups = resourceGroups;
+            return this;
+        }
+
+        public LoadCollectionReqBuilder priority(String priority) {
+            this.priority = priority;
             return this;
         }
 
