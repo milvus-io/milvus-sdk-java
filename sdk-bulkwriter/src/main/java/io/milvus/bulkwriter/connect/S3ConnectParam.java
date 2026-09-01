@@ -21,7 +21,9 @@ package io.milvus.bulkwriter.connect;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
+import io.minio.credentials.Provider;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -36,6 +38,7 @@ public class S3ConnectParam extends StorageConnectParam {
     private final String region;
     private final OkHttpClient httpClient;
     private final String cloudName;
+    private final Provider credentialsProvider;
 
     private S3ConnectParam(@NotNull Builder builder) {
         this.bucketName = builder.bucketName;
@@ -46,6 +49,7 @@ public class S3ConnectParam extends StorageConnectParam {
         this.region = builder.region;
         this.httpClient = builder.httpClient;
         this.cloudName = builder.cloudName;
+        this.credentialsProvider = builder.credentialsProvider;
     }
 
     public String getBucketName() {
@@ -80,6 +84,16 @@ public class S3ConnectParam extends StorageConnectParam {
         return cloudName;
     }
 
+    /**
+     * An external credentials provider that refreshes credentials automatically while
+     * the writer is running. When set, it takes precedence over the static
+     * accessKey/secretKey/sessionToken fields. For GCP the bearer token is carried in
+     * {@code Credentials.sessionToken()} (see GcpMetadataServerCredentialsProvider).
+     */
+    public Provider getCredentialsProvider() {
+        return credentialsProvider;
+    }
+
     @Override
     public String toString() {
         return "S3ConnectParam{" +
@@ -109,6 +123,7 @@ public class S3ConnectParam extends StorageConnectParam {
         private String region;
         private OkHttpClient httpClient;
         private String cloudName;
+        private Provider credentialsProvider;
 
         private Builder() {
         }
@@ -172,6 +187,20 @@ public class S3ConnectParam extends StorageConnectParam {
         }
 
         /**
+         * Sets an external credentials provider. Use this for identity-based
+         * authentication that must refresh credentials while the writer is running
+         * (e.g. AWS web identity / IRSA, GCP workload identity). Mutually exclusive
+         * with the static accessKey/secretKey/sessionToken setters; enforced at
+         * {@link #build()}. For GCP the provider's {@code fetch()} may be invoked per
+         * HTTP request, so it must cache credentials internally (per the minio
+         * {@code Provider} contract).
+         */
+        public Builder withCredentialsProvider(@NotNull Provider credentialsProvider) {
+            this.credentialsProvider = credentialsProvider;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link S3ConnectParam} instance.
          *
          * @return {@link S3ConnectParam}
@@ -179,6 +208,11 @@ public class S3ConnectParam extends StorageConnectParam {
         public S3ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(endpoint, "endpoint");
             ParamUtils.CheckNullEmptyString(bucketName, "bucketName");
+            if (credentialsProvider != null && (StringUtils.isNotBlank(accessKey)
+                    || StringUtils.isNotBlank(secretKey) || StringUtils.isNotBlank(sessionToken))) {
+                throw new ParamException("credentialsProvider is mutually exclusive with the static"
+                        + " accessKey/secretKey/sessionToken fields");
+            }
 
             return new S3ConnectParam(this);
         }
