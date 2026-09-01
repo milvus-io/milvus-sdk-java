@@ -33,6 +33,7 @@ import io.milvus.grpc.SearchResultData;
 import io.milvus.grpc.StringArray;
 import io.milvus.grpc.StructArrayField;
 import io.milvus.grpc.StructArrayFieldSchema;
+import io.milvus.grpc.VectorField;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
 import io.milvus.response.FieldDataWrapper;
@@ -261,5 +262,93 @@ class TextDataTypeTest {
                 Collections.singletonMap("content", "second"));
         Assertions.assertEquals(Collections.singletonList(expectedStructs),
                 new FieldDataWrapper(chunksField).getFieldData());
+    }
+
+    @Test
+    void decodesNullableStructNullRow() {
+        ScalarField scoreRow0 = ScalarField.newBuilder()
+                .setFloatData(io.milvus.grpc.FloatArray.newBuilder().addData(1.0f).build())
+                .build();
+        ScalarField scoreRow1 = ScalarField.newBuilder().build();
+        FieldData scoreField = FieldData.newBuilder()
+                .setType(io.milvus.grpc.DataType.Array)
+                .setFieldName("score")
+                .setScalars(ScalarField.newBuilder().setArrayData(ArrayArray.newBuilder()
+                        .setElementType(io.milvus.grpc.DataType.Float)
+                        .addData(scoreRow0)
+                        .addData(scoreRow1)))
+                .addValidData(true)
+                .addValidData(false)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setType(io.milvus.grpc.DataType.ArrayOfStruct)
+                .setFieldName("metadata")
+                .setStructArrays(StructArrayField.newBuilder().addFields(scoreField))
+                .build();
+
+        List<?> data = new FieldDataWrapper(metadataField).getFieldData();
+        Assertions.assertEquals(2, data.size());
+        Assertions.assertEquals(
+                Collections.singletonList(Collections.singletonMap("score", 1.0f)), data.get(0));
+        Assertions.assertNull(data.get(1));
+    }
+
+    @Test
+    void decodesNullableStructVectorNullRow() {
+        VectorField vecRow0 = VectorField.newBuilder()
+                .setDim(2)
+                .setFloatVector(io.milvus.grpc.FloatArray.newBuilder().addData(1.0f).addData(2.0f).build())
+                .build();
+        VectorField vecRow1 = VectorField.newBuilder().build();
+        FieldData embField = FieldData.newBuilder()
+                .setType(io.milvus.grpc.DataType.ArrayOfVector)
+                .setFieldName("embedding")
+                .setVectors(VectorField.newBuilder()
+                        .setVectorArray(io.milvus.grpc.VectorArray.newBuilder()
+                                .setElementType(io.milvus.grpc.DataType.FloatVector)
+                                .setDim(2)
+                                .addData(vecRow0)
+                                .addData(vecRow1)))
+                .addValidData(true)
+                .addValidData(false)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setType(io.milvus.grpc.DataType.ArrayOfStruct)
+                .setFieldName("metadata")
+                .setStructArrays(StructArrayField.newBuilder().addFields(embField))
+                .build();
+
+        List<?> data = new FieldDataWrapper(metadataField).getFieldData();
+        Assertions.assertEquals(2, data.size());
+        Assertions.assertEquals(Collections.singletonList(
+                Collections.singletonMap("embedding", Arrays.asList(1.0f, 2.0f))), data.get(0));
+        Assertions.assertNull(data.get(1));
+    }
+
+    @Test
+    void decodesCompactedNullableStructPayload() {
+        ScalarField scoreRow0 = ScalarField.newBuilder()
+                .setFloatData(io.milvus.grpc.FloatArray.newBuilder().addData(1.0f).build())
+                .build();
+        FieldData scoreField = FieldData.newBuilder()
+                .setType(io.milvus.grpc.DataType.Array)
+                .setFieldName("score")
+                .setScalars(ScalarField.newBuilder().setArrayData(ArrayArray.newBuilder()
+                        .setElementType(io.milvus.grpc.DataType.Float)
+                        .addData(scoreRow0)))
+                .addValidData(true)
+                .addValidData(false)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setType(io.milvus.grpc.DataType.ArrayOfStruct)
+                .setFieldName("metadata")
+                .setStructArrays(StructArrayField.newBuilder().addFields(scoreField))
+                .build();
+
+        List<?> data = new FieldDataWrapper(metadataField).getFieldData();
+        Assertions.assertEquals(2, data.size());
+        Assertions.assertEquals(
+                Collections.singletonList(Collections.singletonMap("score", 1.0f)), data.get(0));
+        Assertions.assertNull(data.get(1));
     }
 }

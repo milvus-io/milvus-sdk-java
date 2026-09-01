@@ -3001,7 +3001,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotNull(descResp);
 
         // check the timestamp of this collection, must be positive
-        long ts11 = CollectionTsCache.getInstance().get("localhost:19530", "default", randomCollectionName);
+        long ts11 = CollectionTsCache.getInstance().get("localhost:29530", "default", randomCollectionName);
         Assertions.assertTrue(ts11 > 0L);
 
         // insert wrong data; the refreshed, valid collection schema remains cached
@@ -3027,7 +3027,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
 
         // check the timestamp of this collection, must be a new positive
-        long ts12 = CollectionTsCache.getInstance().get("localhost:19530", "default", randomCollectionName);
+        long ts12 = CollectionTsCache.getInstance().get("localhost:29530", "default", randomCollectionName);
         Assertions.assertTrue(ts12 > ts11);
 
         // create a new collection with the same name, different schema, in the test db
@@ -3043,7 +3043,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
         // check the timestamp of this collection, must be null
-        long ts21 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+        long ts21 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
         Assertions.assertEquals(0L, ts21);
 
         // use the temp client to do upsert correct data
@@ -3061,7 +3061,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotNull(descResp);
 
         // check the timestamp of this collection, must be positive
-        long ts22 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+        long ts22 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
         Assertions.assertTrue(ts22 > 0L);
 
         // tempClient upsert wrong data
@@ -3088,7 +3088,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotNull(descResp);
 
         // check the timestamp of this collection, must be greater than previous
-        long ts23 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+        long ts23 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
         Assertions.assertTrue(ts23 > ts22);
 
         // use the default client to drop the collection in the new db
@@ -3099,7 +3099,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), dropResp.getStatus().intValue());
 
         // check the timestamp of this collection, must be deleted
-        long ts31 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+        long ts31 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
         Assertions.assertEquals(0L, ts31);
 
         // use the temp client to insert correct data into the collection
@@ -3111,7 +3111,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
         // check the timestamp of this collection, must be null
-        long ts32 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+        long ts32 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
         Assertions.assertEquals(0L, ts32);
 
         // check the schema cache of this collection, must be null

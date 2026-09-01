@@ -20,6 +20,7 @@
 package io.milvus.v2.utils;
 
 import io.milvus.grpc.*;
+import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -298,6 +299,76 @@ public class SchemaUtilsTest {
                 () -> SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true));
         Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
         Assertions.assertTrue(exception.getMessage().contains("Vector field must be nullable"));
+    }
+
+    @Test
+    void testConvertToGrpcStructFieldSchemaPropagatesNullableToSubFields() {
+        CreateCollectionReq.StructFieldSchema nullableStruct = CreateCollectionReq.StructFieldSchema.builder()
+                .name("metadata")
+                .nullable(true)
+                .fields(Collections.singletonList(CreateCollectionReq.FieldSchema.builder()
+                        .name("score")
+                        .dataType(io.milvus.v2.common.DataType.Float)
+                        .isNullable(false)
+                        .build()))
+                .maxCapacity(10)
+                .build();
+        StructArrayFieldSchema rpc = SchemaUtils.convertToGrpcStructFieldSchema(nullableStruct);
+        Assertions.assertTrue(rpc.getNullable());
+        Assertions.assertTrue(rpc.getFields(0).getNullable());
+
+        CreateCollectionReq.StructFieldSchema nonNullableStruct = CreateCollectionReq.StructFieldSchema.builder()
+                .name("metadata")
+                .nullable(false)
+                .fields(Collections.singletonList(CreateCollectionReq.FieldSchema.builder()
+                        .name("score")
+                        .dataType(io.milvus.v2.common.DataType.Float)
+                        .isNullable(true)
+                        .build()))
+                .maxCapacity(10)
+                .build();
+        StructArrayFieldSchema rpc2 = SchemaUtils.convertToGrpcStructFieldSchema(nonNullableStruct);
+        Assertions.assertFalse(rpc2.getNullable());
+        Assertions.assertFalse(rpc2.getFields(0).getNullable());
+    }
+
+    @Test
+    void testStructFieldSchemaRejectsNullableSubField() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        ParamException exception = Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(io.milvus.v2.common.DataType.Float)
+                        .isNullable(Boolean.TRUE)
+                        .build()));
+        Assertions.assertTrue(exception.getMessage().contains("cannot be nullable individually"));
+        Assertions.assertTrue(exception.getMessage().contains("metadata"));
+    }
+
+    @Test
+    void testStructFieldSchemaRejectsForbiddenSubFieldAttributes() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("pk").dataType(io.milvus.v2.common.DataType.Int64).isPrimaryKey(Boolean.TRUE).build()));
+        Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("part").dataType(io.milvus.v2.common.DataType.VarChar).maxLength(100)
+                        .isPartitionKey(Boolean.TRUE).build()));
+        Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("cluster").dataType(io.milvus.v2.common.DataType.VarChar).maxLength(100)
+                        .isClusteringKey(Boolean.TRUE).build()));
+        Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("auto").dataType(io.milvus.v2.common.DataType.Int64).autoID(Boolean.TRUE).build()));
+        Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("def").dataType(io.milvus.v2.common.DataType.Int64).defaultValue(1L).build()));
     }
 
     @Test

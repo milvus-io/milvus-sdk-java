@@ -81,8 +81,8 @@ class MilvusMultiClientDockerTest {
     }
 
     private static MultiConnectParam.Builder multiConnectParamBuilder() {
-        ServerAddress serverAddress = ServerAddress.newBuilder().withHost("localhost").withPort(19530).build();
-        ServerAddress serverSlaveAddress = ServerAddress.newBuilder().withHost("localhost").withPort(19531).withHealthPort(9092).build();
+        ServerAddress serverAddress = ServerAddress.newBuilder().withHost("localhost").withPort(29530).build();
+        ServerAddress serverSlaveAddress = ServerAddress.newBuilder().withHost("localhost").withPort(29531).withHealthPort(19092).build();
         return MultiConnectParam.newBuilder().withHosts(Arrays.asList(serverAddress, serverSlaveAddress));
     }
 
