@@ -173,10 +173,13 @@ public class SchemaUtils {
                 actualType = DataType.ArrayOfVector;
             }
             FieldSchema fieldSchema = convertToGrpcFieldSchema(field);
-            // reset data type and capacity
+            // reset data type and capacity; a sub-field cannot be nullable independently,
+            // it inherits the struct's nullable (aligned with pymilvus, which sets
+            // nullable=struct.nullable on every struct sub-field)
             fieldSchema = fieldSchema.toBuilder()
                     .setDataType(actualType)
                     .setElementType(elementType)
+                    .setNullable(Boolean.TRUE.equals(structSchema.getNullable()))
                     .addTypeParams(KeyValuePair.newBuilder()
                             .setKey(ARRAY_MAX_CAPACITY)
                             .setValue(String.valueOf(structSchema.getMaxCapacity()))
@@ -439,7 +442,8 @@ public class SchemaUtils {
                 String msg = String.format("Field '%s' in struct '%s' cannot be auto-id", fieldName, structName);
                 throw new ParamException(msg);
             } else if (field.getIsNullable()) {
-                String msg = String.format("Field '%s' in struct '%s' cannot be nullable", fieldName, structName);
+                String msg = String.format("Field '%s' in struct '%s' cannot be nullable individually, "
+                        + "set nullable on the struct instead", fieldName, structName);
                 throw new ParamException(msg);
             } else if (field.getDefaultValue() != null) {
                 String msg = String.format("Field '%s' in struct '%s' cannot have default value", fieldName, structName);

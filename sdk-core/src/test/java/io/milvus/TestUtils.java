@@ -17,7 +17,7 @@ public class TestUtils {
     private int dimension = 256;
     private static final Random RANDOM = new Random();
 
-    public static final String MilvusStandaloneUri = "http://localhost:19530";
+    public static final String MilvusStandaloneUri = "http://localhost:29530";
     private static final String DockerCleanupImageID = "alpine:3.20";
     private static boolean startedMilvusStandalone;
     private static File startedDockerComposeFile;

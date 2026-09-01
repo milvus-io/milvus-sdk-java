@@ -20,8 +20,6 @@
 package io.milvus.v2.service.collection.request;
 
 import io.milvus.exception.ParamException;
-import io.milvus.v2.exception.ErrorCode;
-import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.FieldSchema;
 import io.milvus.v2.utils.SchemaUtils;
 
@@ -202,12 +200,11 @@ public class AddCollectionStructFieldReq {
      * Converts this request into a {@link CreateCollectionReq.StructFieldSchema}.
      *
      * @return the struct field schema
-     * @throws MilvusClientException if the field is not nullable or the schema conversion fails
+     * @throws ParamException if the field is not nullable or the schema conversion fails
      */
     public CreateCollectionReq.StructFieldSchema toStructFieldSchema() {
         if (Boolean.FALSE.equals(nullable)) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                    "Adding struct field to existing collection requires nullable=true");
+            throw new ParamException("Adding struct field to existing collection requires nullable=true");
         }
 
         AddFieldReq addFieldReq = AddFieldReq.builder()
@@ -216,14 +213,10 @@ public class AddCollectionStructFieldReq {
                 .maxCapacity(maxCapacity)
                 .structFields(structFields)
                 .build();
-        try {
-            CreateCollectionReq.StructFieldSchema structFieldSchema = SchemaUtils.convertFieldReqToStructFieldSchema(addFieldReq);
-            structFieldSchema.setNullable(Boolean.TRUE);
-            structFieldSchema.setTypeParams(typeParams);
-            return structFieldSchema;
-        } catch (ParamException e) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage());
-        }
+        CreateCollectionReq.StructFieldSchema structFieldSchema = SchemaUtils.convertFieldReqToStructFieldSchema(addFieldReq);
+        structFieldSchema.setNullable(Boolean.TRUE);
+        structFieldSchema.setTypeParams(typeParams);
+        return structFieldSchema;
     }
 
     @Override

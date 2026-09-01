@@ -200,6 +200,12 @@ public class FieldDataWrapper {
             case ArrayOfStruct: {
                 List<FieldData> structData = fieldData.getStructArrays().getFieldsList();
                 for (FieldData fd : structData) {
+                    List<Boolean> subValid = fd.getValidDataList();
+                    if (subValid != null && !subValid.isEmpty()) {
+                        return subValid.size();
+                    }
+                }
+                for (FieldData fd : structData) {
                     if (fd.getType() == DataType.Array) {
                         return fd.getScalars().getArrayData().getDataCount();
                     } else if (fd.getType() == DataType.ArrayOfVector) {
@@ -425,6 +431,23 @@ public class FieldDataWrapper {
             return packData;
         }
 
+        // determine the total row count and the per-row valid data from any sub-field;
+        // a null struct row is marked by a false entry shared by all sub-fields
+        int rowCount = 0;
+        List<Boolean> validData = null;
+        for (FieldData fd : field.getFieldsList()) {
+            List<Boolean> subValid = fd.getValidDataList();
+            if (validData == null && subValid != null && !subValid.isEmpty()) {
+                validData = subValid;
+                rowCount = subValid.size();
+            }
+            if (fd.getType() == DataType.Array) {
+                rowCount = Math.max(rowCount, fd.getScalars().getArrayData().getDataCount());
+            } else if (fd.getType() == DataType.ArrayOfVector) {
+                rowCount = Math.max(rowCount, fd.getVectors().getVectorArray().getDataCount());
+            }
+        }
+
         // read column data from FieldData
         // for a struct with two sub-fields "int" and "emb", search with nq=2, topk=3
         // the column data is like this:
@@ -432,25 +455,22 @@ public class FieldDataWrapper {
         //     "int": [[x1, x2], [x1, x2, x3], [x1], [x1, x2], [x1, x2, x3], [x1]],
         //     "emb": [[emb1, emb2], [emb1, emb2, emb3], [emb1], [emb1m emb2], [emb1, emb2, emb3], [emb1]],
         //  }
-        Map<String, List<List<?>>> columnsData = new HashMap<>();
-        int rowCount = 0;
+        Map<String, List<?>> columnsData = new HashMap<>();
         for (FieldData fd : field.getFieldsList()) {
-            List<List<?>> column = new ArrayList<>();
+            List<?> column;
             if (fd.getType() == DataType.Array) {
-                column = (List<List<?>>) getScalarData(fd.getType(), fd.getScalars(), fd.getValidDataList());
-                columnsData.put(fd.getFieldName(), column);
-                rowCount = column.size();
+                column = getScalarData(fd.getType(), fd.getScalars(), fd.getValidDataList());
             } else if (fd.getType() == DataType.ArrayOfVector) {
                 VectorArray vecArr = fd.getVectors().getVectorArray();
+                List<Object> vectors = new ArrayList<>();
                 for (VectorField vf : vecArr.getDataList()) {
-                    List<?> vector = getVectorData(vecArr.getElementType(), vf, null);
-                    column.add(vector);
+                    vectors.add(getVectorData(vecArr.getElementType(), vf, null));
                 }
-                rowCount = column.size();
-                columnsData.put(fd.getFieldName(), column);
+                column = vectors;
             } else {
                 throw new IllegalResponseException("Unsupported data type returned by StructArrayField");
             }
+            columnsData.put(fd.getFieldName(), alignColumnData(column, fd.getValidDataList(), rowCount));
         }
 
         // convert column data into struct list, eventually, the packData is like this:
@@ -463,17 +483,18 @@ public class FieldDataWrapper {
         //      [{x1, emb1}]
         //   ]
         for (int i = 0; i < rowCount; i++) {
+            boolean isNullStruct = validData != null && i < validData.size() && !validData.get(i);
+            Map<String, Object> rowColumn = new HashMap<>();
             int elementCount = 0;
-            boolean isNullStruct = false;
-            Map<String, List<?>> rowColumn = new HashMap<>();
-            for (String key : columnsData.keySet()) {
-                List<?> val = columnsData.get(key).get(i);
-                rowColumn.put(key, val);
+            for (Map.Entry<String, List<?>> entry : columnsData.entrySet()) {
+                List<?> column = entry.getValue();
+                Object val = i < column.size() ? column.get(i) : null;
+                rowColumn.put(entry.getKey(), val);
                 if (val == null) {
                     isNullStruct = true;
                     continue;
                 }
-                elementCount = val.size();
+                elementCount = ((List<?>) val).size();
             }
 
             if (isNullStruct) {
@@ -484,13 +505,35 @@ public class FieldDataWrapper {
             List<Map<String, Object>> structs = new ArrayList<>();
             for (int k = 0; k < elementCount; k++) {
                 Map<String, Object> struct = new HashMap<>();
-                int finalK = k;
-                rowColumn.forEach((key, val) -> struct.put(key, val.get(finalK)));
+                for (Map.Entry<String, Object> e : rowColumn.entrySet()) {
+                    struct.put(e.getKey(), ((List<?>) e.getValue()).get(k));
+                }
                 structs.add(struct);
             }
             packData.add(structs);
         }
         return packData;
+    }
+
+    /**
+     * Aligns a decoded struct sub-field column to the total row count using the per-row valid
+     * data. Full-length server data is returned as-is; compacted payloads (only non-null rows)
+     * are re-expanded so null rows map back to their original positions.
+     */
+    private static List<?> alignColumnData(List<?> columnData, List<Boolean> validData, int rowCount) {
+        if (validData == null || validData.isEmpty() || validData.size() == columnData.size()) {
+            return columnData;
+        }
+        List<Object> aligned = new ArrayList<>(rowCount);
+        int dataIdx = 0;
+        for (int i = 0; i < rowCount; i++) {
+            if (i >= validData.size() || !validData.get(i) || dataIdx >= columnData.size()) {
+                aligned.add(null);
+            } else {
+                aligned.add(columnData.get(dataIdx++));
+            }
+        }
+        return aligned;
     }
 
     public Integer getAsInt(int index, String paramName) throws IllegalResponseException {

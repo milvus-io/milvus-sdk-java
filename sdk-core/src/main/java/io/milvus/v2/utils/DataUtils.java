@@ -460,10 +460,22 @@ public class DataUtils {
             JsonElement rowFieldData = row.get(structName);
             if (rowFieldData == null) {
                 if (partialUpdate) {
+                    // a missing key in a partial update means "leave the field untouched"
                     return false;
                 }
-                String msg = String.format("The field: %s is not provided.", structName);
-                throw new DataNotMatchException(msg);
+                if (!Boolean.TRUE.equals(structField.getNullable())) {
+                    throw new DataNotMatchException(String.format("The field: %s is not provided.", structName));
+                }
+                addNullStructRow(structField, nameInsertInfo);
+                return true;
+            }
+            if (rowFieldData.isJsonNull()) {
+                if (!Boolean.TRUE.equals(structField.getNullable())) {
+                    throw new DataNotMatchException(String.format("The value of struct field: %s cannot be null.", structName));
+                }
+                // an explicit null in a partial update nulls out the struct, like a nullable scalar field
+                addNullStructRow(structField, nameInsertInfo);
+                return true;
             }
             if (!rowFieldData.isJsonArray()) {
                 String msg = String.format("The value of struct field: %s is not a JSON array.", structName);
@@ -531,6 +543,15 @@ public class DataUtils {
                 nameInsertInfo.put(combineName, insertDataInfo);
             }
         }
+
+        private void addNullStructRow(CreateCollectionReq.StructFieldSchema structField,
+                                      Map<String, InsertDataInfo> nameInsertInfo) {
+            initializeStructFieldData(structField, nameInsertInfo);
+            for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
+                String combineName = combineStructFieldName(structField.getName(), field.getName());
+                nameInsertInfo.get(combineName).data.add(null);
+            }
+        }
     }
 
     public static class InsertDataInfo {
@@ -547,9 +568,24 @@ public class DataUtils {
         DataType dataType = ConvertUtils.toProtoDataType(fieldSchema.getDataType());
         String fieldName = fieldSchema.getName();
         FieldData.Builder builder = FieldData.newBuilder().setFieldName(fieldName);
+        boolean isNullable = Boolean.TRUE.equals(fieldSchema.getIsNullable());
 
         if (ParamUtils.isVectorDataType(dataType)) {
-            VectorArray vectorArr = genVectorArray(dataType, objects, fieldSchema.getDimension());
+            List<?> nonNullRows = objects;
+            if (isNullable) {
+                List<Object> filtered = new ArrayList<>();
+                for (Object obj : objects) {
+                    builder.addValidData(obj != null);
+                    if (obj != null) {
+                        filtered.add(obj);
+                    }
+                }
+                if (filtered.isEmpty()) {
+                    return builder.setType(DataType.ArrayOfVector).build();
+                }
+                nonNullRows = filtered;
+            }
+            VectorArray vectorArr = genVectorArray(dataType, nonNullRows, fieldSchema.getDimension());
             if (vectorArr.getDim() > 0 && vectorArr.getDim() != fieldSchema.getDimension()) {
                 String msg = String.format("Dimension mismatch for field %s, expected: %d, actual: %d",
                         fieldName, fieldSchema.getDimension(), vectorArr.getDim());
@@ -568,18 +604,22 @@ public class DataUtils {
                 String msg = String.format("Unsupported element type %s for struct sub-field '%s'", dataType, fieldName);
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
             }
-            if (fieldSchema.getIsNullable() || fieldSchema.getDefaultValue() != null) {
-                List<Object> tempObjects = new ArrayList<>();
+            List<?> nonNullRows = objects;
+            if (isNullable || fieldSchema.getDefaultValue() != null) {
+                List<Object> filtered = new ArrayList<>();
                 for (Object obj : objects) {
                     builder.addValidData(obj != null);
                     if (obj != null) {
-                        tempObjects.add(obj);
+                        filtered.add(obj);
                     }
                 }
-                objects = tempObjects;
+                if (filtered.isEmpty() && isNullable) {
+                    return builder.setType(DataType.Array).build();
+                }
+                nonNullRows = filtered;
             }
 
-            ScalarField scalarField = ParamUtils.genScalarField(DataType.Array, dataType, objects);
+            ScalarField scalarField = ParamUtils.genScalarField(DataType.Array, dataType, nonNullRows);
             return builder.setType(DataType.Array).setScalars(scalarField).build();
         }
     }

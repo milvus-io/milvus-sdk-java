@@ -703,6 +703,149 @@ class DataUtilsTest {
     }
 
     @Test
+    void testInsertNullableStructNullRow() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(true, false);
+        JsonObject nullRow = row(1L, true, false);
+        nullRow.add("metadata", JsonNull.INSTANCE);
+        JsonObject validRow = row(2L, true, false);
+        JsonArray metadata = new JsonArray();
+        JsonObject item = new JsonObject();
+        item.addProperty("score", 1.0f);
+        metadata.add(item);
+        validRow.add("metadata", metadata);
+
+        InsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                InsertReq.builder().collectionName("test")
+                        .data(Arrays.asList(nullRow, validRow))
+                        .build(),
+                collection);
+
+        FieldData metadataField = structField(request, "metadata");
+        FieldData score = metadataField.getStructArrays().getFields(0);
+        Assertions.assertEquals(Arrays.asList(false, true), score.getValidDataList());
+        Assertions.assertEquals(1, score.getScalars().getArrayData().getDataCount());
+        Assertions.assertEquals(Collections.singletonList(1.0f),
+                score.getScalars().getArrayData().getData(0).getFloatData().getDataList());
+    }
+
+    @Test
+    void testInsertNullableStructAllowsMissingKey() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(true, false);
+        JsonObject row = row(1L, true, false);
+
+        InsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                InsertReq.builder().collectionName("test")
+                        .data(Collections.singletonList(row))
+                        .build(),
+                collection);
+
+        FieldData score = structField(request, "metadata").getStructArrays().getFields(0);
+        Assertions.assertEquals(Collections.singletonList(false), score.getValidDataList());
+        Assertions.assertFalse(score.hasScalars());
+    }
+
+    @Test
+    void testInsertNullableStructAllNullRowsLeavePayloadUnset() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(true, false);
+        JsonObject row = row(1L, true, false);
+        row.add("metadata", JsonNull.INSTANCE);
+
+        InsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                InsertReq.builder().collectionName("test")
+                        .data(Collections.singletonList(row))
+                        .build(),
+                collection);
+
+        FieldData score = structField(request, "metadata").getStructArrays().getFields(0);
+        Assertions.assertEquals(Collections.singletonList(false), score.getValidDataList());
+        Assertions.assertFalse(score.hasScalars());
+    }
+
+    @Test
+    void testInsertNullableStructVectorNullRow() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(true, true);
+        JsonObject nullRow = row(1L, true, false);
+        nullRow.add("metadata", JsonNull.INSTANCE);
+        JsonObject validRow = row(2L, true, false);
+        JsonArray metadata = new JsonArray();
+        JsonObject item = new JsonObject();
+        item.add("embedding", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        metadata.add(item);
+        validRow.add("metadata", metadata);
+
+        InsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                InsertReq.builder().collectionName("test")
+                        .data(Arrays.asList(nullRow, validRow))
+                        .build(),
+                collection);
+
+        FieldData embedding = structField(request, "metadata").getStructArrays().getFields(0);
+        Assertions.assertEquals(Arrays.asList(false, true), embedding.getValidDataList());
+        Assertions.assertEquals(2, embedding.getVectors().getVectorArray().getDim());
+        Assertions.assertEquals(1, embedding.getVectors().getVectorArray().getDataCount());
+        Assertions.assertEquals(Arrays.asList(1.0f, 2.0f),
+                embedding.getVectors().getVectorArray().getData(0).getFloatVector().getDataList());
+    }
+
+    @Test
+    void testInsertNullableStructVectorAllNullRowsLeavePayloadUnset() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(true, true);
+        JsonObject row = row(1L, true, false);
+        row.add("metadata", JsonNull.INSTANCE);
+
+        InsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                InsertReq.builder().collectionName("test")
+                        .data(Collections.singletonList(row))
+                        .build(),
+                collection);
+
+        FieldData embedding = structField(request, "metadata").getStructArrays().getFields(0);
+        Assertions.assertEquals(Collections.singletonList(false), embedding.getValidDataList());
+        Assertions.assertFalse(embedding.hasVectors());
+    }
+
+    @Test
+    void testPartialUpsertNullsNullableStructField() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(true, false);
+        JsonObject row = row(1L, true, false);
+        row.add("metadata", JsonNull.INSTANCE);
+
+        UpsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                UpsertReq.builder()
+                        .collectionName("test")
+                        .data(Collections.singletonList(row))
+                        .partialUpdate(true)
+                        .build(),
+                collection);
+
+        FieldData metadataField = request.getFieldsDataList().stream()
+                .filter(field -> field.getFieldName().equals("metadata"))
+                .findFirst()
+                .orElse(null);
+        Assertions.assertNotNull(metadataField);
+        FieldData score = metadataField.getStructArrays().getFields(0);
+        Assertions.assertEquals(Collections.singletonList(false), score.getValidDataList());
+        Assertions.assertFalse(score.hasScalars());
+    }
+
+    @Test
+    void testInsertRejectsNullStructWhenStructNotNullable() {
+        DescribeCollectionResp collection = describeCollectionWithNullableStruct(false, false);
+        JsonObject row = row(1L, true, false);
+        row.add("metadata", JsonNull.INSTANCE);
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                        InsertReq.builder().collectionName("test")
+                                .data(Collections.singletonList(row))
+                                .build(),
+                        collection));
+
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("cannot be null"));
+    }
+
+    @Test
     void testInsertRejectsUnsupportedStructSubFieldType() {
         for (DataType subFieldType : new DataType[]{DataType.JSON, DataType.Geometry, DataType.Timestamptz}) {
             DataNotMatchException exception = Assertions.assertThrows(DataNotMatchException.class,
@@ -885,6 +1028,39 @@ class DataUtilsTest {
                 .maxCapacity(10)
                 .build());
         return DescribeCollectionResp.builder().collectionName("test").collectionSchema(schema).build();
+    }
+
+    private static DescribeCollectionResp describeCollectionWithNullableStruct(boolean nullable,
+                                                                               boolean withVectorSubField) {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.getFieldSchemaList().add(CreateCollectionReq.FieldSchema.builder()
+                .name("id").dataType(DataType.Int64).isPrimaryKey(true).build());
+        schema.getFieldSchemaList().add(CreateCollectionReq.FieldSchema.builder()
+                .name("vector").dataType(DataType.FloatVector).dimension(2).build());
+        CreateCollectionReq.FieldSchema subField;
+        if (withVectorSubField) {
+            subField = CreateCollectionReq.FieldSchema.builder()
+                    .name("embedding").dataType(DataType.FloatVector).dimension(2)
+                    .isNullable(nullable).build();
+        } else {
+            subField = CreateCollectionReq.FieldSchema.builder()
+                    .name("score").dataType(DataType.Float)
+                    .isNullable(nullable).build();
+        }
+        schema.getStructFields().add(CreateCollectionReq.StructFieldSchema.builder()
+                .name("metadata")
+                .fields(Collections.singletonList(subField))
+                .maxCapacity(10)
+                .nullable(nullable)
+                .build());
+        return DescribeCollectionResp.builder().collectionName("test").collectionSchema(schema).build();
+    }
+
+    private static FieldData structField(InsertRequest request, String structName) {
+        return request.getFieldsDataList().stream()
+                .filter(field -> field.getFieldName().equals(structName))
+                .findFirst()
+                .orElse(null);
     }
 
     private static JsonObject row(Long id, boolean withVector, boolean withEmbedding) {
