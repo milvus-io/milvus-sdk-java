@@ -26,6 +26,8 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.SearchRequest;
 import io.milvus.grpc.Status;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.common.DataType;
+import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.AlterCollectionFieldReq;
 import io.milvus.v2.service.collection.request.AlterCollectionPropertiesReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
@@ -139,10 +141,13 @@ class CollectionServiceSchemaCacheTest {
 
         SchemaCache.getInstance().set(ENDPOINT, DATABASE, COLLECTION, cached);
         CollectionTsCache.getInstance().set(ENDPOINT, DATABASE, COLLECTION, 200L);
+        CreateCollectionReq.CollectionSchema schema =
+                CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build());
         service.createCollection(stub, CreateCollectionReq.builder()
                 .databaseName(DATABASE)
                 .collectionName(COLLECTION)
-                .collectionSchema(CreateCollectionReq.CollectionSchema.builder().build())
+                .collectionSchema(schema)
                 .build());
         assertNull(SchemaCache.getInstance().get(ENDPOINT, DATABASE, COLLECTION));
         assertEquals(200L, CollectionTsCache.getInstance().get(ENDPOINT, DATABASE, COLLECTION));

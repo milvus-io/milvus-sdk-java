@@ -1027,6 +1027,84 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testGetWithEmptyIdsReturnsEmptyWithoutRpc() {
+        GetReq request = GetReq.builder()
+                .collectionName("book")
+                .ids(Collections.emptyList())
+                .build();
+
+        GetResp resp = client_v2.get(request);
+
+        Assertions.assertNotNull(resp.getGetResults());
+        Assertions.assertTrue(resp.getGetResults().isEmpty());
+        verify(blockingStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
+    void testSearchRejectsNonPositiveLimitAndOutOfRangeRoundDecimal() {
+        MilvusClientException negativeLimit = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.search(SearchReq.builder().collectionName("book")
+                        .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                        .limit(-1).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, negativeLimit.getErrorCode());
+
+        MilvusClientException zeroLimit = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.search(SearchReq.builder().collectionName("book")
+                        .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                        .limit(0).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, zeroLimit.getErrorCode());
+
+        MilvusClientException outOfRange = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.search(SearchReq.builder().collectionName("book")
+                        .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                        .limit(10)
+                        .roundDecimal(7).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, outOfRange.getErrorCode());
+        Assertions.assertTrue(outOfRange.getMessage().contains("round_decimal"));
+    }
+
+    @Test
+    void testHybridSearchRejectsNegativeLimit() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.hybridSearch(HybridSearchReq.builder().collectionName("book").limit(-1).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testDeleteRejectsInvalidIdType() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.delete(DeleteReq.builder().collectionName("book")
+                        .ids(Collections.singletonList(1.0d)).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("must be integers or strings"));
+    }
+
+    @Test
+    void testDeleteRejectsEmptyIds() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.delete(DeleteReq.builder().collectionName("book")
+                        .ids(Collections.emptyList()).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("must not be empty"));
+    }
+
+    @Test
+    void testQueryIteratorRejectsBatchSizeOutOfBounds() {
+        VectorService vectorService = new VectorService();
+        MilvusClientException tooLarge = Assertions.assertThrows(MilvusClientException.class,
+                () -> vectorService.queryIterator(null, QueryIteratorReq.builder().collectionName("book").batchSize(20000).build(), null));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, tooLarge.getErrorCode());
+
+        MilvusClientException zero = Assertions.assertThrows(MilvusClientException.class,
+                () -> vectorService.queryIterator(null, QueryIteratorReq.builder().collectionName("book").batchSize(0).build(), null));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, zero.getErrorCode());
+
+        MilvusClientException negative = Assertions.assertThrows(MilvusClientException.class,
+                () -> vectorService.queryIterator(null, QueryIteratorReq.builder().collectionName("book").batchSize(-1).build(), null));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, negative.getErrorCode());
+    }
+
+    @Test
     void testGetWithMultiplePartitions() {
         GetReq request = GetReq.builder()
                 .collectionName("book")

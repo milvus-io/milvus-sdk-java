@@ -106,7 +106,7 @@ class CollectionTest extends BaseTest {
                 .enableDynamicField(true)
                 .build();
         collectionSchema
-                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build())
+                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build())
                 .addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build());
 
         req = CreateCollectionReq.builder()
@@ -137,7 +137,7 @@ class CollectionTest extends BaseTest {
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
         collectionSchema
-                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build())
+                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build())
                 .addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build())
                 .addField(AddFieldReq.builder().fieldName("description").dataType(DataType.VarChar).maxLength(64).build());
 
@@ -168,6 +168,85 @@ class CollectionTest extends BaseTest {
                 .property("prop", "val")
                 .build();
         assertEquals("val", req.getProperties().get("prop"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsMissingPrimaryKey() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("Primary key"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsMultiplePrimaryKeys() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id1").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build());
+        schema.addField(AddFieldReq.builder().fieldName("id2").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("more than one primary key"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsUnsupportedPrimaryKeyType() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Float).isPrimaryKey(Boolean.TRUE).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("Int64 or VarChar"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsPartitionKeyEqualToPrimaryKey() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).isPartitionKey(Boolean.TRUE).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("cannot be the primary key"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsMultiplePartitionKeys() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build());
+        schema.addField(AddFieldReq.builder().fieldName("p1").dataType(DataType.Int64).isPartitionKey(Boolean.TRUE).build());
+        schema.addField(AddFieldReq.builder().fieldName("p2").dataType(DataType.Int64).isPartitionKey(Boolean.TRUE).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("more than one partition key"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsMultipleClusteringKeys() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build());
+        schema.addField(AddFieldReq.builder().fieldName("c1").dataType(DataType.Int64).isClusteringKey(Boolean.TRUE).build());
+        schema.addField(AddFieldReq.builder().fieldName("c2").dataType(DataType.Int64).isClusteringKey(Boolean.TRUE).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("more than one clustering key"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsAutoIdOnNonPrimaryKey() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build());
+        schema.addField(AddFieldReq.builder().fieldName("other").dataType(DataType.Int64).autoID(Boolean.TRUE).build());
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("auto_id"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifySkipsExternalCollection() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.setExternalSource("s3://bucket/path");
+        schema.addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build());
+
+        Assertions.assertDoesNotThrow(schema::verify);
     }
 
     @Test

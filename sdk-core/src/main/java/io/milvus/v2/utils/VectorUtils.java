@@ -305,6 +305,14 @@ public class VectorUtils {
      * @return the gRPC search request
      */
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
+        if (request.getLimit() <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Search limit must be a positive integer, got: " + request.getLimit());
+        }
+        if (request.getRoundDecimal() <= -2 || request.getRoundDecimal() >= 7) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "round_decimal must be in (-2, 7), got: " + request.getRoundDecimal());
+        }
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         SearchRequest.Builder builder = SearchRequest.newBuilder()
@@ -728,6 +736,14 @@ public class VectorUtils {
      *                               score are set
      */
     public HybridSearchRequest ConvertToGrpcHybridSearchRequest(HybridSearchReq request) {
+        if (request.getLimit() <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Search limit must be a positive integer, got: " + request.getLimit());
+        }
+        if (request.getRoundDecimal() <= -2 || request.getRoundDecimal() >= 7) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "round_decimal must be in (-2, 7), got: " + request.getRoundDecimal());
+        }
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         HybridSearchRequest.Builder builder = HybridSearchRequest.newBuilder()
