@@ -86,6 +86,7 @@ class VectorUtilsTest {
         SearchRequest request = new VectorUtils().ConvertToGrpcSearchRequest(SearchReq.builder()
                 .collectionName("coll")
                 .ids(Collections.singletonList(1L))
+                .limit(1)
                 .functionScore(FunctionScore.builder().addFunction(function).build())
                 .build());
 

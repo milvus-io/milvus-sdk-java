@@ -70,12 +70,21 @@ public class CollectionService extends BaseService {
     public Void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         if (request.getCollectionSchema() != null) {
             //create collections with schema
+            request.getCollectionSchema().verify();
             createCollectionWithSchema(blockingStub, request);
             return null;
         }
 
         if (request.getDimension() == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is undefined.");
+        }
+        io.milvus.v2.common.DataType idType = request.getIdType();
+        if (idType == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Primary key type is required");
+        }
+        if (idType != io.milvus.v2.common.DataType.Int64 && idType != io.milvus.v2.common.DataType.VarChar) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Primary key type must be Int64 or VarChar, got: " + idType.name());
         }
 
         String dbName = request.getDatabaseName();
