@@ -1061,13 +1061,32 @@ class VectorTest extends BaseTest {
                         .roundDecimal(7).build()));
         Assertions.assertEquals(ErrorCode.INVALID_PARAMS, outOfRange.getErrorCode());
         Assertions.assertTrue(outOfRange.getMessage().contains("round_decimal"));
+
+        MilvusClientException negativeRoundDecimal = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.search(SearchReq.builder().collectionName("book")
+                        .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                        .limit(10)
+                        .roundDecimal(-3).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, negativeRoundDecimal.getErrorCode());
+        Assertions.assertTrue(negativeRoundDecimal.getMessage().contains("round_decimal"));
     }
 
     @Test
-    void testHybridSearchRejectsNegativeLimit() {
-        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+    void testHybridSearchRejectsInvalidLimitAndRoundDecimal() {
+        MilvusClientException negativeLimit = Assertions.assertThrows(MilvusClientException.class,
                 () -> client_v2.hybridSearch(HybridSearchReq.builder().collectionName("book").limit(-1).build()));
-        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, negativeLimit.getErrorCode());
+
+        MilvusClientException zeroLimit = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.hybridSearch(HybridSearchReq.builder().collectionName("book").limit(0).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, zeroLimit.getErrorCode());
+
+        MilvusClientException outOfRange = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.hybridSearch(HybridSearchReq.builder().collectionName("book")
+                        .limit(10)
+                        .roundDecimal(7).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, outOfRange.getErrorCode());
+        Assertions.assertTrue(outOfRange.getMessage().contains("round_decimal"));
     }
 
     @Test
@@ -1086,6 +1105,24 @@ class VectorTest extends BaseTest {
                         .ids(Collections.emptyList()).build()));
         Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
         Assertions.assertTrue(exception.getMessage().contains("must not be empty"));
+    }
+
+    @Test
+    void testDeleteRejectsNestedIds() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.delete(DeleteReq.builder().collectionName("book")
+                        .ids(Collections.singletonList(Collections.singletonList(1L))).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("nested lists are not allowed"));
+    }
+
+    @Test
+    void testDeleteRejectsNullElementInIds() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.delete(DeleteReq.builder().collectionName("book")
+                        .ids(Arrays.asList(1L, null)).build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("got: null"));
     }
 
     @Test
@@ -1151,6 +1188,20 @@ class VectorTest extends BaseTest {
         Assertions.assertNotNull(response);
         verify(futureStub).query(any(QueryRequest.class));
         verify(blockingStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
+    void testGetAsyncWithEmptyIdsReturnsEmptyWithoutRpc() throws Exception {
+        GetReq request = GetReq.builder()
+                .collectionName("book")
+                .ids(Collections.emptyList())
+                .build();
+
+        GetResp resp = client_v2.getAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(resp.getGetResults());
+        Assertions.assertTrue(resp.getGetResults().isEmpty());
+        verify(futureStub, never()).query(any(QueryRequest.class));
     }
 
     @Test

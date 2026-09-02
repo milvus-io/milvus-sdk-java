@@ -250,6 +250,104 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
+    void testCollectionSchemaVerifyRejectsNullFieldSchemaList() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(null)
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("Schema fields cannot be null"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsNullPrimaryKeyType() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(Collections.singletonList(
+                        CreateCollectionReq.FieldSchema.builder().name("id").isPrimaryKey(Boolean.TRUE).build()))
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("Primary key field data type is required"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsNullPartitionKeyType() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(Arrays.asList(
+                        CreateCollectionReq.FieldSchema.builder().name("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build(),
+                        CreateCollectionReq.FieldSchema.builder().name("pk").isPartitionKey(Boolean.TRUE).build()))
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("Partition key field data type is required"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsUnsupportedPartitionKeyType() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(Arrays.asList(
+                        CreateCollectionReq.FieldSchema.builder().name("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build(),
+                        CreateCollectionReq.FieldSchema.builder().name("pk").dataType(DataType.Float).isPartitionKey(Boolean.TRUE).build()))
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("Partition key data type must be Int64 or VarChar"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsNullClusteringKeyType() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(Arrays.asList(
+                        CreateCollectionReq.FieldSchema.builder().name("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build(),
+                        CreateCollectionReq.FieldSchema.builder().name("ck").isClusteringKey(Boolean.TRUE).build()))
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("Clustering key field data type is required"));
+    }
+
+    @Test
+    void testCollectionSchemaVerifyRejectsUnsupportedClusteringKeyType() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(Arrays.asList(
+                        CreateCollectionReq.FieldSchema.builder().name("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).build(),
+                        CreateCollectionReq.FieldSchema.builder().name("ck").dataType(DataType.Bool).isClusteringKey(Boolean.TRUE).build()))
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class, schema::verify);
+        Assertions.assertTrue(exception.getMessage().contains("Unsupported clustering key data type"));
+    }
+
+    @Test
+    void testCreateCollectionRejectsNullIdType() {
+        CreateCollectionReq req = CreateCollectionReq.builder()
+                .collectionName("test2")
+                .dimension(2)
+                .build();
+        req.setIdType(null);
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class,
+                () -> client_v2.createCollection(req));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("Primary key type is required"));
+    }
+
+    @Test
+    void testCreateCollectionRejectsUnsupportedIdType() {
+        CreateCollectionReq req = CreateCollectionReq.builder()
+                .collectionName("test2")
+                .dimension(2)
+                .idType(DataType.Float)
+                .build();
+
+        MilvusClientException exception = assertThrows(MilvusClientException.class,
+                () -> client_v2.createCollection(req));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("Primary key type must be Int64 or VarChar"));
+    }
+
+    @Test
     void testAddCollectionStructField() {
         AddCollectionStructFieldReq request = AddCollectionStructFieldReq.builder()
                 .databaseName("default")
