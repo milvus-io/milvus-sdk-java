@@ -91,4 +91,39 @@ class VectorUtilsTest {
 
         assertEquals(0, request.getFunctionScore().getFunctions(0).getParamsCount());
     }
+
+    @Test
+    void queryUsesDefaultConsistencyWhenConsistencyLevelNull() {
+        QueryRequest request = new VectorUtils().ConvertToGrpcQueryRequest(QueryReq.builder()
+                .collectionName("coll")
+                .filter("id > 0")
+                .build());
+        assertEquals(true, request.getUseDefaultConsistency());
+        assertEquals(1L, request.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void querySetsConsistencyLevelWhenProvided() {
+        QueryRequest request = new VectorUtils().ConvertToGrpcQueryRequest(QueryReq.builder()
+                .collectionName("coll")
+                .filter("id > 0")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        assertEquals(false, request.getUseDefaultConsistency());
+        assertEquals(ConsistencyLevel.STRONG.getCode(), request.getConsistencyLevelValue());
+        assertEquals(0L, request.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void querySessionConsistencyUsesCachedTimestamp() {
+        CollectionTsCache.getInstance().set("host-a:19530", "db", "coll", 200L);
+        VectorUtils utils = new VectorUtils();
+        utils.setEndpoint("host-a:19530");
+        utils.setCurrentDbName("db");
+        QueryRequest request = utils.ConvertToGrpcQueryRequest(QueryReq.builder()
+                .collectionName("coll")
+                .consistencyLevel(ConsistencyLevel.SESSION)
+                .build());
+        assertEquals(200L, request.getGuaranteeTimestamp());
+    }
 }

@@ -93,6 +93,14 @@ public class CollectionService extends BaseService {
                 .setShardsNum(request.getNumShards())
                 .setConsistencyLevelValue(request.getConsistencyLevel().getCode());
 
+        List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
+        if (CollectionUtils.isNotEmpty(propertiesList)) {
+            propertiesList.forEach(builder::addProperties);
+        }
+        if (request.getNumPartitions() != null) {
+            builder.setNumPartitions(request.getNumPartitions());
+        }
+
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }

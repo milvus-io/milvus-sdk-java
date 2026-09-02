@@ -325,6 +325,11 @@ public class MilvusClientV2Test extends BaseTest {
                 // some method accepts Object as input such as AddFieldReq.defaultValue
                 Long obj = random.nextLong();
                 randomValues.put(field.getName(), obj);
+            } else if (fieldType == CreateCollectionReq.Function.class
+                    || fieldType == CreateCollectionReq.FieldSchema.class) {
+                // server-assigned read-only models with getter-only fields; constructed
+                // internally by describe_collection, so do not recurse into their builders
+                randomValues.put(field.getName(), null);
             } else {
                 // recursive construct member by builder
                 Object obj = checkGetAndSet(fieldType, config);
@@ -448,7 +453,11 @@ public class MilvusClientV2Test extends BaseTest {
 
             Object temp = method.invoke(callIntance);
             System.out.println("check getter value for method: " + field.getName());
-            if (temp instanceof Boolean || temp instanceof String || temp instanceof Number ||
+            if (temp == null) {
+                // embedded server-assigned members (Function/FieldSchema) are constructed as null;
+                // verify the round-trip is null rather than hitting temp.getClass() below
+                Assertions.assertNull(randomValues.get(field.getName()));
+            } else if (temp instanceof Boolean || temp instanceof String || temp instanceof Number ||
                     temp instanceof List || temp instanceof Map || temp instanceof Enum) {
                 Assertions.assertEquals(temp, randomValues.get(field.getName()));
             } else if (!temp.getClass().isInterface() && !temp.getClass().isArray()) {
@@ -564,7 +573,14 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(CreateCollectionReq.class.getName(), config);
         config.clearIgnoredMethods();
         VerifyClass(CreateCollectionReq.CollectionSchema.class.getName(), config);
+        // Function's server-assigned fields (id/inputFieldIds/outputFieldIds) have getters and
+        // setters but no builder methods, so ignore them in the builder-member check and the
+        // getter round-trip check. (Embedded Function members are handled by randomCallMethod's
+        // recursion skip, independent of this list.)
+        config.setIgnoredMethods(Arrays.asList("id", "inputFieldIds", "outputFieldIds",
+                "getId", "getInputFieldIds", "getOutputFieldIds"));
         VerifyClass(CreateCollectionReq.Function.class.getName(), config);
+        config.clearIgnoredMethods();
         VerifyClass(CreateCollectionReq.StructFieldSchema.class.getName(), config);
         VerifyClass(DescribeCollectionReq.class.getName(), config);
         VerifyClass(DropCollectionFieldPropertiesReq.class.getName(), config);

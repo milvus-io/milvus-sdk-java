@@ -156,6 +156,7 @@ public class BaseTest {
                 .build();
         when(blockingStub.search(any())).thenReturn(searchResults);
         when(futureStub.search(any())).thenReturn(Futures.immediateFuture(searchResults));
+        when(blockingStub.hybridSearch(any())).thenReturn(searchResults);
         when(futureStub.hybridSearch(any())).thenReturn(Futures.immediateFuture(searchResults));
 
         // partition api

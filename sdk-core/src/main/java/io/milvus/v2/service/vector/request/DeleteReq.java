@@ -19,6 +19,8 @@
 
 package io.milvus.v2.service.vector.request;
 
+import io.milvus.v2.common.ConsistencyLevel;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ public class DeleteReq {
     private String partitionName;
     private String filter;
     private List<Object> ids;
+    private ConsistencyLevel consistencyLevel;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
@@ -47,6 +50,7 @@ public class DeleteReq {
         this.filter = builder.filter;
         this.ids = builder.ids;
         this.filterTemplateValues = builder.filterTemplateValues;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static DeleteReqBuilder builder() {
@@ -101,6 +105,14 @@ public class DeleteReq {
         this.filterTemplateValues = filterTemplateValues;
     }
 
+    public ConsistencyLevel getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+        this.consistencyLevel = consistencyLevel;
+    }
+
     @Override
     public String toString() {
         return "DeleteReq{" +
@@ -109,6 +121,7 @@ public class DeleteReq {
                 ", partitionName='" + partitionName + '\'' +
                 ", filter='" + filter + '\'' +
                 ", ids=" + ids +
+                ", consistencyLevel=" + consistencyLevel +
 //                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
@@ -120,6 +133,7 @@ public class DeleteReq {
         private String filter;
         private List<Object> ids;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
+        private ConsistencyLevel consistencyLevel;
 
         public DeleteReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -148,6 +162,11 @@ public class DeleteReq {
 
         public DeleteReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
+            return this;
+        }
+
+        public DeleteReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
             return this;
         }
 

@@ -19,6 +19,9 @@
 
 package io.milvus.v2.common;
 
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
+
 import java.util.Map;
 
 public class IndexParam {
@@ -31,7 +34,7 @@ public class IndexParam {
     // Constructor for builder
     private IndexParam(IndexParamBuilder builder) {
         if (builder.fieldName == null) {
-            throw new NullPointerException("fieldName cannot be null");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "fieldName cannot be null");
         }
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
@@ -68,7 +71,7 @@ public class IndexParam {
     // Setters
     public void setFieldName(String fieldName) {
         if (fieldName == null) {
-            throw new NullPointerException("fieldName cannot be null");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "fieldName cannot be null");
         }
         this.fieldName = fieldName;
     }
@@ -110,7 +113,7 @@ public class IndexParam {
 
         public IndexParamBuilder fieldName(String fieldName) {
             if (fieldName == null) {
-                throw new NullPointerException("fieldName cannot be null");
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "fieldName cannot be null");
             }
             this.fieldName = fieldName;
             return this;

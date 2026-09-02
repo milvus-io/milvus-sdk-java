@@ -41,8 +41,11 @@ public class DescribeCollectionResp {
     private CreateCollectionReq.CollectionSchema collectionSchema;
     private Long createTime;
     private Long createUtcTime;
+    private Long updateTimestamp;
     private ConsistencyLevel consistencyLevel;
+    private String consistencyLevelName;
     private Integer shardsNum;
+    private List<String> aliases;
     private final Map<String, String> properties;
 
     private DescribeCollectionResp(DescribeCollectionRespBuilder builder) {
@@ -59,8 +62,11 @@ public class DescribeCollectionResp {
         this.collectionSchema = builder.collectionSchema;
         this.createTime = builder.createTime;
         this.createUtcTime = builder.createUtcTime;
+        this.updateTimestamp = builder.updateTimestamp;
         this.consistencyLevel = builder.consistencyLevel;
+        this.consistencyLevelName = builder.consistencyLevelName;
         this.shardsNum = builder.shardsNum;
+        this.aliases = builder.aliases != null ? builder.aliases : new ArrayList<>();
         this.properties = builder.properties != null ? builder.properties : new HashMap<>();
     }
 
@@ -121,12 +127,24 @@ public class DescribeCollectionResp {
         return createUtcTime;
     }
 
+    public Long getUpdateTimestamp() {
+        return updateTimestamp;
+    }
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
 
+    public String getConsistencyLevelName() {
+        return consistencyLevelName;
+    }
+
     public Integer getShardsNum() {
         return shardsNum;
+    }
+
+    public List<String> getAliases() {
+        return aliases;
     }
 
     public Map<String, String> getProperties() {
@@ -186,12 +204,24 @@ public class DescribeCollectionResp {
         this.createUtcTime = createUtcTime;
     }
 
+    public void setUpdateTimestamp(Long updateTimestamp) {
+        this.updateTimestamp = updateTimestamp;
+    }
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
 
+    public void setConsistencyLevelName(String consistencyLevelName) {
+        this.consistencyLevelName = consistencyLevelName;
+    }
+
     public void setShardsNum(Integer shardsNum) {
         this.shardsNum = shardsNum;
+    }
+
+    public void setAliases(List<String> aliases) {
+        this.aliases = aliases;
     }
 
     @Override
@@ -210,8 +240,11 @@ public class DescribeCollectionResp {
                 ", collectionSchema=" + collectionSchema +
                 ", createTime=" + createTime +
                 ", createUtcTime=" + createUtcTime +
+                ", updateTimestamp=" + updateTimestamp +
                 ", consistencyLevel=" + consistencyLevel +
+                ", consistencyLevelName='" + consistencyLevelName + '\'' +
                 ", shardsNum=" + shardsNum +
+                ", aliases=" + aliases +
                 ", properties=" + properties +
                 '}';
     }
@@ -230,8 +263,11 @@ public class DescribeCollectionResp {
         private CreateCollectionReq.CollectionSchema collectionSchema;
         private Long createTime;
         private Long createUtcTime;
+        private Long updateTimestamp;
         private ConsistencyLevel consistencyLevel;
+        private String consistencyLevelName;
         private Integer shardsNum;
+        private List<String> aliases;
         private Map<String, String> properties;
 
         public DescribeCollectionRespBuilder collectionName(String collectionName) {
@@ -299,13 +335,28 @@ public class DescribeCollectionResp {
             return this;
         }
 
+        public DescribeCollectionRespBuilder updateTimestamp(Long updateTimestamp) {
+            this.updateTimestamp = updateTimestamp;
+            return this;
+        }
+
         public DescribeCollectionRespBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
+        public DescribeCollectionRespBuilder consistencyLevelName(String consistencyLevelName) {
+            this.consistencyLevelName = consistencyLevelName;
+            return this;
+        }
+
         public DescribeCollectionRespBuilder shardsNum(Integer shardsNum) {
             this.shardsNum = shardsNum;
+            return this;
+        }
+
+        public DescribeCollectionRespBuilder aliases(List<String> aliases) {
+            this.aliases = aliases;
             return this;
         }
 
