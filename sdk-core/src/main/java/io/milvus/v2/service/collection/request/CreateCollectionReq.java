@@ -22,6 +22,7 @@ package io.milvus.v2.service.collection.request;
 import com.google.gson.JsonObject;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.exception.ParamException;
+import org.apache.commons.lang3.StringUtils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -904,6 +905,104 @@ public class CreateCollectionReq {
          */
         public static CollectionSchemaBuilder builder() {
             return new CollectionSchemaBuilder();
+        }
+
+        /**
+         * Validates the schema and detects obvious problems, mirroring pymilvus
+         * {@code CollectionSchema.verify()}:
+         * exactly one primary key whose type is Int64 or VarChar; a partition key that is not
+         * the primary key and whose type is Int64 or VarChar; a clustering key whose type is in
+         * {Int8, Int16, Int32, Int64, Float, Double, VarChar, FloatVector}; and auto-id allowed
+         * only on the primary key. External collections skip primary/partition/clustering key
+         * validation.
+         *
+         * @throws MilvusClientException if the schema is invalid
+         */
+        public void verify() {
+            if (StringUtils.isNotEmpty(externalSource)) {
+                return;
+            }
+            if (fieldSchemaList == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Schema fields cannot be null");
+            }
+
+            CreateCollectionReq.FieldSchema primaryField = null;
+            CreateCollectionReq.FieldSchema partitionKeyField = null;
+            CreateCollectionReq.FieldSchema clusteringKeyField = null;
+            for (CreateCollectionReq.FieldSchema field : fieldSchemaList) {
+                if (Boolean.TRUE.equals(field.getIsPrimaryKey())) {
+                    if (primaryField != null) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "There are more than one primary key, field name = " + primaryField.getName()
+                                        + ", " + field.getName());
+                    }
+                    primaryField = field;
+                }
+                if (Boolean.TRUE.equals(field.getIsPartitionKey())) {
+                    if (partitionKeyField != null) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "There are more than one partition key, field name = " + partitionKeyField.getName()
+                                        + ", " + field.getName());
+                    }
+                    partitionKeyField = field;
+                }
+                if (Boolean.TRUE.equals(field.getIsClusteringKey())) {
+                    if (clusteringKeyField != null) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "There are more than one clustering key, field name = " + clusteringKeyField.getName()
+                                        + ", " + field.getName());
+                    }
+                    clusteringKeyField = field;
+                }
+                if (Boolean.TRUE.equals(field.getAutoID()) && !Boolean.TRUE.equals(field.getIsPrimaryKey())) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "auto_id is only allowed on primary key field, field name = " + field.getName());
+                }
+            }
+
+            if (primaryField == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Primary key field is required");
+            }
+            DataType primaryType = primaryField.getDataType();
+            if (primaryType == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Primary key field data type is required, field name = " + primaryField.getName());
+            }
+            if (primaryType != DataType.Int64 && primaryType != DataType.VarChar) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Primary key data type must be Int64 or VarChar, got: " + primaryType.name());
+            }
+
+            if (partitionKeyField != null) {
+                if (partitionKeyField.getName().equals(primaryField.getName())) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Partition key field cannot be the primary key field: " + partitionKeyField.getName());
+                }
+                DataType partitionType = partitionKeyField.getDataType();
+                if (partitionType == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Partition key field data type is required, field name = " + partitionKeyField.getName());
+                }
+                if (partitionType != DataType.Int64 && partitionType != DataType.VarChar) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Partition key data type must be Int64 or VarChar, got: " + partitionType.name());
+                }
+            }
+
+            if (clusteringKeyField != null) {
+                DataType clusteringType = clusteringKeyField.getDataType();
+                if (clusteringType == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Clustering key field data type is required, field name = " + clusteringKeyField.getName());
+                }
+                if (clusteringType != DataType.Int8 && clusteringType != DataType.Int16
+                        && clusteringType != DataType.Int32 && clusteringType != DataType.Int64
+                        && clusteringType != DataType.Float && clusteringType != DataType.Double
+                        && clusteringType != DataType.VarChar && clusteringType != DataType.FloatVector) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Unsupported clustering key data type: " + clusteringType.name());
+                }
+            }
         }
 
         public static class CollectionSchemaBuilder {
