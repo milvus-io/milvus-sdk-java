@@ -1,5 +1,20 @@
 # Changelog
 
+## milvus-sdk-java 2.6.25 (2026-09-03)
+
+### Improvement
+- Surface describeCollection aliases, consistency level, namespace, schema version, update timestamp, and field/function IDs
+- Expose dbName in listAliases and collectionName in getQuerySegmentInfo
+- Return empty results without issuing an RPC for empty insert/upsert/get input
+- Support load priority and target size unit in compact
+- Map dbName into privilege grants for grant/revoke privilege
+- Validate createCollection numeric bounds, index field names, and query limits
+- Decode cost from status extra info for insert/upsert/delete
+- Guard alterIndexProperties against null properties
+- Send num_partitions/properties on fast-path createCollection
+- Reject null index fieldName and empty index_params with checked errors
+- Enforce createCollection numeric bounds; guard alterIndexProperties null properties; set delete consistency level
+
 ## milvus-sdk-java 2.6.24 (2026-08-21)
 ### Feature
 - Support async DQL interfaces for MilvusClientV2
