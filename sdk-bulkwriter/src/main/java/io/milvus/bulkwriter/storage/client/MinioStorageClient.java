@@ -21,6 +21,7 @@ package io.milvus.bulkwriter.storage.client;
 
 import com.google.common.collect.Multimap;
 import io.milvus.bulkwriter.common.clientenum.CloudStorage;
+import io.milvus.bulkwriter.connect.S3ConnectParam;
 import io.milvus.bulkwriter.model.CompleteMultipartUploadOutputModel;
 import io.milvus.bulkwriter.storage.StorageClient;
 import io.milvus.exception.ParamException;
@@ -60,6 +61,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
 
@@ -87,6 +89,25 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
     }
 
     /**
+     * Creates a {@link MinioStorageClient} from a full {@link S3ConnectParam}. When the param
+     * carries an external credentials provider (e.g. AWS web identity or GCP workload identity),
+     * the provider is used so credentials refresh transparently while the writer is running;
+     * otherwise the static accessKey/secretKey/sessionToken are used as before.
+     *
+     * <p>For GCP the provider's {@code fetch()} is invoked per HTTP request (the bearer token
+     * is attached by an interceptor), so providers must cache credentials internally, as the
+     * minio {@link Provider} contract requires.
+     *
+     * @param connectParam the connection parameters
+     * @return the configured {@link MinioStorageClient}
+     */
+    public static MinioStorageClient getStorageClient(S3ConnectParam connectParam) {
+        return getStorageClient(connectParam.getCloudName(), connectParam.getEndpoint(),
+                connectParam.getAccessKey(), connectParam.getSecretKey(), connectParam.getSessionToken(),
+                connectParam.getRegion(), connectParam.getHttpClient(), connectParam.getCredentialsProvider());
+    }
+
+    /**
      * Creates a {@link MinioStorageClient} for the given cloud storage provider.
      *
      * @param cloudName the cloud storage name, used to detect GCP and Tencent Cloud behavior
@@ -107,15 +128,36 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
                                                       String sessionToken,
                                                       String region,
                                                       OkHttpClient httpClient) {
+        return getStorageClient(cloudName, endpoint, accessKey, secretKey, sessionToken, region,
+                httpClient, null);
+    }
+
+    // Shared implementation. When credentialsProvider is set it is used so credentials refresh
+    // transparently while the writer runs (for GCP the bearer token is read from
+    // Credentials.sessionToken() per request, so the provider must cache internally per the
+    // minio Provider contract); otherwise the static accessKey/secretKey/sessionToken apply.
+    private static MinioStorageClient getStorageClient(String cloudName,
+                                                      String endpoint,
+                                                      String accessKey,
+                                                      String secretKey,
+                                                      String sessionToken,
+                                                      String region,
+                                                      OkHttpClient httpClient,
+                                                      Provider credentialsProvider) {
         boolean closeHttpClient = httpClient == null;
         MinioAsyncClient.Builder minioClientBuilder = MinioAsyncClient.builder()
                 .endpoint(endpoint);
 
-        if (CloudStorage.isGcpCloud(cloudName) && StringUtils.isNotEmpty(sessionToken)) {
-            httpClient = buildAuthorizedClient(httpClient, sessionToken);
+        if (CloudStorage.isGcpCloud(cloudName)
+                && (credentialsProvider != null || StringUtils.isNotEmpty(sessionToken))) {
+            // the GCS XML API authenticates with a bearer header instead of signing; the
+            // bearer token rides in Credentials.sessionToken per the established convention
+            httpClient = buildAuthorizedClient(httpClient, gcpBearerTokenSource(credentialsProvider, sessionToken));
         } else {
-            Provider credentialsProvider = new StaticProvider(accessKey, secretKey, sessionToken);
-            minioClientBuilder.credentialsProvider(credentialsProvider);
+            Provider provider = credentialsProvider != null
+                    ? credentialsProvider
+                    : new StaticProvider(accessKey, secretKey, sessionToken);
+            minioClientBuilder.credentialsProvider(provider);
         }
 
         if (StringUtils.isNotEmpty(region)) {
@@ -134,11 +176,25 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         return new MinioStorageClient(minioClient, closeHttpClient);
     }
 
-    private static OkHttpClient buildAuthorizedClient(OkHttpClient httpClient, String sessionToken) {
+    private static Supplier<String> gcpBearerTokenSource(Provider credentialsProvider, String sessionToken) {
+        if (credentialsProvider != null) {
+            return () -> {
+                String token = credentialsProvider.fetch().sessionToken();
+                if (StringUtils.isEmpty(token)) {
+                    throw new IllegalStateException("credentials provider returned no session token;"
+                            + " for GCP the bearer token must be carried in Credentials.sessionToken()");
+                }
+                return token;
+            };
+        }
+        return () -> sessionToken;
+    }
+
+    private static OkHttpClient buildAuthorizedClient(OkHttpClient httpClient, Supplier<String> tokenSupplier) {
         Interceptor authInterceptor = chain -> {
             Request original = chain.request();
             Request requestWithAuth = original.newBuilder()
-                    .header("Authorization", "Bearer " + sessionToken)
+                    .header("Authorization", "Bearer " + tokenSupplier.get())
                     .build();
             return chain.proceed(requestWithAuth);
         };
