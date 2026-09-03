@@ -147,6 +147,60 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testInsertWithEmptyDataReturnsEmptyWithoutRpc() {
+        InsertResp resp = client_v2.insert(InsertReq.builder()
+                .collectionName("test")
+                .data(Collections.emptyList())
+                .build());
+
+        Assertions.assertEquals(0L, resp.getInsertCnt());
+        Assertions.assertTrue(resp.getPrimaryKeys().isEmpty());
+        Assertions.assertEquals(0L, resp.getCost());
+        verify(blockingStub, never()).insert(any(InsertRequest.class));
+        verify(blockingStub, never()).describeCollection(any());
+    }
+
+    @Test
+    void testInsertWithNullDataRejectsWithoutRpc() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.insert(InsertReq.builder()
+                        .collectionName("test")
+                        .data(null)
+                        .build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("data cannot be null"));
+        verify(blockingStub, never()).insert(any(InsertRequest.class));
+        verify(blockingStub, never()).describeCollection(any());
+    }
+
+    @Test
+    void testUpsertWithEmptyDataReturnsEmptyWithoutRpc() {
+        UpsertResp resp = client_v2.upsert(UpsertReq.builder()
+                .collectionName("test")
+                .data(Collections.emptyList())
+                .build());
+
+        Assertions.assertEquals(0L, resp.getUpsertCnt());
+        Assertions.assertTrue(resp.getPrimaryKeys().isEmpty());
+        Assertions.assertEquals(0L, resp.getCost());
+        verify(blockingStub, never()).upsert(any(UpsertRequest.class));
+        verify(blockingStub, never()).describeCollection(any());
+    }
+
+    @Test
+    void testUpsertWithNullDataRejectsWithoutRpc() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.upsert(UpsertReq.builder()
+                        .collectionName("test")
+                        .data(null)
+                        .build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("data cannot be null"));
+        verify(blockingStub, never()).upsert(any(UpsertRequest.class));
+        verify(blockingStub, never()).describeCollection(any());
+    }
+
+    @Test
     void testDeleteExposesCost() {
         MutationResult result = MutationResult.newBuilder()
                 .setDeleteCnt(2L)

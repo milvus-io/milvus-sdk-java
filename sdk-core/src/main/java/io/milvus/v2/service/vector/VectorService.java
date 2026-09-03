@@ -129,6 +129,19 @@ public class VectorService extends BaseService {
      * @return the insert response
      */
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
+        // A null data list is a programming error: reject it before issuing any RPC.
+        if (request.getData() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Insert data cannot be null");
+        }
+        // An empty data list is a no-op: return an empty result without issuing the RPC
+        // (aligned with pymilvus, which short-circuits empty data to an empty insert result).
+        if (request.getData().isEmpty()) {
+            return InsertResp.builder()
+                    .InsertCnt(0L)
+                    .primaryKeys(new ArrayList<>())
+                    .cost(0L)
+                    .build();
+        }
         return insert(blockingStub, request, true);
     }
 
@@ -198,6 +211,19 @@ public class VectorService extends BaseService {
      * @return the upsert response
      */
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
+        // A null data list is a programming error: reject it before issuing any RPC.
+        if (request.getData() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Upsert data cannot be null");
+        }
+        // An empty data list is a no-op: return an empty result without issuing the RPC
+        // (aligned with pymilvus, which short-circuits empty data to an empty upsert result).
+        if (request.getData().isEmpty()) {
+            return UpsertResp.builder()
+                    .upsertCnt(0L)
+                    .primaryKeys(new ArrayList<>())
+                    .cost(0L)
+                    .build();
+        }
         return upsert(blockingStub, request, true);
     }
 
