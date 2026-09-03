@@ -35,6 +35,8 @@ import io.milvus.param.Constant;
 import io.milvus.v2.exception.DataNotMatchException;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
+
+import static io.milvus.param.Constant.MAX_BATCH_SIZE;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
@@ -731,6 +733,10 @@ public class VectorService extends BaseService {
      */
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request, String clusterId) {
+        if (request.getBatchSize() < 1 || request.getBatchSize() > MAX_BATCH_SIZE) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "batch_size must be in [1, " + MAX_BATCH_SIZE + "], got: " + request.getBatchSize());
+        }
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
@@ -809,6 +815,7 @@ public class VectorService extends BaseService {
         if (request.getFilter() != null && request.getIds() != null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
+        validateDeleteIds(request.getIds());
 
         if (request.getFilter() == null) {
             DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
@@ -836,10 +843,39 @@ public class VectorService extends BaseService {
         }
 
         return DeleteResp.builder()
-                .deleteCnt(response.getDeleteCnt())
+                 .deleteCnt(response.getDeleteCnt())
                 .primaryKeys(primaryKeys)
                 .cost(getCost(response.getStatus()))
                 .build();
+    }
+
+    /**
+     * Validates that every delete id is a flat scalar primary key (integer or string).
+     * Nested lists are rejected because {@code getExprById} renders them via
+     * {@code List.toString()}, producing an invalid expression. An empty id list is
+     * also rejected, matching pymilvus {@code is_legal_ids}.
+     *
+     * @param ids the ids to validate
+     */
+    private static void validateDeleteIds(List<Object> ids) {
+        if (ids == null) {
+            return;
+        }
+        if (ids.isEmpty()) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Delete ids must not be empty");
+        }
+        for (Object id : ids) {
+            if (id instanceof List) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Delete ids must be a flat list of integers or strings; nested lists are not allowed");
+            }
+            if (!(id instanceof Long) && !(id instanceof Integer) && !(id instanceof Short)
+                    && !(id instanceof Byte) && !(id instanceof String)) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Delete ids must be integers or strings, got: " + (id == null ? "null" : id.getClass().getName()));
+            }
+        }
     }
 
     /**
@@ -868,6 +904,11 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
         logger.debug(title);
+        // An empty id list is a no-op: return an empty result without issuing the RPC
+        // (aligned with pymilvus, which short-circuits empty ids to []).
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            return GetResp.builder().getResults(new ArrayList<>()).build();
+        }
         // call query to get the result
         QueryResp queryResp = query(blockingStub, toQueryReq(request), clusterId);
 
@@ -892,6 +933,11 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
         logger.debug(title);
+        // An empty id list is a no-op: return an empty result without issuing the RPC
+        // (aligned with pymilvus, which short-circuits empty ids to []).
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            return CompletableFuture.completedFuture(GetResp.builder().getResults(new ArrayList<>()).build());
+        }
         final QueryReq queryReq;
         try {
             queryReq = toQueryReq(request);

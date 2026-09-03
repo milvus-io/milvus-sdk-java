@@ -22,16 +22,21 @@ package io.milvus.v2.service.cdc;
 import io.milvus.grpc.DumpMessagesRequest;
 import io.milvus.grpc.DumpMessagesResponse;
 import io.milvus.grpc.Status;
+import io.milvus.grpc.UpdateReplicateConfigurationRequest;
 import io.milvus.grpc.WALName;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.cdc.request.CrossClusterTopology;
 import io.milvus.v2.service.cdc.request.DumpMessagesReq;
 import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
+import io.milvus.v2.service.cdc.request.MilvusCluster;
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
+import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
 import io.milvus.v2.service.cdc.response.DumpMessageInfo;
 import io.milvus.v2.service.cdc.response.DumpMessagesResp;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
+import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
 import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -107,6 +112,65 @@ public class CDCServiceTest extends BaseTest {
         assertEquals(1, replicateConfiguration.getCrossClusterTopologies().size());
         assertEquals("source_cluster", replicateConfiguration.getCrossClusterTopologies().get(0).getSourceClusterId());
         assertEquals("target_cluster", replicateConfiguration.getCrossClusterTopologies().get(0).getTargetClusterId());
+    }
+
+    @Test
+    void testUpdateReplicateConfigurationValidation() {
+        MilvusClientException nullConfig = assertThrows(MilvusClientException.class,
+                () -> client_v2.updateReplicateConfiguration(UpdateReplicateConfigurationReq.builder().build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, nullConfig.getErrorCode());
+
+        MilvusClientException emptyClusters = assertThrows(MilvusClientException.class,
+                () -> client_v2.updateReplicateConfiguration(UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder().clusters(new ArrayList<>()).build())
+                        .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, emptyClusters.getErrorCode());
+
+        MilvusClientException missingClusterId = assertThrows(MilvusClientException.class,
+                () -> client_v2.updateReplicateConfiguration(UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder()
+                                .clusters(Arrays.asList(MilvusCluster.builder().uri("http://source.example.com:19530").build()))
+                                .build())
+                        .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, missingClusterId.getErrorCode());
+
+        MilvusClientException missingUri = assertThrows(MilvusClientException.class,
+                () -> client_v2.updateReplicateConfiguration(UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder()
+                                .clusters(Arrays.asList(MilvusCluster.builder().clusterId("source_cluster").build()))
+                                .build())
+                        .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, missingUri.getErrorCode());
+
+        MilvusClientException missingTopologyTarget = assertThrows(MilvusClientException.class,
+                () -> client_v2.updateReplicateConfiguration(UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder()
+                                .clusters(Arrays.asList(MilvusCluster.builder().clusterId("source_cluster").uri("http://source.example.com:19530").build()))
+                                .crossClusterTopologies(Arrays.asList(CrossClusterTopology.builder().sourceClusterId("source_cluster").build()))
+                                .build())
+                        .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, missingTopologyTarget.getErrorCode());
+    }
+
+    @Test
+    void testUpdateReplicateConfigurationSuccess() {
+        UpdateReplicateConfigurationResp resp = client_v2.updateReplicateConfiguration(UpdateReplicateConfigurationReq.builder()
+                .replicateConfiguration(ReplicateConfiguration.builder()
+                        .clusters(Arrays.asList(
+                                MilvusCluster.builder().clusterId("source_cluster").uri("http://source.example.com:19530").build(),
+                                MilvusCluster.builder().clusterId("target_cluster").uri("http://target.example.com:19530").build()))
+                        .crossClusterTopologies(Arrays.asList(CrossClusterTopology.builder()
+                                .sourceClusterId("source_cluster")
+                                .targetClusterId("target_cluster")
+                                .build()))
+                        .build())
+                .build());
+
+        assertNotNull(resp);
+        ArgumentCaptor<UpdateReplicateConfigurationRequest> captor = ArgumentCaptor.forClass(UpdateReplicateConfigurationRequest.class);
+        verify(blockingStub).updateReplicateConfiguration(captor.capture());
+        assertEquals(2, captor.getValue().getReplicateConfiguration().getClustersCount());
+        assertEquals("source_cluster", captor.getValue().getReplicateConfiguration().getCrossClusterTopology(0).getSourceClusterId());
     }
 
     @Test

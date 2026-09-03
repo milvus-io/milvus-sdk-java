@@ -34,8 +34,10 @@ import io.milvus.grpc.WALName;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
+import io.milvus.v2.service.cdc.request.CrossClusterTopology;
 import io.milvus.v2.service.cdc.request.DumpMessagesReq;
 import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
+import io.milvus.v2.service.cdc.request.MilvusCluster;
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
 import io.milvus.v2.service.cdc.response.DumpMessageInfo;
@@ -43,7 +45,10 @@ import io.milvus.v2.service.cdc.response.DumpMessagesResp;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
 import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -107,8 +112,29 @@ public class CDCService extends BaseService {
      * @return the update replicate configuration response
      */
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateReplicateConfigurationReq requestParam) {
+        ReplicateConfiguration configuration = requestParam.getReplicateConfiguration();
+        if (configuration == null || CollectionUtils.isEmpty(configuration.getClusters())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "replicate configuration must contain at least one cluster");
+        }
+        for (MilvusCluster cluster : configuration.getClusters()) {
+            if (StringUtils.isEmpty(cluster.getClusterId())) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "clusterId cannot be null or empty");
+            }
+            if (StringUtils.isEmpty(cluster.getUri())) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "connection uri cannot be null or empty");
+            }
+        }
+        List<CrossClusterTopology> topologies = configuration.getCrossClusterTopologies();
+        if (topologies != null) {
+            for (CrossClusterTopology topology : topologies) {
+                if (StringUtils.isEmpty(topology.getSourceClusterId()) || StringUtils.isEmpty(topology.getTargetClusterId())) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "cross cluster topology requires both source_cluster_id and target_cluster_id");
+                }
+            }
+        }
         UpdateReplicateConfigurationRequest request = UpdateReplicateConfigurationRequest.newBuilder()
-                .setReplicateConfiguration(requestParam.getReplicateConfiguration().toGRPC())
+                .setReplicateConfiguration(configuration.toGRPC())
                 .setForcePromote(requestParam.isForcePromote())
                 .build();
 
