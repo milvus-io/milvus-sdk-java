@@ -398,11 +398,78 @@ public class VectorService extends BaseService {
     private QueryResp convertQueryResponse(String title, QueryResults response) {
         rpcUtils.handleResponse(title, response.getStatus());
 
-        return QueryResp.builder()
+        QueryResp.QueryRespBuilder respBuilder = QueryResp.builder()
                 .queryResults(convertUtils.getEntities(response))
                 .sessionTs(response.getSessionTs())
-                .cost(getCost(response.getStatus()))
-                .build();
+                .cost(getCost(response.getStatus()));
+        fillQueryRespFromExtraInfo(respBuilder, response.getStatus().getExtraInfoMap());
+        return respBuilder.build();
+    }
+
+    private void fillQueryRespFromExtraInfo(QueryResp.QueryRespBuilder respBuilder, java.util.Map<String, String> extraInfo) {
+        ScanMetrics metrics = parseScanMetrics(extraInfo);
+        if (metrics.scannedRemoteBytes != null) {
+            respBuilder.scannedRemoteBytes(metrics.scannedRemoteBytes);
+        }
+        if (metrics.scannedTotalBytes != null) {
+            respBuilder.scannedTotalBytes(metrics.scannedTotalBytes);
+        }
+        if (metrics.cacheHitRatio != null) {
+            respBuilder.cacheHitRatio(metrics.cacheHitRatio);
+        }
+    }
+
+    private void fillSearchRespFromExtraInfo(SearchResp.SearchRespBuilder respBuilder, java.util.Map<String, String> extraInfo) {
+        ScanMetrics metrics = parseScanMetrics(extraInfo);
+        if (metrics.scannedRemoteBytes != null) {
+            respBuilder.scannedRemoteBytes(metrics.scannedRemoteBytes);
+        }
+        if (metrics.scannedTotalBytes != null) {
+            respBuilder.scannedTotalBytes(metrics.scannedTotalBytes);
+        }
+        if (metrics.cacheHitRatio != null) {
+            respBuilder.cacheHitRatio(metrics.cacheHitRatio);
+        }
+    }
+
+    private ScanMetrics parseScanMetrics(java.util.Map<String, String> extraInfo) {
+        ScanMetrics metrics = new ScanMetrics();
+        metrics.scannedRemoteBytes = parseLongMetric(extraInfo, "scanned_remote_bytes");
+        metrics.scannedTotalBytes = parseLongMetric(extraInfo, "scanned_total_bytes");
+        metrics.cacheHitRatio = parseFloatMetric(extraInfo, "cache_hit_ratio");
+        return metrics;
+    }
+
+    private Long parseLongMetric(java.util.Map<String, String> extraInfo, String key) {
+        String rawValue = extraInfo.get(key);
+        if (rawValue == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(rawValue);
+        } catch (NumberFormatException e) {
+            logger.warn("Failed to parse {} as long: {}", key, rawValue);
+            return null;
+        }
+    }
+
+    private Float parseFloatMetric(java.util.Map<String, String> extraInfo, String key) {
+        String rawValue = extraInfo.get(key);
+        if (rawValue == null) {
+            return null;
+        }
+        try {
+            return Float.parseFloat(rawValue);
+        } catch (NumberFormatException e) {
+            logger.warn("Failed to parse {} as float: {}", key, rawValue);
+            return null;
+        }
+    }
+
+    private static class ScanMetrics {
+        private Long scannedRemoteBytes;
+        private Long scannedTotalBytes;
+        private Float cacheHitRatio;
     }
 
     private long getCost(Status status) {
@@ -724,18 +791,6 @@ public class VectorService extends BaseService {
         return target;
     }
 
-    private void fillSearchRespFromExtraInfo(SearchResp.SearchRespBuilder respBuilder, java.util.Map<String, String> extraInfo) {
-        if (extraInfo.containsKey("scanned_remote_bytes")) {
-            respBuilder.scannedRemoteBytes(Long.parseLong(extraInfo.get("scanned_remote_bytes")));
-        }
-        if (extraInfo.containsKey("scanned_total_bytes")) {
-            respBuilder.scannedTotalBytes(Long.parseLong(extraInfo.get("scanned_total_bytes")));
-        }
-        if (extraInfo.containsKey("cache_hit_ratio")) {
-            respBuilder.cacheHitRatio(Float.parseFloat(extraInfo.get("cache_hit_ratio")));
-        }
-    }
-
     /**
      * Creates a query iterator over the entities of the specified collection.
      *
@@ -933,13 +988,18 @@ public class VectorService extends BaseService {
         // An empty id list is a no-op: return an empty result without issuing the RPC
         // (aligned with pymilvus, which short-circuits empty ids to []).
         if (CollectionUtils.isEmpty(request.getIds())) {
-            return GetResp.builder().getResults(new ArrayList<>()).build();
+            return GetResp.builder().queryResults(new ArrayList<>()).cost(0L).build();
         }
         // call query to get the result
         QueryResp queryResp = query(blockingStub, toQueryReq(request), clusterId);
 
         return GetResp.builder()
-                .getResults(queryResp.getQueryResults())
+                .queryResults(queryResp.getQueryResults())
+                .sessionTs(queryResp.getSessionTs())
+                .cost(queryResp.getCost())
+                .scannedRemoteBytes(queryResp.getScannedRemoteBytes())
+                .scannedTotalBytes(queryResp.getScannedTotalBytes())
+                .cacheHitRatio(queryResp.getCacheHitRatio())
                 .build();
     }
 
@@ -962,7 +1022,7 @@ public class VectorService extends BaseService {
         // An empty id list is a no-op: return an empty result without issuing the RPC
         // (aligned with pymilvus, which short-circuits empty ids to []).
         if (CollectionUtils.isEmpty(request.getIds())) {
-            return CompletableFuture.completedFuture(GetResp.builder().getResults(new ArrayList<>()).build());
+            return CompletableFuture.completedFuture(GetResp.builder().queryResults(new ArrayList<>()).cost(0L).build());
         }
         final QueryReq queryReq;
         try {
@@ -974,7 +1034,12 @@ public class VectorService extends BaseService {
         return transformFuture(
                 queryAsync(futureStubSupplier, queryReq, clusterId, retryUtils),
                 queryResp -> GetResp.builder()
-                        .getResults(queryResp.getQueryResults())
+                        .queryResults(queryResp.getQueryResults())
+                        .sessionTs(queryResp.getSessionTs())
+                        .cost(queryResp.getCost())
+                        .scannedRemoteBytes(queryResp.getScannedRemoteBytes())
+                        .scannedTotalBytes(queryResp.getScannedTotalBytes())
+                        .cacheHitRatio(queryResp.getCacheHitRatio())
                         .build());
     }
 

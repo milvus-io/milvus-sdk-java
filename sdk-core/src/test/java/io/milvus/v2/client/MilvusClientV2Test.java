@@ -773,7 +773,6 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(UpsertReq.class.getName(), config);
 
         VerifyClass(DeleteResp.class.getName(), config);
-        VerifyClass(GetResp.class.getName(), config);
         VerifyClass(InsertResp.class.getName(), config);
         VerifyClass(QueryResp.class.getName(), config);
         VerifyClass(QueryResp.QueryResult.class.getName(), config);

@@ -31,11 +31,17 @@ public class QueryResp {
     private List<QueryResult> queryResults;
     private long sessionTs; // default eventually ts
     private Long cost;
+    private Long scannedRemoteBytes;
+    private Long scannedTotalBytes;
+    private Float cacheHitRatio;
 
-    private QueryResp(QueryRespBuilder builder) {
+    protected QueryResp(QueryRespBuilder builder) {
         this.queryResults = builder.queryResults;
         this.sessionTs = builder.sessionTs;
         this.cost = builder.cost;
+        this.scannedRemoteBytes = builder.scannedRemoteBytes;
+        this.scannedTotalBytes = builder.scannedTotalBytes;
+        this.cacheHitRatio = builder.cacheHitRatio;
     }
 
     /**
@@ -101,12 +107,69 @@ public class QueryResp {
         this.cost = cost;
     }
 
+    /**
+     * Returns the number of bytes scanned remotely during the query.
+     *
+     * @return the scanned remote bytes, or {@code null} if not reported by the server
+     */
+    public Long getScannedRemoteBytes() {
+        return scannedRemoteBytes;
+    }
+
+    /**
+     * Sets the number of bytes scanned remotely during the query.
+     *
+     * @param scannedRemoteBytes the scanned remote bytes
+     */
+    public void setScannedRemoteBytes(Long scannedRemoteBytes) {
+        this.scannedRemoteBytes = scannedRemoteBytes;
+    }
+
+    /**
+     * Returns the total number of bytes scanned during the query.
+     *
+     * @return the scanned total bytes, or {@code null} if not reported by the server
+     */
+    public Long getScannedTotalBytes() {
+        return scannedTotalBytes;
+    }
+
+    /**
+     * Sets the total number of bytes scanned during the query.
+     *
+     * @param scannedTotalBytes the scanned total bytes
+     */
+    public void setScannedTotalBytes(Long scannedTotalBytes) {
+        this.scannedTotalBytes = scannedTotalBytes;
+    }
+
+    /**
+     * Returns the cache hit ratio of the query.
+     *
+     * @return the cache hit ratio, or {@code null} if not reported by the server
+     */
+    public Float getCacheHitRatio() {
+        return cacheHitRatio;
+    }
+
+    /**
+     * Sets the cache hit ratio of the query.
+     *
+     * @param cacheHitRatio the cache hit ratio
+     */
+    public void setCacheHitRatio(Float cacheHitRatio) {
+        this.cacheHitRatio = cacheHitRatio;
+    }
+
     @Override
     public String toString() {
-        return "QueryResp{" +
+        return getClass().getSimpleName() + "{" +
                 "queryResults=" + queryResults +
                 ", sessionTs=" + sessionTs +
                 ", cost=" + cost +
+                ", scannedRemoteBytes=" + scannedRemoteBytes +
+                ", scannedTotalBytes=" + scannedTotalBytes +
+                ", cacheHitRatio=" + cacheHitRatio +
                 '}';
     }
 
@@ -114,6 +177,9 @@ public class QueryResp {
         private List<QueryResult> queryResults = new ArrayList<>();
         private long sessionTs = 1L; // default eventually ts
         private Long cost;
+        private Long scannedRemoteBytes;
+        private Long scannedTotalBytes;
+        private Float cacheHitRatio;
 
         /**
          * Sets the queried entities.
@@ -145,6 +211,39 @@ public class QueryResp {
          */
         public QueryRespBuilder cost(Long cost) {
             this.cost = cost;
+            return this;
+        }
+
+        /**
+         * Sets the number of bytes scanned remotely during the query.
+         *
+         * @param scannedRemoteBytes the scanned remote bytes
+         * @return this builder
+         */
+        public QueryRespBuilder scannedRemoteBytes(Long scannedRemoteBytes) {
+            this.scannedRemoteBytes = scannedRemoteBytes;
+            return this;
+        }
+
+        /**
+         * Sets the total number of bytes scanned during the query.
+         *
+         * @param scannedTotalBytes the scanned total bytes
+         * @return this builder
+         */
+        public QueryRespBuilder scannedTotalBytes(Long scannedTotalBytes) {
+            this.scannedTotalBytes = scannedTotalBytes;
+            return this;
+        }
+
+        /**
+         * Sets the cache hit ratio of the query.
+         *
+         * @param cacheHitRatio the cache hit ratio
+         * @return this builder
+         */
+        public QueryRespBuilder cacheHitRatio(Float cacheHitRatio) {
+            this.cacheHitRatio = cacheHitRatio;
             return this;
         }
 
