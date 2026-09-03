@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.exception.DataNotMatchException;
 import io.milvus.v2.exception.ErrorCode;
@@ -468,6 +469,7 @@ class DataUtilsTest {
                 .partitionName("partition")
                 .filter("id > {min_id} and tag in {tags}")
                 .filterTemplateValues(templateValues)
+                .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
 
         Assertions.assertEquals("db", request.getDbName());
@@ -476,6 +478,18 @@ class DataUtilsTest {
         Assertions.assertEquals("id > {min_id} and tag in {tags}", request.getExpr());
         Assertions.assertEquals(new HashSet<>(Arrays.asList("min_id", "tags")),
                 request.getExprTemplateValuesMap().keySet());
+        Assertions.assertEquals(io.milvus.grpc.ConsistencyLevel.Strong_VALUE, request.getConsistencyLevelValue());
+    }
+
+    @Test
+    void testConvertGrpcDeleteRequestWithoutConsistencyLevel() {
+        DeleteRequest request = new DataUtils().ConvertToGrpcDeleteRequest(DeleteReq.builder()
+                .databaseName("db")
+                .collectionName("collection")
+                .filter("id > 0")
+                .build());
+
+        Assertions.assertEquals(0, request.getConsistencyLevelValue());
     }
 
     @Test

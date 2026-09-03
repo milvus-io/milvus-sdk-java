@@ -1095,6 +1095,58 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testGetInheritsQueryRespMetadata() {
+        QueryResults queryResults = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "123")
+                        .putExtraInfo("scanned_remote_bytes", "456")
+                        .putExtraInfo("scanned_total_bytes", "789")
+                        .putExtraInfo("cache_hit_ratio", "0.5")
+                        .build())
+                .setSessionTs(888L)
+                .build();
+        when(blockingStub.query(any(QueryRequest.class))).thenReturn(queryResults);
+
+        GetReq request = GetReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .build();
+        GetResp resp = client_v2.get(request);
+
+        Assertions.assertTrue(resp instanceof QueryResp);
+        Assertions.assertEquals(888L, resp.getSessionTs());
+        Assertions.assertEquals(123L, resp.getCost());
+        Assertions.assertEquals(456L, resp.getScannedRemoteBytes());
+        Assertions.assertEquals(789L, resp.getScannedTotalBytes());
+        Assertions.assertEquals(0.5f, resp.getCacheHitRatio());
+        Assertions.assertSame(resp.getGetResults(), resp.getQueryResults());
+    }
+
+    @Test
+    void testGetIgnoresMalformedScanMetrics() {
+        QueryResults queryResults = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "123")
+                        .putExtraInfo("scanned_remote_bytes", "not-a-number")
+                        .putExtraInfo("cache_hit_ratio", "oops")
+                        .build())
+                .setSessionTs(1L)
+                .build();
+        when(blockingStub.query(any(QueryRequest.class))).thenReturn(queryResults);
+
+        GetReq request = GetReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .build();
+        GetResp resp = client_v2.get(request);
+
+        Assertions.assertEquals(123L, resp.getCost());
+        Assertions.assertNull(resp.getScannedRemoteBytes());
+        Assertions.assertNull(resp.getScannedTotalBytes());
+        Assertions.assertNull(resp.getCacheHitRatio());
+    }
+
+    @Test
     void testSearchRejectsNonPositiveLimitAndOutOfRangeRoundDecimal() {
         MilvusClientException negativeLimit = Assertions.assertThrows(MilvusClientException.class,
                 () -> client_v2.search(SearchReq.builder().collectionName("book")

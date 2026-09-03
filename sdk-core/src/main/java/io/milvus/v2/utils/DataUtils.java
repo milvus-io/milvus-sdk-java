@@ -676,6 +676,9 @@ public class DataUtils {
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
+        if (request.getConsistencyLevel() != null) {
+            builder.setConsistencyLevelValue(request.getConsistencyLevel().getCode());
+        }
         return builder.build();
     }
 

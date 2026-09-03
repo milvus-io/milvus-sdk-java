@@ -125,6 +125,14 @@ public class CollectionService extends BaseService {
             builder.setDbName(dbName);
         }
 
+        List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
+        if (CollectionUtils.isNotEmpty(propertiesList)) {
+            propertiesList.forEach(builder::addProperties);
+        }
+        if (request.getNumPartitions() != null) {
+            builder.setNumPartitions(request.getNumPartitions());
+        }
+
         Status status = blockingStub.createCollection(builder.build());
         rpcUtils.handleResponse(title, status);
         invalidateSchemaCache(dbName, collectionName);
@@ -880,7 +888,7 @@ public class CollectionService extends BaseService {
         Map<String, String> stats = new HashMap<>();
         response.getStatsList().forEach(stat -> stats.put(stat.getKey(), stat.getValue()));
         GetCollectionStatsResp getCollectionStatsResp = GetCollectionStatsResp.builder()
-                .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count")).map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
+                .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count")).map(stat -> Long.parseLong(stat.getValue())).findFirst().orElse(0L))
                 .stats(stats)
                 .build();
         return getCollectionStatsResp;
