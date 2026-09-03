@@ -241,8 +241,11 @@ public class ConvertUtils {
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
                 .createUtcTime(response.getCreatedUtcTimestamp())
+                .updateTimestamp(response.getUpdateTimestamp())
                 .consistencyLevel(io.milvus.v2.common.ConsistencyLevel.valueOf(response.getConsistencyLevel().name().toUpperCase()))
+                .consistencyLevelName(response.getConsistencyLevel().name())
                 .shardsNum(response.getShardsNum())
+                .aliases(response.getAliasesList())
                 .properties(properties)
                 .build();
         return describeCollectionResp;

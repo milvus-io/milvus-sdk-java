@@ -299,4 +299,73 @@ public class SchemaUtilsTest {
             }
         }
     }
+
+    @Test
+    void testConvertFromGrpcFunctionPopulatesServerAssignedAttributes() {
+        FunctionSchema functionSchema = FunctionSchema.newBuilder()
+                .setId(200L)
+                .setName("bm25")
+                .setDescription("xxx")
+                .setType(FunctionType.BM25)
+                .addInputFieldNames("text")
+                .addInputFieldIds(101L)
+                .addOutputFieldNames("sparse")
+                .addOutputFieldIds(102L)
+                .build();
+
+        CreateCollectionReq.Function function = SchemaUtils.convertFromGrpcFunction(functionSchema);
+        Assertions.assertEquals(200L, function.getId());
+        Assertions.assertEquals(Collections.singletonList(101L), function.getInputFieldIds());
+        Assertions.assertEquals(Collections.singletonList(102L), function.getOutputFieldIds());
+        Assertions.assertEquals("bm25", function.getName());
+        Assertions.assertEquals("xxx", function.getDescription());
+        Assertions.assertEquals(io.milvus.common.clientenum.FunctionType.BM25, function.getFunctionType());
+    }
+
+    @Test
+    void testConvertFromGrpcFunctionDefaultsServerAssignedAttributes() {
+        FunctionSchema functionSchema = FunctionSchema.newBuilder()
+                .setName("bm25")
+                .setType(FunctionType.BM25)
+                .build();
+
+        CreateCollectionReq.Function function = SchemaUtils.convertFromGrpcFunction(functionSchema);
+        Assertions.assertEquals(0L, function.getId());
+        Assertions.assertTrue(function.getInputFieldIds().isEmpty());
+        Assertions.assertTrue(function.getOutputFieldIds().isEmpty());
+    }
+
+    @Test
+    void testConvertFromGrpcFieldSchemaPopulatesServerAssignedAttributes() {
+        FieldSchema fieldSchema = FieldSchema.newBuilder()
+                .setFieldID(100L)
+                .setName("text")
+                .setDescription("desc")
+                .setDataType(DataType.VarChar)
+                .setIsDynamic(true)
+                .setIsFunctionOutput(true)
+                .addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue("100").build())
+                .build();
+
+        CreateCollectionReq.FieldSchema converted = SchemaUtils.convertFromGrpcFieldSchema(fieldSchema);
+        Assertions.assertEquals(100L, converted.getFieldId());
+        Assertions.assertEquals(Boolean.TRUE, converted.getIsDynamic());
+        Assertions.assertEquals(Boolean.TRUE, converted.getIsFunctionOutput());
+        Assertions.assertEquals("text", converted.getName());
+        Assertions.assertEquals(100, converted.getMaxLength());
+    }
+
+    @Test
+    void testConvertFromGrpcFieldSchemaDefaultsServerAssignedAttributes() {
+        FieldSchema fieldSchema = FieldSchema.newBuilder()
+                .setName("id")
+                .setDataType(DataType.Int64)
+                .setIsPrimaryKey(true)
+                .build();
+
+        CreateCollectionReq.FieldSchema converted = SchemaUtils.convertFromGrpcFieldSchema(fieldSchema);
+        Assertions.assertEquals(0L, converted.getFieldId());
+        Assertions.assertEquals(Boolean.FALSE, converted.getIsDynamic());
+        Assertions.assertEquals(Boolean.FALSE, converted.getIsFunctionOutput());
+    }
 }

@@ -30,6 +30,7 @@ import io.milvus.param.Constant;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.vector.request.*;
@@ -548,6 +549,210 @@ class VectorTest extends BaseTest {
         Assertions.assertEquals(123L, response.getCost());
         verify(futureStub).hybridSearch(any(HybridSearchRequest.class));
         verify(blockingStub, never()).hybridSearch(any(HybridSearchRequest.class));
+    }
+
+    @Test
+    void testInsertCostDecodedFromStatusExtraInfo() {
+        Status status = Status.newBuilder()
+                .setCode(0)
+                .putExtraInfo("report_value", "456")
+                .build();
+        MutationResult mutationResult = MutationResult.newBuilder()
+                .setStatus(status)
+                .setInsertCnt(1L)
+                .build();
+        when(blockingStub.insert(any())).thenReturn(mutationResult);
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 0L);
+        row.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        InsertReq request = InsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(row))
+                .build();
+        InsertResp resp = client_v2.insert(request);
+        Assertions.assertEquals(456L, resp.getCost());
+    }
+
+    @Test
+    void testUpsertCostDecodedFromStatusExtraInfo() {
+        Status status = Status.newBuilder()
+                .setCode(0)
+                .putExtraInfo("report_value", "789")
+                .build();
+        MutationResult mutationResult = MutationResult.newBuilder()
+                .setStatus(status)
+                .setUpsertCnt(1L)
+                .build();
+        when(blockingStub.upsert(any())).thenReturn(mutationResult);
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 0L);
+        row.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        UpsertReq request = UpsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(row))
+                .build();
+        UpsertResp resp = client_v2.upsert(request);
+        Assertions.assertEquals(789L, resp.getCost());
+    }
+
+    @Test
+    void testDeleteCostDecodedFromStatusExtraInfo() {
+        Status status = Status.newBuilder()
+                .setCode(0)
+                .putExtraInfo("report_value", "321")
+                .build();
+        MutationResult mutationResult = MutationResult.newBuilder()
+                .setStatus(status)
+                .setDeleteCnt(1L)
+                .build();
+        when(blockingStub.delete(any())).thenReturn(mutationResult);
+
+        DeleteReq request = DeleteReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .build();
+        DeleteResp resp = client_v2.delete(request);
+        Assertions.assertEquals(321L, resp.getCost());
+    }
+
+    @Test
+    void testInsertCostDefaultsToZeroForInvalidReportValue() {
+        Status status = Status.newBuilder()
+                .setCode(0)
+                .putExtraInfo("report_value", "not-a-number")
+                .build();
+        MutationResult mutationResult = MutationResult.newBuilder()
+                .setStatus(status)
+                .setInsertCnt(1L)
+                .build();
+        when(blockingStub.insert(any())).thenReturn(mutationResult);
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 0L);
+        row.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        InsertReq request = InsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(row))
+                .build();
+        InsertResp resp = client_v2.insert(request);
+        Assertions.assertEquals(0L, resp.getCost());
+    }
+
+    @Test
+    void testInsertCostDefaultsToZeroWhenReportValueAbsent() {
+        // the status carries no extra_info at all: cost must default to 0
+        MutationResult mutationResult = MutationResult.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .setInsertCnt(1L)
+                .build();
+        when(blockingStub.insert(any())).thenReturn(mutationResult);
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 0L);
+        row.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        InsertReq request = InsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(row))
+                .build();
+        InsertResp resp = client_v2.insert(request);
+        Assertions.assertEquals(0L, resp.getCost());
+    }
+
+    @Test
+    void testDeleteCostDefaultsToZeroWhenReportValueAbsent() {
+        MutationResult mutationResult = MutationResult.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .setDeleteCnt(1L)
+                .build();
+        when(blockingStub.delete(any())).thenReturn(mutationResult);
+
+        DeleteReq request = DeleteReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .build();
+        DeleteResp resp = client_v2.delete(request);
+        Assertions.assertEquals(0L, resp.getCost());
+    }
+
+    @Test
+    void testDeleteReqConsistencyLevelRoundTrip() {
+        DeleteReq request = DeleteReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .consistencyLevel(ConsistencyLevel.SESSION)
+                .build();
+        Assertions.assertEquals(ConsistencyLevel.SESSION, request.getConsistencyLevel());
+        request.setConsistencyLevel(ConsistencyLevel.BOUNDED);
+        Assertions.assertEquals(ConsistencyLevel.BOUNDED, request.getConsistencyLevel());
+        request.setFilterTemplateValues(Collections.emptyMap());
+        request.setDatabaseName("db");
+        request.setCollectionName("coll");
+        request.setPartitionName("p");
+        request.setIds(Collections.singletonList(1L));
+        Assertions.assertEquals("db", request.getDatabaseName());
+        Assertions.assertEquals("coll", request.getCollectionName());
+        Assertions.assertEquals("p", request.getPartitionName());
+        Assertions.assertEquals(Collections.singletonList(1L), request.getIds());
+    }
+
+    @Test
+    void testInsertRespSettersRoundTrip() {
+        InsertResp resp = InsertResp.builder().build();
+        resp.setInsertCnt(5L);
+        resp.setPrimaryKeys(Arrays.asList(1L, 2L));
+        resp.setCost(10L);
+        Assertions.assertEquals(5L, resp.getInsertCnt());
+        Assertions.assertEquals(Arrays.asList(1L, 2L), resp.getPrimaryKeys());
+        Assertions.assertEquals(10L, resp.getCost());
+    }
+
+    @Test
+    void testUpsertRespSettersRoundTrip() {
+        UpsertResp resp = UpsertResp.builder().build();
+        resp.setUpsertCnt(5L);
+        resp.setPrimaryKeys(Arrays.asList(1L, 2L));
+        resp.setCost(10L);
+        Assertions.assertEquals(5L, resp.getUpsertCnt());
+        Assertions.assertEquals(Arrays.asList(1L, 2L), resp.getPrimaryKeys());
+        Assertions.assertEquals(10L, resp.getCost());
+    }
+
+    @Test
+    void testDeleteRespSettersRoundTrip() {
+        DeleteResp resp = DeleteResp.builder().build();
+        resp.setDeleteCnt(5L);
+        resp.setCost(10L);
+        Assertions.assertEquals(5L, resp.getDeleteCnt());
+        Assertions.assertEquals(10L, resp.getCost());
+    }
+
+    @Test
+    void testDeleteConsistencyLevelSetOnWire() {
+        DeleteReq request = DeleteReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build();
+        client_v2.delete(request);
+
+        ArgumentCaptor<DeleteRequest> captor = ArgumentCaptor.forClass(DeleteRequest.class);
+        verify(blockingStub).delete(captor.capture());
+        Assertions.assertEquals(ConsistencyLevel.STRONG.getCode(), captor.getValue().getConsistencyLevelValue());
+    }
+
+    @Test
+    void testQueryWithoutConsistencyUsesDefaultConsistency() {
+        QueryReq request = QueryReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .build();
+        client_v2.query(request);
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertTrue(captor.getValue().getUseDefaultConsistency());
     }
 
     @Test

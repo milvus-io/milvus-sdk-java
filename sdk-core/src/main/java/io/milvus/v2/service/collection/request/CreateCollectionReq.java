@@ -69,6 +69,25 @@ public class CreateCollectionReq {
             throw new IllegalArgumentException("Collection name cannot be null");
         }
 
+        // numeric bounds, keep consistent with PyMilvus
+        if (builder.dimension != null && builder.dimension <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "dimension must be a positive integer, got: " + builder.dimension);
+        }
+        if (builder.numPartitions != null && builder.numPartitions < 1) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "num_partitions must be greater than or equal to 1, got: " + builder.numPartitions);
+        }
+        if (builder.numShards != null && builder.numShards <= 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "num_shards must be a positive integer, got: " + builder.numShards);
+        }
+        if (builder.idType == DataType.VarChar && builder.maxLength != null
+                && (builder.maxLength < 1 || builder.maxLength > 65535)) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "max_length must be in the range [1, 65535], got: " + builder.maxLength);
+        }
+
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.description = builder.description;
@@ -529,6 +548,7 @@ public class CreateCollectionReq {
     }
 
     public static class FieldSchema {
+        private Long fieldId; // field id, only populated by describe_collection
         private String name;
         private String description = "";
         private DataType dataType;
@@ -538,6 +558,8 @@ public class CreateCollectionReq {
         private Boolean isPartitionKey = Boolean.FALSE;
         private Boolean isClusteringKey = Boolean.FALSE;
         private Boolean autoID = Boolean.FALSE;
+        private Boolean isDynamic; // whether this field is the dynamic field, only populated by describe_collection
+        private Boolean isFunctionOutput; // whether this field is a function output field, only populated by describe_collection
         private DataType elementType;
         private Integer maxCapacity;
         private Boolean isNullable = Boolean.FALSE; // only for scalar fields(not include Array fields)
@@ -572,6 +594,17 @@ public class CreateCollectionReq {
         }
 
         // Getters and Setters
+        public Long getFieldId() {
+            return fieldId;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setFieldId(Long fieldId) {
+            this.fieldId = fieldId;
+        }
+
         public String getName() {
             return name;
         }
@@ -642,6 +675,28 @@ public class CreateCollectionReq {
 
         public void setAutoID(Boolean autoID) {
             this.autoID = autoID;
+        }
+
+        public Boolean getIsDynamic() {
+            return isDynamic;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setIsDynamic(Boolean isDynamic) {
+            this.isDynamic = isDynamic;
+        }
+
+        public Boolean getIsFunctionOutput() {
+            return isFunctionOutput;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setIsFunctionOutput(Boolean isFunctionOutput) {
+            this.isFunctionOutput = isFunctionOutput;
         }
 
         public DataType getElementType() {
@@ -718,26 +773,36 @@ public class CreateCollectionReq {
 
         @Override
         public String toString() {
-            return "FieldSchema{" +
-                    "name='" + name + '\'' +
-                    ", description='" + description + '\'' +
-                    ", dataType=" + dataType +
-                    ", maxLength=" + maxLength +
-                    ", dimension=" + dimension +
-                    ", isPrimaryKey=" + isPrimaryKey +
-                    ", isPartitionKey=" + isPartitionKey +
-                    ", isClusteringKey=" + isClusteringKey +
-                    ", autoID=" + autoID +
-                    ", elementType=" + elementType +
-                    ", maxCapacity=" + maxCapacity +
-                    ", isNullable=" + isNullable +
-                    ", defaultValue=" + defaultValue +
-                    ", enableAnalyzer=" + enableAnalyzer +
-                    ", analyzerParams=" + analyzerParams +
-                    ", enableMatch=" + enableMatch +
-                    ", typeParams=" + typeParams +
-                    ", multiAnalyzerParams=" + multiAnalyzerParams +
-                    '}';
+            StringBuilder sb = new StringBuilder("FieldSchema{");
+            sb.append("name='").append(name).append('\'')
+                    .append(", description='").append(description).append('\'')
+                    .append(", dataType=").append(dataType)
+                    .append(", maxLength=").append(maxLength)
+                    .append(", dimension=").append(dimension)
+                    .append(", isPrimaryKey=").append(isPrimaryKey)
+                    .append(", isPartitionKey=").append(isPartitionKey)
+                    .append(", isClusteringKey=").append(isClusteringKey)
+                    .append(", autoID=").append(autoID)
+                    .append(", elementType=").append(elementType)
+                    .append(", maxCapacity=").append(maxCapacity)
+                    .append(", isNullable=").append(isNullable)
+                    .append(", defaultValue=").append(defaultValue)
+                    .append(", enableAnalyzer=").append(enableAnalyzer)
+                    .append(", analyzerParams=").append(analyzerParams)
+                    .append(", enableMatch=").append(enableMatch)
+                    .append(", typeParams=").append(typeParams)
+                    .append(", multiAnalyzerParams=").append(multiAnalyzerParams);
+            // server-assigned/derived attributes, populated only by describe_collection
+            if (fieldId != null) {
+                sb.append(", fieldId=").append(fieldId);
+            }
+            if (isDynamic != null) {
+                sb.append(", isDynamic=").append(isDynamic);
+            }
+            if (isFunctionOutput != null) {
+                sb.append(", isFunctionOutput=").append(isFunctionOutput);
+            }
+            return sb.append('}').toString();
         }
 
         public static FieldSchemaBuilder builder() {
@@ -864,11 +929,14 @@ public class CreateCollectionReq {
     }
 
     public static class Function {
+        private Long id; // function id, only populated by describe_collection
         private String name = "";
         private String description = "";
         private FunctionType functionType = FunctionType.UNKNOWN;
         private List<String> inputFieldNames = new ArrayList<>();
+        private List<Long> inputFieldIds = new ArrayList<>();
         private List<String> outputFieldNames = new ArrayList<>();
+        private List<Long> outputFieldIds = new ArrayList<>();
         private Map<String, String> params = new HashMap<>();
 
         protected Function(FunctionBuilder<?> builder) {
@@ -878,6 +946,17 @@ public class CreateCollectionReq {
             this.inputFieldNames = builder.inputFieldNames;
             this.outputFieldNames = builder.outputFieldNames;
             this.params = builder.params;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setId(Long id) {
+            this.id = id;
         }
 
         public String getName() {
@@ -912,12 +991,34 @@ public class CreateCollectionReq {
             this.inputFieldNames = inputFieldNames;
         }
 
+        public List<Long> getInputFieldIds() {
+            return inputFieldIds;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setInputFieldIds(List<Long> inputFieldIds) {
+            this.inputFieldIds = inputFieldIds;
+        }
+
         public List<String> getOutputFieldNames() {
             return outputFieldNames;
         }
 
         public void setOutputFieldNames(List<String> outputFieldNames) {
             this.outputFieldNames = outputFieldNames;
+        }
+
+        public List<Long> getOutputFieldIds() {
+            return outputFieldIds;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setOutputFieldIds(List<Long> outputFieldIds) {
+            this.outputFieldIds = outputFieldIds;
         }
 
         public Map<String, String> getParams() {
@@ -930,14 +1031,24 @@ public class CreateCollectionReq {
 
         @Override
         public String toString() {
-            return "Function{" +
-                    "name='" + name + '\'' +
-                    ", description='" + description + '\'' +
-                    ", functionType=" + functionType +
-                    ", inputFieldNames=" + inputFieldNames +
-                    ", outputFieldNames=" + outputFieldNames +
-                    ", params=" + params +
-                    '}';
+            StringBuilder sb = new StringBuilder("Function{");
+            sb.append("name='").append(name).append('\'')
+                    .append(", description='").append(description).append('\'')
+                    .append(", functionType=").append(functionType)
+                    .append(", inputFieldNames=").append(inputFieldNames)
+                    .append(", outputFieldNames=").append(outputFieldNames)
+                    .append(", params=").append(params);
+            // server-assigned/derived attributes, populated only by describe_collection
+            if (id != null) {
+                sb.append(", id=").append(id);
+            }
+            if (!inputFieldIds.isEmpty()) {
+                sb.append(", inputFieldIds=").append(inputFieldIds);
+            }
+            if (!outputFieldIds.isEmpty()) {
+                sb.append(", outputFieldIds=").append(outputFieldIds);
+            }
+            return sb.append('}').toString();
         }
 
         public static FunctionBuilder<?> builder() {

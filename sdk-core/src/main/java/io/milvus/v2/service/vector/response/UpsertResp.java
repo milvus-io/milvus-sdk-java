@@ -29,10 +29,12 @@ public class UpsertResp {
     // the new pk is not equal to the original pk, the original entity is deleted, and a new entity
     // is created with this new pk. Here we return this new pk to user.
     private List<Object> primaryKeys;
+    private Long cost;
 
     private UpsertResp(UpsertRespBuilder builder) {
         this.upsertCnt = builder.upsertCnt;
         this.primaryKeys = builder.primaryKeys;
+        this.cost = builder.cost;
     }
 
     // Getters and Setters
@@ -52,11 +54,20 @@ public class UpsertResp {
         this.primaryKeys = primaryKeys;
     }
 
+    public Long getCost() {
+        return cost;
+    }
+
+    public void setCost(Long cost) {
+        this.cost = cost;
+    }
+
     @Override
     public String toString() {
         return "UpsertResp{" +
                 "upsertCnt=" + upsertCnt +
                 ", primaryKeys=" + primaryKeys +
+                ", cost=" + cost +
                 '}';
     }
 
@@ -67,6 +78,7 @@ public class UpsertResp {
     public static class UpsertRespBuilder {
         private long upsertCnt;
         private List<Object> primaryKeys = new ArrayList<>(); // default value
+        private Long cost;
 
         private UpsertRespBuilder() {
         }
@@ -78,6 +90,11 @@ public class UpsertResp {
 
         public UpsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
+            return this;
+        }
+
+        public UpsertRespBuilder cost(Long cost) {
+            this.cost = cost;
             return this;
         }
 

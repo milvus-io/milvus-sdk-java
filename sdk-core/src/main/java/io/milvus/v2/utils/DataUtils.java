@@ -629,6 +629,9 @@ public class DataUtils {
                 .setCollectionName(request.getCollectionName())
                 .setPartitionName(request.getPartitionName())
                 .setExpr(request.getFilter());
+        if (request.getConsistencyLevel() != null) {
+            builder.setConsistencyLevelValue(request.getConsistencyLevel().getCode());
+        }
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
             filterTemplateValues.forEach((key, value) -> {

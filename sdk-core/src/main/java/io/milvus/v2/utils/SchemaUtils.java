@@ -233,6 +233,10 @@ public class SchemaUtils {
                 .isNullable(fieldSchema.getNullable())
                 .defaultValue(ParamUtils.valueFieldToObject(fieldSchema.getDefaultValue(), fieldSchema.getDataType()))
                 .build();
+        // server-assigned/derived attributes, populated only by describe_collection
+        schema.setFieldId(fieldSchema.getFieldID());
+        schema.setIsDynamic(fieldSchema.getIsDynamic());
+        schema.setIsFunctionOutput(fieldSchema.getIsFunctionOutput());
 
         Map<String, String> typeParams = new HashMap<>();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
@@ -303,7 +307,12 @@ public class SchemaUtils {
                 .outputFieldNames(functionSchema.getOutputFieldNamesList().stream().collect(Collectors.toList()));
         List<KeyValuePair> pairs = functionSchema.getParamsList();
         pairs.forEach((kv) -> builder.param(kv.getKey(), kv.getValue()));
-        return builder.build();
+        CreateCollectionReq.Function function = builder.build();
+        // server-assigned/derived attributes, populated only by describe_collection
+        function.setId(functionSchema.getId());
+        function.setInputFieldIds(functionSchema.getInputFieldIdsList().stream().collect(Collectors.toList()));
+        function.setOutputFieldIds(functionSchema.getOutputFieldIdsList().stream().collect(Collectors.toList()));
+        return function;
     }
 
     public static CreateCollectionReq.FieldSchema convertFieldReqToFieldSchema(AddFieldReq addFieldReq) {

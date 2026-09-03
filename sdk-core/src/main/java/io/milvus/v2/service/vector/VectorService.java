@@ -173,6 +173,7 @@ public class VectorService extends BaseService {
         return InsertResp.builder()
                 .InsertCnt(response.getInsertCnt())
                 .primaryKeys(ids)
+                .cost(getCost(response.getStatus()))
                 .build();
     }
 
@@ -242,6 +243,7 @@ public class VectorService extends BaseService {
         return UpsertResp.builder()
                 .upsertCnt(response.getUpsertCnt())
                 .primaryKeys(ids)
+                .cost(getCost(response.getStatus()))
                 .build();
     }
 
@@ -477,6 +479,25 @@ public class VectorService extends BaseService {
         }
     }
 
+    // decode the report value from the status.extra_info, returns 0 when it is absent or invalid
+    // (consistent with PyMilvus get_cost_from_status, which defaults to "0")
+    private Long getCost(io.milvus.grpc.Status status) {
+        java.util.Map<String, String> extraInfo = status.getExtraInfoMap();
+        if (extraInfo == null) {
+            return 0L;
+        }
+        String reportValue = extraInfo.get("report_value");
+        if (reportValue == null || reportValue.trim().isEmpty()) {
+            return 0L;
+        }
+        try {
+            return Long.parseLong(reportValue.trim());
+        } catch (NumberFormatException e) {
+            logger.warn("Failed to parse the report_value from status.extra_info: {}", reportValue);
+            return 0L;
+        }
+    }
+
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
@@ -523,6 +544,7 @@ public class VectorService extends BaseService {
         updateTsCache(dbName, collectionName, response.getTimestamp());
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
+                .cost(getCost(response.getStatus()))
                 .build();
     }
 

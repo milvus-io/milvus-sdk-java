@@ -40,10 +40,17 @@ import java.util.stream.Collectors;
 public class IndexService extends BaseService {
 
     public Void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
+        if (CollectionUtils.isEmpty(request.getIndexParams())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "IndexParams is empty, no index can be created");
+        }
+
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         for (IndexParam indexParam : request.getIndexParams()) {
             String fieldName = indexParam.getFieldName();
+            if (StringUtils.isEmpty(fieldName)) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Field name cannot be null or empty");
+            }
             String indexName = indexParam.getIndexName();
             String title = String.format("Create index for field: '%s' in collection: '%s' in database: '%s'",
                     fieldName, collectionName, dbName);
@@ -71,9 +78,16 @@ public class IndexService extends BaseService {
             Map<String, Object> extraParams = indexParam.getExtraParams();
             if (extraParams != null && !extraParams.isEmpty()) {
                 for (String key : extraParams.keySet()) {
+                    Object value = extraParams.get(key);
+                    // the dimension must be an integer, keep consistent with PyMilvus create_index_request
+                    // which requires isinstance(dim, int); floats and numeric strings are rejected
+                    if (Constant.VECTOR_DIM.equals(key) && !isLegalDimensionValue(value)) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "Dimension must be an integer, got: " + value);
+                    }
                     builder.addExtraParams(KeyValuePair.newBuilder()
                             .setKey(key)
-                            .setValue(extraParams.get(key).toString())
+                            .setValue(String.valueOf(value))
                             .build());
                 }
             }
@@ -115,6 +129,10 @@ public class IndexService extends BaseService {
         String indexName = request.getIndexName();
         String title = String.format("Alter properties of index: '%s' in collection: '%s' in database: '%s'",
                 indexName, collectionName, dbName);
+
+        if (request.getProperties() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "properties should not be null");
+        }
 
         AlterIndexRequest.Builder builder = AlterIndexRequest.newBuilder()
                 .setCollectionName(collectionName)
@@ -200,6 +218,16 @@ public class IndexService extends BaseService {
                 .filter(desc -> fieldName == null || desc.getFieldName().equals(fieldName))
                 .map(IndexDescription::getIndexName)
                 .collect(Collectors.toList());
+    }
+
+    // mirrors PyMilvus create_index_request's isinstance(dim, int) check: only integral types are accepted,
+    // floats (e.g. 128.0), decimals and numeric strings (e.g. "128") are rejected
+    private static boolean isLegalDimensionValue(Object value) {
+        return value instanceof Integer
+                || value instanceof Long
+                || value instanceof Short
+                || value instanceof Byte
+                || value instanceof java.math.BigInteger;
     }
 
     private void WaitForIndexComplete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName,
