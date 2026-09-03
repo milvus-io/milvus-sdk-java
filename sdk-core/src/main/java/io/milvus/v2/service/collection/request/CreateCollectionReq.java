@@ -2064,13 +2064,34 @@ public class CreateCollectionReq {
          * Adds a sub-field to the struct field schema. Array, ArrayOfVector and Struct
          * element types are not supported.
          *
+         * <p>A sub-field cannot be nullable or carry a primary/partition/clustering key,
+         * auto-id, or default value; the struct's {@code nullable} is applied to every
+         * sub-field on the wire, so a nullable sub-field set through
+         * {@link #fields(List)}/{@link #getFields()} is silently overridden by the struct's
+         * nullable.
+         *
          * @param addFieldReq the sub-field to add
          * @return this schema
-         * @throws ParamException if the sub-field data type is not supported
+         * @throws ParamException if the sub-field data type or a forbidden attribute is not supported
          */
         public StructFieldSchema addField(AddFieldReq addFieldReq) {
             if (addFieldReq.getDataType() == DataType.Array || addFieldReq.getElementType() == DataType.Struct) {
                 throw new ParamException("Struct field schema does not support Array, ArrayOfVector or Struct");
+            }
+            String subFieldName = addFieldReq.getFieldName();
+            if (Boolean.TRUE.equals(addFieldReq.getIsPrimaryKey())) {
+                throw new ParamException(String.format("Field '%s' in struct '%s' cannot be primary key", subFieldName, name));
+            } else if (Boolean.TRUE.equals(addFieldReq.getIsPartitionKey())) {
+                throw new ParamException(String.format("Field '%s' in struct '%s' cannot be partition key", subFieldName, name));
+            } else if (Boolean.TRUE.equals(addFieldReq.getIsClusteringKey())) {
+                throw new ParamException(String.format("Field '%s' in struct '%s' cannot be clustering key", subFieldName, name));
+            } else if (Boolean.TRUE.equals(addFieldReq.getAutoID())) {
+                throw new ParamException(String.format("Field '%s' in struct '%s' cannot be auto-id", subFieldName, name));
+            } else if (Boolean.TRUE.equals(addFieldReq.getIsNullable())) {
+                throw new ParamException(String.format("Field '%s' in struct '%s' cannot be nullable individually, "
+                        + "set nullable on the struct instead", subFieldName, name));
+            } else if (addFieldReq.getDefaultValue() != null) {
+                throw new ParamException(String.format("Field '%s' in struct '%s' cannot have default value", subFieldName, name));
             }
             fields.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
             return this;

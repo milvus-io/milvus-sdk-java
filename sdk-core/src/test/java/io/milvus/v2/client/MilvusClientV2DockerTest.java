@@ -1264,6 +1264,8 @@ class MilvusClientV2DockerTest {
                         .dimension(st1VectorDimension)
                         .build())
                 .build());
+        // st1 is a nullable struct field; its sub-fields inherit nullable=true on the wire
+        collectionSchema.getStructField("st1").setNullable(Boolean.TRUE);
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("st2")
                 .description("dummy")
@@ -1371,6 +1373,13 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(DataType.Float16Vector, structSchema.getFields().get(3).getDataType());
         Assertions.assertEquals(DataType.BFloat16Vector, structSchema.getFields().get(4).getDataType());
         Assertions.assertEquals(DataType.Int8Vector, structSchema.getFields().get(5).getDataType());
+        // nullable struct field: nullable must be true on the struct and inherited by every sub-field
+        Assertions.assertTrue(structSchema.getNullable());
+        for (CreateCollectionReq.FieldSchema subField : structSchema.getFields()) {
+            Assertions.assertTrue(subField.getIsNullable(), "sub-field " + subField.getName() + " should inherit nullable");
+        }
+        // st2 is non-nullable; locate it by name so the check is independent of describe ordering
+        Assertions.assertFalse(descSchema.getStructField("st2").getNullable());
 
         DescribeIndexResp binaryIndexDesc = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -1427,7 +1436,12 @@ class MilvusClientV2DockerTest {
                     structArr2.add(struct);
                 }
             }
-            row.add("st1", structArr1);
+            if (i % 7 == 0 && i != 0) {
+                // st1 is nullable: store a null row (st2 stays valid so the row remains searchable)
+                row.add("st1", JsonNull.INSTANCE);
+            } else {
+                row.add("st1", structArr1);
+            }
             row.add("st2", structArr2);
             rows.add(row);
         }
@@ -1611,6 +1625,46 @@ class MilvusClientV2DockerTest {
         SearchResp.SearchResult elementResult = elementSearchResp.getSearchResults().get(0).get(0);
         Assertions.assertEquals(9L, (long) elementResult.getId());
         Assertions.assertEquals(1L, (long) elementResult.getElementOffset());
+
+        // nullable struct field: query rows that were inserted with st1 = null
+        QueryResp nullableQueryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter(String.format("%s == 7 or %s == 14", pkField, pkField))
+                .limit(3)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(pkField, "st1", "st2"))
+                .build());
+        Assertions.assertEquals(2, nullableQueryResp.getQueryResults().size());
+        for (QueryResp.QueryResult result : nullableQueryResp.getQueryResults()) {
+            Map<String, Object> entity = result.getEntity();
+            Assertions.assertNull(entity.get("st1"), "st1 of pk=" + entity.get(pkField) + " should be null");
+            Assertions.assertNotNull(entity.get("st2"));
+        }
+
+        // nullable struct field: search on st2 vector of a null-st1 row; the top-1 hit is that
+        // row itself and its st1 output must decode back to null
+        QueryResp vectorQueryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter(String.format("%s == 7", pkField))
+                .limit(1)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Collections.singletonList("st2"))
+                .build());
+        List<Map<String, Object>> row7Structs = (List<Map<String, Object>>)
+                vectorQueryResp.getQueryResults().get(0).getEntity().get("st2");
+        List<Float> row7Vector = (List<Float>) row7Structs.get(1).get("float_vector");
+        SearchResp nullableSearchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("st2[float_vector]")
+                .data(Collections.singletonList(new FloatVec(row7Vector)))
+                .limit(topK)
+                .metricType(IndexParam.MetricType.L2)
+                .outputFields(Arrays.asList(pkField, "st1"))
+                .build());
+        Assertions.assertEquals(1, nullableSearchResp.getSearchResults().size());
+        SearchResp.SearchResult nullableTop = nullableSearchResp.getSearchResults().get(0).get(0);
+        Assertions.assertEquals(7L, (long) nullableTop.getId());
+        Assertions.assertNull(nullableTop.getEntity().get("st1"));
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
@@ -2993,7 +3047,7 @@ class MilvusClientV2DockerTest {
             Assertions.assertEquals(1L, insertResp.getInsertCnt());
 
             // check the timestamp of this collection, must be positive
-            long ts11 = CollectionTsCache.getInstance().get("localhost:19530", "default", randomCollectionName);
+            long ts11 = CollectionTsCache.getInstance().get("localhost:29530", "default", randomCollectionName);
             Assertions.assertTrue(ts11 > 0L);
 
             // insert wrong data; the refreshed, valid collection schema remains cached
@@ -3015,7 +3069,7 @@ class MilvusClientV2DockerTest {
             Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
 
             // check the timestamp of this collection, must be a new positive
-            long ts12 = CollectionTsCache.getInstance().get("localhost:19530", "default", randomCollectionName);
+            long ts12 = CollectionTsCache.getInstance().get("localhost:29530", "default", randomCollectionName);
             Assertions.assertTrue(ts12 > ts11);
 
             // create a new collection with the same name, different schema, in the test db
@@ -3032,7 +3086,7 @@ class MilvusClientV2DockerTest {
                     .build()));
 
             // check the timestamp of this collection, must be null
-            long ts21 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+            long ts21 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
             Assertions.assertEquals(0L, ts21);
 
             // use the temp client to do upsert correct data
@@ -3045,7 +3099,7 @@ class MilvusClientV2DockerTest {
             Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
 
             // check the timestamp of this collection, must be positive
-            long ts22 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+            long ts22 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
             Assertions.assertTrue(ts22 > 0L);
 
             // tempClient delete data
@@ -3055,7 +3109,7 @@ class MilvusClientV2DockerTest {
                     .build());
 
             // check the timestamp of this collection, must be greater than previous
-            long ts23 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+            long ts23 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
             Assertions.assertTrue(ts23 > ts22);
 
             // use the default client to drop the collection in the new db
@@ -3065,7 +3119,7 @@ class MilvusClientV2DockerTest {
                     .build());
 
             // check the timestamp of this collection, must be deleted
-            long ts31 = CollectionTsCache.getInstance().get("localhost:19530", testDbName, randomCollectionName);
+            long ts31 = CollectionTsCache.getInstance().get("localhost:29530", testDbName, randomCollectionName);
             Assertions.assertEquals(0L, ts31);
         } finally {
             if (tempClient != null) {

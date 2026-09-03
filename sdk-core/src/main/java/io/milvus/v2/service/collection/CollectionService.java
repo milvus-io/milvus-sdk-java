@@ -24,6 +24,7 @@ import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
+import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
@@ -408,9 +409,15 @@ public class CollectionService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Add struct field to collection: '%s' in database: '%s'", collectionName, dbName);
 
+        CreateCollectionReq.StructFieldSchema structFieldSchema;
+        try {
+            structFieldSchema = request.toStructFieldSchema();
+        } catch (ParamException e) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage());
+        }
         AddCollectionStructFieldRequest.Builder builder = AddCollectionStructFieldRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setStructArrayFieldSchema(SchemaUtils.convertToGrpcStructFieldSchema(request.toStructFieldSchema()));
+                .setStructArrayFieldSchema(SchemaUtils.convertToGrpcStructFieldSchema(structFieldSchema));
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
