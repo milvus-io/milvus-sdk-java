@@ -22,6 +22,7 @@ package io.milvus.v2.service.collection;
 import io.milvus.grpc.AddCollectionFieldRequest;
 import io.milvus.grpc.AddCollectionStructFieldRequest;
 import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.StructArrayFieldSchema;
 import io.milvus.exception.ParamException;
@@ -91,6 +92,28 @@ class CollectionTest extends BaseTest {
                 .dimension(2)
                 .build();
         client_v2.createCollection(req);
+    }
+
+    @Test
+    void testCreateCollectionFastPathPropagatesPropertiesAndNumPartitions() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put("key1", "value1");
+        CreateCollectionReq req = CreateCollectionReq.builder()
+                .collectionName("test2")
+                .dimension(2)
+                .properties(properties)
+                .numPartitions(5)
+                .build();
+        client_v2.createCollection(req);
+
+        ArgumentCaptor<io.milvus.grpc.CreateCollectionRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.CreateCollectionRequest.class);
+        verify(blockingStub).createCollection(captor.capture());
+        io.milvus.grpc.CreateCollectionRequest rpcRequest = captor.getValue();
+
+        Assertions.assertEquals(5, rpcRequest.getNumPartitions());
+        Assertions.assertTrue(rpcRequest.getPropertiesList().stream()
+                .anyMatch(kv -> kv.getKey().equals("key1") && kv.getValue().equals("value1")));
     }
 
     @Test
@@ -1045,6 +1068,22 @@ class CollectionTest extends BaseTest {
         GetCollectionStatsResp resp = client_v2.getCollectionStats(req);
         Assertions.assertEquals(10L, resp.getNumOfEntities());
         Assertions.assertEquals("10", resp.getStats().get("row_count"));
+    }
+
+    @Test
+    void testGetCollectionStatsMissingRowCountReturnsZero() {
+        when(blockingStub.getCollectionStatistics(any())).thenReturn(
+                GetCollectionStatisticsResponse.newBuilder()
+                        .addStats(KeyValuePair.newBuilder().setKey("other_stat").setValue("1").build())
+                        .setStatus(io.milvus.grpc.Status.newBuilder().setCode(0).build())
+                        .build());
+
+        GetCollectionStatsReq req = GetCollectionStatsReq.builder()
+                .collectionName("test")
+                .build();
+        GetCollectionStatsResp resp = client_v2.getCollectionStats(req);
+        Assertions.assertEquals(0L, resp.getNumOfEntities());
+        Assertions.assertTrue(resp.getStats().containsKey("other_stat"));
     }
 
 }

@@ -23,12 +23,15 @@ import java.util.List;
 
 /**
  * Response returned by the {@code get} API.
+ *
+ * <p>{@code get} is a query-by-primary-keys convenience over {@code query}, so this class
+ * inherits all members from {@link QueryResp}. The result entities are accessed through the
+ * inherited {@link #getQueryResults()}; {@link #getGetResults()} is kept as a deprecated alias.
  */
-public class GetResp {
-    private List<QueryResp.QueryResult> getResults;
+public class GetResp extends QueryResp {
 
-    private GetResp(GetRespBuilder builder) {
-        this.getResults = builder.getResults;
+    private GetResp(QueryRespBuilder builder) {
+        super(builder);
     }
 
     /**
@@ -44,46 +47,76 @@ public class GetResp {
      * Returns the retrieved entities.
      *
      * @return the retrieved entities
+     * @deprecated use {@link #getQueryResults()} instead
      */
-    public List<QueryResp.QueryResult> getGetResults() {
-        return getResults;
+    @Deprecated
+    public List<QueryResult> getGetResults() {
+        return getQueryResults();
     }
 
     /**
      * Sets the retrieved entities.
      *
      * @param getResults the retrieved entities
+     * @deprecated use {@link #setQueryResults(List)} instead
      */
-    public void setGetResults(List<QueryResp.QueryResult> getResults) {
-        this.getResults = getResults;
+    @Deprecated
+    public void setGetResults(List<QueryResult> getResults) {
+        setQueryResults(getResults);
     }
 
-    @Override
-    public String toString() {
-        return "GetResp{" +
-                "getResults=" + getResults +
-                '}';
-    }
-
-    public static class GetRespBuilder {
-        private List<QueryResp.QueryResult> getResults;
+    public static class GetRespBuilder extends QueryRespBuilder {
 
         /**
          * Sets the retrieved entities.
          *
          * @param getResults the retrieved entities
          * @return this builder
+         * @deprecated use {@link #queryResults(List)} instead
          */
-        public GetRespBuilder getResults(List<QueryResp.QueryResult> getResults) {
-            this.getResults = getResults;
+        @Deprecated
+        public GetRespBuilder getResults(List<QueryResult> getResults) {
+            queryResults(getResults);
             return this;
         }
 
-        /**
-         * Builds the {@link GetResp}.
-         *
-         * @return the response
-         */
+        @Override
+        public GetRespBuilder queryResults(List<QueryResult> queryResults) {
+            super.queryResults(queryResults);
+            return this;
+        }
+
+        @Override
+        public GetRespBuilder sessionTs(long sessionTs) {
+            super.sessionTs(sessionTs);
+            return this;
+        }
+
+        @Override
+        public GetRespBuilder cost(Long cost) {
+            super.cost(cost);
+            return this;
+        }
+
+        @Override
+        public GetRespBuilder scannedRemoteBytes(Long scannedRemoteBytes) {
+            super.scannedRemoteBytes(scannedRemoteBytes);
+            return this;
+        }
+
+        @Override
+        public GetRespBuilder scannedTotalBytes(Long scannedTotalBytes) {
+            super.scannedTotalBytes(scannedTotalBytes);
+            return this;
+        }
+
+        @Override
+        public GetRespBuilder cacheHitRatio(Float cacheHitRatio) {
+            super.cacheHitRatio(cacheHitRatio);
+            return this;
+        }
+
+        @Override
         public GetResp build() {
             return new GetResp(this);
         }
