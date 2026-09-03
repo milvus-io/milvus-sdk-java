@@ -1,5 +1,17 @@
 # Changelog
 
+## milvus-sdk-java 3.0.9 (2026-09-03)
+### Feature
+- Support nullable struct field
+- Support refreshable workload-identity credentials in BulkWriter
+- Expose session timestamp, cost, and scanned-byte metrics in get()/getAsync() results
+
+### Improvement
+- Align GetResp/QueryResp metadata and delete consistency with PyMilvus
+- Short-circuit insert/upsert on empty data and reject null data with INVALID_PARAMS
+- Align client-side validation gaps with PyMilvus
+- Validate non-empty index params in createIndex
+
 ## milvus-sdk-java 3.0.8 (2026-08-26)
 ### Feature
 - Support FunctionChain in search requests
