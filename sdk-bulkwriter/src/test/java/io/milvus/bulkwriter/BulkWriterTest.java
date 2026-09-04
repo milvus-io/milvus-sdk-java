@@ -37,6 +37,7 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.util.Utf8;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -50,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Tag("unit")
 public class BulkWriterTest {
     private static final int DIMENSION = 32;
     private static final List<String> NULLABLE_VECTOR_FIELDS = Arrays.asList(

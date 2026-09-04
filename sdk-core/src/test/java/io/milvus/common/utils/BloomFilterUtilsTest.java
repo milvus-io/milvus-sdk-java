@@ -27,6 +27,7 @@ import io.milvus.grpc.TemplateValue;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.utils.VectorUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+@Tag("unit")
 class BloomFilterUtilsTest {
 
     /**

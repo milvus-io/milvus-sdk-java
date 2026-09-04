@@ -35,7 +35,7 @@ jobs:
       - name: Update submodule
         run: git submodule update --init
       - name: Build with Maven
-        run: mvn -Pcoverage --batch-mode --update-snapshots verify
+        run: mvn -Pcoverage -Psystem --batch-mode --update-snapshots verify
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:

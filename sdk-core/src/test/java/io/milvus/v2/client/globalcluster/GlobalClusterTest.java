@@ -19,6 +19,7 @@
 
 package io.milvus.v2.client.globalcluster;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 public class GlobalClusterTest {
 
     // ==================== isGlobalEndpoint tests ====================
