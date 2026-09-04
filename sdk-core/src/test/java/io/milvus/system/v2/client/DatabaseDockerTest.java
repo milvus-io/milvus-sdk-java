@@ -40,11 +40,17 @@ class DatabaseDockerTest extends MilvusV2DockerTestBase {
         // get current database
         ListDatabasesResp listDatabasesResp = client.listDatabases();
         List<String> dbNames = listDatabasesResp.getDatabaseNames();
-        Assertions.assertEquals(1, dbNames.size());
-        String currentDbName = dbNames.get(0);
+        String currentDbName = "default";
+        Assertions.assertTrue(dbNames.contains(currentDbName));
 
         // create a temp database
         String tempDatabaseName = "db_temp";
+        // the shared standalone may still hold a db_temp left by another test class
+        if (dbNames.contains(tempDatabaseName)) {
+            client.dropDatabase(DropDatabaseReq.builder()
+                    .databaseName(tempDatabaseName)
+                    .build());
+        }
         Map<String, String> properties = new HashMap<>();
         properties.put(Constant.DATABASE_REPLICA_NUMBER, "5");
         CreateDatabaseReq createDatabaseReq = CreateDatabaseReq.builder()
