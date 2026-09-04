@@ -1,0 +1,453 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package io.milvus.support.v2;
+
+import com.google.common.util.concurrent.Futures;
+import io.milvus.grpc.*;
+import io.milvus.v2.client.MilvusClientV2;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+public class BaseTest {
+    @InjectMocks
+    public MilvusClientV2 client_v2 = new MilvusClientV2(null);
+    @Mock
+    protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    @Mock
+    protected MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
+
+    @BeforeEach
+    public void setUp() {
+        client_v2.setBlockingStub(blockingStub);
+        client_v2.setFutureStub(futureStub);
+        when(blockingStub.withDeadlineAfter(anyLong(), eq(TimeUnit.MILLISECONDS))).thenReturn(blockingStub);
+        when(blockingStub.withOption(any(), any())).thenReturn(blockingStub);
+        when(futureStub.withDeadlineAfter(anyLong(), eq(TimeUnit.MILLISECONDS))).thenReturn(futureStub);
+        when(futureStub.withOption(any(), any())).thenReturn(futureStub);
+
+        Status successStatus = Status.newBuilder().setCode(0).build();
+        BoolResponse trueResponse = BoolResponse.newBuilder().setStatus(successStatus).setValue(Boolean.TRUE).build();
+        BoolResponse falseResponse = BoolResponse.newBuilder().setStatus(successStatus).setValue(Boolean.FALSE).build();
+
+        CollectionSchema collectionSchema = CollectionSchema.newBuilder()
+                .setDescription("test")
+                .addFields(FieldSchema.newBuilder()
+                        .setName("id")
+                        .setDataType(DataType.Int64)
+                        .setIsPrimaryKey(Boolean.TRUE)
+                        .setAutoID(Boolean.FALSE)
+                        .build())
+                .addFields(FieldSchema.newBuilder()
+                        .setName("vector")
+                        .setDataType(DataType.FloatVector)
+                        .addTypeParams(KeyValuePair.newBuilder().setKey("dim").setValue("2").build())
+                        .setIsPrimaryKey(Boolean.FALSE)
+                        .setAutoID(Boolean.FALSE)
+                        .build())
+                .setEnableDynamicField(Boolean.FALSE)
+                .build();
+        DescribeCollectionResponse describeCollectionResponse = DescribeCollectionResponse.newBuilder()
+                .setStatus(successStatus)
+                .setCollectionName("test")
+                .setSchema(collectionSchema)
+                .setNumPartitions(1)
+                .setCreatedUtcTimestamp(0)
+                .build();
+
+        IndexDescription index1 = IndexDescription.newBuilder()
+                .setIndexName("test")
+                .setFieldName("vector")
+                .addParams(KeyValuePair.newBuilder()
+                        .setKey("index_type")
+                        .setValue("IVF_FLAT")
+                        .build())
+                .addParams(KeyValuePair.newBuilder()
+                        .setKey("metric_type")
+                        .setValue("L2")
+                        .build())
+                .setState(IndexState.Finished)
+                .build();
+        IndexDescription index2 = IndexDescription.newBuilder()
+                .setIndexName("age")
+                .setFieldName("age")
+                .addParams(KeyValuePair.newBuilder()
+                        .setKey("index_type")
+                        .setValue("INVERTED")
+                        .build())
+                .setState(IndexState.Finished)
+                .build();
+        DescribeIndexResponse describeIndexResponse = DescribeIndexResponse.newBuilder()
+                .setStatus(successStatus)
+                .addIndexDescriptions(index1)
+                .addIndexDescriptions(index2)
+                .build();
+        when(blockingStub.listDatabases(any())).thenReturn(ListDatabasesResponse.newBuilder().setStatus(successStatus).addDbNames("default").build());
+        // collection api
+        when(blockingStub.showCollections(any(ShowCollectionsRequest.class))).thenReturn(ShowCollectionsResponse.newBuilder().setStatus(successStatus).addAllCollectionNames(Collections.singletonList("test")).build());
+        when(blockingStub.createCollection(any(CreateCollectionRequest.class))).thenReturn(successStatus);
+        when(blockingStub.addCollectionStructField(any())).thenReturn(successStatus);
+        when(blockingStub.alterCollectionSchema(any())).thenReturn(AlterCollectionSchemaResponse.newBuilder().setAlterStatus(successStatus).build());
+        when(blockingStub.dropCollectionFunction(any())).thenReturn(successStatus);
+        when(blockingStub.loadCollection(any())).thenReturn(successStatus);
+        when(blockingStub.releaseCollection(any())).thenReturn(successStatus);
+        when(blockingStub.getLoadState(any())).thenReturn(GetLoadStateResponse.newBuilder().setState(LoadState.LoadStateLoaded).setStatus(successStatus).build());
+        when(blockingStub.dropCollection(any())).thenReturn(successStatus);
+        when(blockingStub.truncateCollection(any())).thenReturn(TruncateCollectionResponse.newBuilder().setStatus(successStatus).build());
+        when(blockingStub.hasCollection(any())).thenReturn(trueResponse);
+        when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
+        when(futureStub.describeCollection(any())).thenReturn(Futures.immediateFuture(describeCollectionResponse));
+        when(blockingStub.batchDescribeCollection(any())).thenReturn(BatchDescribeCollectionResponse.newBuilder()
+                .setStatus(successStatus)
+                .addResponses(describeCollectionResponse)
+                .build());
+        when(blockingStub.renameCollection(any())).thenReturn(successStatus);
+        when(blockingStub.getCollectionStatistics(any())).thenReturn(GetCollectionStatisticsResponse.newBuilder().addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build()).setStatus(successStatus).build());
+        when(blockingStub.getLoadingProgress(any())).thenReturn(GetLoadingProgressResponse.newBuilder().setStatus(successStatus).setProgress(100).build());
+
+        // index api
+        when(blockingStub.createIndex(any())).thenReturn(successStatus);
+        when(blockingStub.describeIndex(any())).thenReturn(describeIndexResponse);
+        when(blockingStub.dropIndex(any())).thenReturn(successStatus);
+
+        //vector api
+        when(blockingStub.insert(any())).thenReturn(MutationResult.newBuilder().setInsertCnt(2L).build());
+        when(blockingStub.upsert(any())).thenReturn(MutationResult.newBuilder().setUpsertCnt(2L).build());
+        when(blockingStub.query(any())).thenReturn(QueryResults.newBuilder().build());
+        when(futureStub.query(any())).thenReturn(Futures.immediateFuture(QueryResults.newBuilder().build()));
+        when(blockingStub.delete(any())).thenReturn(MutationResult.newBuilder().setDeleteCnt(2L).build());
+        SearchResults searchResults = SearchResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "123")
+                        .putExtraInfo("scanned_remote_bytes", "456")
+                        .putExtraInfo("scanned_total_bytes", "789")
+                        .putExtraInfo("cache_hit_ratio", "0.5")
+                        .build())
+                .setResults(SearchResultData.newBuilder().addScores(1L).addTopks(0L).build())
+                .build();
+        when(blockingStub.search(any())).thenReturn(searchResults);
+        when(blockingStub.hybridSearch(any())).thenReturn(searchResults);
+        when(futureStub.search(any())).thenReturn(Futures.immediateFuture(searchResults));
+        when(futureStub.hybridSearch(any())).thenReturn(Futures.immediateFuture(searchResults));
+
+        // partition api
+        when(blockingStub.createPartition(any())).thenReturn(successStatus);
+        when(blockingStub.dropPartition(any())).thenReturn(successStatus);
+        when(blockingStub.hasPartition(any())).thenReturn(trueResponse);
+        when(blockingStub.showPartitions(any())).thenReturn(ShowPartitionsResponse.newBuilder().setStatus(successStatus).addPartitionNames("test").build());
+        when(blockingStub.getPartitionStatistics(any())).thenReturn(GetPartitionStatisticsResponse.newBuilder()
+                .setStatus(successStatus)
+                .addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build())
+                .build());
+        when(blockingStub.loadPartitions(any())).thenReturn(successStatus);
+        when(blockingStub.releasePartitions(any())).thenReturn(successStatus);
+
+        // role api
+        when(blockingStub.createRole(any())).thenReturn(successStatus);
+        when(blockingStub.alterRole(any())).thenReturn(successStatus);
+        when(blockingStub.dropRole(any())).thenReturn(successStatus);
+        when(blockingStub.selectRole(any())).thenReturn(SelectRoleResponse.newBuilder().setStatus(successStatus).addResults(RoleResult.newBuilder().setRole(RoleEntity.newBuilder().setName("role_test").setDescription("role description").build()).build()).build());
+        when(blockingStub.selectGrant(any())).thenReturn(SelectGrantResponse.newBuilder().setStatus(successStatus).addEntities(GrantEntity.newBuilder().setDbName("test").setObjectName("test").setObject(ObjectEntity.newBuilder().setName("test").build()).build()).build());
+
+        when(blockingStub.operatePrivilege(any())).thenReturn(successStatus);
+        when(blockingStub.operateUserRole(any())).thenReturn(successStatus);
+
+        // user api
+        when(blockingStub.listCredUsers(any())).thenReturn(ListCredUsersResponse.newBuilder().addUsernames("user_test").build());
+        when(blockingStub.createCredential(any())).thenReturn(successStatus);
+        when(blockingStub.updateCredential(any())).thenReturn(successStatus);
+        when(blockingStub.deleteCredential(any())).thenReturn(successStatus);
+        when(blockingStub.selectUser(any())).thenReturn(SelectUserResponse.newBuilder().setStatus(successStatus).addResults(UserResult.newBuilder().setUser(UserEntity.newBuilder().setName("user_test").build()).setDescription("user description").build()).build());
+
+        // utility api
+        when(blockingStub.flush(any())).thenReturn(FlushResponse.newBuilder().setStatus(successStatus).build());
+        when(blockingStub.getPersistentSegmentInfo(any())).thenReturn(GetPersistentSegmentInfoResponse.newBuilder()
+                .setStatus(successStatus)
+                .addInfos(PersistentSegmentInfo.newBuilder()
+                        .setSegmentID(1L)
+                        .setCollectionID(2L)
+                        .setPartitionID(3L)
+                        .setNumRows(4L)
+                        .setState(SegmentState.Flushed)
+                        .setLevel(SegmentLevel.L1)
+                        .setStorageVersion(5L)
+                        .setIsSorted(true)
+                        .build())
+                .build());
+        when(blockingStub.getQuerySegmentInfo(any())).thenReturn(GetQuerySegmentInfoResponse.newBuilder()
+                .setStatus(successStatus)
+                .addInfos(QuerySegmentInfo.newBuilder()
+                        .setSegmentID(6L)
+                        .setCollectionID(7L)
+                        .setPartitionID(8L)
+                        .setMemSize(9L)
+                        .setNumRows(10L)
+                        .setIndexName("test_index")
+                        .setIndexID(11L)
+                        .setState(SegmentState.Sealed)
+                        .setLevel(SegmentLevel.L1)
+                        .addNodeIds(12L)
+                        .setStorageVersion(13L)
+                        .setIsSorted(true)
+                        .build())
+                .build());
+        when(blockingStub.createAlias(any())).thenReturn(successStatus);
+        when(blockingStub.dropAlias(any())).thenReturn(successStatus);
+        when(blockingStub.alterAlias(any())).thenReturn(successStatus);
+        when(blockingStub.describeAlias(any())).thenReturn(DescribeAliasResponse.newBuilder().setStatus(successStatus).build());
+        when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus)
+                .setCollectionName("test").setDbName("default").addAliases("test_alias").build());
+        when(blockingStub.allocTimestamp(any())).thenReturn(AllocTimestampResponse.newBuilder().setStatus(successStatus).setTimestamp(1L).build());
+        when(blockingStub.getCompactionStateWithPlans(any())).thenReturn(GetCompactionPlansResponse.newBuilder()
+                .setStatus(successStatus)
+                .setState(io.milvus.grpc.CompactionState.Executing)
+                .addMergeInfos(io.milvus.grpc.CompactionMergeInfo.newBuilder()
+                        .setTarget(1L)
+                        .addSources(2L)
+                        .build())
+                .build());
+
+        // external collection api
+        when(blockingStub.refreshExternalCollection(any())).thenReturn(
+                RefreshExternalCollectionResponse.newBuilder().setStatus(successStatus).setJobId(12345L).build());
+        when(blockingStub.getRefreshExternalCollectionProgress(any())).thenReturn(
+                GetRefreshExternalCollectionProgressResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setJobInfo(io.milvus.grpc.RefreshExternalCollectionJobInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setCollectionName("ext_coll")
+                                .setState(RefreshExternalCollectionState.RefreshCompleted)
+                                .setProgress(100)
+                                .setReason("")
+                                .setExternalSource("s3://bucket/path")
+                                .setExternalSpec("{\"format\":\"parquet\"}")
+                                .setStartTime(1000L)
+                                .setEndTime(2000L)
+                                .build())
+                        .build());
+        when(blockingStub.listRefreshExternalCollectionJobs(any())).thenReturn(
+                ListRefreshExternalCollectionJobsResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addJobs(io.milvus.grpc.RefreshExternalCollectionJobInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setCollectionName("ext_coll")
+                                .setState(RefreshExternalCollectionState.RefreshCompleted)
+                                .setProgress(100)
+                                .setExternalSource("s3://bucket/path")
+                                .setStartTime(1000L)
+                                .setEndTime(2000L)
+                                .build())
+                        .addJobs(io.milvus.grpc.RefreshExternalCollectionJobInfo.newBuilder()
+                                .setJobId(12346L)
+                                .setCollectionName("ext_coll")
+                                .setState(RefreshExternalCollectionState.RefreshInProgress)
+                                .setProgress(50)
+                                .setExternalSource("s3://bucket/path2")
+                                .setStartTime(3000L)
+                                .setEndTime(0L)
+                                .build())
+                        .build());
+
+        // file resource api
+        when(blockingStub.addFileResource(any())).thenReturn(successStatus);
+        when(blockingStub.removeFileResource(any())).thenReturn(successStatus);
+        when(blockingStub.listFileResources(any())).thenReturn(
+                ListFileResourcesResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addResources(io.milvus.grpc.FileResourceInfo.newBuilder()
+                                .setId(1L)
+                                .setName("test_resource")
+                                .setPath("/data/test.parquet")
+                                .build())
+                        .addResources(io.milvus.grpc.FileResourceInfo.newBuilder()
+                                .setId(2L)
+                                .setName("test_resource_2")
+                                .setPath("/data/test2.parquet")
+                                .build())
+                        .build());
+
+        // cdc api
+        ReplicateConfiguration replicateConfiguration = ReplicateConfiguration.newBuilder()
+                .addClusters(MilvusCluster.newBuilder()
+                        .setClusterId("source_cluster")
+                        .setConnectionParam(ConnectionParam.newBuilder()
+                                .setUri("http://source.example.com:19530")
+                                .setToken("source-token")
+                                .build())
+                        .addPchannels("by-dev-rootcoord-dml_0")
+                        .build())
+                .addClusters(MilvusCluster.newBuilder()
+                        .setClusterId("target_cluster")
+                        .setConnectionParam(ConnectionParam.newBuilder()
+                                .setUri("http://target.example.com:19530")
+                                .setToken("target-token")
+                                .build())
+                        .addPchannels("by-dev-rootcoord-dml_1")
+                        .build())
+                .addCrossClusterTopology(CrossClusterTopology.newBuilder()
+                        .setSourceClusterId("source_cluster")
+                        .setTargetClusterId("target_cluster")
+                        .build())
+                .build();
+        ReplicateCheckpoint replicateCheckpoint = ReplicateCheckpoint.newBuilder()
+                .setClusterId("source_cluster")
+                .setPchannel("by-dev-rootcoord-dml_0")
+                .setMessageId(MessageID.newBuilder()
+                        .setId("message-id-1")
+                        .setWALName(WALName.RocksMQ)
+                        .build())
+                .setTimeTick(1000L)
+                .build();
+        ReplicateCheckpoint salvageReplicateCheckpoint = ReplicateCheckpoint.newBuilder()
+                .setClusterId("source_cluster")
+                .setPchannel("by-dev-rootcoord-dml_0")
+                .setMessageId(MessageID.newBuilder()
+                        .setId("message-id-2")
+                        .setWALName(WALName.Kafka)
+                        .build())
+                .setTimeTick(2000L)
+                .build();
+        when(blockingStub.getReplicateInfo(any())).thenReturn(
+                GetReplicateInfoResponse.newBuilder()
+                        .setCheckpoint(replicateCheckpoint)
+                        .setSalvageCheckpoint(salvageReplicateCheckpoint)
+                        .build());
+        when(blockingStub.getReplicateConfiguration(any())).thenReturn(
+                GetReplicateConfigurationResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setConfiguration(replicateConfiguration)
+                        .build());
+        when(blockingStub.updateReplicateConfiguration(any())).thenReturn(successStatus);
+        when(blockingStub.dumpMessages(any())).thenReturn(Arrays.asList(
+                DumpMessagesResponse.newBuilder()
+                        .setMessage(ImmutableMessage.newBuilder()
+                                .setId(MessageID.newBuilder()
+                                        .setId("message-id-2")
+                                        .setWALName(WALName.Kafka)
+                                        .build())
+                                .setPayload(com.google.protobuf.ByteString.copyFromUtf8("payload-1"))
+                                .putProperties("source", "primary")
+                                .build())
+                        .build(),
+                DumpMessagesResponse.newBuilder()
+                        .setMessage(ImmutableMessage.newBuilder()
+                                .setId(MessageID.newBuilder()
+                                        .setId("message-id-3")
+                                        .setWALName(WALName.Pulsar)
+                                        .build())
+                                .setPayload(com.google.protobuf.ByteString.copyFromUtf8("payload-2"))
+                                .putProperties("source", "secondary")
+                                .build())
+                        .build()).iterator());
+
+        // snapshot api
+        when(blockingStub.createSnapshot(any())).thenReturn(successStatus);
+        when(blockingStub.dropSnapshot(any())).thenReturn(successStatus);
+        when(blockingStub.listSnapshots(any())).thenReturn(
+                ListSnapshotsResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addSnapshots("snapshot_1")
+                        .addSnapshots("snapshot_2")
+                        .build());
+        when(blockingStub.describeSnapshot(any())).thenReturn(
+                DescribeSnapshotResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setName("snapshot_1")
+                        .setDescription("test snapshot")
+                        .setCollectionName("test")
+                        .addPartitionNames("_default")
+                        .setCreateTs(1000L)
+                        .setS3Location("s3://bucket/snapshot_1")
+                        .build());
+        when(blockingStub.restoreSnapshot(any())).thenReturn(
+                RestoreSnapshotResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setJobId(12345L)
+                        .build());
+        when(blockingStub.getRestoreSnapshotState(any())).thenReturn(
+                GetRestoreSnapshotStateResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setInfo(RestoreSnapshotInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setSnapshotName("snapshot_1")
+                                .setDbName("default")
+                                .setCollectionName("restored_collection")
+                                .setState(RestoreSnapshotState.RestoreSnapshotCompleted)
+                                .setProgress(100)
+                                .setReason("")
+                                .setStartTime(1000L)
+                                .setTimeCost(2000L)
+                                .build())
+                        .build());
+        when(blockingStub.listRestoreSnapshotJobs(any())).thenReturn(
+                ListRestoreSnapshotJobsResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addJobs(RestoreSnapshotInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setSnapshotName("snapshot_1")
+                                .setDbName("default")
+                                .setCollectionName("restored_collection")
+                                .setState(RestoreSnapshotState.RestoreSnapshotCompleted)
+                                .setProgress(100)
+                                .setReason("")
+                                .setStartTime(1000L)
+                                .setTimeCost(2000L)
+                                .build())
+                        .addJobs(RestoreSnapshotInfo.newBuilder()
+                                .setJobId(12346L)
+                                .setSnapshotName("snapshot_2")
+                                .setDbName("default")
+                                .setCollectionName("restored_collection_2")
+                                .setState(RestoreSnapshotState.RestoreSnapshotExecuting)
+                                .setProgress(50)
+                                .setReason("")
+                                .setStartTime(3000L)
+                                .setTimeCost(0L)
+                                .build())
+                        .build());
+        when(blockingStub.pinSnapshotData(any())).thenReturn(
+                PinSnapshotDataResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setPinId(54321L)
+                        .build());
+        when(blockingStub.unpinSnapshotData(any())).thenReturn(successStatus);
+    }
+
+    @AfterEach
+    public void tearDown() throws InterruptedException {
+        client_v2.close(3);
+    }
+}

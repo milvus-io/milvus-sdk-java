@@ -1,0 +1,207 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package io.milvus.integration.v2.service.collection;
+
+import io.milvus.exception.ParamException;
+import io.milvus.grpc.AddCollectionStructFieldRequest;
+import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.StructArrayFieldSchema;
+import io.milvus.support.v2.BaseTest;
+import io.milvus.v2.common.DataType;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.utils.SchemaUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.mockito.Mockito.verify;
+
+@Tag("integration")
+class CollectionStructFieldTest extends BaseTest {
+
+    private String getParam(List<KeyValuePair> params, String key) {
+        return params.stream()
+                .filter(param -> key.equals(param.getKey()))
+                .map(KeyValuePair::getValue)
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Test
+    void testAddCollectionStructField() {
+        AddCollectionStructFieldReq request = AddCollectionStructFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("metadata")
+                .description("struct field")
+                .maxCapacity(16)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Float)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("embedding")
+                        .dataType(DataType.FloatVector)
+                        .dimension(4)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("binary_embedding")
+                        .dataType(DataType.BinaryVector)
+                        .dimension(32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("float16_embedding")
+                        .dataType(DataType.Float16Vector)
+                        .dimension(16)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("bfloat16_embedding")
+                        .dataType(DataType.BFloat16Vector)
+                        .dimension(16)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("int8_embedding")
+                        .dataType(DataType.Int8Vector)
+                        .dimension(16)
+                        .build())
+                .typeParam("mmap.enabled", "true")
+                .typeParam("warmup", "{\"policy\":\"async\"}")
+                .build();
+
+        client_v2.addCollectionStructField(request);
+
+        ArgumentCaptor<AddCollectionStructFieldRequest> captor = ArgumentCaptor.forClass(AddCollectionStructFieldRequest.class);
+        verify(blockingStub).addCollectionStructField(captor.capture());
+        AddCollectionStructFieldRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+
+        StructArrayFieldSchema structSchema = rpcRequest.getStructArrayFieldSchema();
+        Assertions.assertEquals("metadata", structSchema.getName());
+        Assertions.assertEquals("struct field", structSchema.getDescription());
+        Assertions.assertTrue(structSchema.getNullable());
+        Assertions.assertEquals("true", getParam(structSchema.getTypeParamsList(), "mmap.enabled"));
+        Assertions.assertEquals("{\"policy\":\"async\"}", getParam(structSchema.getTypeParamsList(), "warmup"));
+
+        FieldSchema scoreField = structSchema.getFields(0);
+        Assertions.assertEquals("score", scoreField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Array, scoreField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Float, scoreField.getElementType());
+        Assertions.assertEquals("16", getParam(scoreField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema embeddingField = structSchema.getFields(1);
+        Assertions.assertEquals("embedding", embeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, embeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.FloatVector, embeddingField.getElementType());
+        Assertions.assertEquals("4", getParam(embeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(embeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema binaryEmbeddingField = structSchema.getFields(2);
+        Assertions.assertEquals("binary_embedding", binaryEmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, binaryEmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.BinaryVector, binaryEmbeddingField.getElementType());
+        Assertions.assertEquals("32", getParam(binaryEmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(binaryEmbeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema float16EmbeddingField = structSchema.getFields(3);
+        Assertions.assertEquals("float16_embedding", float16EmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, float16EmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Float16Vector, float16EmbeddingField.getElementType());
+        Assertions.assertEquals("16", getParam(float16EmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(float16EmbeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema bfloat16EmbeddingField = structSchema.getFields(4);
+        Assertions.assertEquals("bfloat16_embedding", bfloat16EmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, bfloat16EmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.BFloat16Vector, bfloat16EmbeddingField.getElementType());
+        Assertions.assertEquals("16", getParam(bfloat16EmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(bfloat16EmbeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema int8EmbeddingField = structSchema.getFields(5);
+        Assertions.assertEquals("int8_embedding", int8EmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, int8EmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Int8Vector, int8EmbeddingField.getElementType());
+        Assertions.assertEquals("16", getParam(int8EmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(int8EmbeddingField.getTypeParamsList(), "max_capacity"));
+    }
+
+    @Test
+    void testAddCollectionStructFieldRejectsNullableFalse() {
+        AddCollectionStructFieldReq request = AddCollectionStructFieldReq.builder()
+                .collectionName("test")
+                .fieldName("metadata")
+                .maxCapacity(16)
+                .nullable(Boolean.FALSE)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Float)
+                        .build())
+                .build();
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addCollectionStructField(request));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddCollectionStructFieldWrapsStructValidationError() {
+        AddCollectionStructFieldReq request = AddCollectionStructFieldReq.builder()
+                .collectionName("test")
+                .fieldName("metadata")
+                .maxCapacity(16)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Float)
+                        .isNullable(Boolean.TRUE)
+                        .build())
+                .build();
+
+        ParamException exception = Assertions.assertThrows(ParamException.class, request::toStructFieldSchema);
+        Assertions.assertTrue(exception.getMessage().contains("cannot be nullable"));
+    }
+
+    @Test
+    void testStructFieldSchemaNormalizesNullNullable() {
+        CreateCollectionReq.StructFieldSchema structFieldSchema = CreateCollectionReq.StructFieldSchema.builder()
+                .name("metadata")
+                .maxCapacity(16)
+                .nullable(null)
+                .fields(Collections.singletonList(CreateCollectionReq.FieldSchema.builder()
+                        .name("score")
+                        .dataType(DataType.Float)
+                        .build()))
+                .build();
+
+        Assertions.assertFalse(structFieldSchema.getNullable());
+
+        structFieldSchema.setNullable(null);
+        Assertions.assertFalse(structFieldSchema.getNullable());
+
+        StructArrayFieldSchema grpcStructSchema = SchemaUtils.convertToGrpcStructFieldSchema(structFieldSchema);
+        Assertions.assertFalse(grpcStructSchema.getNullable());
+    }
+}

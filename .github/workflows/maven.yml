@@ -34,8 +34,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Update submodule
         run: git submodule update --init
-      - name: Build with Maven
+      - name: Unit tests (ut)
         run: mvn -Pcoverage --batch-mode --update-snapshots verify
+      - name: Integration tests (it)
+        run: mvn -Pintegration -Dtest.groups=integration --batch-mode --update-snapshots verify
+      - name: System tests (st)
+        run: mvn -Psystem -Dtest.groups=system --batch-mode --update-snapshots verify
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:

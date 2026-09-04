@@ -32,6 +32,7 @@ import io.milvus.bulkwriter.response.volume.ListVolumesResponse;
 import io.milvus.bulkwriter.response.volume.VolumeInfo;
 import io.milvus.bulkwriter.storage.StorageClient;
 import io.milvus.exception.ParamException;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -51,6 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 public class VolumeManagerTest {
 
     private final Gson gson = new Gson();
