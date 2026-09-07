@@ -179,7 +179,7 @@ public class CreateCollectionParam {
          *
          * @param enableDynamicField enableDynamicField of the collection
          * @return <code>Builder</code>
-         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} replace
          */
         @Deprecated
         public Builder withEnableDynamicField(boolean enableDynamicField) {
@@ -207,7 +207,7 @@ public class CreateCollectionParam {
          * @param fieldTypes a <code>List</code> of {@link FieldType}
          * @return <code>Builder</code>
          * @see FieldType
-         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} replace
          */
         @Deprecated
         public Builder withFieldTypes(List<FieldType> fieldTypes) {
@@ -224,7 +224,7 @@ public class CreateCollectionParam {
          * @param fieldType a {@link FieldType} object
          * @return <code>Builder</code>
          * @see FieldType
-         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} replace
          */
         @Deprecated
         public Builder addFieldType(FieldType fieldType) {
