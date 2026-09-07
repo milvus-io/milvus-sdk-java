@@ -23,6 +23,7 @@ import io.milvus.telemetry.ClientTelemetryManager;
 import io.milvus.telemetry.TelemetryConfig;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+@Tag("unit")
 class GlobalStubTelemetryHandoffTest {
     @Test
     void retargetPublishesCurrentAndFuturePrimaryToNewOwner() {

@@ -21,6 +21,7 @@ package io.milvus.bulkwriter.storage.client;
 
 import io.milvus.bulkwriter.storage.StorageClient;
 import io.milvus.exception.ParamException;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("unit")
 public class ProgressInputStreamTest {
 
     @Test
