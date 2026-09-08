@@ -1,0 +1,65 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package io.milvus.unit.v2.service.snapshot;
+
+import io.milvus.v2.service.snapshot.request.GetRestoreSnapshotStateReq;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+@Tag("unit")
+class GetRestoreSnapshotStateReqTest {
+    @Test
+    void builderBuildsAllFields() {
+        GetRestoreSnapshotStateReq request = GetRestoreSnapshotStateReq.builder()
+                .jobId(123L)
+                .build();
+
+        assertEquals(Long.valueOf(123L), request.getJobId());
+    }
+
+    @Test
+    void unsetFieldDefaultsToNull() {
+        GetRestoreSnapshotStateReq request = GetRestoreSnapshotStateReq.builder().build();
+
+        assertNull(request.getJobId());
+    }
+
+    @Test
+    void setterUpdatesField() {
+        GetRestoreSnapshotStateReq request = GetRestoreSnapshotStateReq.builder().build();
+
+        request.setJobId(456L);
+
+        assertEquals(Long.valueOf(456L), request.getJobId());
+    }
+
+    @Test
+    void toStringContainsFields() {
+        GetRestoreSnapshotStateReq request = GetRestoreSnapshotStateReq.builder()
+                .jobId(1L)
+                .build();
+
+        String text = request.toString();
+        assertEquals("GetRestoreSnapshotStateReq{jobId=1}", text);
+    }
+}

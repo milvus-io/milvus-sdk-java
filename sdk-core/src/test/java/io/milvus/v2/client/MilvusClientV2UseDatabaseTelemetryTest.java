@@ -23,6 +23,7 @@ import io.grpc.ManagedChannel;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.telemetry.ClientTelemetryManager;
 import io.milvus.telemetry.TelemetryConfig;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+@Tag("unit")
 class MilvusClientV2UseDatabaseTelemetryTest {
     @Test
     void candidateFailureLeavesActiveConnectionAndTelemetryUntouched() throws Exception {
