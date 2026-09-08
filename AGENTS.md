@@ -46,6 +46,36 @@ mvn exec:java -Dexec.mainClass="io.milvus.v2.SimpleExample"
   header comment of each class for its prerequisites.
 - Prefer `io.milvus.v2.*` for new example code, matching the V2-first development policy below.
 
+## Tutorials
+
+`tutorial/` is a set of beginner-oriented, standalone Maven projects for learning the SDK, mirroring the
+`tutorial/` layout of the C++ and Rust SDKs. Unlike `examples/`, each tutorial depends on the **published**
+`milvus-sdk-java` artifact (from Maven Central), not the local source tree, so the learner's experience
+matches an application developer installing the SDK.
+
+```text
+tutorial/
+├── pom.xml                    # parent POM; single source of the milvus-sdk-java version
+├── 1_quickstart/
+├── 2_collection/
+├── 3_schema/
+├── 4_index/
+├── 5_dml/
+├── 6_dql/
+├── 7_database/
+└── 8_rbac/
+```
+
+- `tutorial/pom.xml` is the aggregator/parent POM. The `milvus-sdk-java` version is declared once there
+  (e.g. `<milvus.sdk.version>3.0.9</milvus.sdk.version>` in `<dependencyManagement>`) and inherited by the
+  eight child modules — it must **not** be duplicated in each child `pom.xml`.
+- **When releasing a new SDK version, update the `milvus-sdk-java` version in `tutorial/pom.xml`
+  (`milvus.sdk.version`) so tutorials keep consuming the latest published release.**
+- Each child module is runnable standalone: `cd tutorial/1_quickstart && mvn exec:java`.
+- Connection settings use `MILVUS_URI` / `MILVUS_TOKEN` env vars, defaulting to
+  `http://localhost:19530` / `root:Milvus` (same convention as the C++/Rust SDK tutorials).
+- The source-linked examples used for SDK development and testing remain under `examples/`.
+
 ## SDK generations
 
 Two API generations coexist inside `sdk-core`:
@@ -88,13 +118,20 @@ mvn install                          # builds sdk-core + sdk-bulkwriter
 
 ## Testing
 
-Three layers under `sdk-core/src/test/java/io/milvus/`, tagged with JUnit 5 `@Tag`:
+Since the sdk-core test reorganization on `master` (#2070) the test tree is split into three layers
+under `sdk-core/src/test/java/io/milvus/`, tagged with JUnit 5 `@Tag`:
 
 | Layer | Tag | Depends on | Examples |
 |---|---|---|---|
 | Unit | `@Tag("unit")` | none | request/response DTO builders, utils, caches, enums, interceptors |
 | Integration | `@Tag("integration")` | mock gRPC stub (`support/v2/BaseTest` for V2, in-process `MockMilvusServer` for V1) | facade method forwarding, error mapping, ts/schema caches |
 | System | `@Tag("system")` | real Milvus standalone via Docker | end-to-end |
+
+Before the v3.0.9-era rework the tests lived in a single tree mirroring the `io.milvus.*` production
+packages (`v2/`, `client/`, `param/`, ...) with no type separation and no tag-driven
+filtering. The rework instead groups tests by layer (`unit/`, `integration/`,
+`system/`), then by SDK generation (`v1/`, `v2/`, `common/`), and makes each layer
+selectable via JUnit tags.
 
 Run a layer with:
 
@@ -119,7 +156,8 @@ mvn -pl sdk-core -Psystem test       # unit + integration + system (Docker)
 
 - `.github/workflows/maven.yml` splits into two jobs:
   - `Build and test on ubuntu` (`ubuntu-latest`): bulkwriter unit tests + system tests (`-Psystem`).
-  - `Build and test on windows` (`windows-2022`): sdk-core unit + integration tests (`-Pintegration`).
+  - `Build and test on windows` (`windows-2022`): tutorials compile + sdk-core unit + integration
+    tests (`-Pintegration`).
 - Coverage is collected with JaCoCo (`-Pcoverage`); each step writes a per-step exec/report via
   `-Djacoco.destFile` / `-Djacoco.reportDir`, and codecov uploads the ut/it/st reports.
 - The JaCoCo report excludes proto-generated packages (`io/milvus/grpc/**`, `milvus/proto/**`) so codecov
