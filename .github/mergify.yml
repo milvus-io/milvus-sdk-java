@@ -54,7 +54,7 @@ pull_request_rules:
         add:
           - ci-passed
 
-  - name: Remove ci-passed when required check is not successful
+  - name: Remove ci-passed when required check is not green
     conditions:
       - or:
         - base=master
@@ -62,8 +62,12 @@ pull_request_rules:
         - base~=2\.\d
       - 'files~=^(?!(doc/|benchmark/|examples/|.*\.md$|(.*/)?OWNERS$|LICENSE$))'
       - or:
-        - -status-success=Build and test on ubuntu
-        - -status-success=Build and test on windows
+          # Both pending and failure are checked so the label is removed as soon as a new commit
+          # triggers a re-run, instead of lingering until a check actually fails.
+          - "check-pending=Build and test on ubuntu"
+          - "check-pending=Build and test on windows"
+          - "check-failure=Build and test on ubuntu"
+          - "check-failure=Build and test on windows"
     actions:
       label:
         remove:

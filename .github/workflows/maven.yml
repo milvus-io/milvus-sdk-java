@@ -32,8 +32,10 @@ jobs:
           cache: maven
       - name: Update submodule
         run: git submodule update --init
-      - name: sdk-core unit tests (ut)
-        run: mvn -pl sdk-core -Pcoverage "-Djacoco.destFile=target/jacoco-ut-core.exec" "-Djacoco.reportDir=target/site/jacoco-ut-core" --batch-mode --update-snapshots verify
+      # BulkWriter must be tested on linux: several unit tests write Parquet files locally and
+      # require Hadoop's native WinUtils, which is only bundled for linux. On windows these tests
+      # fail with "HADOOP_HOME and hadoop.home.dir are unset" (see PR #2075), so keep this step on
+      # the ubuntu job.
       - name: BulkWriter unit tests (ut)
         run: mvn -pl sdk-bulkwriter -Pcoverage "-Djacoco.destFile=target/jacoco-ut-bulk.exec" "-Djacoco.reportDir=target/site/jacoco-ut-bulk" --batch-mode --update-snapshots verify
       - name: System tests (st)
@@ -41,7 +43,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
-          files: ./sdk-core/target/site/jacoco-ut-core/jacoco.xml,./sdk-core/target/site/jacoco-st/jacoco.xml,./sdk-bulkwriter/target/site/jacoco-ut-bulk/jacoco.xml
+          files: ./sdk-core/target/site/jacoco-st/jacoco.xml,./sdk-bulkwriter/target/site/jacoco-ut-bulk/jacoco.xml
           name: ubuntu-jacoco-coverage
           disable_safe_directory: true
           verbose: true
@@ -60,6 +62,8 @@ jobs:
           cache: maven
       - name: Update submodule
         run: git submodule update --init
+      - name: Tutorials compile (published SDK)
+        run: mvn -f tutorial/pom.xml compile --batch-mode
       - name: Unit tests (ut)
         run: mvn -pl sdk-core -Pcoverage "-Djacoco.destFile=target/jacoco-ut.exec" "-Djacoco.reportDir=target/site/jacoco-ut" --batch-mode --update-snapshots verify
       - name: Integration tests (it)
