@@ -33,6 +33,7 @@ ignore:
   - benchmark
   - doc
   - examples
+  - tutorial
   - tests
   - "**/*.md"
   - "**/*.yml"
