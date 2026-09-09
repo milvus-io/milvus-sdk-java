@@ -26,6 +26,7 @@ import io.milvus.bulkwriter.request.import_.MilvusImportRequest;
 import io.milvus.bulkwriter.request.list.CloudListImportJobsRequest;
 import io.milvus.common.utils.JsonUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -45,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Tag("unit")
 public class BulkImportUtilsTest {
     @Test
     void testBulkImport() throws IOException {

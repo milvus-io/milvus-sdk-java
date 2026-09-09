@@ -18,8 +18,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
-    name: Build and test
+  ubuntu:
+    name: Build and test on ubuntu
     runs-on: ubuntu-latest
 
     steps:
@@ -30,16 +30,44 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Update submodule
         run: git submodule update --init
-      - name: Build with Maven
-        run: mvn -Pcoverage --batch-mode --update-snapshots verify
+      - name: sdk-core unit tests (ut)
+        run: mvn -pl sdk-core -Pcoverage "-Djacoco.destFile=target/jacoco-ut-core.exec" "-Djacoco.reportDir=target/site/jacoco-ut-core" --batch-mode --update-snapshots verify
+      - name: BulkWriter unit tests (ut)
+        run: mvn -pl sdk-bulkwriter -Pcoverage "-Djacoco.destFile=target/jacoco-ut-bulk.exec" "-Djacoco.reportDir=target/site/jacoco-ut-bulk" --batch-mode --update-snapshots verify
+      - name: System tests (st)
+        run: mvn -Pcoverage -Psystem "-Dtest.groups=system" "-Djacoco.destFile=target/jacoco-st.exec" "-Djacoco.reportDir=target/site/jacoco-st" --batch-mode --update-snapshots verify
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
-          files: ./sdk-core/target/site/jacoco/jacoco.xml,./sdk-bulkwriter/target/site/jacoco/jacoco.xml
+          files: ./sdk-core/target/site/jacoco-ut-core/jacoco.xml,./sdk-core/target/site/jacoco-st/jacoco.xml,./sdk-bulkwriter/target/site/jacoco-ut-bulk/jacoco.xml
           name: ubuntu-jacoco-coverage
+          disable_safe_directory: true
+          verbose: true
+
+  windows:
+    name: Build and test on windows
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: maven
+      - name: Update submodule
+        run: git submodule update --init
+      - name: Unit tests (ut)
+        run: mvn -pl sdk-core -Pcoverage "-Djacoco.destFile=target/jacoco-ut.exec" "-Djacoco.reportDir=target/site/jacoco-ut" --batch-mode --update-snapshots verify
+      - name: Integration tests (it)
+        run: mvn -pl sdk-core -Pcoverage -Pintegration "-Dtest.groups=integration" "-Djacoco.destFile=target/jacoco-it.exec" "-Djacoco.reportDir=target/site/jacoco-it" --batch-mode --update-snapshots verify
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./sdk-core/target/site/jacoco-ut/jacoco.xml,./sdk-core/target/site/jacoco-it/jacoco.xml
+          name: windows-jacoco-coverage
           disable_safe_directory: true
           verbose: true

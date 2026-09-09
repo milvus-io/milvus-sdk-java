@@ -34,7 +34,8 @@ pull_request_rules:
         - base=3.0
         - base~=2\.\d
       - 'files~=^(?!(doc/|benchmark/|examples/|.*\.md$|(.*/)?OWNERS$|LICENSE$))'
-      - "status-success=Build and test"
+      - status-success=Build and test on ubuntu
+      - status-success=Build and test on windows
     actions:
       label:
         add:
@@ -60,7 +61,9 @@ pull_request_rules:
         - base=3.0
         - base~=2\.\d
       - 'files~=^(?!(doc/|benchmark/|examples/|.*\.md$|(.*/)?OWNERS$|LICENSE$))'
-      - "-status-success=Build and test"
+      - or:
+        - -status-success=Build and test on ubuntu
+        - -status-success=Build and test on windows
     actions:
       label:
         remove:

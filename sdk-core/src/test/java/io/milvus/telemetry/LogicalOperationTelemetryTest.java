@@ -64,6 +64,7 @@ import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.RetryConfig;
 import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.FloatVec;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -85,6 +86,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@Tag("unit")
 class LogicalOperationTelemetryTest {
     @Test
     void v2TelemetryUsesStrictRequestIdAndCannotReplaceSuccessfulResult() throws Exception {
