@@ -275,6 +275,10 @@
                                     <excludes>
                                         <exclude>io/milvus/grpc/**</exclude>
                                         <exclude>milvus/proto/**</exclude>
+                                        <!-- examples/, tutorial/, and test sources are outside the
+                                             reactor and are not compiled into these modules, so
+                                             they never produce class files for this report;
+                                             codecov additionally ignores those paths. -->
                                     </excludes>
                                 </configuration>
                             </execution>
