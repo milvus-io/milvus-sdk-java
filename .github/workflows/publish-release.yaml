@@ -8,6 +8,14 @@ on:
 permissions:
   contents: read
 
+# CI job names the release must have passed on the tagged commit before publishing. Keep these
+# in sync with the `ubuntu` / `windows` job names in maven.yml: renaming a CI job there must
+# update the matching name here or every release validation fails with a "No successful ... check
+# was found" error.
+env:
+  UT_CHECK_UBUNTU: 'Build and test on ubuntu'
+  UT_CHECK_WINDOWS: 'Build and test on windows'
+
 # Maven Central releases are immutable. Do not publish two release tags at the same time,
 # and do not cancel a deployment after it has started uploading artifacts.
 concurrency:
@@ -16,9 +24,60 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Validate release commit
+    if: github.repository == 'milvus-io/milvus-sdk-java'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout release tag and history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag ancestry and completed CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+          approved_branch=""
+          if git merge-base --is-ancestor "${TAG_SHA}" origin/master; then
+            approved_branch="master"
+          else
+            while IFS= read -r branch; do
+              branch_name="${branch#origin/}"
+              if [[ "${branch_name}" =~ ^[0-9]+\.[0-9]+$ ]] && \
+                git merge-base --is-ancestor "${TAG_SHA}" "${branch}"; then
+                approved_branch="${branch_name}"
+                break
+              fi
+            done < <(git for-each-ref --format='%(refname:short)' 'refs/remotes/origin/')
+          fi
+          if [[ -z "${approved_branch}" ]]; then
+            echo "Release tag commit ${TAG_SHA} is not contained in master or a numeric release branch." >&2
+            exit 1
+          fi
+          echo "Release commit is contained in ${approved_branch}."
+
+          check_runs="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${TAG_SHA}/check-runs?per_page=100")"
+          for check_name in "${{ env.UT_CHECK_UBUNTU }}" "${{ env.UT_CHECK_WINDOWS }}"; do
+            if ! jq -e --arg name "${check_name}" --arg sha "${TAG_SHA}" \
+              '[.check_runs[] | select(.name == $name and .head_sha == $sha and .conclusion == "success")] | length > 0' <<<"${check_runs}" >/dev/null; then
+              echo "No successful ${check_name} check was found for ${TAG_SHA}." >&2
+              exit 1
+            fi
+          done
+          echo "Required post-merge checks passed for ${TAG_SHA}."
+
   publish:
     name: Publish Maven artifacts
-    if: github.repository == 'milvus-io/milvus-sdk-java'
+    needs: validate
+    if: needs.validate.result == 'success' && github.repository == 'milvus-io/milvus-sdk-java'
     runs-on: ubuntu-latest
     environment: maven-central
     timeout-minutes: 75
@@ -61,6 +120,8 @@ jobs:
             exit 1
           fi
 
+          ./scripts/extract_changelog.sh "${tag_version}" > /dev/null
+
           echo "Publishing milvus-sdk-java $project_version from tag $tag."
 
       - name: Publish to Maven Central
@@ -84,26 +145,38 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+
       - name: Prepare release metadata
         id: release-info
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
+
           version="${RELEASE_TAG#v}"
           release_date="$(date -u +%F)"
           milvus_minor="$(echo "$version" | cut -d. -f1,2)"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "release_date=${release_date}" >> "$GITHUB_OUTPUT"
           echo "milvus_minor=${milvus_minor}" >> "$GITHUB_OUTPUT"
+
+          changelog="$(./scripts/extract_changelog.sh "${version}")"
+          body_file="${RUNNER_TEMP}/release_body.md"
+          {
+            echo "Release date: ${release_date}"
+            echo "Compatible with Milvus v${milvus_minor}.x"
+            echo
+            printf '%s\n' "${changelog}"
+          } > "${body_file}"
+          echo "body_path=${body_file}" >> "${GITHUB_OUTPUT}"
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.ref_name }}
           name: milvus-sdk-java-${{ steps.release-info.outputs.version }}
-          body: |
-            Release date: ${{ steps.release-info.outputs.release_date }}
-            Compatible with Milvus v${{ steps.release-info.outputs.milvus_minor }}.x
+          bodyFile: ${{ steps.release-info.outputs.body_path }}
           draft: false
           allowUpdates: true
           omitNameDuringUpdate: true
