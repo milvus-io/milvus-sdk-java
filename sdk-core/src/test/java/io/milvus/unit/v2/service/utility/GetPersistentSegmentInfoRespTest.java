@@ -24,6 +24,7 @@ import io.milvus.v2.service.utility.response.GetPersistentSegmentInfoResp.Persis
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -99,7 +100,7 @@ class GetPersistentSegmentInfoRespTest {
 
     @Test
     void builderBuildsSegmentInfosList() {
-        List<PersistentSegmentInfo> infos = List.of(PersistentSegmentInfo.builder().segmentID(1L).build());
+        List<PersistentSegmentInfo> infos = Arrays.asList(PersistentSegmentInfo.builder().segmentID(1L).build());
 
         GetPersistentSegmentInfoResp response = GetPersistentSegmentInfoResp.builder()
                 .segmentInfos(infos)
@@ -119,7 +120,7 @@ class GetPersistentSegmentInfoRespTest {
     void setterUpdatesSegmentInfos() {
         GetPersistentSegmentInfoResp response = GetPersistentSegmentInfoResp.builder().build();
 
-        List<PersistentSegmentInfo> infos = List.of(PersistentSegmentInfo.builder().segmentID(2L).build());
+        List<PersistentSegmentInfo> infos = Arrays.asList(PersistentSegmentInfo.builder().segmentID(2L).build());
         response.setSegmentInfos(infos);
 
         assertSame(infos, response.getSegmentInfos());

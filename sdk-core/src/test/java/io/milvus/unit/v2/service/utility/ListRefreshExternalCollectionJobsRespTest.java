@@ -24,6 +24,7 @@ import io.milvus.v2.service.utility.response.RefreshExternalCollectionJobInfo;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -34,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ListRefreshExternalCollectionJobsRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<RefreshExternalCollectionJobInfo> jobs = List.of(
+        List<RefreshExternalCollectionJobInfo> jobs = Arrays.asList(
                 RefreshExternalCollectionJobInfo.builder().jobId(1L).build());
 
         ListRefreshExternalCollectionJobsResp response = ListRefreshExternalCollectionJobsResp.builder()
@@ -54,7 +55,7 @@ class ListRefreshExternalCollectionJobsRespTest {
     @Test
     void toStringContainsFields() {
         ListRefreshExternalCollectionJobsResp response = ListRefreshExternalCollectionJobsResp.builder()
-                .jobs(List.of(RefreshExternalCollectionJobInfo.builder().jobId(1L).build()))
+                .jobs(Arrays.asList(RefreshExternalCollectionJobInfo.builder().jobId(1L).build()))
                 .build();
 
         String text = response.toString();
