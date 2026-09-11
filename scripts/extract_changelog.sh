@@ -19,7 +19,8 @@
 # Works with common changelog heading styles, e.g. `## X.Y.Z (date)`,
 # `## [X.Y.Z] - date`, `# vX.Y.Z (date)`, or `## <project> X.Y.Z (date)`.
 # A version token is matched with numeric boundaries, so `3.0.1` never matches
-# inside `3.0.10`.
+# inside `3.0.10`, and pre-release suffixes such as `3.0.3-rc1` never match
+# when looking for `3.0.3`.
 
 set -euo pipefail
 
@@ -102,7 +103,7 @@ output="$(
     BEGIN {
       ver = version
       gsub(/\./, "\\.", ver)
-      pattern = "(^|[^0-9A-Za-z.])" ver "([^0-9A-Za-z.]|$)"
+      pattern = "(^|[^0-9A-Za-z._-])" ver "([^0-9A-Za-z._-]|$)"
       found = 0
     }
     {

@@ -25,6 +25,7 @@ import io.milvus.v2.service.utility.response.GetCompactionPlansResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,8 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class GetCompactionPlansRespTest {
     @Test
     void builderBuildsAllFields() {
-        CompactionPlan plan = CompactionPlan.builder().target(10L).sources(List.of(1L, 2L)).build();
-        List<CompactionPlan> plans = List.of(plan);
+        CompactionPlan plan = CompactionPlan.builder().target(10L).sources(Arrays.asList(1L, 2L)).build();
+        List<CompactionPlan> plans = Arrays.asList(plan);
 
         GetCompactionPlansResp response = GetCompactionPlansResp.builder()
                 .compactionId(7L)

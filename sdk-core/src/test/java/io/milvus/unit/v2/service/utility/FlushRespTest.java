@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ class FlushRespTest {
     @Test
     void builderBuildsAllFields() {
         Map<String, List<Long>> segmentIDs = new HashMap<>();
-        segmentIDs.put("coll", List.of(1L, 2L));
+        segmentIDs.put("coll", Arrays.asList(1L, 2L));
         Map<String, Long> flushTs = new HashMap<>();
         flushTs.put("coll", 100L);
 
@@ -64,7 +65,7 @@ class FlushRespTest {
         FlushResp response = FlushResp.builder().build();
 
         Map<String, List<Long>> segmentIDs = new HashMap<>();
-        segmentIDs.put("coll", List.of(3L));
+        segmentIDs.put("coll", Arrays.asList(3L));
         Map<String, Long> flushTs = new HashMap<>();
         flushTs.put("coll", 200L);
 
@@ -73,7 +74,7 @@ class FlushRespTest {
         response.setCollectionFlushTs(flushTs);
 
         assertEquals("db", response.getDatabaseName());
-        assertEquals(List.of(3L), response.getCollectionSegmentIDs().get("coll"));
+        assertEquals(Arrays.asList(3L), response.getCollectionSegmentIDs().get("coll"));
         assertEquals(Long.valueOf(200L), response.getCollectionFlushTs().get("coll"));
     }
 

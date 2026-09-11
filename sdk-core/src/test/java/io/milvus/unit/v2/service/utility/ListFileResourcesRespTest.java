@@ -24,6 +24,7 @@ import io.milvus.v2.service.utility.response.ListFileResourcesResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class ListFileResourcesRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<FileResourceInfo> resources = List.of(
+        List<FileResourceInfo> resources = Arrays.asList(
                 FileResourceInfo.builder().name("r1").path("/tmp/r1").build());
 
         ListFileResourcesResp response = ListFileResourcesResp.builder()
@@ -54,7 +55,7 @@ class ListFileResourcesRespTest {
     @Test
     void toStringContainsFields() {
         ListFileResourcesResp response = ListFileResourcesResp.builder()
-                .resources(List.of(FileResourceInfo.builder().name("r1").path("/tmp/r1").build()))
+                .resources(Arrays.asList(FileResourceInfo.builder().name("r1").path("/tmp/r1").build()))
                 .build();
 
         String text = response.toString();

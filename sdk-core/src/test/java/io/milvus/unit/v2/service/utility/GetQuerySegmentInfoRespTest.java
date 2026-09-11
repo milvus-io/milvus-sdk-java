@@ -24,6 +24,7 @@ import io.milvus.v2.service.utility.response.GetQuerySegmentInfoResp.QuerySegmen
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +46,7 @@ class GetQuerySegmentInfoRespTest {
                 .indexID(9L)
                 .state("Sealed")
                 .level("L1")
-                .nodeIDs(List.of(11L, 12L))
+                .nodeIDs(Arrays.asList(11L, 12L))
                 .storageVersion(5L)
                 .isSorted(true)
                 .build();
@@ -60,7 +61,7 @@ class GetQuerySegmentInfoRespTest {
         assertEquals(Long.valueOf(9L), info.getIndexID());
         assertEquals("Sealed", info.getState());
         assertEquals("L1", info.getLevel());
-        assertEquals(List.of(11L, 12L), info.getNodeIDs());
+        assertEquals(Arrays.asList(11L, 12L), info.getNodeIDs());
         assertEquals(Long.valueOf(5L), info.getStorageVersion());
         assertEquals(Boolean.TRUE, info.getIsSorted());
     }
@@ -98,7 +99,7 @@ class GetQuerySegmentInfoRespTest {
         info.setIndexID(90L);
         info.setState("Growing");
         info.setLevel("L0");
-        info.setNodeIDs(List.of(21L));
+        info.setNodeIDs(Arrays.asList(21L));
         info.setStorageVersion(6L);
         info.setIsSorted(false);
 
@@ -112,14 +113,14 @@ class GetQuerySegmentInfoRespTest {
         assertEquals(Long.valueOf(90L), info.getIndexID());
         assertEquals("Growing", info.getState());
         assertEquals("L0", info.getLevel());
-        assertEquals(List.of(21L), info.getNodeIDs());
+        assertEquals(Arrays.asList(21L), info.getNodeIDs());
         assertEquals(Long.valueOf(6L), info.getStorageVersion());
         assertEquals(Boolean.FALSE, info.getIsSorted());
     }
 
     @Test
     void builderBuildsSegmentInfosList() {
-        List<QuerySegmentInfo> infos = List.of(QuerySegmentInfo.builder().segmentID(1L).build());
+        List<QuerySegmentInfo> infos = Arrays.asList(QuerySegmentInfo.builder().segmentID(1L).build());
 
         GetQuerySegmentInfoResp response = GetQuerySegmentInfoResp.builder()
                 .segmentInfos(infos)
@@ -139,7 +140,7 @@ class GetQuerySegmentInfoRespTest {
     void setterUpdatesSegmentInfos() {
         GetQuerySegmentInfoResp response = GetQuerySegmentInfoResp.builder().build();
 
-        List<QuerySegmentInfo> infos = List.of(QuerySegmentInfo.builder().segmentID(2L).build());
+        List<QuerySegmentInfo> infos = Arrays.asList(QuerySegmentInfo.builder().segmentID(2L).build());
         response.setSegmentInfos(infos);
 
         assertSame(infos, response.getSegmentInfos());
@@ -158,7 +159,7 @@ class GetQuerySegmentInfoRespTest {
                 .indexID(9L)
                 .state("Sealed")
                 .level("L1")
-                .nodeIDs(List.of(11L))
+                .nodeIDs(Arrays.asList(11L))
                 .storageVersion(5L)
                 .isSorted(true)
                 .build();

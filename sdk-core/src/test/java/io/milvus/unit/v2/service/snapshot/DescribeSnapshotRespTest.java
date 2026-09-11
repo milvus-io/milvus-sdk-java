@@ -23,6 +23,7 @@ import io.milvus.v2.service.snapshot.response.DescribeSnapshotResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class DescribeSnapshotRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<String> partitions = List.of("p1", "p2");
+        List<String> partitions = Arrays.asList("p1", "p2");
 
         DescribeSnapshotResp response = DescribeSnapshotResp.builder()
                 .name("snap")
@@ -71,14 +72,14 @@ class DescribeSnapshotRespTest {
         response.setName("snap");
         response.setDescription("desc");
         response.setCollectionName("coll");
-        response.setPartitionNames(List.of("p1"));
+        response.setPartitionNames(Arrays.asList("p1"));
         response.setCreateTs(99L);
         response.setS3Location("s3://b");
 
         assertEquals("snap", response.getName());
         assertEquals("desc", response.getDescription());
         assertEquals("coll", response.getCollectionName());
-        assertEquals(List.of("p1"), response.getPartitionNames());
+        assertEquals(Arrays.asList("p1"), response.getPartitionNames());
         assertEquals(Long.valueOf(99L), response.getCreateTs());
         assertEquals("s3://b", response.getS3Location());
     }
@@ -89,7 +90,7 @@ class DescribeSnapshotRespTest {
                 .name("snap")
                 .description("desc")
                 .collectionName("coll")
-                .partitionNames(List.of("p1"))
+                .partitionNames(Arrays.asList("p1"))
                 .createTs(1L)
                 .s3Location("s3://b")
                 .build();

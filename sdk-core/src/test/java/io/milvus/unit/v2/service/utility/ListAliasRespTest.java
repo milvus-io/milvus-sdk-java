@@ -23,6 +23,7 @@ import io.milvus.v2.service.utility.response.ListAliasResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,12 +35,12 @@ class ListAliasRespTest {
     void builderBuildsAllFields() {
         ListAliasResp response = ListAliasResp.builder()
                 .collectionName("coll")
-                .alias(List.of("a1", "a2"))
+                .alias(Arrays.asList("a1", "a2"))
                 .dbName("db")
                 .build();
 
         assertEquals("coll", response.getCollectionName());
-        assertEquals(List.of("a1", "a2"), response.getAlias());
+        assertEquals(Arrays.asList("a1", "a2"), response.getAlias());
         assertEquals("db", response.getDbName());
     }
 
@@ -57,11 +58,11 @@ class ListAliasRespTest {
         ListAliasResp response = ListAliasResp.builder().build();
 
         response.setCollectionName("coll");
-        response.setAlias(List.of("a"));
+        response.setAlias(Arrays.asList("a"));
         response.setDbName("db");
 
         assertEquals("coll", response.getCollectionName());
-        assertEquals(List.of("a"), response.getAlias());
+        assertEquals(Arrays.asList("a"), response.getAlias());
         assertEquals("db", response.getDbName());
     }
 
@@ -69,7 +70,7 @@ class ListAliasRespTest {
     void toStringContainsFields() {
         ListAliasResp response = ListAliasResp.builder()
                 .collectionName("coll")
-                .alias(List.of("a1"))
+                .alias(Arrays.asList("a1"))
                 .dbName("db")
                 .build();
 

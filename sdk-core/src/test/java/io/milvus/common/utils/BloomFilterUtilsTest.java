@@ -143,7 +143,10 @@ class BloomFilterUtilsTest {
 
         // Independent XXH64(seed=0) answers from the reference xxHash implementation
         // (`xxhsum -H1`). These straddle the 32-byte boundary that enters the stripe/merge path.
-        String[] stripeBoundaryPayloads = {"a".repeat(31), "a".repeat(32), "a".repeat(33)};
+        String[] stripeBoundaryPayloads = {
+                String.join("", Collections.nCopies(31, "a")),
+                String.join("", Collections.nCopies(32, "a")),
+                String.join("", Collections.nCopies(33, "a"))};
         long[] stripeBoundaryHashes = {
                 0xFE47067CDA802916L,
                 0x856E843298F99AD7L,
