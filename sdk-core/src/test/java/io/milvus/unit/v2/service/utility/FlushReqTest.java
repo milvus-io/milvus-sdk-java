@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,11 +64,11 @@ class FlushReqTest {
         FlushReq request = FlushReq.builder().build();
 
         request.setDatabaseName("db");
-        request.setCollectionNames(List.of("coll"));
+        request.setCollectionNames(Arrays.asList("coll"));
         request.setWaitFlushedTimeoutMs(1L);
 
         assertEquals("db", request.getDatabaseName());
-        assertEquals(List.of("coll"), request.getCollectionNames());
+        assertEquals(Arrays.asList("coll"), request.getCollectionNames());
         assertEquals(Long.valueOf(1L), request.getWaitFlushedTimeoutMs());
     }
 
@@ -84,7 +85,7 @@ class FlushReqTest {
     void toStringContainsFields() {
         FlushReq request = FlushReq.builder()
                 .databaseName("db")
-                .collectionNames(List.of("coll"))
+                .collectionNames(Arrays.asList("coll"))
                 .waitFlushedTimeoutMs(1L)
                 .build();
 

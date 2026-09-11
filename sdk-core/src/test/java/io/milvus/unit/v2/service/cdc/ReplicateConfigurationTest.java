@@ -25,6 +25,7 @@ import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,8 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class ReplicateConfigurationTest {
     @Test
     void builderBuildsAllFields() {
-        List<MilvusCluster> clusters = List.of(MilvusCluster.builder().clusterId("c1").build());
-        List<CrossClusterTopology> topologies = List.of(
+        List<MilvusCluster> clusters = Arrays.asList(MilvusCluster.builder().clusterId("c1").build());
+        List<CrossClusterTopology> topologies = Arrays.asList(
                 CrossClusterTopology.builder().sourceClusterId("c1").targetClusterId("c2").build());
 
         ReplicateConfiguration configuration = ReplicateConfiguration.builder()
@@ -60,8 +61,8 @@ class ReplicateConfigurationTest {
     void settersUpdateFields() {
         ReplicateConfiguration configuration = ReplicateConfiguration.builder().build();
 
-        configuration.setClusters(List.of(MilvusCluster.builder().clusterId("c1").build()));
-        configuration.setCrossClusterTopologies(List.of(
+        configuration.setClusters(Arrays.asList(MilvusCluster.builder().clusterId("c1").build()));
+        configuration.setCrossClusterTopologies(Arrays.asList(
                 CrossClusterTopology.builder().sourceClusterId("c1").targetClusterId("c2").build()));
 
         assertEquals(1, configuration.getClusters().size());
@@ -77,7 +78,7 @@ class ReplicateConfigurationTest {
                                 .setUri("http://localhost:19530")
                                 .setToken("token")
                                 .build())
-                        .addAllPchannels(List.of("chan-1")))
+                        .addAllPchannels(Arrays.asList("chan-1")))
                 .addCrossClusterTopology(io.milvus.grpc.CrossClusterTopology.newBuilder()
                         .setSourceClusterId("c1")
                         .setTargetClusterId("c2"))
@@ -108,7 +109,7 @@ class ReplicateConfigurationTest {
     @Test
     void toStringContainsFields() {
         ReplicateConfiguration configuration = ReplicateConfiguration.builder()
-                .clusters(List.of(MilvusCluster.builder().clusterId("c1").build()))
+                .clusters(Arrays.asList(MilvusCluster.builder().clusterId("c1").build()))
                 .build();
 
         String text = configuration.toString();

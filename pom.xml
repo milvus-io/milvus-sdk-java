@@ -345,6 +345,7 @@
                 <version>${protobuf.maven.plugin.version}</version>
                 <configuration>
                     <protoSourceRoot>src/main/milvus-proto/proto</protoSourceRoot>
+                    <attachProtoSources>false</attachProtoSources>
                     <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
@@ -386,6 +387,10 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <groups>${test.groups}</groups>
+                    <systemPropertyVariables>
+                        <org.slf4j.simpleLogger.defaultLogLevel>info</org.slf4j.simpleLogger.defaultLogLevel>
+                        <org.slf4j.simpleLogger.log.io.milvus.bulkwriter.VolumeFileManager>debug</org.slf4j.simpleLogger.log.io.milvus.bulkwriter.VolumeFileManager>
+                    </systemPropertyVariables>
                 </configuration>
                 <dependencies>
                     <dependency>

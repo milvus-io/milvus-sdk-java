@@ -8,10 +8,11 @@ on:
 permissions:
   contents: read
 
-# CI job names the release must have passed on the tagged commit before publishing. Keep these
-# in sync with the `ubuntu` / `windows` job names in maven.yml: renaming a CI job there must
-# update the matching name here or every release validation fails with a "No successful ... check
-# was found" error.
+# CI job names (as reported by GitHub on the PR head commit) the PR that produced the
+# tagged commit must have passed before publishing. Keep these in sync with the
+# `ubuntu` / `windows` job names in maven.yml: renaming a CI job there must update
+# the matching name here or every release validation fails with a "No successful ...
+# check was found" error.
 env:
   UT_CHECK_UBUNTU: 'Build and test on ubuntu'
   UT_CHECK_WINDOWS: 'Build and test on windows'
@@ -29,6 +30,10 @@ jobs:
     if: github.repository == 'milvus-io/milvus-sdk-java'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: read
 
     steps:
       - name: Checkout release tag and history
@@ -64,15 +69,40 @@ jobs:
           fi
           echo "Release commit is contained in ${approved_branch}."
 
-          check_runs="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${TAG_SHA}/check-runs?per_page=100")"
+          # CI checks run on the PR head commit (the repo squash-merges PRs, so the
+          # "Build and test" check is recorded on the PR head, not on the merged commit).
+          # Resolve the PR whose squash-merge produced the tagged commit, then verify the
+          # required check passed on that PR's head commit. Requires `checks: read`.
+          pr="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${TAG_SHA}/pulls" \
+            --jq '.[0].number // empty' 2>/dev/null || true)"
+          if [[ -z "${pr}" ]]; then
+            echo "No pull request found for commit ${TAG_SHA}." >&2
+            exit 1
+          fi
+          echo "Commit ${TAG_SHA} was merged from PR #${pr}."
+
+          pr_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr}" \
+            --jq '.head.sha // empty' 2>/dev/null || true)"
+          if [[ -z "${pr_head}" ]]; then
+            echo "Could not resolve head commit for PR #${pr}." >&2
+            exit 1
+          fi
+          echo "PR #${pr} head commit is ${pr_head}."
+
+          check_runs="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${pr_head}/check-runs?per_page=100")"
+          all_ok=1
           for check_name in "${{ env.UT_CHECK_UBUNTU }}" "${{ env.UT_CHECK_WINDOWS }}"; do
-            if ! jq -e --arg name "${check_name}" --arg sha "${TAG_SHA}" \
-              '[.check_runs[] | select(.name == $name and .head_sha == $sha and .conclusion == "success")] | length > 0' <<<"${check_runs}" >/dev/null; then
-              echo "No successful ${check_name} check was found for ${TAG_SHA}." >&2
-              exit 1
+            if ! jq -e --arg name "${check_name}" --arg sha "${pr_head}" \
+              '[.check_runs[] | select(.name == $name and .head_sha == $sha and .conclusion == "success")] | length > 0' \
+              <<<"${check_runs}" >/dev/null; then
+              echo "No successful ${check_name} check was found on PR #${pr} head ${pr_head}." >&2
+              all_ok=0
             fi
           done
-          echo "Required post-merge checks passed for ${TAG_SHA}."
+          if [[ "${all_ok}" -ne 1 ]]; then
+            exit 1
+          fi
+          echo "Required checks passed on PR #${pr} head commit ${pr_head}."
 
   publish:
     name: Publish Maven artifacts

@@ -109,8 +109,8 @@ git submodule update --init          # proto submodule
 mvn install                          # builds sdk-core + sdk-bulkwriter
 ```
 
-- Published artifacts target Java 8 (`maven.compiler.source/target=8`); test sources require Java 11
-  (`String.repeat` etc.). Use JDK 11+ for `mvn test`.
+- Published artifacts and test sources target Java 8 (`maven.compiler.source/target=8`); `mvn test`
+  works with JDK 8 or later. Use JDK 11+ only if you need extra toolchain features.
 - Use `-Dmaven.test.skip=true` to skip tests entirely; `-DskipTests` is unreliable here because root
   Surefire sets `skipTests=false`.
 - `protobuf-maven-plugin` generates gRPC stubs; `maven-shade-plugin` relocates `io.grpc` to

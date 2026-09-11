@@ -122,10 +122,12 @@ public class VolumeFileManager {
                                 uploadLocalFileToVolume(localFilePath, localDirOrFilePath, volumePath, maxRetries, retryIntervalMillis, progressTracker, uploadContext, partSizeBytes);
                                 UploadProgressSnapshot progress = progressTracker.finishFile(progressFilePath, file.length());
                                 long elapsed = System.currentTimeMillis() - fileStartTime;
-                                logger.info("Uploaded file {}/{}: {} ({} bytes) elapsed:{} ms, progress(total bytes): {}/{} bytes, progress(total percentage):{}%, speedBPS:{}, estimatedRemainingTime:{}",
-                                        progress.completedFiles, totalFilesCount, localFilePath, file.length(), elapsed,
-                                        progress.uploadedBytes, totalBytes, String.format("%.2f", progress.percent),
-                                        progress.speedBps, progress.estimatedRemainingTime);
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("Uploaded file {}/{}: {} ({} bytes) elapsed:{} ms, progress(total bytes): {}/{} bytes, progress(total percentage):{}%, speedBPS:{}, estimatedRemainingTime:{}",
+                                            progress.completedFiles, totalFilesCount, localFilePath, file.length(), elapsed,
+                                            progress.uploadedBytes, totalBytes, String.format("%.2f", progress.percent),
+                                            progress.speedBps, progress.estimatedRemainingTime);
+                                }
                             } catch (Exception e) {
                                 logger.error("Upload failed: {}", localFilePath, e);
                                 throw new CompletionException(e);

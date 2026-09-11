@@ -23,6 +23,7 @@ import io.milvus.v2.service.snapshot.response.ListSnapshotsResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class ListSnapshotsRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<String> snapshots = List.of("s1", "s2");
+        List<String> snapshots = Arrays.asList("s1", "s2");
 
         ListSnapshotsResp response = ListSnapshotsResp.builder()
                 .snapshots(snapshots)
@@ -61,15 +62,15 @@ class ListSnapshotsRespTest {
     void setterUpdatesField() {
         ListSnapshotsResp response = ListSnapshotsResp.builder().build();
 
-        response.setSnapshots(List.of("s1"));
+        response.setSnapshots(Arrays.asList("s1"));
 
-        assertEquals(List.of("s1"), response.getSnapshots());
+        assertEquals(Arrays.asList("s1"), response.getSnapshots());
     }
 
     @Test
     void toStringContainsFields() {
         ListSnapshotsResp response = ListSnapshotsResp.builder()
-                .snapshots(List.of("s1"))
+                .snapshots(Arrays.asList("s1"))
                 .build();
 
         String text = response.toString();

@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,7 +63,7 @@ class DumpMessagesRespTest {
         DumpMessageInfo m2 = DumpMessageInfo.builder().build();
 
         DumpMessagesResp response = DumpMessagesResp.builder()
-                .messages(List.of(m1, m2))
+                .messages(Arrays.asList(m1, m2))
                 .build();
 
         int count = 0;
@@ -76,7 +77,7 @@ class DumpMessagesRespTest {
     @Test
     void toStringDoesNotDumpStream() {
         DumpMessagesResp response = DumpMessagesResp.builder()
-                .messages(List.of(DumpMessageInfo.builder().build()))
+                .messages(Arrays.asList(DumpMessageInfo.builder().build()))
                 .build();
 
         assertEquals("DumpMessagesResp{messages=<stream>}", response.toString());

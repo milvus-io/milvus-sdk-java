@@ -23,6 +23,7 @@ import io.milvus.v2.service.cdc.request.MilvusCluster;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MilvusClusterTest {
     @Test
     void builderBuildsAllFields() {
-        List<String> pchannels = List.of("chan-1", "chan-2");
+        List<String> pchannels = Arrays.asList("chan-1", "chan-2");
 
         MilvusCluster cluster = MilvusCluster.builder()
                 .clusterId("cluster-1")
@@ -67,12 +68,12 @@ class MilvusClusterTest {
         cluster.setClusterId("cluster-2");
         cluster.setUri("http://example.com");
         cluster.setToken("t2");
-        cluster.setPchannels(List.of("c"));
+        cluster.setPchannels(Arrays.asList("c"));
 
         assertEquals("cluster-2", cluster.getClusterId());
         assertEquals("http://example.com", cluster.getUri());
         assertEquals("t2", cluster.getToken());
-        assertEquals(List.of("c"), cluster.getPchannels());
+        assertEquals(Arrays.asList("c"), cluster.getPchannels());
     }
 
     @Test
@@ -84,7 +85,7 @@ class MilvusClusterTest {
         io.milvus.grpc.MilvusCluster grpc = io.milvus.grpc.MilvusCluster.newBuilder()
                 .setClusterId("cluster-1")
                 .setConnectionParam(connectionParam)
-                .addAllPchannels(List.of("chan-1"))
+                .addAllPchannels(Arrays.asList("chan-1"))
                 .build();
 
         MilvusCluster cluster = MilvusCluster.fromGRPC(grpc);
@@ -92,13 +93,13 @@ class MilvusClusterTest {
         assertEquals("cluster-1", cluster.getClusterId());
         assertEquals("http://localhost:19530", cluster.getUri());
         assertEquals("secret", cluster.getToken());
-        assertEquals(List.of("chan-1"), cluster.getPchannels());
+        assertEquals(Arrays.asList("chan-1"), cluster.getPchannels());
 
         io.milvus.grpc.MilvusCluster roundTrip = cluster.toGRPC();
         assertEquals("cluster-1", roundTrip.getClusterId());
         assertEquals("http://localhost:19530", roundTrip.getConnectionParam().getUri());
         assertEquals("secret", roundTrip.getConnectionParam().getToken());
-        assertEquals(List.of("chan-1"), roundTrip.getPchannelsList());
+        assertEquals(Arrays.asList("chan-1"), roundTrip.getPchannelsList());
     }
 
     @Test
@@ -122,7 +123,7 @@ class MilvusClusterTest {
                 .clusterId("cluster-1")
                 .uri("http://user:pass@localhost:19530")
                 .token("secret-token")
-                .pchannels(List.of("c"))
+                .pchannels(Arrays.asList("c"))
                 .build();
 
         String text = cluster.toString();

@@ -23,6 +23,7 @@ import io.milvus.v2.service.utility.response.CheckHealthResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,8 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class CheckHealthRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<String> reasons = List.of("some reason");
-        List<String> quotaStates = List.of("throttled");
+        List<String> reasons = Arrays.asList("some reason");
+        List<String> quotaStates = Arrays.asList("throttled");
 
         CheckHealthResp response = CheckHealthResp.builder()
                 .isHealthy(true)
@@ -61,20 +62,20 @@ class CheckHealthRespTest {
         CheckHealthResp response = CheckHealthResp.builder().build();
 
         response.setIsHealthy(true);
-        response.setReasons(List.of("r"));
-        response.setQuotaStates(List.of("q"));
+        response.setReasons(Arrays.asList("r"));
+        response.setQuotaStates(Arrays.asList("q"));
 
         assertEquals(Boolean.TRUE, response.getIsHealthy());
-        assertEquals(List.of("r"), response.getReasons());
-        assertEquals(List.of("q"), response.getQuotaStates());
+        assertEquals(Arrays.asList("r"), response.getReasons());
+        assertEquals(Arrays.asList("q"), response.getQuotaStates());
     }
 
     @Test
     void toStringContainsFields() {
         CheckHealthResp response = CheckHealthResp.builder()
                 .isHealthy(true)
-                .reasons(List.of("r"))
-                .quotaStates(List.of("q"))
+                .reasons(Arrays.asList("r"))
+                .quotaStates(Arrays.asList("q"))
                 .build();
 
         String text = response.toString();

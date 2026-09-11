@@ -23,6 +23,7 @@ import io.milvus.v2.service.utility.response.OptimizeResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class OptimizeRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<String> progress = List.of("merging segments");
+        List<String> progress = Arrays.asList("merging segments");
 
         OptimizeResp response = OptimizeResp.builder()
                 .status("done")
@@ -68,7 +69,7 @@ class OptimizeRespTest {
                 .collectionName("coll")
                 .compactionId(1L)
                 .targetSize("512MB")
-                .progress(List.of("p"))
+                .progress(Arrays.asList("p"))
                 .build();
 
         String text = response.toString();

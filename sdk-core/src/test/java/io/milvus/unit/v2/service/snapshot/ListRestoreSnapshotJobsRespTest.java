@@ -24,6 +24,7 @@ import io.milvus.v2.service.snapshot.response.RestoreSnapshotJobInfo;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ListRestoreSnapshotJobsRespTest {
     @Test
     void builderBuildsAllFields() {
-        List<RestoreSnapshotJobInfo> jobs = List.of(RestoreSnapshotJobInfo.builder().jobId(1L).build());
+        List<RestoreSnapshotJobInfo> jobs = Arrays.asList(RestoreSnapshotJobInfo.builder().jobId(1L).build());
 
         ListRestoreSnapshotJobsResp response = ListRestoreSnapshotJobsResp.builder()
                 .jobs(jobs)
@@ -63,7 +64,7 @@ class ListRestoreSnapshotJobsRespTest {
     void setterUpdatesField() {
         ListRestoreSnapshotJobsResp response = ListRestoreSnapshotJobsResp.builder().build();
 
-        List<RestoreSnapshotJobInfo> jobs = List.of(RestoreSnapshotJobInfo.builder().jobId(2L).build());
+        List<RestoreSnapshotJobInfo> jobs = Arrays.asList(RestoreSnapshotJobInfo.builder().jobId(2L).build());
         response.setJobs(jobs);
 
         assertSame(jobs, response.getJobs());
@@ -72,7 +73,7 @@ class ListRestoreSnapshotJobsRespTest {
     @Test
     void toStringContainsFields() {
         ListRestoreSnapshotJobsResp response = ListRestoreSnapshotJobsResp.builder()
-                .jobs(List.of(RestoreSnapshotJobInfo.builder().jobId(1L).build()))
+                .jobs(Arrays.asList(RestoreSnapshotJobInfo.builder().jobId(1L).build()))
                 .build();
 
         String text = response.toString();
