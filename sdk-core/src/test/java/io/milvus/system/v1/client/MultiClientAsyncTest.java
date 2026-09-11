@@ -27,6 +27,7 @@ import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.response.*;
 import org.junit.jupiter.api.Tag;
@@ -109,8 +110,8 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
                 return;
             }
         }
-        // multi-client insert may hand different batches to different primaries, so the
-        // auto-generated ids are not guaranteed to be globally unique; dedupe before querying
+        // auto ids are allocated by the server and are globally unique across insert
+        // batches; dedupe defensively in case a batch is retried and returns the same ids.
         List<Long> distinctQueryIDs = new ArrayList<>(new LinkedHashSet<>(queryIDs));
 
         // get collection statistics
@@ -176,6 +177,7 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
         ListenableFuture<R<SearchResults>> searchFuture = client.searchAsync(searchParam);
@@ -187,6 +189,7 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
                 .withOutFields(outputFields)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
         ListenableFuture<R<QueryResults>> queryFuture = client.queryAsync(queryParam);
@@ -214,7 +217,12 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
             for (String fieldName : outputFields) {
                 FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
                 System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
-//                System.out.println(wrapper.getFieldData());
+                if (field1Name.equals(fieldName)) {
+                    System.out.println("distinctQueryIDs: " + distinctQueryIDs);
+                    System.out.println("query returned " + fieldName + " ids: " + wrapper.getFieldData());
+                }
+                // Strong consistency guarantees reads see the latest committed writes
+                // (guarantee ts = current max ts), so all flushed rows must be visible here.
                 assertEquals(distinctQueryIDs.size(), wrapper.getFieldData().size());
             }
 

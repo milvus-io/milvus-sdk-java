@@ -138,7 +138,7 @@ public class LocalBulkWriter extends BulkWriter {
         } catch (IOException e) {
             // this function is running in a thread
             // TODO: interrupt main thread if failed to persist file
-            logger.error(e.getMessage());
+            logger.error("Failed to persist local files", e);
         }
         return fileList;
     }
@@ -243,7 +243,7 @@ public class LocalBulkWriter extends BulkWriter {
                 logger.info("Delete local directory {}", localPath);
             }
         } catch (IOException e) {
-            logger.error("Error while deleting directory: " + e.getMessage());
+            logger.error("Error while deleting directory: {}", localPath, e);
         }
     }
 

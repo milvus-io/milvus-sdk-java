@@ -24,6 +24,7 @@ import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -40,7 +41,7 @@ class DumpMessageInfoTest {
                 .walName("Pulsar")
                 .build();
         byte[] payload = new byte[]{1, 2, 3};
-        Map<String, String> properties = Map.of("key", "value");
+        Map<String, String> properties = Collections.singletonMap("key", "value");
 
         DumpMessageInfo info = DumpMessageInfo.builder()
                 .messageID(messageID)

@@ -174,15 +174,15 @@ public class ConvertUtilsTest {
 
         CreateCollectionReq.FieldSchema idFieldResp =
                 resp.getCollectionSchema().getFieldSchemaList().stream()
-                        .filter(f -> f.getName().equals("id")).findFirst().orElseThrow();
+                        .filter(f -> f.getName().equals("id")).findFirst().orElseThrow(() -> new AssertionError("id field not found"));
         Assertions.assertEquals(1L, idFieldResp.getFieldId());
         CreateCollectionReq.FieldSchema dynamicFieldResp =
                 resp.getCollectionSchema().getFieldSchemaList().stream()
-                        .filter(f -> f.getName().equals("$meta")).findFirst().orElseThrow();
+                        .filter(f -> f.getName().equals("$meta")).findFirst().orElseThrow(() -> new AssertionError("$meta field not found"));
         Assertions.assertEquals(Boolean.TRUE, dynamicFieldResp.getIsDynamic());
         CreateCollectionReq.FieldSchema embeddingFieldResp =
                 resp.getCollectionSchema().getFieldSchemaList().stream()
-                        .filter(f -> f.getName().equals("embedding")).findFirst().orElseThrow();
+                        .filter(f -> f.getName().equals("embedding")).findFirst().orElseThrow(() -> new AssertionError("embedding field not found"));
         Assertions.assertEquals(Boolean.TRUE, embeddingFieldResp.getIsFunctionOutput());
 
         CreateCollectionReq.Function functionResp = resp.getCollectionSchema().getFunctionList().get(0);

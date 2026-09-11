@@ -199,8 +199,7 @@ public class RpcUtils {
                         || code == io.grpc.Status.ALREADY_EXISTS.getCode()
                         || code == io.grpc.Status.RESOURCE_EXHAUSTED.getCode()
                         || code == io.grpc.Status.UNIMPLEMENTED.getCode()) {
-                    String msg = String.format("Encounter rpc error that cannot be retried, reason: %s", e);
-                    logger.error(msg);
+                    logger.error("Encounter rpc error that cannot be retried, reason: {}", e.toString());
                     throw new MilvusClientException(ErrorCode.RPC_ERROR, e); // throw rpc error
                 }
 
@@ -349,9 +348,7 @@ public class RpcUtils {
         if (cause instanceof StatusRuntimeException) {
             StatusRuntimeException statusException = (StatusRuntimeException) cause;
             if (isNonRetryableRpcError(statusException)) {
-                String msg = String.format("Encounter rpc error that cannot be retried, reason: %s",
-                        statusException);
-                logger.error(msg);
+                logger.error("Encounter rpc error that cannot be retried, reason: {}", statusException.toString());
                 result.completeExceptionally(new MilvusClientException(ErrorCode.RPC_ERROR, statusException));
                 return;
             }

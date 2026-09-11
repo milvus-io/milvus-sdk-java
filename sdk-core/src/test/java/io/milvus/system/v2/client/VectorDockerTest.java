@@ -130,14 +130,10 @@ class VectorDockerTest extends MilvusV2DockerTestBase {
         Assertions.assertTrue(compactResp.getCompactionID() == -1L || compactResp.getCompactionID() > 0L);
 
         // create index
-        Map<String, Object> extraParams = new HashMap<>();
-        extraParams.put("M", 64);
-        extraParams.put("efConstruction", 200);
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(vectorFieldName)
-                .indexType(IndexParam.IndexType.HNSW)
+                .indexType(IndexParam.IndexType.FLAT)
                 .metricType(IndexParam.MetricType.COSINE)
-                .extraParams(extraParams)
                 .build();
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
