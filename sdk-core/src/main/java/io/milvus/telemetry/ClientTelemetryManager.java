@@ -91,6 +91,9 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private static final SecureRandom REQUEST_ID_RANDOM = new SecureRandom();
     private static final List<String> PUSH_CONFIG_KEYS = Arrays.asList(
             "enabled", "heartbeat_interval_ms", "sampling_rate");
+    private static final List<String> TRUNCATABLE_ERROR_FIELDS =
+            Arrays.asList("error_msg", "collection", "operation", "request_id");
+    private static final String TRUNCATION_SUFFIX = "...(truncated)";
     private static final Pattern RFC3339_TIMESTAMP = Pattern.compile(
             "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$");
 
@@ -101,12 +104,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private final String sdkVersion;
     private final Supplier<String> databaseProvider;
     private final Supplier<Map<String, Object>> configProvider;
-    private final Map<String, Collector> collectors = new HashMap<>();
+    private final Object collectorsLock = new Object();
+    private Map<String, Collector> collectors = new HashMap<>();
     private final Set<String> enabledCollections = new HashSet<>();
     private final Deque<ErrorInfo> errors;
     private final Deque<MetricsSnapshot> snapshots = new ArrayDeque<>();
     private final List<CommandReply> pendingReplies = new ArrayList<>();
-    private final Map<String, Long> executedCommands = new HashMap<>();
+    private final Map<String, ExecutedCommand> executedCommands = new HashMap<>();
     private final Map<String, CommandHandler> handlers = new HashMap<>();
     private final Map<String, CommandHandler> customHandlers = new HashMap<>();
     /**
@@ -173,6 +177,10 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     public void setStub(ClientTelemetryServiceGrpc.ClientTelemetryServiceBlockingStub stub) {
         this.stub = stub;
+        // A newly attached transport must be probed immediately. Carrying an
+        // UNIMPLEMENTED backoff from the retired endpoint can otherwise keep a
+        // supporting endpoint silent for up to thirty minutes.
+        unsupportedStreak = 0;
     }
 
     public void start() {
@@ -271,7 +279,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         synchronized (pendingReplies) {
             replyValues = new ArrayList<>(pendingReplies);
         }
-        Map<String, Long> commandValues;
+        Map<String, ExecutedCommand> commandValues;
         synchronized (executedCommands) {
             commandValues = new HashMap<>(executedCommands);
         }
@@ -283,7 +291,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
         Map<String, CommandHandler> handlerValues = new HashMap<>(customHandlers);
         Map<String, Collector> collectorValues = new HashMap<>();
-        synchronized (collectors) {
+        synchronized (collectorsLock) {
             for (Map.Entry<String, Collector> entry : collectors.entrySet()) {
                 collectorValues.put(entry.getKey(), entry.getValue().copy());
             }
@@ -352,7 +360,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
             snapshots.addAll(state.snapshots);
             pruneSnapshotsLocked(System.currentTimeMillis());
         }
-        synchronized (collectors) {
+        synchronized (collectorsLock) {
             collectors.clear();
             for (Map.Entry<String, Collector> entry : state.collectors.entrySet()) {
                 collectors.put(entry.getKey(), entry.getValue().copy());
@@ -420,6 +428,10 @@ public final class ClientTelemetryManager implements AutoCloseable {
                         throw new IllegalStateException("replacement telemetry manager was not prepared");
                     }
                     replacement.restoreRuntimeState(snapshotRuntimeState());
+                    // The replacement attaches a fresh transport: do not carry the retired
+                    // endpoint's UNIMPLEMENTED backoff, or a supporting endpoint could stay
+                    // silent for up to thirty minutes.
+                    replacement.unsupportedStreak = 0;
                     replacement.handoffTarget = null;
                     handoffTarget = replacement;
                     close();
@@ -485,7 +497,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         synchronized (enabledCollections) {
             collectionKey = allCollectionsEnabled || enabledCollections.contains(collection) ? collection : "";
         }
-        synchronized (collectors) {
+        synchronized (collectorsLock) {
             collectors.computeIfAbsent(operation, ignored -> new Collector())
                     .record(collectionKey, latencyMicros, error == null || error.isEmpty());
         }
@@ -532,14 +544,20 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 continue;
             }
             synchronized (executedCommands) {
-                if (executedCommands.containsKey(command.getCommandId())) {
-                    queueReply(successReply(command.getCommandId(), ByteString.EMPTY));
+                ExecutedCommand executed = executedCommands.get(command.getCommandId());
+                if (executed != null) {
+                    // Re-queue the command's actual reply so a redelivery cannot turn an
+                    // already-reported failure into a contradictory success ACK.
+                    queueReply(executed.reply == null
+                            ? successReply(command.getCommandId(), ByteString.EMPTY)
+                            : executed.reply);
                     continue;
                 }
             }
             CommandReply reply = handleCommand(command);
             synchronized (executedCommands) {
-                executedCommands.put(command.getCommandId(), command.getCreateTime());
+                executedCommands.put(command.getCommandId(),
+                        new ExecutedCommand(command.getCreateTime(), reply));
             }
             if (reply != null) {
                 queueReply(reply);
@@ -550,7 +568,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
             // Keep every ID at the current cursor. The server may resend a batch with the same
             // timestamp more than once; retaining those IDs prevents the third delivery from
             // executing after the second delivery's cleanup.
-            executedCommands.entrySet().removeIf(entry -> entry.getValue() < cursorTimestamp);
+            executedCommands.entrySet().removeIf(entry -> entry.getValue().createTime < cursorTimestamp);
         }
         if (hasPersistent) {
             configHash = calculateConfigHash(commands);
@@ -748,18 +766,38 @@ public final class ClientTelemetryManager implements AutoCloseable {
             return;
         }
         CollectionScope collectionScope = snapshotCollectionScope();
+        // Swap the accumulated collectors out in O(1) so the per-bucket snapshot work
+        // below (copy + sort of up to 1000 samples per collection) runs without holding
+        // the lock. Concurrent recordOperation calls meanwhile start a fresh next-window
+        // bucket, so heartbeat work no longer blocks the hot path with many collections.
+        Map<String, Collector> working;
+        long now;
+        synchronized (collectorsLock) {
+            working = collectors;
+            collectors = new HashMap<>();
+            // The window boundary is the swap instant: operations recorded into the fresh
+            // bucket while this snapshot is built occurred after it, so the next window
+            // must start here rather than after the loop finishes.
+            now = System.currentTimeMillis();
+        }
         List<OperationSnapshot> metrics = new ArrayList<>();
-        synchronized (collectors) {
-            for (Map.Entry<String, Collector> entry : collectors.entrySet()) {
+        for (Map.Entry<String, Collector> entry : working.entrySet()) {
+            try {
                 OperationSnapshot snapshot = entry.getValue().snapshot(entry.getKey());
                 if (snapshot != null) {
                     metrics.add(filterCollectionMetrics(snapshot, collectionScope));
                 }
+            } catch (RuntimeException exception) {
+                // Best-effort telemetry: one failing operation must not discard the whole
+                // window, and must not take down the heartbeat scheduling loop.
+                logger.debug("Client telemetry snapshot skipped an operation", exception);
             }
         }
-        long now = System.currentTimeMillis();
         long start = lastSnapshotEnd == 0 || lastSnapshotEnd > now
                 ? now - config.getHeartbeatIntervalMs() : lastSnapshotEnd;
+        // Cap the reported window start at the retained-history range so a maximum
+        // pushed interval cannot surface an extreme (underflowed) timestamp.
+        start = Math.max(start, now - SNAPSHOT_HISTORY_TTL_MS);
         lastSnapshotEnd = now;
         synchronized (snapshots) {
             snapshots.addLast(new MetricsSnapshot(start, now, metrics));
@@ -828,7 +866,14 @@ public final class ClientTelemetryManager implements AutoCloseable {
             return failedReply(command.getCommandId(), "unknown command type: " + command.getCommandType());
         }
         try {
-            return handler.handle(command);
+            CommandReply reply = handler.handle(command);
+            // The incoming command ID is the protocol correlation key. Extension handlers
+            // control the result, but cannot redirect or drop its ACK. Built-in handlers
+            // already set the correct ID, so avoid copying large replies needlessly.
+            if (reply == null || command.getCommandId().equals(reply.getCommandId())) {
+                return reply;
+            }
+            return reply.toBuilder().setCommandId(command.getCommandId()).build();
         } catch (Exception exception) {
             return failedReply(command.getCommandId(), exception.getMessage());
         }
@@ -961,19 +1006,78 @@ public final class ClientTelemetryManager implements AutoCloseable {
             recent = new ArrayList<>(recent.subList(0, Math.max(1, recent.size() / 2)));
             encoded = GSON.toJson(recent).getBytes(StandardCharsets.UTF_8);
         }
-        while (encoded.length > MAX_REPLY_BYTES && recent.size() == 1
-                && recent.get(0).error_msg.length() > 1) {
+        while (encoded.length > MAX_REPLY_BYTES && recent.size() == 1) {
             ErrorInfo current = recent.get(0);
-            String message = current.error_msg.substring(0, Math.max(1, current.error_msg.length() / 2))
-                    + "...(truncated)";
-            recent.set(0, new ErrorInfo(current.timestamp, current.operation, message,
-                    current.collection, current.request_id));
+            String longestField = null;
+            String longestValue = null;
+            for (String field : TRUNCATABLE_ERROR_FIELDS) {
+                String value = errorField(current, field);
+                if (value != null && (longestValue == null || value.length() > longestValue.length())) {
+                    longestField = field;
+                    longestValue = value;
+                }
+            }
+            if (longestField == null || longestValue.isEmpty()) {
+                break;
+            }
+            int previousSize = encoded.length;
+            recent.set(0, withErrorField(current, longestField, truncatedFieldValue(longestValue)));
             encoded = GSON.toJson(recent).getBytes(StandardCharsets.UTF_8);
+            if (encoded.length >= previousSize) {
+                // Guarantee monotonic progress even for strings whose JSON escaping
+                // defeats the best-effort prefix truncation.
+                recent.set(0, withErrorField(current, longestField, ""));
+                encoded = GSON.toJson(recent).getBytes(StandardCharsets.UTF_8);
+                if (encoded.length >= previousSize) {
+                    break;
+                }
+            }
         }
         if (encoded.length > MAX_REPLY_BYTES) {
             return failedReply(command.getCommandId(), "show_errors response exceeds the 1MB payload limit");
         }
         return successReply(command.getCommandId(), ByteString.copyFrom(encoded));
+    }
+
+    private static String errorField(ErrorInfo error, String field) {
+        if ("error_msg".equals(field)) {
+            return error.error_msg;
+        }
+        if ("collection".equals(field)) {
+            return error.collection;
+        }
+        if ("operation".equals(field)) {
+            return error.operation;
+        }
+        if ("request_id".equals(field)) {
+            return error.request_id;
+        }
+        return null;
+    }
+
+    private static ErrorInfo withErrorField(ErrorInfo error, String field, String value) {
+        return new ErrorInfo(error.timestamp,
+                "operation".equals(field) ? value : error.operation,
+                "error_msg".equals(field) ? value : error.error_msg,
+                "collection".equals(field) ? value : error.collection,
+                "request_id".equals(field) ? value : error.request_id);
+    }
+
+    private static String truncatedFieldValue(String value) {
+        if (value.length() <= TRUNCATION_SUFFIX.length() + 1) {
+            return "";
+        }
+        int keep = value.length() / 2;
+        if (keep > TRUNCATION_SUFFIX.length()) {
+            keep -= TRUNCATION_SUFFIX.length();
+        } else {
+            keep = 0;
+        }
+        // Never split a UTF-16 surrogate pair so the encoded payload stays valid UTF-8.
+        if (keep > 0 && Character.isHighSurrogate(value.charAt(keep - 1))) {
+            keep--;
+        }
+        return value.substring(0, keep) + TRUNCATION_SUFFIX;
     }
 
     private CommandReply handleGetConfig(ClientCommand command) {
@@ -1337,13 +1441,23 @@ public final class ClientTelemetryManager implements AutoCloseable {
         CommandReply handle(ClientCommand command) throws Exception;
     }
 
+    private static final class ExecutedCommand {
+        private final long createTime;
+        private final CommandReply reply;
+
+        private ExecutedCommand(long createTime, CommandReply reply) {
+            this.createTime = createTime;
+            this.reply = reply;
+        }
+    }
+
     /** In-memory telemetry and command state transferred to a replacement connection manager. */
     public static final class RuntimeState {
         private final String clientId;
         private final String configHash;
         private final long lastCommandTimestamp;
         private final List<CommandReply> pendingReplies;
-        private final Map<String, Long> executedCommands;
+        private final Map<String, ExecutedCommand> executedCommands;
         private final Set<String> enabledCollections;
         private final boolean allCollectionsEnabled;
         private final Map<String, CommandHandler> customHandlers;
@@ -1364,7 +1478,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 String configHash,
                 long lastCommandTimestamp,
                 List<CommandReply> pendingReplies,
-                Map<String, Long> executedCommands,
+                Map<String, ExecutedCommand> executedCommands,
                 Set<String> enabledCollections,
                 boolean allCollectionsEnabled,
                 Map<String, CommandHandler> customHandlers,
