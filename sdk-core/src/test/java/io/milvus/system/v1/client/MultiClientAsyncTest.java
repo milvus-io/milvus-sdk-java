@@ -113,6 +113,9 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
         // auto ids are allocated by the server and are globally unique across insert
         // batches; dedupe defensively in case a batch is retried and returns the same ids.
         List<Long> distinctQueryIDs = new ArrayList<>(new LinkedHashSet<>(queryIDs));
+        // Every insert batch must return a distinct first id; otherwise the downstream
+        // strong-consistency query can legitimately see fewer rows than inserted.
+        assertEquals(futureResponses.size(), distinctQueryIDs.size());
 
         // get collection statistics
         R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam
