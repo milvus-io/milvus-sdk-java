@@ -7,6 +7,13 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class for converting between float32 and half-precision types (fp16 and bf16).
+ * Provides scalar conversions as well as helpers to pack/unpack float32 vectors into
+ * little-endian ByteBuffers matching the storage format used by the Milvus server.
+ */
+
+
 public class Float16Utils {
     /**
      * Converts a float32 into bf16. May not produce correct values for subnormal floats.
@@ -17,6 +24,7 @@ public class Float16Utils {
      * @param input a standard float32 value which will be converted to a bfloat16 value
      * @return a short value to store the bfloat16 value
      */
+
     public static short floatToBf16(float input) {
         int bits = Float.floatToIntBits(input);
         int lsb = (bits >> 16) & 1;
@@ -34,6 +42,8 @@ public class Float16Utils {
      * @param input a bfloat16 value which will be converted to a float32 value
      * @return a float32 value converted from a bfloat16
      */
+
+
     public static float bf16ToFloat(short input) {
         int bits = input << 16;
         return Float.intBitsToFloat(bits);
@@ -48,6 +58,8 @@ public class Float16Utils {
      * @param input a standard float32 value which will be converted to a float16 value
      * @return a short value to store the float16 value
      */
+
+
     public static short floatToFp16(float input) {
         // Port of MLAS_Float2Half from onnxruntime/core/mlas/inc/mlas_float16.h
         int bits = Float.floatToIntBits(input);
@@ -102,6 +114,8 @@ public class Float16Utils {
      * @param input a float16 value which will be converted to a float32 value
      * @return a float32 value converted from a float16 value
      */
+
+
     public static float fp16ToFloat(short input) {
         // Port of MLAS_Half2Float from onnxruntime/core/mlas/inc/mlas_float16.h
         final int MAGIC = 113 << 23;
@@ -141,6 +155,8 @@ public class Float16Utils {
      * @param vector a float32 vector
      * @return <code>ByteBuffer</code> the vector is converted to bfloat16 values and stored into a ByteBuffer
      */
+
+
     public static ByteBuffer f32VectorToBf16Buffer(List<Float> vector) {
         if (vector.isEmpty()) {
             return null;
@@ -161,6 +177,8 @@ public class Float16Utils {
      * @param buf a buffer to store a float16 vector
      * @return List of Float a float32 vector
      */
+
+
     public static List<Float> fp16BufferToVector(ByteBuffer buf) {
         ((Buffer) buf).rewind(); // reset the read position
         List<Float> vector = new ArrayList<>();
@@ -178,6 +196,8 @@ public class Float16Utils {
      * @param vector a float32 vector
      * @return <code>ByteBuffer</code> the vector is converted to float16 values and stored in a ByteBuffer
      */
+
+
     public static ByteBuffer f32VectorToFp16Buffer(List<Float> vector) {
         if (vector.isEmpty()) {
             return null;
@@ -198,6 +218,8 @@ public class Float16Utils {
      * @param buf a buffer to store a bfloat16 vector
      * @return List of Float the vector is converted to float32 values
      */
+
+
     public static List<Float> bf16BufferToVector(ByteBuffer buf) {
         ((Buffer) buf).rewind(); // reset the read position
         List<Float> vector = new ArrayList<>();
@@ -215,6 +237,8 @@ public class Float16Utils {
      * @param vector a float16 vector stored in a list of Short
      * @return <code>ByteBuffer</code> a buffer to store the float16 vector
      */
+
+
     public static ByteBuffer f16VectorToBuffer(List<Short> vector) {
         if (vector.isEmpty()) {
             return null;
@@ -234,6 +258,8 @@ public class Float16Utils {
      * @param buf a buffer to store a float16 vector
      * @return List of Short the vector is converted to a list of Short, each Short value is a float16 value
      */
+
+
     public static List<Short> bufferToF16Vector(ByteBuffer buf) {
         ((Buffer) buf).rewind(); // reset the read position
         List<Short> vector = new ArrayList<>();

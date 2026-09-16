@@ -22,6 +22,8 @@ package io.milvus.v2.service.cdc.request;
 /**
  * Request parameters for the {@code updateReplicateConfiguration} CDC API.
  */
+
+
 public class UpdateReplicateConfigurationReq {
     private ReplicateConfiguration replicateConfiguration;
     private boolean forcePromote;
@@ -31,6 +33,8 @@ public class UpdateReplicateConfigurationReq {
      *
      * @return the builder
      */
+
+
     public static UpdateReplicateConfigurationReqBuilder builder() {
         return new UpdateReplicateConfigurationReqBuilder();
     }
@@ -45,6 +49,8 @@ public class UpdateReplicateConfigurationReq {
      *
      * @return the replicate configuration
      */
+
+
     public ReplicateConfiguration getReplicateConfiguration() {
         return replicateConfiguration;
     }
@@ -54,6 +60,8 @@ public class UpdateReplicateConfigurationReq {
      *
      * @param replicateConfiguration the replicate configuration
      */
+
+
     public void setReplicateConfiguration(ReplicateConfiguration replicateConfiguration) {
         this.replicateConfiguration = replicateConfiguration;
     }
@@ -63,6 +71,8 @@ public class UpdateReplicateConfigurationReq {
      *
      * @return {@code true} if a forced promote is requested
      */
+
+
     public boolean isForcePromote() {
         return forcePromote;
     }
@@ -72,6 +82,8 @@ public class UpdateReplicateConfigurationReq {
      *
      * @param forcePromote {@code true} if a forced promote is requested
      */
+
+
     public void setForcePromote(boolean forcePromote) {
         this.forcePromote = forcePromote;
     }
@@ -84,6 +96,11 @@ public class UpdateReplicateConfigurationReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link UpdateReplicateConfigurationReq} class.
+     */
+
+
     public static class UpdateReplicateConfigurationReqBuilder {
         private ReplicateConfiguration replicateConfiguration;
         private boolean forcePromote;
@@ -94,6 +111,8 @@ public class UpdateReplicateConfigurationReq {
          * @param replicateConfiguration the replicate configuration
          * @return this builder
          */
+
+
         public UpdateReplicateConfigurationReqBuilder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
             this.replicateConfiguration = replicateConfiguration;
             return this;
@@ -105,6 +124,8 @@ public class UpdateReplicateConfigurationReq {
          * @param forcePromote {@code true} if a forced promote is requested
          * @return this builder
          */
+
+
         public UpdateReplicateConfigurationReqBuilder forcePromote(boolean forcePromote) {
             this.forcePromote = forcePromote;
             return this;
@@ -115,6 +136,8 @@ public class UpdateReplicateConfigurationReq {
          *
          * @return the request
          */
+
+
         public UpdateReplicateConfigurationReq build() {
             return new UpdateReplicateConfigurationReq(this);
         }

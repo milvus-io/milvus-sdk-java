@@ -51,6 +51,8 @@ import java.util.stream.Stream;
  * <p>Used internally by the SDK service implementations to translate query, search, aggregation,
  * index, and collection responses.</p>
  */
+
+
 public class ConvertUtils {
     /**
      * Converts a SDK v2 data type to the corresponding gRPC {@link DataType}.
@@ -59,6 +61,7 @@ public class ConvertUtils {
      * @return the corresponding gRPC data type, or {@link DataType#None} if {@code dt} is null
      * @throws MilvusClientException if the data type cannot be converted
      */
+
     public static DataType toProtoDataType(io.milvus.v2.common.DataType dt) {
         if (dt == null) {
             return DataType.None;
@@ -77,6 +80,8 @@ public class ConvertUtils {
      * @return the corresponding SDK v2 data type, or {@code DataType.None} if {@code dt} is null
      * @throws MilvusClientException if the data type cannot be converted
      */
+
+
     public static io.milvus.v2.common.DataType toSdkDataType(DataType dt) {
         if (dt == null) {
             return io.milvus.v2.common.DataType.None;
@@ -98,6 +103,8 @@ public class ConvertUtils {
      * @return a list of SDK v2 query results
      * @throws MilvusClientException if the element indices do not match the returned row count
      */
+
+
     public List<QueryResp.QueryResult> getEntities(QueryResults response) {
         List<QueryResp.QueryResult> entities = new ArrayList<>();
         // count(*) ?
@@ -157,6 +164,8 @@ public class ConvertUtils {
      * @param response the gRPC search results response
      * @return a list of search result lists, one per query
      */
+
+
     public List<List<SearchResp.SearchResult>> getEntities(SearchResults response) {
         SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getResults());
         long numQueries = response.getResults().getNumQueries();
@@ -218,6 +227,8 @@ public class ConvertUtils {
      * @throws MilvusClientException if aggregation buckets are returned without {@code aggTopks}
      *                               for a multi-query search
      */
+
+
     public List<List<AggregationBucket>> getAggregationBuckets(SearchResults response) {
         List<AggregationBucket> buckets = new ArrayList<>();
         for (AggBucket bucket : response.getResults().getAggBucketsList()) {
@@ -371,6 +382,8 @@ public class ConvertUtils {
      * @param response the list of gRPC index descriptions
      * @return the SDK v2 describe index response
      */
+
+
     public DescribeIndexResp convertToDescribeIndexResp(List<IndexDescription> response) {
         List<DescribeIndexResp.IndexDesc> descs = new ArrayList<>();
         for (IndexDescription description : response) {
@@ -437,6 +450,8 @@ public class ConvertUtils {
      * @param response the gRPC batch describe collection response
      * @return a list of SDK v2 describe collection responses
      */
+
+
     public List<DescribeCollectionResp> convertDescCollectionsResp(BatchDescribeCollectionResponse response) {
         List<DescribeCollectionResp> result = new ArrayList<>();
         List<DescribeCollectionResponse> responsesList = response.getResponsesList();
@@ -456,6 +471,8 @@ public class ConvertUtils {
      * @param response the gRPC describe collection response
      * @return the SDK v2 describe collection response
      */
+
+
     public DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
         Map<String, String> properties = new HashMap<>();
         response.getPropertiesList().forEach(prop -> properties.put(prop.getKey(), prop.getValue()));

@@ -32,6 +32,8 @@ import java.util.Map;
 /**
  * Parameters for <code>bulkWriter</code> interface.
  */
+
+
 public class LocalBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final String localPath;
@@ -46,22 +48,52 @@ public class LocalBulkWriterParam {
         this.fileType = builder.fileType;
         this.config = builder.config;
     }
+    /**
+     * Returns the collectionSchema.
+     *
+     * @return the collectionSchema
+     */
+
 
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
+    /**
+     * Returns the localPath.
+     *
+     * @return the localPath
+     */
+
 
     public String getLocalPath() {
         return localPath;
     }
+    /**
+     * Returns the chunkSize.
+     *
+     * @return the chunkSize
+     */
+
 
     public long getChunkSize() {
         return chunkSize;
     }
+    /**
+     * Returns the fileType.
+     *
+     * @return the fileType
+     */
+
 
     public BulkFileType getFileType() {
         return fileType;
     }
+    /**
+     * Returns the config.
+     *
+     * @return the config
+     */
+
 
     public Map<String, Object> getConfig() {
         return config;
@@ -76,6 +108,12 @@ public class LocalBulkWriterParam {
                 ", fileType=" + fileType +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -84,6 +122,8 @@ public class LocalBulkWriterParam {
     /**
      * Builder for {@link LocalBulkWriterParam} class.
      */
+
+
     public static final class Builder {
         private CreateCollectionReq.CollectionSchema collectionSchema;
         private String localPath;
@@ -100,6 +140,8 @@ public class LocalBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionSchema(CollectionSchemaParam collectionSchema) {
             this.collectionSchema = V2AdapterUtils.convertV1Schema(collectionSchema);
             return this;
@@ -111,6 +153,8 @@ public class LocalBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
@@ -122,20 +166,44 @@ public class LocalBulkWriterParam {
          * @param localPath collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withLocalPath(String localPath) {
             this.localPath = localPath;
             return this;
         }
+        /**
+         * Sets the chunkSize.
+         *
+         * @param chunkSize the chunkSize
+         * @return this builder
+         */
+
 
         public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
         }
+        /**
+         * Sets the fileType.
+         *
+         * @param fileType the fileType
+         * @return this builder
+         */
+
 
         public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
         }
+        /**
+         * Adds a configuration entry to the writer configuration map.
+         *
+         * @param key the configuration key
+         * @param val the configuration value
+         * @return this builder
+         */
+
 
         public Builder withConfig(String key, Object val) {
             this.config.put(key, val);
@@ -146,7 +214,10 @@ public class LocalBulkWriterParam {
          * Verifies parameters and creates a new {@link LocalBulkWriterParam} instance.
          *
          * @return {@link LocalBulkWriterParam}
+         * @throws ParamException if the required parameters are invalid
          */
+
+
         public LocalBulkWriterParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(localPath, "localPath");
 

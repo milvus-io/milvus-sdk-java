@@ -22,10 +22,14 @@ package io.milvus.bulkwriter.request.import_;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
-  If you want to import data into a Zilliz cloud instance and your data is stored in a Zilliz volume,
-  you can use this method to import the data from the volume.
+/**
+ * Request for importing data from a Zilliz volume into a Zilliz cloud instance.
+ *
+ * <p>Supports multi-path, folder, or single-file import through data paths within the
+ * specified volume.</p>
  */
+
+
 public class VolumeImportRequest extends BaseImportRequest {
     private String clusterId;
 
@@ -68,9 +72,24 @@ public class VolumeImportRequest extends BaseImportRequest {
      * ]
      */
     private List<List<String>> dataPaths;
+    /**
+     * Creates a new VolumeImportRequest.
+     */
+
 
     public VolumeImportRequest() {
     }
+    /**
+     * Creates a new VolumeImportRequest.
+     *
+     * @param clusterId the clusterId
+     * @param dbName the dbName
+     * @param collectionName the collectionName
+     * @param partitionName the partitionName
+     * @param volumeName the volumeName
+     * @param dataPaths the dataPaths
+     */
+
 
     public VolumeImportRequest(String clusterId, String dbName, String collectionName, String partitionName,
                                String volumeName, List<List<String>> dataPaths) {
@@ -91,50 +110,122 @@ public class VolumeImportRequest extends BaseImportRequest {
         this.volumeName = builder.volumeName;
         this.dataPaths = builder.dataPaths;
     }
+    /**
+     * Returns the clusterId.
+     *
+     * @return the clusterId
+     */
+
 
     public String getClusterId() {
         return clusterId;
     }
+    /**
+     * Sets the clusterId.
+     *
+     * @param clusterId the clusterId
+     */
+
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
+    /**
+     * Returns the dbName.
+     *
+     * @return the dbName
+     */
+
 
     public String getDbName() {
         return dbName;
     }
+    /**
+     * Sets the dbName.
+     *
+     * @param dbName the dbName
+     */
+
 
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
 
     public String getCollectionName() {
         return collectionName;
     }
+    /**
+     * Sets the collectionName.
+     *
+     * @param collectionName the collectionName
+     */
+
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
 
     public String getPartitionName() {
         return partitionName;
     }
+    /**
+     * Sets the partitionName.
+     *
+     * @param partitionName the partitionName
+     */
+
 
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
+    /**
+     * Returns the volumeName.
+     *
+     * @return the volumeName
+     */
+
 
     public String getVolumeName() {
         return volumeName;
     }
+    /**
+     * Sets the volumeName.
+     *
+     * @param volumeName the volumeName
+     */
+
 
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
+    /**
+     * Returns the dataPaths.
+     *
+     * @return the dataPaths
+     */
+
 
     public List<List<String>> getDataPaths() {
         return dataPaths;
     }
+    /**
+     * Sets the dataPaths.
+     *
+     * @param dataPaths the dataPaths
+     */
+
 
     public void setDataPaths(List<List<String>> dataPaths) {
         this.dataPaths = dataPaths;
@@ -151,10 +242,21 @@ public class VolumeImportRequest extends BaseImportRequest {
                 ", dataPaths=" + dataPaths +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static VolumeImportRequestBuilder builder() {
         return new VolumeImportRequestBuilder();
     }
+
+    /**
+     * Builder for {@link VolumeImportRequest} class.
+     */
+
 
     public static class VolumeImportRequestBuilder extends BaseImportRequestBuilder<VolumeImportRequestBuilder> {
         private String clusterId;
@@ -172,36 +274,84 @@ public class VolumeImportRequest extends BaseImportRequest {
             this.volumeName = "";
             this.dataPaths = new ArrayList<>();
         }
+        /**
+         * Sets the clusterId.
+         *
+         * @param clusterId the clusterId
+         * @return this builder
+         */
+
 
         public VolumeImportRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
         }
+        /**
+         * Sets the dbName.
+         *
+         * @param dbName the dbName
+         * @return this builder
+         */
+
 
         public VolumeImportRequestBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
+        /**
+         * Sets the collectionName.
+         *
+         * @param collectionName the collectionName
+         * @return this builder
+         */
+
 
         public VolumeImportRequestBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
+        /**
+         * Sets the partitionName.
+         *
+         * @param partitionName the partitionName
+         * @return this builder
+         */
+
 
         public VolumeImportRequestBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
+        /**
+         * Sets the volumeName.
+         *
+         * @param volumeName the volumeName
+         * @return this builder
+         */
+
 
         public VolumeImportRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
         }
+        /**
+         * Sets the dataPaths.
+         *
+         * @param dataPaths the dataPaths
+         * @return this builder
+         */
+
 
         public VolumeImportRequestBuilder dataPaths(List<List<String>> dataPaths) {
             this.dataPaths = dataPaths;
             return this;
         }
+        /**
+         * Builds the VolumeImportRequest.
+         *
+         * @return the built VolumeImportRequest
+         */
+
 
         public VolumeImportRequest build() {
             return new VolumeImportRequest(this);

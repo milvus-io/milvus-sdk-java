@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Parameters for <code>loadCollection</code> interface.
  */
+
+
 public class GetLoadingProgressParam {
     private final String databaseName;
     private final String collectionName;
@@ -42,13 +44,34 @@ public class GetLoadingProgressParam {
         this.partitionNames = builder.partitionNames;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -63,6 +86,13 @@ public class GetLoadingProgressParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -70,6 +100,8 @@ public class GetLoadingProgressParam {
     /**
      * Builder for {@link GetLoadingProgressParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -85,6 +117,8 @@ public class GetLoadingProgressParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -96,6 +130,8 @@ public class GetLoadingProgressParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -110,6 +146,8 @@ public class GetLoadingProgressParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             if (partitionNames == null) {
                 throw new IllegalArgumentException("partitionNames cannot be null");
@@ -124,6 +162,8 @@ public class GetLoadingProgressParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             if (partitionName == null) {
                 throw new IllegalArgumentException("partitionName cannot be null");
@@ -139,6 +179,8 @@ public class GetLoadingProgressParam {
          *
          * @return {@link GetLoadingProgressParam}
          */
+
+
         public GetLoadingProgressParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

@@ -22,6 +22,8 @@ package io.milvus.v2.service.index.request;
 /**
  * Request parameters for the {@code dropIndex} API.
  */
+
+
 public class DropIndexReq {
     private String databaseName;
     private String collectionName;
@@ -43,6 +45,8 @@ public class DropIndexReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -52,6 +56,8 @@ public class DropIndexReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -61,6 +67,8 @@ public class DropIndexReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -71,6 +79,8 @@ public class DropIndexReq {
      * @param collectionName the collection name
      * @throws IllegalArgumentException if the collection name is null
      */
+
+
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -83,6 +93,8 @@ public class DropIndexReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -92,6 +104,8 @@ public class DropIndexReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -101,6 +115,8 @@ public class DropIndexReq {
      *
      * @return the index name
      */
+
+
     public String getIndexName() {
         return indexName;
     }
@@ -110,6 +126,8 @@ public class DropIndexReq {
      *
      * @param indexName the index name
      */
+
+
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
@@ -129,9 +147,16 @@ public class DropIndexReq {
      *
      * @return the builder
      */
+
+
     public static DropIndexReqBuilder builder() {
         return new DropIndexReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropIndexReq} class.
+     */
+
 
     public static class DropIndexReqBuilder {
         private String databaseName;
@@ -148,6 +173,8 @@ public class DropIndexReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -160,6 +187,8 @@ public class DropIndexReq {
          * @return this builder
          * @throws IllegalArgumentException if the collection name is null
          */
+
+
         public DropIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -174,6 +203,8 @@ public class DropIndexReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public DropIndexReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -185,6 +216,8 @@ public class DropIndexReq {
          * @param indexName the index name
          * @return this builder
          */
+
+
         public DropIndexReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
@@ -195,6 +228,8 @@ public class DropIndexReq {
          *
          * @return the built request
          */
+
+
         public DropIndexReq build() {
             return new DropIndexReq(this);
         }

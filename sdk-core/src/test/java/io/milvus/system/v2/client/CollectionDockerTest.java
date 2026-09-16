@@ -44,6 +44,7 @@ import io.milvus.v2.service.index.request.*;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.utility.request.*;
+import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.response.*;
@@ -843,6 +844,113 @@ class CollectionDockerTest extends MilvusV2DockerTestBase {
                 .collectionName(collectionName)
                 .build());
         Assertions.assertFalse(indexNames.contains("sparse_idx"));
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+    }
+
+    @Test
+    void testCreateSchema() {
+        CreateCollectionReq.CollectionSchema schema = MilvusClientV2.CreateSchema();
+        Assertions.assertNotNull(schema);
+        Assertions.assertTrue(schema.getFieldSchemaList().isEmpty());
+        Assertions.assertFalse(schema.isEnableDynamicField());
+    }
+
+    @Test
+    void testTruncateCollection() throws InterruptedException {
+        String collectionName = generator.generate(10);
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .description("dummy")
+                .dimension(DIMENSION)
+                .build());
+
+        long count = 100;
+        CreateCollectionReq.CollectionSchema schema = client.describeCollection(
+                        DescribeCollectionReq.builder().collectionName(collectionName).build())
+                .getCollectionSchema();
+        List<JsonObject> data = generateRandomData(schema, count);
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(collectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        client.truncateCollection(TruncateCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+
+        // Wait for the truncate to take effect
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+        long rowCount = -1;
+        while (System.currentTimeMillis() < deadline) {
+            rowCount = getRowCount("", collectionName);
+            if (rowCount == 0) {
+                break;
+            }
+            TimeUnit.MILLISECONDS.sleep(200);
+        }
+        Assertions.assertEquals(0, rowCount);
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+    }
+
+    @Test
+    void testAlterCollection() {
+        String collectionName = generator.generate(10);
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .description("dummy")
+                .dimension(DIMENSION)
+                .build());
+
+        Map<String, String> properties = new HashMap<>();
+        properties.put(Constant.TTL_SECONDS, "300");
+        client.alterCollection(AlterCollectionReq.builder()
+                .collectionName(collectionName)
+                .properties(properties)
+                .build());
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+        Assertions.assertEquals("300", descResp.getProperties().get(Constant.TTL_SECONDS));
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+    }
+
+    @Test
+    void testFlushAll() throws InterruptedException {
+        String collectionName = generator.generate(10);
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .description("dummy")
+                .dimension(DIMENSION)
+                .build());
+
+        long count = 100;
+        CreateCollectionReq.CollectionSchema schema = client.describeCollection(
+                        DescribeCollectionReq.builder().collectionName(collectionName).build())
+                .getCollectionSchema();
+        List<JsonObject> data = generateRandomData(schema, count);
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(collectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        FlushAllResp flushAllResp = client.flushAll(FlushAllReq.builder()
+                .databaseName("")
+                .waitFlushedTimeoutMs(60_000L)
+                .build());
+        Assertions.assertNotNull(flushAllResp);
+        Assertions.assertTrue(flushAllResp.getFlushAllTs() > 0L);
+
+        GetFlushAllStateResp flushAllState = client.getFlushAllState(GetFlushAllStateReq.builder()
+                .flushAllTs(flushAllResp.getFlushAllTs())
+                .build());
+        Assertions.assertNotNull(flushAllState);
+        Assertions.assertTrue(flushAllState.getFlushed());
 
         client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
     }

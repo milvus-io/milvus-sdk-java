@@ -24,6 +24,8 @@ import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 /**
  * Request parameters for the {@code dumpMessages} CDC API.
  */
+
+
 public class DumpMessagesReq {
     private final String pchannel;
     private final GetReplicateInfoResp.MessageID startMessageID;
@@ -44,6 +46,8 @@ public class DumpMessagesReq {
      *
      * @return the builder
      */
+
+
     public static DumpMessagesReqBuilder builder() {
         return new DumpMessagesReqBuilder();
     }
@@ -53,6 +57,8 @@ public class DumpMessagesReq {
      *
      * @return the physical channel
      */
+
+
     public String getPchannel() {
         return pchannel;
     }
@@ -62,6 +68,8 @@ public class DumpMessagesReq {
      *
      * @return the start message ID
      */
+
+
     public GetReplicateInfoResp.MessageID getStartMessageID() {
         return startMessageID;
     }
@@ -71,6 +79,8 @@ public class DumpMessagesReq {
      *
      * @return the start timetick
      */
+
+
     public Long getStartTimetick() {
         return startTimetick;
     }
@@ -80,6 +90,8 @@ public class DumpMessagesReq {
      *
      * @return the end timetick
      */
+
+
     public Long getEndTimetick() {
         return endTimetick;
     }
@@ -89,6 +101,8 @@ public class DumpMessagesReq {
      *
      * @return {@code true} if the start message is included
      */
+
+
     public Boolean getIncludeStartMessage() {
         return includeStartMessage;
     }
@@ -104,6 +118,11 @@ public class DumpMessagesReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DumpMessagesReq} class.
+     */
+
+
     public static class DumpMessagesReqBuilder {
         private String pchannel;
         private GetReplicateInfoResp.MessageID startMessageID;
@@ -117,6 +136,8 @@ public class DumpMessagesReq {
          * @param pchannel the physical channel
          * @return this builder
          */
+
+
         public DumpMessagesReqBuilder pchannel(String pchannel) {
             this.pchannel = pchannel;
             return this;
@@ -128,6 +149,8 @@ public class DumpMessagesReq {
          * @param startMessageID the start message ID
          * @return this builder
          */
+
+
         public DumpMessagesReqBuilder startMessageID(GetReplicateInfoResp.MessageID startMessageID) {
             this.startMessageID = startMessageID;
             return this;
@@ -139,6 +162,8 @@ public class DumpMessagesReq {
          * @param startTimetick the start timetick
          * @return this builder
          */
+
+
         public DumpMessagesReqBuilder startTimetick(Long startTimetick) {
             this.startTimetick = startTimetick;
             return this;
@@ -150,6 +175,8 @@ public class DumpMessagesReq {
          * @param endTimetick the end timetick
          * @return this builder
          */
+
+
         public DumpMessagesReqBuilder endTimetick(Long endTimetick) {
             this.endTimetick = endTimetick;
             return this;
@@ -161,6 +188,8 @@ public class DumpMessagesReq {
          * @param includeStartMessage {@code true} if the start message is included
          * @return this builder
          */
+
+
         public DumpMessagesReqBuilder includeStartMessage(Boolean includeStartMessage) {
             this.includeStartMessage = includeStartMessage;
             return this;
@@ -171,6 +200,8 @@ public class DumpMessagesReq {
          *
          * @return the request
          */
+
+
         public DumpMessagesReq build() {
             return new DumpMessagesReq(this);
         }

@@ -24,6 +24,8 @@ import static io.milvus.common.utils.RedactCredential.redactCredential;
 /**
  * Request parameters for the {@code updatePassword} API.
  */
+
+
 public class UpdatePasswordReq {
     private String userName;
     private String password;
@@ -44,6 +46,8 @@ public class UpdatePasswordReq {
      *
      * @return the user name
      */
+
+
     public String getUserName() {
         return userName;
     }
@@ -53,6 +57,8 @@ public class UpdatePasswordReq {
      *
      * @param userName the user name
      */
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -62,6 +68,8 @@ public class UpdatePasswordReq {
      *
      * @return the current user password
      */
+
+
     public String getPassword() {
         return password;
     }
@@ -71,6 +79,8 @@ public class UpdatePasswordReq {
      *
      * @param password the current user password
      */
+
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -80,6 +90,8 @@ public class UpdatePasswordReq {
      *
      * @return the new user password
      */
+
+
     public String getNewPassword() {
         return newPassword;
     }
@@ -89,6 +101,8 @@ public class UpdatePasswordReq {
      *
      * @param newPassword the new user password
      */
+
+
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
     }
@@ -98,6 +112,8 @@ public class UpdatePasswordReq {
      *
      * @return {@code true} if existing connections are reset, {@code false} otherwise
      */
+
+
     public Boolean getResetConnection() {
         return resetConnection;
     }
@@ -107,6 +123,8 @@ public class UpdatePasswordReq {
      *
      * @param resetConnection {@code true} to reset existing connections, {@code false} otherwise
      */
+
+
     public void setResetConnection(Boolean resetConnection) {
         this.resetConnection = resetConnection;
     }
@@ -116,6 +134,8 @@ public class UpdatePasswordReq {
      *
      * @return the user description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -125,6 +145,8 @@ public class UpdatePasswordReq {
      *
      * @param description the user description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -145,9 +167,16 @@ public class UpdatePasswordReq {
      *
      * @return a new {@link UpdatePasswordReqBuilder}
      */
+
+
     public static UpdatePasswordReqBuilder builder() {
         return new UpdatePasswordReqBuilder();
     }
+
+    /**
+     * Builder for {@link UpdatePasswordReq} class.
+     */
+
 
     public static class UpdatePasswordReqBuilder {
         private String userName;
@@ -165,6 +194,8 @@ public class UpdatePasswordReq {
          * @param userName the user name
          * @return this builder
          */
+
+
         public UpdatePasswordReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
@@ -176,6 +207,8 @@ public class UpdatePasswordReq {
          * @param password the current user password
          * @return this builder
          */
+
+
         public UpdatePasswordReqBuilder password(String password) {
             this.password = password;
             return this;
@@ -187,6 +220,8 @@ public class UpdatePasswordReq {
          * @param newPassword the new user password
          * @return this builder
          */
+
+
         public UpdatePasswordReqBuilder newPassword(String newPassword) {
             this.newPassword = newPassword;
             return this;
@@ -198,6 +233,8 @@ public class UpdatePasswordReq {
          * @param resetConnection {@code true} to reset existing connections, {@code false} otherwise
          * @return this builder
          */
+
+
         public UpdatePasswordReqBuilder resetConnection(Boolean resetConnection) {
             this.resetConnection = resetConnection;
             return this;
@@ -209,6 +246,8 @@ public class UpdatePasswordReq {
          * @param description the user description
          * @return this builder
          */
+
+
         public UpdatePasswordReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -219,6 +258,8 @@ public class UpdatePasswordReq {
          *
          * @return the built request
          */
+
+
         public UpdatePasswordReq build() {
             return new UpdatePasswordReq(this);
         }

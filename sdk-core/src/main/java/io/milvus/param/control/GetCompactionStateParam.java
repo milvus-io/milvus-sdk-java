@@ -26,6 +26,8 @@ import io.milvus.exception.ParamException;
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
+
+
 public class GetCompactionStateParam {
     private final Long compactionID;
 
@@ -36,10 +38,22 @@ public class GetCompactionStateParam {
         this.compactionID = builder.compactionID;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the compactionID.
+     *
+     * @return the compactionID
+     */
     // Getter method to replace @Getter annotation
     public Long getCompactionID() {
         return compactionID;
@@ -56,6 +70,8 @@ public class GetCompactionStateParam {
     /**
      * Builder for {@link GetCompactionStateParam} class.
      */
+
+
     public static final class Builder {
         private Long compactionID;
 
@@ -68,6 +84,8 @@ public class GetCompactionStateParam {
          * @param compactionID compaction action id
          * @return <code>Builder</code>
          */
+
+
         public Builder withCompactionID(Long compactionID) {
             // Replace @NonNull logic with explicit null check
             if (compactionID == null) {
@@ -82,6 +100,8 @@ public class GetCompactionStateParam {
          *
          * @return {@link GetCompactionStateParam}
          */
+
+
         public GetCompactionStateParam build() throws ParamException {
             return new GetCompactionStateParam(this);
         }

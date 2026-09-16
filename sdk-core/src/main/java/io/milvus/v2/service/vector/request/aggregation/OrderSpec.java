@@ -26,6 +26,8 @@ import io.milvus.v2.exception.MilvusClientException;
  * An ordering rule of a {@code group-by} search aggregation, specifying the sort key,
  * the sort direction, and how {@code null} values are handled.
  */
+
+
 public class OrderSpec {
     private final String key;
     private final AggDirection direction;
@@ -50,6 +52,8 @@ public class OrderSpec {
      *
      * @return a new builder
      */
+
+
     public static OrderSpecBuilder builder() {
         return new OrderSpecBuilder();
     }
@@ -60,6 +64,8 @@ public class OrderSpec {
      *
      * @return the sort key
      */
+
+
     public String getKey() {
         return key;
     }
@@ -69,6 +75,8 @@ public class OrderSpec {
      *
      * @return the sort direction
      */
+
+
     public AggDirection getDirection() {
         return direction;
     }
@@ -78,6 +86,8 @@ public class OrderSpec {
      *
      * @return {@code true} if nulls are ordered first, or {@code null} if not specified
      */
+
+
     public Boolean getNullFirst() {
         return nullFirst;
     }
@@ -104,6 +114,8 @@ public class OrderSpec {
     /**
      * Builder for {@link OrderSpec}.
      */
+
+
     public static class OrderSpecBuilder {
         private String key;
         private AggDirection direction;
@@ -119,6 +131,8 @@ public class OrderSpec {
          * @param key the sort key
          * @return this builder
          */
+
+
         public OrderSpecBuilder key(String key) {
             this.key = key;
             return this;
@@ -130,6 +144,8 @@ public class OrderSpec {
          * @param direction the sort direction
          * @return this builder
          */
+
+
         public OrderSpecBuilder direction(AggDirection direction) {
             this.direction = direction;
             return this;
@@ -141,6 +157,8 @@ public class OrderSpec {
          * @param nullFirst {@code true} to order nulls first, {@code false} to order them last
          * @return this builder
          */
+
+
         public OrderSpecBuilder nullFirst(Boolean nullFirst) {
             this.nullFirst = nullFirst;
             return this;
@@ -151,6 +169,8 @@ public class OrderSpec {
          *
          * @return the built ordering rule
          */
+
+
         public OrderSpec build() {
             return new OrderSpec(this);
         }

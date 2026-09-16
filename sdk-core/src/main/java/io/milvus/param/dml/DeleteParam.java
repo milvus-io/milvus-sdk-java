@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>delete</code> interface.
  */
+
+
 public class DeleteParam {
     protected final String databaseName;
     private final String collectionName;
@@ -42,22 +44,55 @@ public class DeleteParam {
         this.expr = builder.expr;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
+
     public String getPartitionName() {
         return partitionName;
     }
+
+    /**
+     * Returns the expr.
+     *
+     * @return the expr
+     */
+
 
     public String getExpr() {
         return expr;
@@ -77,6 +112,8 @@ public class DeleteParam {
     /**
      * Builder for {@link DeleteParam} class.
      */
+
+
     public static class Builder {
         private String databaseName;
         private String collectionName;
@@ -92,6 +129,8 @@ public class DeleteParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -103,6 +142,8 @@ public class DeleteParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -118,6 +159,8 @@ public class DeleteParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -134,6 +177,8 @@ public class DeleteParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
+
+
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
             if (expr == null) {
@@ -148,6 +193,8 @@ public class DeleteParam {
          *
          * @return {@link DeleteParam}
          */
+
+
         public DeleteParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(expr, "Expression");

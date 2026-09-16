@@ -24,6 +24,11 @@ import io.milvus.param.ParamUtils;
 
 import static io.milvus.common.utils.RedactCredential.redactCredential;
 
+/**
+ * Request parameters for the createCredential API.
+ */
+
+
 public class CreateCredentialParam {
     private final String username;
     private final String password;
@@ -36,14 +41,33 @@ public class CreateCredentialParam {
         this.password = builder.password;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static CreateCredentialParam.Builder newBuilder() {
         return new CreateCredentialParam.Builder();
     }
 
+    /**
+     * Returns the username.
+     *
+     * @return the username
+     */
     // Getter methods to replace @Getter annotation
     public String getUsername() {
         return username;
     }
+
+    /**
+     * Returns the password.
+     *
+     * @return the password
+     */
+
 
     public String getPassword() {
         return password;
@@ -61,6 +85,8 @@ public class CreateCredentialParam {
     /**
      * Builder for {@link CreateCredentialParam} class.
      */
+
+
     public static final class Builder {
         private String username;
         private String password;
@@ -74,6 +100,8 @@ public class CreateCredentialParam {
          * @param username username
          * @return <code>Builder</code>
          */
+
+
         public CreateCredentialParam.Builder withUsername(String username) {
             // Replace @NonNull logic with explicit null check
             if (username == null) {
@@ -89,6 +117,8 @@ public class CreateCredentialParam {
          * @param password password
          * @return <code>Builder</code>
          */
+
+
         public CreateCredentialParam.Builder withPassword(String password) {
             // Replace @NonNull logic with explicit null check
             if (password == null) {
@@ -103,6 +133,8 @@ public class CreateCredentialParam {
          *
          * @return {@link CreateCredentialParam}
          */
+
+
         public CreateCredentialParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(username, "Username");
             ParamUtils.CheckNullEmptyString(password, "Password");

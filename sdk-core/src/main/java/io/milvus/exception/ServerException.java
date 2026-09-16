@@ -24,13 +24,31 @@ import io.milvus.grpc.ErrorCode;
 /**
  * Exception for error response from server side.
  */
+
+
 public class ServerException extends MilvusException {
     protected ErrorCode compatibleCode;
+
+    /**
+     * Creates a server exception with a message, status code and compatible error code.
+     *
+     * @param msg            the error message
+     * @param code           the Milvus status code
+     * @param compatibleCode the gRPC error code for backward compatibility
+     */
+
 
     public ServerException(String msg, Integer code, ErrorCode compatibleCode) {
         super(msg, code);
         this.compatibleCode = compatibleCode;
     }
+
+    /**
+     * Returns the compatible gRPC error code of this exception.
+     *
+     * @return the compatible error code
+     */
+
 
     public ErrorCode getCompatibleCode() {
         return compatibleCode;

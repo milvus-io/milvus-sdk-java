@@ -27,9 +27,19 @@ import java.util.List;
  * The topology is identified by a version number and contains the list of known clusters.
  * The primary (writable) cluster can be retrieved via {@link #getPrimary()}.
  */
+
+
 public class GlobalTopology {
     private final long version;
     private final List<ClusterInfo> clusters;
+
+    /**
+     * Creates a {@code GlobalTopology} with the given version and clusters.
+     *
+     * @param version the topology version
+     * @param clusters the list of clusters in the topology
+     */
+
 
     public GlobalTopology(long version, List<ClusterInfo> clusters) {
         this.version = version;
@@ -41,6 +51,8 @@ public class GlobalTopology {
      *
      * @return the topology version
      */
+
+
     public long getVersion() {
         return version;
     }
@@ -50,6 +62,8 @@ public class GlobalTopology {
      *
      * @return the list of clusters
      */
+
+
     public List<ClusterInfo> getClusters() {
         return clusters;
     }
@@ -60,6 +74,8 @@ public class GlobalTopology {
      * @return the primary cluster
      * @throws IllegalStateException if no writable cluster is found
      */
+
+
     public ClusterInfo getPrimary() {
         for (ClusterInfo cluster : clusters) {
             if (cluster.isPrimary()) {

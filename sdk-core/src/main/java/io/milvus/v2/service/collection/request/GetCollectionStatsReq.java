@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code getCollectionStats} API.
  */
+
+
 public class GetCollectionStatsReq {
     private String databaseName;
     private String collectionName;
@@ -36,6 +38,8 @@ public class GetCollectionStatsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -45,6 +49,8 @@ public class GetCollectionStatsReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -54,6 +60,8 @@ public class GetCollectionStatsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -63,6 +71,8 @@ public class GetCollectionStatsReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -80,9 +90,16 @@ public class GetCollectionStatsReq {
      *
      * @return the builder
      */
+
+
     public static GetCollectionStatsReqBuilder builder() {
         return new GetCollectionStatsReqBuilder();
     }
+
+    /**
+     * Builder for {@link GetCollectionStatsReq} class.
+     */
+
 
     public static class GetCollectionStatsReqBuilder {
         private String databaseName;
@@ -97,6 +114,8 @@ public class GetCollectionStatsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public GetCollectionStatsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -108,6 +127,8 @@ public class GetCollectionStatsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public GetCollectionStatsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -118,6 +139,8 @@ public class GetCollectionStatsReq {
          *
          * @return the request
          */
+
+
         public GetCollectionStatsReq build() {
             return new GetCollectionStatsReq(this);
         }

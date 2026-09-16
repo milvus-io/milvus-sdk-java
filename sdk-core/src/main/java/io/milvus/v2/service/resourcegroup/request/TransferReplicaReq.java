@@ -22,6 +22,8 @@ package io.milvus.v2.service.resourcegroup.request;
 /**
  * Request parameters for the {@code transferReplica} API.
  */
+
+
 public class TransferReplicaReq {
     private String sourceGroupName;
     private String targetGroupName;
@@ -42,6 +44,8 @@ public class TransferReplicaReq {
      *
      * @return the builder
      */
+
+
     public static TransferReplicaReqBuilder builder() {
         return new TransferReplicaReqBuilder();
     }
@@ -51,6 +55,8 @@ public class TransferReplicaReq {
      *
      * @return the source resource group name
      */
+
+
     public String getSourceGroupName() {
         return sourceGroupName;
     }
@@ -60,6 +66,8 @@ public class TransferReplicaReq {
      *
      * @param sourceGroupName the source resource group name
      */
+
+
     public void setSourceGroupName(String sourceGroupName) {
         this.sourceGroupName = sourceGroupName;
     }
@@ -69,6 +77,8 @@ public class TransferReplicaReq {
      *
      * @return the target resource group name
      */
+
+
     public String getTargetGroupName() {
         return targetGroupName;
     }
@@ -78,6 +88,8 @@ public class TransferReplicaReq {
      *
      * @param targetGroupName the target resource group name
      */
+
+
     public void setTargetGroupName(String targetGroupName) {
         this.targetGroupName = targetGroupName;
     }
@@ -87,6 +99,8 @@ public class TransferReplicaReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -96,6 +110,8 @@ public class TransferReplicaReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -105,6 +121,8 @@ public class TransferReplicaReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -114,6 +132,8 @@ public class TransferReplicaReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -123,6 +143,8 @@ public class TransferReplicaReq {
      *
      * @return the number of replicas
      */
+
+
     public Long getNumberOfReplicas() {
         return numberOfReplicas;
     }
@@ -132,6 +154,8 @@ public class TransferReplicaReq {
      *
      * @param numberOfReplicas the number of replicas
      */
+
+
     public void setNumberOfReplicas(Long numberOfReplicas) {
         this.numberOfReplicas = numberOfReplicas;
     }
@@ -147,6 +171,11 @@ public class TransferReplicaReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link TransferReplicaReq} class.
+     */
+
+
     public static class TransferReplicaReqBuilder {
         private String sourceGroupName;
         private String targetGroupName;
@@ -160,6 +189,8 @@ public class TransferReplicaReq {
          * @param sourceGroupName the source resource group name
          * @return this builder
          */
+
+
         public TransferReplicaReqBuilder sourceGroupName(String sourceGroupName) {
             this.sourceGroupName = sourceGroupName;
             return this;
@@ -171,6 +202,8 @@ public class TransferReplicaReq {
          * @param targetGroupName the target resource group name
          * @return this builder
          */
+
+
         public TransferReplicaReqBuilder targetGroupName(String targetGroupName) {
             this.targetGroupName = targetGroupName;
             return this;
@@ -182,6 +215,8 @@ public class TransferReplicaReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public TransferReplicaReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -193,6 +228,8 @@ public class TransferReplicaReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public TransferReplicaReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -204,6 +241,8 @@ public class TransferReplicaReq {
          * @param numberOfReplicas the number of replicas
          * @return this builder
          */
+
+
         public TransferReplicaReqBuilder numberOfReplicas(Long numberOfReplicas) {
             this.numberOfReplicas = numberOfReplicas;
             return this;
@@ -214,6 +253,8 @@ public class TransferReplicaReq {
          *
          * @return the built request
          */
+
+
         public TransferReplicaReq build() {
             return new TransferReplicaReq(this);
         }

@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code dropCollectionField} API.
  */
+
+
 public class DropCollectionFieldReq {
     private String collectionName;
     private String databaseName;
@@ -40,6 +42,8 @@ public class DropCollectionFieldReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -49,6 +53,8 @@ public class DropCollectionFieldReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -58,6 +64,8 @@ public class DropCollectionFieldReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -67,6 +75,8 @@ public class DropCollectionFieldReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -76,6 +86,8 @@ public class DropCollectionFieldReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -85,6 +97,8 @@ public class DropCollectionFieldReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -94,6 +108,8 @@ public class DropCollectionFieldReq {
      *
      * @return the field ID
      */
+
+
     public Long getFieldId() {
         return fieldId;
     }
@@ -103,6 +119,8 @@ public class DropCollectionFieldReq {
      *
      * @param fieldId the field ID
      */
+
+
     public void setFieldId(Long fieldId) {
         this.fieldId = fieldId;
     }
@@ -122,9 +140,16 @@ public class DropCollectionFieldReq {
      *
      * @return the builder
      */
+
+
     public static DropCollectionFieldReqBuilder builder() {
         return new DropCollectionFieldReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropCollectionFieldReq} class.
+     */
+
 
     public static class DropCollectionFieldReqBuilder {
         private String collectionName = "";
@@ -141,6 +166,8 @@ public class DropCollectionFieldReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DropCollectionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -152,6 +179,8 @@ public class DropCollectionFieldReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropCollectionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -163,6 +192,8 @@ public class DropCollectionFieldReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public DropCollectionFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -174,6 +205,8 @@ public class DropCollectionFieldReq {
          * @param fieldId the field ID
          * @return this builder
          */
+
+
         public DropCollectionFieldReqBuilder fieldId(Long fieldId) {
             this.fieldId = fieldId;
             return this;
@@ -184,6 +217,8 @@ public class DropCollectionFieldReq {
          *
          * @return the request
          */
+
+
         public DropCollectionFieldReq build() {
             return new DropCollectionFieldReq(this);
         }

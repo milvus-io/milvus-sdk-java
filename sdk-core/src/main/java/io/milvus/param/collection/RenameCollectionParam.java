@@ -25,11 +25,20 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>renameCollection</code> interface.
  */
+
+
 public class RenameCollectionParam {
     private final String oldDatabaseName;
     private final String newDatabaseName;
     private final String oldCollectionName;
     private final String newCollectionName;
+
+    /**
+     * Constructs a new RenameCollectionParam.
+     *
+     * @param builder the builder
+     */
+
 
     public RenameCollectionParam(Builder builder) {
         if (builder.oldCollectionName == null) {
@@ -44,17 +53,45 @@ public class RenameCollectionParam {
         this.newCollectionName = builder.newCollectionName;
     }
 
+    /**
+     * Returns the oldCollectionName.
+     *
+     * @return the oldCollectionName
+     */
+
+
     public String getOldCollectionName() {
         return oldCollectionName;
     }
+
+    /**
+     * Returns the newCollectionName.
+     *
+     * @return the newCollectionName
+     */
+
 
     public String getNewCollectionName() {
         return newCollectionName;
     }
 
+    /**
+     * Returns the oldDatabaseName.
+     *
+     * @return the oldDatabaseName
+     */
+
+
     public String getOldDatabaseName() {
         return oldDatabaseName;
     }
+
+    /**
+     * Returns the newDatabaseName.
+     *
+     * @return the newDatabaseName
+     */
+
 
     public String getNewDatabaseName() {
         return newDatabaseName;
@@ -70,6 +107,13 @@ public class RenameCollectionParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -77,6 +121,8 @@ public class RenameCollectionParam {
     /**
      * Builder for {@link RenameCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String oldDatabaseName;
         private String newDatabaseName;
@@ -92,6 +138,8 @@ public class RenameCollectionParam {
          * @param oldDatabaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withOldDatabaseName(String oldDatabaseName) {
             this.oldDatabaseName = oldDatabaseName;
             return this;
@@ -103,6 +151,8 @@ public class RenameCollectionParam {
          * @param newDatabaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withNewDatabaseName(String newDatabaseName) {
             this.newDatabaseName = newDatabaseName;
             return this;
@@ -114,6 +164,8 @@ public class RenameCollectionParam {
          * @param oldCollectionName old collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withOldCollectionName(String oldCollectionName) {
             if (oldCollectionName == null) {
                 throw new IllegalArgumentException("oldCollectionName cannot be null");
@@ -128,6 +180,8 @@ public class RenameCollectionParam {
          * @param newCollectionName new collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withNewCollectionName(String newCollectionName) {
             if (newCollectionName == null) {
                 throw new IllegalArgumentException("newCollectionName cannot be null");
@@ -141,6 +195,8 @@ public class RenameCollectionParam {
          *
          * @return {@link RenameCollectionParam}
          */
+
+
         public RenameCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(oldCollectionName, "Old collection name");
             ParamUtils.CheckNullEmptyString(newCollectionName, "New collection name");

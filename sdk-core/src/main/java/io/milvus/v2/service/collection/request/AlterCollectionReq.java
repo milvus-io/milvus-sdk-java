@@ -29,6 +29,8 @@ public class AlterCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -38,6 +40,8 @@ public class AlterCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -47,6 +51,8 @@ public class AlterCollectionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -56,6 +62,8 @@ public class AlterCollectionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -65,6 +73,8 @@ public class AlterCollectionReq {
      *
      * @return the collection properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -83,9 +93,16 @@ public class AlterCollectionReq {
      *
      * @return the builder
      */
+
+
     public static AlterCollectionReqBuilder builder() {
         return new AlterCollectionReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterCollectionReq} class.
+     */
+
 
     public static class AlterCollectionReqBuilder {
         private String collectionName;
@@ -101,6 +118,8 @@ public class AlterCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AlterCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -112,6 +131,8 @@ public class AlterCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AlterCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -123,6 +144,8 @@ public class AlterCollectionReq {
          * @param properties the collection properties
          * @return this builder
          */
+
+
         public AlterCollectionReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -135,6 +158,8 @@ public class AlterCollectionReq {
          * @param value the property value
          * @return this builder
          */
+
+
         public AlterCollectionReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -148,6 +173,8 @@ public class AlterCollectionReq {
          *
          * @return the request
          */
+
+
         public AlterCollectionReq build() {
             return new AlterCollectionReq(this);
         }

@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code hybridSearch} API.
  */
+
+
 public class HybridSearchReq {
     private String databaseName;
     private String collectionName;
@@ -79,6 +81,7 @@ public class HybridSearchReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -88,6 +91,8 @@ public class HybridSearchReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -97,6 +102,8 @@ public class HybridSearchReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -106,6 +113,8 @@ public class HybridSearchReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -113,6 +122,7 @@ public class HybridSearchReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @return the cluster ID
      */
     @Deprecated
     public String getClusterId() {
@@ -122,6 +132,7 @@ public class HybridSearchReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @param clusterId the cluster ID
      */
     @Deprecated
     public void setClusterId(String clusterId) {
@@ -133,6 +144,8 @@ public class HybridSearchReq {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -142,6 +155,8 @@ public class HybridSearchReq {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -151,6 +166,8 @@ public class HybridSearchReq {
      *
      * @return the ANN search requests
      */
+
+
     public List<AnnSearchReq> getSearchRequests() {
         return searchRequests;
     }
@@ -160,6 +177,8 @@ public class HybridSearchReq {
      *
      * @param searchRequests the ANN search requests
      */
+
+
     public void setSearchRequests(List<AnnSearchReq> searchRequests) {
         this.searchRequests = searchRequests;
     }
@@ -169,6 +188,8 @@ public class HybridSearchReq {
      *
      * @return the ranker
      */
+
+
     public CreateCollectionReq.Function getRanker() {
         return ranker;
     }
@@ -178,6 +199,8 @@ public class HybridSearchReq {
      *
      * @param ranker the ranker
      */
+
+
     public void setRanker(CreateCollectionReq.Function ranker) {
         this.ranker = ranker;
     }
@@ -187,6 +210,8 @@ public class HybridSearchReq {
      *
      * @return the function score
      */
+
+
     public FunctionScore getFunctionScore() {
         return functionScore;
     }
@@ -196,6 +221,8 @@ public class HybridSearchReq {
      *
      * @param functionScore the function score
      */
+
+
     public void setFunctionScore(FunctionScore functionScore) {
         this.functionScore = functionScore;
     }
@@ -228,6 +255,8 @@ public class HybridSearchReq {
      *
      * @return the limit value
      */
+
+
     public long getLimit() {
         return limit;
     }
@@ -237,6 +266,8 @@ public class HybridSearchReq {
      *
      * @param limit the limit value
      */
+
+
     public void setLimit(long limit) {
         this.limit = limit;
         this.topK = (int) limit;
@@ -247,6 +278,8 @@ public class HybridSearchReq {
      *
      * @return the output fields
      */
+
+
     public List<String> getOutFields() {
         return outFields;
     }
@@ -256,6 +289,8 @@ public class HybridSearchReq {
      *
      * @param outFields the output fields
      */
+
+
     public void setOutFields(List<String> outFields) {
         this.outFields = outFields;
     }
@@ -265,6 +300,8 @@ public class HybridSearchReq {
      *
      * @return the offset
      */
+
+
     public long getOffset() {
         return offset;
     }
@@ -274,6 +311,8 @@ public class HybridSearchReq {
      *
      * @param offset the offset
      */
+
+
     public void setOffset(long offset) {
         this.offset = offset;
     }
@@ -283,6 +322,8 @@ public class HybridSearchReq {
      *
      * @return the round decimal value
      */
+
+
     public int getRoundDecimal() {
         return roundDecimal;
     }
@@ -292,6 +333,8 @@ public class HybridSearchReq {
      *
      * @param roundDecimal the round decimal value
      */
+
+
     public void setRoundDecimal(int roundDecimal) {
         this.roundDecimal = roundDecimal;
     }
@@ -301,6 +344,8 @@ public class HybridSearchReq {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -310,6 +355,8 @@ public class HybridSearchReq {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -319,6 +366,8 @@ public class HybridSearchReq {
      *
      * @return the group-by field name
      */
+
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
@@ -328,6 +377,8 @@ public class HybridSearchReq {
      *
      * @param groupByFieldName the group-by field name
      */
+
+
     public void setGroupByFieldName(String groupByFieldName) {
         this.groupByFieldName = groupByFieldName;
     }
@@ -337,6 +388,8 @@ public class HybridSearchReq {
      *
      * @return the group size
      */
+
+
     public Integer getGroupSize() {
         return groupSize;
     }
@@ -346,6 +399,8 @@ public class HybridSearchReq {
      *
      * @param groupSize the group size
      */
+
+
     public void setGroupSize(Integer groupSize) {
         this.groupSize = groupSize;
     }
@@ -355,6 +410,8 @@ public class HybridSearchReq {
      *
      * @return {@code true} if the group size is strict
      */
+
+
     public Boolean getStrictGroupSize() {
         return strictGroupSize;
     }
@@ -364,6 +421,8 @@ public class HybridSearchReq {
      *
      * @param strictGroupSize {@code true} if the group size is strict
      */
+
+
     public void setStrictGroupSize(Boolean strictGroupSize) {
         this.strictGroupSize = strictGroupSize;
     }
@@ -395,9 +454,16 @@ public class HybridSearchReq {
      *
      * @return the builder
      */
+
+
     public static HybridSearchReqBuilder builder() {
         return new HybridSearchReqBuilder();
     }
+
+    /**
+     * Builder for {@link HybridSearchReq} class.
+     */
+
 
     public static class HybridSearchReqBuilder {
         private String databaseName;
@@ -426,6 +492,8 @@ public class HybridSearchReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -437,6 +505,8 @@ public class HybridSearchReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -445,6 +515,8 @@ public class HybridSearchReq {
         /**
          * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
          * {@code MilvusClientV2Session}.
+         * @param clusterId the cluster ID
+         * @return this builder
          */
         @Deprecated
         public HybridSearchReqBuilder clusterId(String clusterId) {
@@ -458,6 +530,8 @@ public class HybridSearchReq {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -469,6 +543,8 @@ public class HybridSearchReq {
          * @param searchRequests the ANN search requests
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder searchRequests(List<AnnSearchReq> searchRequests) {
             this.searchRequests = searchRequests;
             return this;
@@ -480,6 +556,8 @@ public class HybridSearchReq {
          * @param ranker the ranker
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder ranker(CreateCollectionReq.Function ranker) {
             this.ranker = ranker;
             return this;
@@ -491,12 +569,29 @@ public class HybridSearchReq {
          * @param functionScore the function score
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder functionScore(FunctionScore functionScore) {
             this.functionScore = functionScore;
             return this;
         }
 
+        /**
+         * Sets the maximum number of results to return.
+         *
+         * @deprecated replaced by {@link #limit(long)}. {@code topK} and {@code limit} must be the
+         * same value.
+         * @param topK the topK value
+         * @return this builder
+         */
         // topK is deprecated, topK and limit must be the same value
+        /**
+         * Sets the top-k value, keeping it in sync with the limit.
+         *
+         * @param topK the top-k value
+         * @return this builder
+         * @deprecated use {@link #limit(long)} instead; topK and limit must be the same value
+         */
         @Deprecated
         public HybridSearchReqBuilder topK(int topK) {
             this.topK = topK;
@@ -510,6 +605,8 @@ public class HybridSearchReq {
          * @param limit the limit value
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder limit(long limit) {
             this.topK = (int) limit;
             this.limit = limit;
@@ -522,6 +619,8 @@ public class HybridSearchReq {
          * @param outFields the output fields
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder outFields(List<String> outFields) {
             this.outFields = outFields;
             return this;
@@ -533,6 +632,8 @@ public class HybridSearchReq {
          * @param offset the offset
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
@@ -544,6 +645,8 @@ public class HybridSearchReq {
          * @param roundDecimal the round decimal value
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder roundDecimal(int roundDecimal) {
             this.roundDecimal = roundDecimal;
             return this;
@@ -555,6 +658,8 @@ public class HybridSearchReq {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -566,6 +671,8 @@ public class HybridSearchReq {
          * @param groupByFieldName the group-by field name
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
@@ -577,6 +684,8 @@ public class HybridSearchReq {
          * @param groupSize the group size
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder groupSize(Integer groupSize) {
             this.groupSize = groupSize;
             return this;
@@ -588,6 +697,8 @@ public class HybridSearchReq {
          * @param strictGroupSize {@code true} if the group size is strict
          * @return this builder
          */
+
+
         public HybridSearchReqBuilder strictGroupSize(Boolean strictGroupSize) {
             this.strictGroupSize = strictGroupSize;
             return this;
@@ -598,6 +709,8 @@ public class HybridSearchReq {
          *
          * @return the request
          */
+
+
         public HybridSearchReq build() {
             return new HybridSearchReq(this);
         }

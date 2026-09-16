@@ -22,6 +22,8 @@ package io.milvus.v2.service.partition.request;
 /**
  * Request parameters for the {@code listPartitions} API.
  */
+
+
 public class ListPartitionsReq {
     private String databaseName;
     private String collectionName;
@@ -36,6 +38,8 @@ public class ListPartitionsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -45,6 +49,8 @@ public class ListPartitionsReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -54,6 +60,8 @@ public class ListPartitionsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -63,6 +71,8 @@ public class ListPartitionsReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -80,9 +90,16 @@ public class ListPartitionsReq {
      *
      * @return the builder
      */
+
+
     public static ListPartitionsReqBuilder builder() {
         return new ListPartitionsReqBuilder();
     }
+
+    /**
+     * Builder for {@link ListPartitionsReq} class.
+     */
+
 
     public static class ListPartitionsReqBuilder {
         private String databaseName;
@@ -97,6 +114,8 @@ public class ListPartitionsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ListPartitionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -108,6 +127,8 @@ public class ListPartitionsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ListPartitionsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -118,6 +139,8 @@ public class ListPartitionsReq {
          *
          * @return the built request
          */
+
+
         public ListPartitionsReq build() {
             return new ListPartitionsReq(this);
         }

@@ -24,6 +24,8 @@ import io.milvus.exception.ParamException;
 /**
  * Parameters for retry on failure.
  */
+
+
 public class RetryParam {
     private int maxRetryTimes;
     private long initialBackOffMs;
@@ -42,45 +44,122 @@ public class RetryParam {
         this.retryOnRateLimit = builder.retryOnRateLimit;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the maxRetryTimes.
+     *
+     * @return the maxRetryTimes
+     */
+
 
     public int getMaxRetryTimes() {
         return maxRetryTimes;
     }
 
+    /**
+     * Sets the maxRetryTimes.
+     *
+     * @param maxRetryTimes the maxRetryTimes
+     */
+
+
     public void setMaxRetryTimes(int maxRetryTimes) {
         this.maxRetryTimes = maxRetryTimes;
     }
+
+    /**
+     * Returns the initialBackOffMs.
+     *
+     * @return the initialBackOffMs
+     */
+
 
     public long getInitialBackOffMs() {
         return initialBackOffMs;
     }
 
+    /**
+     * Sets the initialBackOffMs.
+     *
+     * @param initialBackOffMs the initialBackOffMs
+     */
+
+
     public void setInitialBackOffMs(long initialBackOffMs) {
         this.initialBackOffMs = initialBackOffMs;
     }
+
+    /**
+     * Returns the maxBackOffMs.
+     *
+     * @return the maxBackOffMs
+     */
+
 
     public long getMaxBackOffMs() {
         return maxBackOffMs;
     }
 
+    /**
+     * Sets the maxBackOffMs.
+     *
+     * @param maxBackOffMs the maxBackOffMs
+     */
+
+
     public void setMaxBackOffMs(long maxBackOffMs) {
         this.maxBackOffMs = maxBackOffMs;
     }
+
+    /**
+     * Returns the backOffMultiplier.
+     *
+     * @return the backOffMultiplier
+     */
+
 
     public int getBackOffMultiplier() {
         return backOffMultiplier;
     }
 
+    /**
+     * Sets the backOffMultiplier.
+     *
+     * @param backOffMultiplier the backOffMultiplier
+     */
+
+
     public void setBackOffMultiplier(int backOffMultiplier) {
         this.backOffMultiplier = backOffMultiplier;
     }
 
+    /**
+     * Returns the retryOnRateLimit.
+     *
+     * @return the retryOnRateLimit
+     */
+
+
     public boolean isRetryOnRateLimit() {
         return retryOnRateLimit;
     }
+
+    /**
+     * Sets the retryOnRateLimit.
+     *
+     * @param retryOnRateLimit the retryOnRateLimit
+     */
+
 
     public void setRetryOnRateLimit(boolean retryOnRateLimit) {
         this.retryOnRateLimit = retryOnRateLimit;
@@ -100,6 +179,8 @@ public class RetryParam {
     /**
      * Builder for {@link RetryParam}
      */
+
+
     public static class Builder {
         private int maxRetryTimes = 75;
         private long initialBackOffMs = 10;
@@ -110,21 +191,56 @@ public class RetryParam {
         protected Builder() {
         }
 
+        /**
+         * Returns the maxRetryTimes.
+         *
+         * @return the maxRetryTimes
+         */
+
+
         public int getMaxRetryTimes() {
             return maxRetryTimes;
         }
+
+        /**
+         * Returns the initialBackOffMs.
+         *
+         * @return the initialBackOffMs
+         */
+
 
         public long getInitialBackOffMs() {
             return initialBackOffMs;
         }
 
+        /**
+         * Returns the maxBackOffMs.
+         *
+         * @return the maxBackOffMs
+         */
+
+
         public long getMaxBackOffMs() {
             return maxBackOffMs;
         }
 
+        /**
+         * Returns the backOffMultiplier.
+         *
+         * @return the backOffMultiplier
+         */
+
+
         public int getBackOffMultiplier() {
             return backOffMultiplier;
         }
+
+        /**
+         * Returns the retryOnRateLimit.
+         *
+         * @return the retryOnRateLimit
+         */
+
 
         public boolean isRetryOnRateLimit() {
             return retryOnRateLimit;
@@ -136,6 +252,8 @@ public class RetryParam {
          * @param maxRetryTimes the maxinum times to retry
          * @return <code>Builder</code>
          */
+
+
         public Builder withMaxRetryTimes(int maxRetryTimes) {
             this.maxRetryTimes = maxRetryTimes;
             return this;
@@ -147,6 +265,8 @@ public class RetryParam {
          * @param initialBackOffMs time interval value
          * @return <code>Builder</code>
          */
+
+
         public Builder withInitialBackOffMs(long initialBackOffMs) {
             this.initialBackOffMs = initialBackOffMs;
             return this;
@@ -158,6 +278,8 @@ public class RetryParam {
          * @param maxBackOffMs time interval value
          * @return <code>Builder</code>
          */
+
+
         public Builder withMaxBackOffMs(long maxBackOffMs) {
             this.maxBackOffMs = maxBackOffMs;
             return this;
@@ -169,6 +291,8 @@ public class RetryParam {
          * @param backOffMultiplier the multiplier to increase time interval after each retry
          * @return <code>Builder</code>
          */
+
+
         public Builder withBackOffMultiplier(int backOffMultiplier) {
             this.backOffMultiplier = backOffMultiplier;
             return this;
@@ -180,6 +304,8 @@ public class RetryParam {
          * @param retryOnRateLimit whether to retry when the returned error is rate limit
          * @return <code>Builder</code>
          */
+
+
         public Builder withRetryOnRateLimit(boolean retryOnRateLimit) {
             this.retryOnRateLimit = retryOnRateLimit;
             return this;
@@ -190,6 +316,8 @@ public class RetryParam {
          *
          * @return {@link RetryParam}
          */
+
+
         public RetryParam build() throws ParamException {
             if (maxRetryTimes <= 0L) {
                 throw new ParamException("Max retry time value must be positive!");

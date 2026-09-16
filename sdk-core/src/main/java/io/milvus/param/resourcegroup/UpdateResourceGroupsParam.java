@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Request parameters for the updateResourceGroups API.
+ */
+
+
 public class UpdateResourceGroupsParam {
     private final Map<String, ResourceGroupConfig> resourceGroups;
 
@@ -35,9 +40,23 @@ public class UpdateResourceGroupsParam {
         this.resourceGroups = builder.resourceGroups;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the resourceGroups.
+     *
+     * @return the resourceGroups
+     */
+
 
     public Map<String, ResourceGroupConfig> getResourceGroups() {
         return resourceGroups;
@@ -47,11 +66,22 @@ public class UpdateResourceGroupsParam {
      * Builder for {@link UpdateResourceGroupsParam} class.
      *
      */
+
+
     public static final class Builder {
         private Map<String, ResourceGroupConfig> resourceGroups;
 
         private Builder() {
         }
+
+        /**
+         * Adds a resource group with the given name and config.
+         *
+         * @param resourceGroupName the resource group name
+         * @param resourceGroup the resource group config
+         * @return this builder
+         */
+
 
         public Builder putResourceGroup(String resourceGroupName, ResourceGroupConfig resourceGroup) {
             if (resourceGroupName == null) {
@@ -72,6 +102,8 @@ public class UpdateResourceGroupsParam {
          *
          * @return {@link UpdateResourceGroupsParam}
          */
+
+
         public UpdateResourceGroupsParam build() {
             return new UpdateResourceGroupsParam(this);
         }
@@ -82,6 +114,8 @@ public class UpdateResourceGroupsParam {
      *
      * @return io.milvus.grpc.UpdateResourceGroupsRequest
      */
+
+
     public io.milvus.grpc.UpdateResourceGroupsRequest toGRPC() {
         io.milvus.grpc.UpdateResourceGroupsRequest.Builder builder = io.milvus.grpc.UpdateResourceGroupsRequest
                 .newBuilder();

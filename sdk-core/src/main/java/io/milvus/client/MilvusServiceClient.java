@@ -78,6 +78,12 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * V1 gRPC client. It is the entry point for Milvus operations, covering collection,
+ * index, partition, DML, DQL, RBAC, resource group and other APIs.
+ */
+
+
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     private ManagedChannel channel;
@@ -93,6 +99,13 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private final ThreadLocal<String> clientRequestId;
     private final ThreadLocal<Integer> logicalOperationDepth =
             ThreadLocal.withInitial(() -> 0);
+
+    /**
+     * Constructs a MilvusServiceClient with the given connect parameters.
+     *
+     * @param connectParam the connect parameters
+     */
+
 
     public MilvusServiceClient(ConnectParam connectParam) {
         ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
@@ -287,7 +300,13 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
     }
 
-    /** Returns the telemetry manager for metrics inspection and custom command handlers. */
+    /**
+     * Returns the telemetry manager for metrics inspection and custom command handlers.
+     *
+     * @return the telemetry manager
+     */
+
+
     public ClientTelemetryManager getTelemetry() {
         return telemetry;
     }

@@ -30,6 +30,8 @@ import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
  * appends array, vector, and struct fields as nested Parquet groups. Data rows are buffered into
  * row groups and flushed to the file on {@link #close()}.
  */
+
+
 public class ParquetFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(ParquetFileWriter.class);
 
@@ -48,6 +50,8 @@ public class ParquetFileWriter implements FormatFileWriter {
      *                       form the data file path
      * @throws IOException if the Parquet data file cannot be created
      */
+
+
     public ParquetFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix) throws IOException {
         this.collectionSchema = collectionSchema;
         initFilePath(filePathPrefix);

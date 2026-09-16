@@ -28,6 +28,8 @@ import java.util.Map;
 /**
  * The RRF reranking strategy, which merges results from multiple searches, favoring items that consistently appear.
  */
+
+
 public class RRFRanker extends BaseRanker {
     private final Integer k;
 
@@ -39,6 +41,11 @@ public class RRFRanker extends BaseRanker {
         this.k = builder.k;
     }
 
+    /**
+     * Returns the k.
+     *
+     * @return the k
+     */
     // Getter method to replace @Getter annotation
     public Integer getK() {
         return k;
@@ -63,6 +70,13 @@ public class RRFRanker extends BaseRanker {
         return props;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -70,6 +84,8 @@ public class RRFRanker extends BaseRanker {
     /**
      * Builder for {@link RRFRanker} class.
      */
+
+
     public static class Builder {
         private Integer k = 60;
 
@@ -84,6 +100,8 @@ public class RRFRanker extends BaseRanker {
          * @param k factor value
          * @return <code>Builder</code>
          */
+
+
         public Builder withK(Integer k) {
             // Replace @NonNull logic with explicit null check
             if (k == null) {
@@ -98,6 +116,8 @@ public class RRFRanker extends BaseRanker {
          *
          * @return {@link RRFRanker}
          */
+
+
         public RRFRanker build() throws ParamException {
             if (k < 0) {
                 throw new ParamException("K value cannot be negative");

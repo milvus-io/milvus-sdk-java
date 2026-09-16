@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>getReplicas</code> interface.
  */
+
+
 public class GetReplicasParam {
     private final String databaseName;
     private final String collectionName;
@@ -39,18 +41,44 @@ public class GetReplicasParam {
         this.withShardNodes = true;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the withShardNodes.
+     *
+     * @return the withShardNodes
+     */
+
 
     public boolean isWithShardNodes() {
         return withShardNodes;
@@ -69,6 +97,8 @@ public class GetReplicasParam {
     /**
      * Builder for {@link GetReplicasParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -82,6 +112,8 @@ public class GetReplicasParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             // Replace @NonNull logic with explicit null check
             if (databaseName == null) {
@@ -97,6 +129,8 @@ public class GetReplicasParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -111,6 +145,8 @@ public class GetReplicasParam {
          *
          * @return {@link GetReplicasParam}
          */
+
+
         public GetReplicasParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

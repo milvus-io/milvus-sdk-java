@@ -23,6 +23,12 @@ import io.milvus.exception.ParamException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+/**
+ * Parameters for a Milvus server address, including the connection port and the
+ * cluster health port.
+ */
+
+
 public class ServerAddress {
     private final String host;
     private final int port;
@@ -40,21 +46,54 @@ public class ServerAddress {
         this.healthPort = builder.healthPort;
     }
 
+    /**
+     * Returns the host.
+     *
+     * @return the host
+     */
+
+
     public String getHost() {
         return host;
     }
+
+    /**
+     * Returns the port.
+     *
+     * @return the port
+     */
+
 
     public int getPort() {
         return port;
     }
 
+    /**
+     * Returns the healthPort.
+     *
+     * @return the healthPort
+     */
+
+
     public int getHealthPort() {
         return healthPort;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Builder for {@link ServerAddress} class.
+     */
+
 
     public static class Builder {
         private String host = "localhost";
@@ -70,6 +109,8 @@ public class ServerAddress {
          * @param host host name/address
          * @return <code>Builder</code>
          */
+
+
         public Builder withHost(String host) {
             if (host == null) {
                 throw new IllegalArgumentException("Host cannot be null");
@@ -84,6 +125,8 @@ public class ServerAddress {
          * @param port port value
          * @return <code>Builder</code>
          */
+
+
         public Builder withPort(int port) {
             this.port = port;
             return this;
@@ -95,6 +138,8 @@ public class ServerAddress {
          * @param port port value
          * @return <code>Builder</code>
          */
+
+
         public Builder withHealthPort(int port) {
             this.healthPort = port;
             return this;
@@ -105,6 +150,8 @@ public class ServerAddress {
          *
          * @return {@link ServerAddress}
          */
+
+
         public ServerAddress build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
 

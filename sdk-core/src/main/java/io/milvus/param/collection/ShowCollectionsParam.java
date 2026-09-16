@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Parameters for <code>showCollections</code> interface.
  */
+
+
 public class ShowCollectionsParam {
     private final List<String> collectionNames;
     private final ShowType showType;
@@ -43,18 +45,44 @@ public class ShowCollectionsParam {
         this.databaseName = builder.databaseName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionNames.
+     *
+     * @return the collectionNames
+     */
     // Getter methods
     public List<String> getCollectionNames() {
         return collectionNames;
     }
 
+    /**
+     * Returns the showType.
+     *
+     * @return the showType
+     */
+
+
     public ShowType getShowType() {
         return showType;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -73,6 +101,8 @@ public class ShowCollectionsParam {
     /**
      * Builder for {@link ShowCollectionsParam} class.
      */
+
+
     public static final class Builder {
         private final List<String> collectionNames = new ArrayList<>();
         // showType:
@@ -83,6 +113,14 @@ public class ShowCollectionsParam {
 
         private Builder() {
         }
+
+        /**
+         * Sets the databaseName.
+         *
+         * @param databaseName the databaseName
+         * @return this builder
+         */
+
 
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -95,6 +133,8 @@ public class ShowCollectionsParam {
          * @param collectionNames list of collection names
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionNames(List<String> collectionNames) {
             if (collectionNames == null) {
                 throw new IllegalArgumentException("CollectionNames cannot be null");
@@ -109,6 +149,8 @@ public class ShowCollectionsParam {
          * @param showType ShowType
          * @return <code>Builder</code>
          */
+
+
         public Builder withShowType(ShowType showType) {
             this.showType = showType;
             return this;
@@ -120,6 +162,8 @@ public class ShowCollectionsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder addCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("CollectionName cannot be null");
@@ -135,6 +179,8 @@ public class ShowCollectionsParam {
          *
          * @return {@link ShowCollectionsParam}
          */
+
+
         public ShowCollectionsParam build() throws ParamException {
             if (!collectionNames.isEmpty()) {
                 for (String collectionName : collectionNames) {

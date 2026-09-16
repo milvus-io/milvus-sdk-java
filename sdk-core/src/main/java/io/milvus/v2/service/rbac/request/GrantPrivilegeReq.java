@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code grantPrivilege} API.
  */
+
+
 public class GrantPrivilegeReq {
     private String roleName;
     private String dbName;
@@ -42,6 +44,8 @@ public class GrantPrivilegeReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -51,6 +55,8 @@ public class GrantPrivilegeReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -60,6 +66,8 @@ public class GrantPrivilegeReq {
      *
      * @return the database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -69,6 +77,8 @@ public class GrantPrivilegeReq {
      *
      * @param dbName the database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -78,6 +88,8 @@ public class GrantPrivilegeReq {
      *
      * @return the object type
      */
+
+
     public String getObjectType() {
         return objectType;
     }
@@ -87,6 +99,8 @@ public class GrantPrivilegeReq {
      *
      * @param objectType the object type
      */
+
+
     public void setObjectType(String objectType) {
         this.objectType = objectType;
     }
@@ -96,6 +110,8 @@ public class GrantPrivilegeReq {
      *
      * @return the privilege to grant
      */
+
+
     public String getPrivilege() {
         return privilege;
     }
@@ -105,6 +121,8 @@ public class GrantPrivilegeReq {
      *
      * @param privilege the privilege to grant
      */
+
+
     public void setPrivilege(String privilege) {
         this.privilege = privilege;
     }
@@ -114,6 +132,8 @@ public class GrantPrivilegeReq {
      *
      * @return the object name
      */
+
+
     public String getObjectName() {
         return objectName;
     }
@@ -123,6 +143,8 @@ public class GrantPrivilegeReq {
      *
      * @param objectName the object name
      */
+
+
     public void setObjectName(String objectName) {
         this.objectName = objectName;
     }
@@ -143,9 +165,16 @@ public class GrantPrivilegeReq {
      *
      * @return a new {@link GrantPrivilegeReqBuilder}
      */
+
+
     public static GrantPrivilegeReqBuilder builder() {
         return new GrantPrivilegeReqBuilder();
     }
+
+    /**
+     * Builder for {@link GrantPrivilegeReq} class.
+     */
+
 
     public static class GrantPrivilegeReqBuilder {
         private String roleName;
@@ -163,6 +192,8 @@ public class GrantPrivilegeReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public GrantPrivilegeReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -174,6 +205,8 @@ public class GrantPrivilegeReq {
          * @param dbName the database name
          * @return this builder
          */
+
+
         public GrantPrivilegeReqBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -185,6 +218,8 @@ public class GrantPrivilegeReq {
          * @param objectType the object type
          * @return this builder
          */
+
+
         public GrantPrivilegeReqBuilder objectType(String objectType) {
             this.objectType = objectType;
             return this;
@@ -196,6 +231,8 @@ public class GrantPrivilegeReq {
          * @param privilege the privilege to grant
          * @return this builder
          */
+
+
         public GrantPrivilegeReqBuilder privilege(String privilege) {
             this.privilege = privilege;
             return this;
@@ -207,6 +244,8 @@ public class GrantPrivilegeReq {
          * @param objectName the object name
          * @return this builder
          */
+
+
         public GrantPrivilegeReqBuilder objectName(String objectName) {
             this.objectName = objectName;
             return this;
@@ -217,6 +256,8 @@ public class GrantPrivilegeReq {
          *
          * @return the built request
          */
+
+
         public GrantPrivilegeReq build() {
             return new GrantPrivilegeReq(this);
         }

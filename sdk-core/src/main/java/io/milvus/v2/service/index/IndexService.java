@@ -40,6 +40,8 @@ import java.util.stream.Collectors;
 /**
  * Service for index-related operations, such as creating, dropping, and describing indexes.
  */
+
+
 public class IndexService extends BaseService {
 
     /**
@@ -50,6 +52,8 @@ public class IndexService extends BaseService {
      * @param request the create index request
      * @return {@code null}
      */
+
+
     public Void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -110,6 +114,8 @@ public class IndexService extends BaseService {
      * @param request the drop index request
      * @return {@code null}
      */
+
+
     public Void dropIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -138,6 +144,8 @@ public class IndexService extends BaseService {
      * @param request the alter index properties request
      * @return {@code null}
      */
+
+
     public Void alterIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -168,6 +176,8 @@ public class IndexService extends BaseService {
      * @param request the drop index properties request
      * @return {@code null}
      */
+
+
     public Void dropIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -195,6 +205,8 @@ public class IndexService extends BaseService {
      * @param request the describe index request
      * @return the describe index response
      */
+
+
     public DescribeIndexResp describeIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeIndexReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -226,6 +238,8 @@ public class IndexService extends BaseService {
      * @param request the list indexes request
      * @return the list of index names
      */
+
+
     public List<String> listIndexes(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListIndexesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();

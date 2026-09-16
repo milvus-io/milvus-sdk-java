@@ -29,6 +29,8 @@ import java.util.List;
  * Cloud storage providers supported by the Milvus BulkWriter, together with their endpoint templates
  * and the endpoint placeholder they replace.
  */
+
+
 public enum CloudStorage {
     /** MinIO storage, endpoint built from the provided MinIO address. */
     MINIO("minio", "%s", "minioAddress"),
@@ -73,6 +75,8 @@ public enum CloudStorage {
      *
      * @return the cloud name
      */
+
+
     public String getCloudName() {
         return cloudName;
     }
@@ -83,6 +87,8 @@ public enum CloudStorage {
      * @param cloudName the cloud name to check
      * @return {@code true} if the cloud name matches an Alibaba Cloud OSS storage
      */
+
+
     public static boolean isAliCloud(String cloudName) {
         List<CloudStorage> aliCloudStorages = Lists.newArrayList(
                 CloudStorage.ALI, CloudStorage.ALIYUN, CloudStorage.ALIBABA, CloudStorage.ALICLOU
@@ -96,6 +102,8 @@ public enum CloudStorage {
      * @param cloudName the cloud name to check
      * @return {@code true} if the cloud name matches a Tencent Cloud COS storage
      */
+
+
     public static boolean isTcCloud(String cloudName) {
         List<CloudStorage> tcCloudStorages = Lists.newArrayList(
                 CloudStorage.TC, CloudStorage.TENCENT
@@ -109,6 +117,8 @@ public enum CloudStorage {
      * @param cloudName the cloud name to check
      * @return {@code true} if the cloud name matches a Google Cloud Platform storage
      */
+
+
     public static boolean isGcpCloud(String cloudName) {
         List<CloudStorage> gcpCloudStorages = Lists.newArrayList(
                 CloudStorage.GCP
@@ -122,6 +132,8 @@ public enum CloudStorage {
      * @param cloudName the cloud name to check
      * @return {@code true} if the cloud name matches a Microsoft Azure Blob storage
      */
+
+
     public static boolean isAzCloud(String cloudName) {
         List<CloudStorage> azCloudStorages = Lists.newArrayList(
                 CloudStorage.AZ, CloudStorage.AZURE
@@ -136,6 +148,8 @@ public enum CloudStorage {
      * @return the matching cloud storage constant
      * @throws io.milvus.exception.ParamException if no cloud storage matches the given cloud name
      */
+
+
     public static CloudStorage getCloudStorage(String cloudName) {
         for (CloudStorage cloudStorage : values()) {
             if (cloudStorage.getCloudName().equals(cloudName)) {
@@ -153,6 +167,8 @@ public enum CloudStorage {
      * @return the resolved endpoint
      * @throws io.milvus.exception.ParamException if the provider requires replacement parameters but none are given
      */
+
+
     public String getEndpoint(String... replaceParams) {
         if (StringUtils.isEmpty(replace)) {
             return endpoint;
@@ -173,6 +189,8 @@ public enum CloudStorage {
      * @return the S3-compatible object URL
      * @throws io.milvus.exception.ParamException if this provider does not support S3 object URLs
      */
+
+
     public String getS3ObjectUrl(String bucketName, String commonPrefix, String region) {
         switch (this) {
             case AWS:
@@ -202,6 +220,8 @@ public enum CloudStorage {
      * @return the Azure Blob object URL
      * @throws io.milvus.exception.ParamException if this provider is not an Azure cloud storage
      */
+
+
     public String getAzureObjectUrl(String accountName, String containerName, String commonPrefix) {
         if (CloudStorage.isAzCloud(this.getCloudName())) {
             return String.format("https://%s.blob.core.windows.net/%s/%s", accountName, containerName, commonPrefix);

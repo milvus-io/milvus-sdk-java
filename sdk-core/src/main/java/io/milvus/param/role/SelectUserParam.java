@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the selectUser API.
+ */
+
+
 public class SelectUserParam {
 
     private final String userName;
@@ -36,13 +41,34 @@ public class SelectUserParam {
         this.includeRoleInfo = builder.includeRoleInfo;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static SelectUserParam.Builder newBuilder() {
         return new SelectUserParam.Builder();
     }
 
+    /**
+     * Returns the userName.
+     *
+     * @return the userName
+     */
+
+
     public String getUserName() {
         return userName;
     }
+
+    /**
+     * Returns the includeRoleInfo.
+     *
+     * @return the includeRoleInfo
+     */
+
 
     public boolean isIncludeRoleInfo() {
         return includeRoleInfo;
@@ -59,6 +85,8 @@ public class SelectUserParam {
     /**
      * Builder for {@link SelectUserParam} class.
      */
+
+
     public static final class Builder {
         private String userName;
         private boolean includeRoleInfo;
@@ -72,6 +100,8 @@ public class SelectUserParam {
          * @param userName userName
          * @return <code>Builder</code>
          */
+
+
         public SelectUserParam.Builder withUserName(String userName) {
             if (userName == null) {
                 throw new IllegalArgumentException("User name cannot be null");
@@ -86,6 +116,8 @@ public class SelectUserParam {
          * @param includeRoleInfo includeRoleInfo
          * @return <code>Builder</code>
          */
+
+
         public SelectUserParam.Builder withIncludeRoleInfo(boolean includeRoleInfo) {
             this.includeRoleInfo = includeRoleInfo;
             return this;
@@ -96,6 +128,8 @@ public class SelectUserParam {
          *
          * @return {@link SelectUserParam}
          */
+
+
         public SelectUserParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(userName, "UserName");
 

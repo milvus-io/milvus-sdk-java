@@ -33,6 +33,8 @@ import java.util.Map;
 /**
  * Parameters for <code>volumeBulkWriter</code> interface.
  */
+
+
 public class VolumeBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final String remotePath;
@@ -63,6 +65,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the collection schema
     */
+
+
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
@@ -72,6 +76,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the remote path where data files are uploaded
     */
+
+
     public String getRemotePath() {
         return remotePath;
     }
@@ -81,6 +87,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the chunk size threshold in bytes
     */
+
+
     public long getChunkSize() {
         return chunkSize;
     }
@@ -90,6 +98,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the bulk data file type
     */
+
+
     public BulkFileType getFileType() {
         return fileType;
     }
@@ -99,6 +109,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the writer configuration map
     */
+
+
     public Map<String, Object> getConfig() {
         return config;
     }
@@ -108,6 +120,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the cloud endpoint of the volume service
     */
+
+
     public String getCloudEndpoint() {
         return cloudEndpoint;
     }
@@ -117,6 +131,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the API key for the volume service
     */
+
+
     public String getApiKey() {
         return apiKey;
     }
@@ -126,6 +142,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the name of the target volume
     */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -135,6 +153,8 @@ public class VolumeBulkWriterParam {
     *
     * @return the connection type for the volume service
     */
+
+
     public ConnectType getConnectType() {
         return connectType;
     }
@@ -151,6 +171,12 @@ public class VolumeBulkWriterParam {
                 ", connectType=" + connectType +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -159,6 +185,8 @@ public class VolumeBulkWriterParam {
     /**
      * Builder for {@link VolumeBulkWriterParam} class.
      */
+
+
     public static final class Builder {
         private CreateCollectionReq.CollectionSchema collectionSchema;
         private String remotePath;
@@ -182,6 +210,8 @@ public class VolumeBulkWriterParam {
          * @param collectionSchema collection info
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionSchema(CollectionSchemaParam collectionSchema) {
             this.collectionSchema = V2AdapterUtils.convertV1Schema(collectionSchema);
             return this;
@@ -193,23 +223,21 @@ public class VolumeBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
         }
 
         /**
-         * Sets the remotePath.
-         *
-         * @param remotePath remote path
-         * @return <code>Builder</code>
-         */
-        /**
         * Sets the remote path where data files are uploaded.
         *
-        * @param r the remote path where data files are uploaded
+        * @param remotePath the remote path where data files are uploaded
         * @return this builder
         */
+
+
         public Builder withRemotePath(String remotePath) {
             this.remotePath = remotePath;
             return this;
@@ -218,9 +246,11 @@ public class VolumeBulkWriterParam {
         /**
         * Sets the chunk size threshold in bytes.
         *
-        * @param c the chunk size threshold in bytes
+        * @param chunkSize the chunk size threshold in bytes
         * @return this builder
         */
+
+
         public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
@@ -229,9 +259,11 @@ public class VolumeBulkWriterParam {
         /**
         * Sets the bulk data file type.
         *
-        * @param f the bulk data file type
+        * @param fileType the bulk data file type
         * @return this builder
         */
+
+
         public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
@@ -244,6 +276,8 @@ public class VolumeBulkWriterParam {
         * @param val the value
         * @return this builder
         */
+
+
         public Builder withConfig(String key, Object val) {
             this.config.put(key, val);
             return this;
@@ -252,9 +286,11 @@ public class VolumeBulkWriterParam {
         /**
         * Sets the cloud endpoint of the volume service.
         *
-        * @param c the cloud endpoint of the volume service
+        * @param cloudEndpoint the cloud endpoint of the volume service
         * @return this builder
         */
+
+
         public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
@@ -263,9 +299,11 @@ public class VolumeBulkWriterParam {
         /**
         * Sets the API key for the volume service.
         *
-        * @param a the API key for the volume service
+        * @param apiKey the API key for the volume service
         * @return this builder
         */
+
+
         public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
@@ -274,9 +312,11 @@ public class VolumeBulkWriterParam {
         /**
         * Sets the name of the target volume.
         *
-        * @param v the name of the target volume
+        * @param volumeName the name of the target volume
         * @return this builder
         */
+
+
         public Builder withVolumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -285,9 +325,11 @@ public class VolumeBulkWriterParam {
         /**
         * Sets the connection type for the volume service.
         *
-        * @param c the connection type for the volume service
+        * @param connectType the connection type for the volume service
         * @return this builder
         */
+
+
         public Builder withConnectType(ConnectType connectType) {
             this.connectType = connectType;
             return this;
@@ -297,7 +339,10 @@ public class VolumeBulkWriterParam {
          * Verifies parameters and creates a new {@link VolumeBulkWriterParam} instance.
          *
          * @return {@link VolumeBulkWriterParam}
+         * @throws ParamException if the required parameters are invalid
          */
+
+
         public VolumeBulkWriterParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(remotePath, "localPath");
 

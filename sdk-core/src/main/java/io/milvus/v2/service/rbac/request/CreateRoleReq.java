@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code createRole} API.
  */
+
+
 public class CreateRoleReq {
     private String roleName;
     private String description;
@@ -36,6 +38,8 @@ public class CreateRoleReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -45,6 +49,8 @@ public class CreateRoleReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -54,6 +60,8 @@ public class CreateRoleReq {
      *
      * @return the role description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -63,6 +71,8 @@ public class CreateRoleReq {
      *
      * @param description the role description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -80,9 +90,16 @@ public class CreateRoleReq {
      *
      * @return a new {@link CreateRoleReqBuilder}
      */
+
+
     public static CreateRoleReqBuilder builder() {
         return new CreateRoleReqBuilder();
     }
+
+    /**
+     * Builder for {@link CreateRoleReq} class.
+     */
+
 
     public static class CreateRoleReqBuilder {
         private String roleName;
@@ -97,6 +114,8 @@ public class CreateRoleReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public CreateRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -108,6 +127,8 @@ public class CreateRoleReq {
          * @param description the role description
          * @return this builder
          */
+
+
         public CreateRoleReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -118,6 +139,8 @@ public class CreateRoleReq {
          *
          * @return the built request
          */
+
+
         public CreateRoleReq build() {
             return new CreateRoleReq(this);
         }

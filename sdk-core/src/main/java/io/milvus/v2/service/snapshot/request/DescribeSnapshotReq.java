@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.request;
 /**
  * Request parameters for the {@code describeSnapshot} API.
  */
+
+
 public class DescribeSnapshotReq {
     private String databaseName;
     private String collectionName;
@@ -38,6 +40,8 @@ public class DescribeSnapshotReq {
      *
      * @return the builder
      */
+
+
     public static DescribeSnapshotReqBuilder builder() {
         return new DescribeSnapshotReqBuilder();
     }
@@ -47,6 +51,8 @@ public class DescribeSnapshotReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -56,6 +62,8 @@ public class DescribeSnapshotReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -65,6 +73,8 @@ public class DescribeSnapshotReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -74,6 +84,8 @@ public class DescribeSnapshotReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -83,6 +95,8 @@ public class DescribeSnapshotReq {
      *
      * @return the snapshot name
      */
+
+
     public String getSnapshotName() {
         return snapshotName;
     }
@@ -92,6 +106,8 @@ public class DescribeSnapshotReq {
      *
      * @param snapshotName the snapshot name
      */
+
+
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
@@ -105,6 +121,11 @@ public class DescribeSnapshotReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeSnapshotReq} class.
+     */
+
+
     public static class DescribeSnapshotReqBuilder {
         private String databaseName = "";
         private String collectionName;
@@ -116,6 +137,8 @@ public class DescribeSnapshotReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DescribeSnapshotReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -127,6 +150,8 @@ public class DescribeSnapshotReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DescribeSnapshotReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -138,6 +163,8 @@ public class DescribeSnapshotReq {
          * @param snapshotName the snapshot name
          * @return this builder
          */
+
+
         public DescribeSnapshotReqBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
@@ -148,6 +175,8 @@ public class DescribeSnapshotReq {
          *
          * @return the built request
          */
+
+
         public DescribeSnapshotReq build() {
             return new DescribeSnapshotReq(this);
         }

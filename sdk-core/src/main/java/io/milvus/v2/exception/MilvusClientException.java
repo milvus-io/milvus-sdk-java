@@ -25,6 +25,8 @@ package io.milvus.v2.exception;
  * <p>The exception carries an {@link ErrorCode} describing the failure category, and optionally
  * the raw error codes returned by the Milvus server.</p>
  */
+
+
 public class MilvusClientException extends RuntimeException {
 
     private final ErrorCode errorCode;
@@ -38,6 +40,8 @@ public class MilvusClientException extends RuntimeException {
      * @param errorCode the error code of this exception
      * @param message   the detail message
      */
+
+
     public MilvusClientException(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
@@ -49,6 +53,8 @@ public class MilvusClientException extends RuntimeException {
      * @param errorCode the error code of this exception
      * @param e         the underlying cause of this exception
      */
+
+
     public MilvusClientException(ErrorCode errorCode, Throwable e) {
         super(e);
         this.errorCode = errorCode;
@@ -63,6 +69,8 @@ public class MilvusClientException extends RuntimeException {
      * @param serverErrCode   the error code returned by the Milvus server
      * @param legacyServerCode the legacy error code returned by older Milvus server versions
      */
+
+
     public MilvusClientException(ErrorCode errorCode, String message, int serverErrCode, int legacyServerCode) {
         super(message);
         this.errorCode = errorCode;
@@ -76,6 +84,7 @@ public class MilvusClientException extends RuntimeException {
      *
      * @return the error code of this exception
      */
+
     public ErrorCode getErrorCode() {
         return errorCode;
     }
@@ -85,6 +94,8 @@ public class MilvusClientException extends RuntimeException {
      *
      * @return the server error code
      */
+
+
     public int getServerErrCode() {
         return serverErrCode;
     }
@@ -95,6 +106,8 @@ public class MilvusClientException extends RuntimeException {
      *
      * @return the legacy server error code
      */
+
+
     public int getLegacyServerCode() {
         return legacyServerCode;
     }

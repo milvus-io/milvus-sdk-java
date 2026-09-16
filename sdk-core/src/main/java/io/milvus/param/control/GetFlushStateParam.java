@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Parameters for <code>getMetric</code> interface.
  */
+
+
 public class GetFlushStateParam {
     private final String databaseName;
     private final String collectionName;
@@ -44,22 +46,55 @@ public class GetFlushStateParam {
         this.flushTs = builder.flushTs;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the segmentIDs.
+     *
+     * @return the segmentIDs
+     */
+
+
     public List<Long> getSegmentIDs() {
         return segmentIDs;
     }
+
+    /**
+     * Returns the flushTs.
+     *
+     * @return the flushTs
+     */
+
 
     public Long getFlushTs() {
         return flushTs;
@@ -79,6 +114,8 @@ public class GetFlushStateParam {
     /**
      * Builder for {@link GetFlushStateParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -94,6 +131,8 @@ public class GetFlushStateParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -137,6 +176,8 @@ public class GetFlushStateParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -152,6 +193,8 @@ public class GetFlushStateParam {
          * @param flushTs a time stamp returned by the flush() response
          * @return <code>Builder</code>
          */
+
+
         public Builder withFlushTs(Long flushTs) {
             // Replace @NonNull logic with explicit null check
             if (flushTs == null) {
@@ -166,6 +209,8 @@ public class GetFlushStateParam {
          *
          * @return {@link GetFlushStateParam}
          */
+
+
         public GetFlushStateParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

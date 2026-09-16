@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 /**
  * Utility methods for building query expressions from primary key values.
  */
+
+
 public class VectorUtils {
     /**
      * Converts a list of primary key values into a filter expression of the form
@@ -44,6 +46,7 @@ public class VectorUtils {
      * @throws io.milvus.exception.ParamException if no primary key field is found or the primary key
      *         type is neither {@code Int64} nor {@code VarChar}
      */
+
     public static String convertPksExpr(List<?> primaryIds, DescCollResponseWrapper wrapper) {
         Optional<FieldType> optional = wrapper.getFields().stream().filter(FieldType::isPrimaryKey).findFirst();
         String expr;
@@ -77,6 +80,8 @@ public class VectorUtils {
      * @param primaryFieldName  the name of the primary key field
      * @return the primary key filter expression
      */
+
+
     public static String convertPksExpr(List<?> primaryIds, String primaryFieldName) {
         String strIDs = primaryIds.stream().map(Object::toString).collect(Collectors.joining(","));
         return primaryFieldName + " in [" + strIDs + "]";

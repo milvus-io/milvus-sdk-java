@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code hasCollection} API.
  */
+
+
 public class HasCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -36,6 +38,8 @@ public class HasCollectionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -45,6 +49,8 @@ public class HasCollectionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -54,6 +60,8 @@ public class HasCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -63,6 +71,8 @@ public class HasCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -80,9 +90,16 @@ public class HasCollectionReq {
      *
      * @return the builder
      */
+
+
     public static HasCollectionReqBuilder builder() {
         return new HasCollectionReqBuilder();
     }
+
+    /**
+     * Builder for {@link HasCollectionReq} class.
+     */
+
 
     public static class HasCollectionReqBuilder {
         private String databaseName;
@@ -97,6 +114,8 @@ public class HasCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public HasCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -108,6 +127,8 @@ public class HasCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public HasCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -118,6 +139,8 @@ public class HasCollectionReq {
          *
          * @return the request
          */
+
+
         public HasCollectionReq build() {
             return new HasCollectionReq(this);
         }

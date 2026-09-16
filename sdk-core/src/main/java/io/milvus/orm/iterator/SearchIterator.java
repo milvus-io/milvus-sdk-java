@@ -66,6 +66,8 @@ import static io.milvus.param.Constant.*;
  * <p>Results are internally staged in an {@link IteratorCache}. The iterator supports a
  * {@code limit} (topK); when the limit is reached, {@link #next()} returns an empty list.
  */
+
+
 public class SearchIterator {
     private static final Logger logger = LoggerFactory.getLogger(SearchIterator.class);
     private final IteratorCache iteratorCache;
@@ -100,6 +102,8 @@ public class SearchIterator {
      * @param blockingStub        the gRPC stub wrapper used to perform searches
      * @param primaryField        the primary key field schema of the collection
      */
+
+
     public SearchIterator(SearchIteratorParam searchIteratorParam,
                           RpcStubWrapper blockingStub,
                           FieldType primaryField) {
@@ -129,6 +133,8 @@ public class SearchIterator {
      * @param blockingStub      the gRPC stub wrapper used to perform searches
      * @param primaryField      the primary key field schema of the collection
      */
+
+
     public SearchIterator(SearchIteratorReq searchIteratorReq,
                           RpcStubWrapper blockingStub,
                           CreateCollectionReq.FieldSchema primaryField) {
@@ -145,6 +151,8 @@ public class SearchIterator {
      * @param primaryField      the primary key field schema of the collection
      * @param clusterId         the cluster ID for global cluster routing, may be empty
      */
+
+
     public SearchIterator(SearchIteratorReq searchIteratorReq,
                           RpcStubWrapper blockingStub,
                           CreateCollectionReq.FieldSchema primaryField,
@@ -177,6 +185,8 @@ public class SearchIterator {
      *
      * @return the next batch of rows, or an empty list if the iteration is finished
      */
+
+
     public List<QueryResultsWrapper.RowRecord> next() {
         // 0. check reached limit
         if (!initSuccess || checkReachedLimit()) {
@@ -215,6 +225,8 @@ public class SearchIterator {
     /**
      * Releases the cached results and clears the internal filtered-ID list of the iterator.
      */
+
+
     public void close() {
         iteratorCache.releaseCache(cacheId);
         if (filteredIds != null) {

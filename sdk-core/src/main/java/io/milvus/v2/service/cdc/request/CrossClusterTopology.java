@@ -24,6 +24,9 @@ package io.milvus.v2.service.cdc.request;
  * A cross-cluster topology describing the replication relation between a source cluster and a
  * target cluster.
  */
+
+
+
 public class CrossClusterTopology {
     private String sourceClusterId;
     private String targetClusterId;
@@ -34,6 +37,8 @@ public class CrossClusterTopology {
      * @param topology the gRPC topology
      * @return the converted topology
      */
+
+
     public static CrossClusterTopology fromGRPC(io.milvus.grpc.CrossClusterTopology topology) {
         return CrossClusterTopology.builder()
                 .sourceClusterId(topology.getSourceClusterId())
@@ -46,6 +51,8 @@ public class CrossClusterTopology {
      *
      * @return the gRPC topology
      */
+
+
     public io.milvus.grpc.CrossClusterTopology toGRPC() {
         return io.milvus.grpc.CrossClusterTopology.newBuilder()
                 .setSourceClusterId(this.sourceClusterId)
@@ -58,6 +65,8 @@ public class CrossClusterTopology {
      *
      * @return the source cluster ID
      */
+
+
     public String getSourceClusterId() {
         return sourceClusterId;
     }
@@ -67,6 +76,8 @@ public class CrossClusterTopology {
      *
      * @param sourceClusterId the source cluster ID
      */
+
+
     public void setSourceClusterId(String sourceClusterId) {
         this.sourceClusterId = sourceClusterId;
     }
@@ -76,6 +87,8 @@ public class CrossClusterTopology {
      *
      * @return the target cluster ID
      */
+
+
     public String getTargetClusterId() {
         return targetClusterId;
     }
@@ -85,6 +98,8 @@ public class CrossClusterTopology {
      *
      * @param targetClusterId the target cluster ID
      */
+
+
     public void setTargetClusterId(String targetClusterId) {
         this.targetClusterId = targetClusterId;
     }
@@ -107,6 +122,8 @@ public class CrossClusterTopology {
      *
      * @return the builder
      */
+
+
     public static CrossClusterTopologyBuilder builder() {
         return new CrossClusterTopologyBuilder();
     }
@@ -114,6 +131,8 @@ public class CrossClusterTopology {
     /**
      * Builder for {@link CrossClusterTopology}.
      */
+
+
     public static class CrossClusterTopologyBuilder {
         private String sourceClusterId;
         private String targetClusterId;
@@ -124,6 +143,8 @@ public class CrossClusterTopology {
          * @param sourceClusterId the source cluster ID
          * @return this builder
          */
+
+
         public CrossClusterTopologyBuilder sourceClusterId(String sourceClusterId) {
             this.sourceClusterId = sourceClusterId;
             return this;
@@ -135,6 +156,8 @@ public class CrossClusterTopology {
          * @param targetClusterId the target cluster ID
          * @return this builder
          */
+
+
         public CrossClusterTopologyBuilder targetClusterId(String targetClusterId) {
             this.targetClusterId = targetClusterId;
             return this;
@@ -145,6 +168,8 @@ public class CrossClusterTopology {
          *
          * @return the topology
          */
+
+
         public CrossClusterTopology build() {
             return new CrossClusterTopology(this);
         }

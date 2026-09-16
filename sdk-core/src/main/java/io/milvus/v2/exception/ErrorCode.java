@@ -25,6 +25,8 @@ package io.milvus.v2.exception;
  * <p>The error code is carried by {@link MilvusClientException} to indicate the category of the
  * failure, such as invalid parameters, collection not found, or a server-side error.</p>
  */
+
+
 public enum ErrorCode {
     SUCCESS(0),
     COLLECTION_NOT_FOUND(1),
@@ -45,6 +47,8 @@ public enum ErrorCode {
      *
      * @return the numeric value of this error code
      */
+
+
     public int getCode() {
         return code;
     }

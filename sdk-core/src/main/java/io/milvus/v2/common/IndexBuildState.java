@@ -22,6 +22,8 @@ package io.milvus.v2.common;
 /**
  * State of an index build task.
  */
+
+
 public enum IndexBuildState {
     /**
      * The index build state is not set.

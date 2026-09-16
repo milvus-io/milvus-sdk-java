@@ -69,28 +69,38 @@ import java.util.List;
  * <code>docs/design-docs/design_docs/20260714-roaring-exact-membership-expression.md</code> in the
  * milvus repository.
  */
+
+
 public class RoaringBitmapUtils {
     /** The 4-byte MRB1 envelope magic. */
+
     public static final String MAGIC = "MRB1";
     /** The MRB1 envelope version implemented by this class. */
+
     public static final short VERSION = 1;
     /** Identifies the portable Roaring64 body format. */
+
     public static final short FORMAT_PORTABLE_ROARING64 = 1;
     /** Size in bytes of the MRB1 envelope header. */
+
     public static final int HEADER_SIZE = 32;
 
     /**
      * Maximum number of high (upper 32 bit) containers the server accepts. Reached only by
      * extremely sparse sets: it takes members spread over more than 262144 distinct 2^32 windows.
      */
+
+
     public static final int MAX_HIGH_CONTAINERS = 1 << 18;
     /**
      * Maximum estimated decoded size the server accepts, mirroring its own admission check.
      * The estimate is <code>body_length + 128 * high_containers + 64 * low_containers</code>:
      * the wire body plus the per-container bookkeeping the server allocates when it decodes.
      */
+
     public static final int MAX_DECODED_BYTES = 64 * 1024 * 1024;
     /** Maximum serialized body length, matching the default grpc receive limit. */
+
     public static final int MAX_BODY_BYTES = 128 * 1024 * 1024;
 
     /** Per-high-container decode overhead used by {@link #MAX_DECODED_BYTES}. */
@@ -151,6 +161,8 @@ public class RoaringBitmapUtils {
      * @throws MilvusClientException if members is null, contains a null or a non-integer element,
      *                               or the resulting bitmap exceeds a server limit
      */
+
+
     public static byte[] buildRoaringBitmap(List<? extends Number> members) {
         if (members == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -175,6 +187,8 @@ public class RoaringBitmapUtils {
      * @return the MRB1 blob to pass as a filter template value
      * @throws MilvusClientException if members is null or the bitmap exceeds a server limit
      */
+
+
     public static byte[] buildRoaringBitmap(long[] members) {
         if (members == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -190,6 +204,8 @@ public class RoaringBitmapUtils {
      * @return the MRB1 blob to pass as a filter template value
      * @throws MilvusClientException if members is null or the bitmap exceeds a server limit
      */
+
+
     public static byte[] buildRoaringBitmap(int[] members) {
         if (members == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -212,6 +228,8 @@ public class RoaringBitmapUtils {
      * <p>{@link #build()} may be called repeatedly and after further {@code add} calls; it returns
      * a fresh array each time and never mutates one it already handed out.
      */
+
+
     public static class Builder {
         private long[] keys;
         private int count;
@@ -219,6 +237,8 @@ public class RoaringBitmapUtils {
         private boolean sorted = true;
 
         /** Creates a builder with a default initial capacity. */
+
+
         public Builder() {
             this(16);
         }
@@ -230,6 +250,8 @@ public class RoaringBitmapUtils {
          *                        adding more or fewer is allowed
          * @throws MilvusClientException if expectedMembers is negative
          */
+
+
         public Builder(int expectedMembers) {
             if (expectedMembers < 0) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -239,7 +261,14 @@ public class RoaringBitmapUtils {
             this.keys = new long[Math.max(expectedMembers, 1)];
         }
 
-        /** Adds one member. Duplicates collapse when the bitmap is built. */
+        /**
+         * Adds one member. Duplicates collapse when the bitmap is built.
+         *
+         * @param member the member to add
+         * @return this builder
+         */
+
+
         public Builder add(long member) {
             ensureCapacity(count + 1);
             // Appending can only break the ordering; keeping the flag exact lets a caller that
@@ -251,7 +280,14 @@ public class RoaringBitmapUtils {
             return this;
         }
 
-        /** Adds every member of the array. */
+        /**
+         * Adds every member of the array.
+         *
+         * @param members the members to add
+         * @return this builder
+         */
+
+
         public Builder addAll(long[] members) {
             if (members == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -264,7 +300,14 @@ public class RoaringBitmapUtils {
             return this;
         }
 
-        /** Adds every member of the array, each sign-extended to int64. */
+        /**
+         * Adds every member of the array, each sign-extended to int64.
+         *
+         * @param members the members to add
+         * @return this builder
+         */
+
+
         public Builder addAll(int[] members) {
             if (members == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -280,8 +323,12 @@ public class RoaringBitmapUtils {
         /**
          * Adds every member of the list.
          *
+         * @param members the members to add
+         * @return this builder
          * @throws MilvusClientException if members is null or holds a non-integer element
          */
+
+
         public Builder addAll(List<? extends Number> members) {
             if (members == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -296,7 +343,13 @@ public class RoaringBitmapUtils {
             return this;
         }
 
-        /** Returns the number of members added so far, duplicates included. */
+        /**
+         * Returns the number of members added so far, duplicates included.
+         *
+         * @return the number of added members
+         */
+
+
         public int size() {
             return count;
         }
@@ -307,6 +360,8 @@ public class RoaringBitmapUtils {
          * @return the MRB1 blob to pass as a filter template value
          * @throws MilvusClientException if the bitmap exceeds a server limit
          */
+
+
         public byte[] build() {
             if (!sorted) {
                 sortUnsigned(keys, count);

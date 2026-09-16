@@ -25,6 +25,8 @@ import java.util.Map;
 /**
  * Response returned by the {@code describeDatabase} API.
  */
+
+
 public class DescribeDatabaseResp {
     private String databaseName;
     private Map<String, String> properties;
@@ -39,6 +41,8 @@ public class DescribeDatabaseResp {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -48,6 +52,8 @@ public class DescribeDatabaseResp {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -57,6 +63,8 @@ public class DescribeDatabaseResp {
      *
      * @return the database properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -66,6 +74,8 @@ public class DescribeDatabaseResp {
      *
      * @param properties the database properties
      */
+
+
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -83,9 +93,16 @@ public class DescribeDatabaseResp {
      *
      * @return a new {@link DescribeDatabaseRespBuilder}
      */
+
+
     public static DescribeDatabaseRespBuilder builder() {
         return new DescribeDatabaseRespBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeDatabaseResp} class.
+     */
+
 
     public static class DescribeDatabaseRespBuilder {
         private String databaseName;
@@ -100,6 +117,8 @@ public class DescribeDatabaseResp {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DescribeDatabaseRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -111,6 +130,8 @@ public class DescribeDatabaseResp {
          * @param properties the database properties
          * @return this builder
          */
+
+
         public DescribeDatabaseRespBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -121,6 +142,8 @@ public class DescribeDatabaseResp {
          *
          * @return the built response
          */
+
+
         public DescribeDatabaseResp build() {
             return new DescribeDatabaseResp(this);
         }

@@ -6,6 +6,8 @@ import java.util.List;
 /**
  * Response returned by the {@code listResourceGroups} API.
  */
+
+
 public class ListResourceGroupsResp {
     private List<String> groupNames;
 
@@ -18,6 +20,8 @@ public class ListResourceGroupsResp {
      *
      * @return the builder
      */
+
+
     public static ListResourceGroupsRespBuilder builder() {
         return new ListResourceGroupsRespBuilder();
     }
@@ -27,6 +31,8 @@ public class ListResourceGroupsResp {
      *
      * @return the list of resource group names
      */
+
+
     public List<String> getGroupNames() {
         return groupNames;
     }
@@ -36,6 +42,8 @@ public class ListResourceGroupsResp {
      *
      * @param groupNames the list of resource group names
      */
+
+
     public void setGroupNames(List<String> groupNames) {
         this.groupNames = groupNames;
     }
@@ -47,6 +55,11 @@ public class ListResourceGroupsResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListResourceGroupsResp} class.
+     */
+
+
     public static class ListResourceGroupsRespBuilder {
         private List<String> groupNames = new ArrayList<>();
 
@@ -56,6 +69,8 @@ public class ListResourceGroupsResp {
          * @param groupNames the list of resource group names
          * @return this builder
          */
+
+
         public ListResourceGroupsRespBuilder groupNames(List<String> groupNames) {
             this.groupNames = groupNames;
             return this;
@@ -66,6 +81,8 @@ public class ListResourceGroupsResp {
          *
          * @return the built response
          */
+
+
         public ListResourceGroupsResp build() {
             return new ListResourceGroupsResp(this);
         }

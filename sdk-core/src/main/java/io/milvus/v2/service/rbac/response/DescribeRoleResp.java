@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code describeRole} API.
  */
+
+
 public class DescribeRoleResp {
     private String roleName;
     private List<GrantInfo> grantInfos;
@@ -41,6 +43,8 @@ public class DescribeRoleResp {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -50,6 +54,8 @@ public class DescribeRoleResp {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -59,6 +65,8 @@ public class DescribeRoleResp {
      *
      * @return the grant information of the role
      */
+
+
     public List<GrantInfo> getGrantInfos() {
         return grantInfos;
     }
@@ -68,6 +76,8 @@ public class DescribeRoleResp {
      *
      * @param grantInfos the grant information of the role
      */
+
+
     public void setGrantInfos(List<GrantInfo> grantInfos) {
         this.grantInfos = grantInfos;
     }
@@ -77,6 +87,8 @@ public class DescribeRoleResp {
      *
      * @return the role description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -86,6 +98,8 @@ public class DescribeRoleResp {
      *
      * @param description the role description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -104,9 +118,16 @@ public class DescribeRoleResp {
      *
      * @return a new {@link DescribeRoleRespBuilder}
      */
+
+
     public static DescribeRoleRespBuilder builder() {
         return new DescribeRoleRespBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeRoleResp} class.
+     */
+
 
     public static class DescribeRoleRespBuilder {
         private String roleName = "";
@@ -122,6 +143,8 @@ public class DescribeRoleResp {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public DescribeRoleRespBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -133,6 +156,8 @@ public class DescribeRoleResp {
          * @param grantInfos the grant information of the role
          * @return this builder
          */
+
+
         public DescribeRoleRespBuilder grantInfos(List<GrantInfo> grantInfos) {
             this.grantInfos = grantInfos;
             return this;
@@ -144,6 +169,8 @@ public class DescribeRoleResp {
          * @param description the role description
          * @return this builder
          */
+
+
         public DescribeRoleRespBuilder description(String description) {
             this.description = description;
             return this;
@@ -154,6 +181,8 @@ public class DescribeRoleResp {
          *
          * @return the built response
          */
+
+
         public DescribeRoleResp build() {
             return new DescribeRoleResp(this);
         }
@@ -162,6 +191,8 @@ public class DescribeRoleResp {
     /**
      * Represents a single privilege grant to a role.
      */
+
+
     public static class GrantInfo {
         private String objectType;
         private String objectName;
@@ -184,6 +215,8 @@ public class DescribeRoleResp {
          *
          * @return the object type
          */
+
+
         public String getObjectType() {
             return objectType;
         }
@@ -193,6 +226,8 @@ public class DescribeRoleResp {
          *
          * @param objectType the object type
          */
+
+
         public void setObjectType(String objectType) {
             this.objectType = objectType;
         }
@@ -202,6 +237,8 @@ public class DescribeRoleResp {
          *
          * @return the object name
          */
+
+
         public String getObjectName() {
             return objectName;
         }
@@ -211,6 +248,8 @@ public class DescribeRoleResp {
          *
          * @param objectName the object name
          */
+
+
         public void setObjectName(String objectName) {
             this.objectName = objectName;
         }
@@ -220,6 +259,8 @@ public class DescribeRoleResp {
          *
          * @return the role name
          */
+
+
         public String getRoleName() {
             return roleName;
         }
@@ -229,6 +270,8 @@ public class DescribeRoleResp {
          *
          * @param roleName the role name
          */
+
+
         public void setRoleName(String roleName) {
             this.roleName = roleName;
         }
@@ -238,6 +281,8 @@ public class DescribeRoleResp {
          *
          * @return the grantor name
          */
+
+
         public String getGrantor() {
             return grantor;
         }
@@ -247,6 +292,8 @@ public class DescribeRoleResp {
          *
          * @param grantor the grantor name
          */
+
+
         public void setGrantor(String grantor) {
             this.grantor = grantor;
         }
@@ -256,6 +303,8 @@ public class DescribeRoleResp {
          *
          * @return the granted privilege
          */
+
+
         public String getPrivilege() {
             return privilege;
         }
@@ -265,6 +314,8 @@ public class DescribeRoleResp {
          *
          * @param privilege the granted privilege
          */
+
+
         public void setPrivilege(String privilege) {
             this.privilege = privilege;
         }
@@ -274,6 +325,8 @@ public class DescribeRoleResp {
          *
          * @return the database name
          */
+
+
         public String getDbName() {
             return dbName;
         }
@@ -283,6 +336,8 @@ public class DescribeRoleResp {
          *
          * @param dbName the database name
          */
+
+
         public void setDbName(String dbName) {
             this.dbName = dbName;
         }
@@ -304,9 +359,16 @@ public class DescribeRoleResp {
          *
          * @return a new {@link GrantInfoBuilder}
          */
+
+
         public static GrantInfoBuilder builder() {
             return new GrantInfoBuilder();
         }
+
+        /**
+         * Builder for {@link DescribeRoleResp.GrantInfo} class.
+         */
+
 
         public static class GrantInfoBuilder {
             private String objectType;
@@ -325,6 +387,8 @@ public class DescribeRoleResp {
              * @param objectType the object type
              * @return this builder
              */
+
+
             public GrantInfoBuilder objectType(String objectType) {
                 this.objectType = objectType;
                 return this;
@@ -336,6 +400,8 @@ public class DescribeRoleResp {
              * @param objectName the object name
              * @return this builder
              */
+
+
             public GrantInfoBuilder objectName(String objectName) {
                 this.objectName = objectName;
                 return this;
@@ -347,6 +413,8 @@ public class DescribeRoleResp {
              * @param roleName the role name
              * @return this builder
              */
+
+
             public GrantInfoBuilder roleName(String roleName) {
                 this.roleName = roleName;
                 return this;
@@ -358,6 +426,8 @@ public class DescribeRoleResp {
              * @param grantor the grantor name
              * @return this builder
              */
+
+
             public GrantInfoBuilder grantor(String grantor) {
                 this.grantor = grantor;
                 return this;
@@ -369,6 +439,8 @@ public class DescribeRoleResp {
              * @param privilege the granted privilege
              * @return this builder
              */
+
+
             public GrantInfoBuilder privilege(String privilege) {
                 this.privilege = privilege;
                 return this;
@@ -380,6 +452,8 @@ public class DescribeRoleResp {
              * @param dbName the database name
              * @return this builder
              */
+
+
             public GrantInfoBuilder dbName(String dbName) {
                 this.dbName = dbName;
                 return this;
@@ -390,6 +464,8 @@ public class DescribeRoleResp {
              *
              * @return the built grant info
              */
+
+
             public GrantInfo build() {
                 return new GrantInfo(this);
             }

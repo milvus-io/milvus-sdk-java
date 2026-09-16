@@ -25,6 +25,8 @@ import java.util.Map;
 /**
  * A single dumped message returned by the {@code dumpMessages} API.
  */
+
+
 public class DumpMessageInfo {
     private final GetReplicateInfoResp.MessageID messageID;
     private final byte[] payload;
@@ -41,6 +43,8 @@ public class DumpMessageInfo {
      *
      * @return the builder
      */
+
+
     public static DumpMessageInfoBuilder builder() {
         return new DumpMessageInfoBuilder();
     }
@@ -50,6 +54,8 @@ public class DumpMessageInfo {
      *
      * @return the message ID
      */
+
+
     public GetReplicateInfoResp.MessageID getMessageID() {
         return messageID;
     }
@@ -59,6 +65,8 @@ public class DumpMessageInfo {
      *
      * @return the message payload
      */
+
+
     public byte[] getPayload() {
         return payload;
     }
@@ -68,6 +76,8 @@ public class DumpMessageInfo {
      *
      * @return the message properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -84,6 +94,8 @@ public class DumpMessageInfo {
     /**
      * Builder for {@link DumpMessageInfo}.
      */
+
+
     public static class DumpMessageInfoBuilder {
         private GetReplicateInfoResp.MessageID messageID;
         private byte[] payload;
@@ -95,6 +107,8 @@ public class DumpMessageInfo {
          * @param messageID the message ID
          * @return this builder
          */
+
+
         public DumpMessageInfoBuilder messageID(GetReplicateInfoResp.MessageID messageID) {
             this.messageID = messageID;
             return this;
@@ -106,6 +120,8 @@ public class DumpMessageInfo {
          * @param payload the message payload
          * @return this builder
          */
+
+
         public DumpMessageInfoBuilder payload(byte[] payload) {
             this.payload = payload;
             return this;
@@ -117,6 +133,8 @@ public class DumpMessageInfo {
          * @param properties the message properties
          * @return this builder
          */
+
+
         public DumpMessageInfoBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -127,6 +145,8 @@ public class DumpMessageInfo {
          *
          * @return the dumped message
          */
+
+
         public DumpMessageInfo build() {
             return new DumpMessageInfo(this);
         }

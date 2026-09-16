@@ -26,6 +26,8 @@ import java.util.Map;
  * A single hit of a {@code top_hits} search aggregation, containing the entity ID,
  * score, and the projected field values of the hit.
  */
+
+
 public class AggregationHit {
     private final Object id;
     private final Float score;
@@ -44,6 +46,8 @@ public class AggregationHit {
      *
      * @return a new builder
      */
+
+
     public static AggregationHitBuilder builder() {
         return new AggregationHitBuilder();
     }
@@ -53,6 +57,8 @@ public class AggregationHit {
      *
      * @return the entity ID
      */
+
+
     public Object getId() {
         return id;
     }
@@ -62,6 +68,8 @@ public class AggregationHit {
      *
      * @return the hit score
      */
+
+
     public Float getScore() {
         return score;
     }
@@ -71,6 +79,8 @@ public class AggregationHit {
      *
      * @return the hit field values
      */
+
+
     public Map<String, Object> getFields() {
         return fields;
     }
@@ -80,6 +90,8 @@ public class AggregationHit {
      *
      * @return the hit field IDs
      */
+
+
     public Map<String, Long> getFieldIds() {
         return fieldIds;
     }
@@ -97,6 +109,8 @@ public class AggregationHit {
     /**
      * Builder for {@link AggregationHit}.
      */
+
+
     public static class AggregationHitBuilder {
         private Object id;
         private Float score;
@@ -112,6 +126,8 @@ public class AggregationHit {
          * @param id the entity ID
          * @return this builder
          */
+
+
         public AggregationHitBuilder id(Object id) {
             this.id = id;
             return this;
@@ -123,6 +139,8 @@ public class AggregationHit {
          * @param score the hit score
          * @return this builder
          */
+
+
         public AggregationHitBuilder score(Float score) {
             this.score = score;
             return this;
@@ -134,6 +152,8 @@ public class AggregationHit {
          * @param fields the hit field values
          * @return this builder
          */
+
+
         public AggregationHitBuilder fields(Map<String, Object> fields) {
             this.fields = fields;
             return this;
@@ -145,6 +165,8 @@ public class AggregationHit {
          * @param fieldIds the hit field IDs
          * @return this builder
          */
+
+
         public AggregationHitBuilder fieldIds(Map<String, Long> fieldIds) {
             this.fieldIds = fieldIds;
             return this;
@@ -158,6 +180,8 @@ public class AggregationHit {
          * @param fieldId   the field ID, or {@code null} to omit it
          * @return this builder
          */
+
+
         public AggregationHitBuilder addField(String fieldName, Object value, Long fieldId) {
             this.fields.put(fieldName, value);
             if (fieldId != null) {
@@ -171,6 +195,8 @@ public class AggregationHit {
          *
          * @return the built hit
          */
+
+
         public AggregationHit build() {
             return new AggregationHit(this);
         }

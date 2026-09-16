@@ -30,6 +30,8 @@ import java.util.List;
 /**
  * Parameters for <code>insert</code> interface.
  */
+
+
 public class InsertRowsParam {
 
     private final InsertParam insertParam;
@@ -38,10 +40,22 @@ public class InsertRowsParam {
         this.insertParam = insertParam;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the insertParam.
+     *
+     * @return the insertParam
+     */
     // Getter method to replace @Getter annotation
     public InsertParam getInsertParam() {
         return insertParam;
@@ -50,6 +64,8 @@ public class InsertRowsParam {
     /**
      * Builder for {@link InsertRowsParam} class.
      */
+
+
     public static class Builder {
         private String collectionName;
         private List<JsonObject> rows;
@@ -64,6 +80,9 @@ public class InsertRowsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -99,6 +118,8 @@ public class InsertRowsParam {
          * @return <code>Builder</code>
          * @see JsonObject
          */
+
+
         public Builder withRows(List<JsonObject> rows) {
             // Replace @NonNull logic with explicit null check
             if (rows == null) {
@@ -113,6 +134,8 @@ public class InsertRowsParam {
          *
          * @return {@link InsertRowsParam}
          */
+
+
         public InsertRowsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

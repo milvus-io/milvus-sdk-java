@@ -30,6 +30,8 @@ import java.util.Map;
 /**
  * Response of the {@code describeCollection} API, holding the details of a collection.
  */
+
+
 public class DescribeCollectionResp {
     private String collectionName;
     private Long collectionID;
@@ -80,6 +82,8 @@ public class DescribeCollectionResp {
      *
      * @return the builder
      */
+
+
     public static DescribeCollectionRespBuilder builder() {
         return new DescribeCollectionRespBuilder();
     }
@@ -90,6 +94,7 @@ public class DescribeCollectionResp {
      *
      * @return the collection name
      */
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -99,6 +104,8 @@ public class DescribeCollectionResp {
      *
      * @return the collection ID
      */
+
+
     public Long getCollectionID() {
         return collectionID;
     }
@@ -108,6 +115,8 @@ public class DescribeCollectionResp {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -117,6 +126,8 @@ public class DescribeCollectionResp {
      *
      * @return the collection description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -126,6 +137,8 @@ public class DescribeCollectionResp {
      *
      * @return the number of partitions
      */
+
+
     public Long getNumOfPartitions() {
         return numOfPartitions;
     }
@@ -135,6 +148,8 @@ public class DescribeCollectionResp {
      *
      * @return the field names
      */
+
+
     public List<String> getFieldNames() {
         return fieldNames;
     }
@@ -144,6 +159,8 @@ public class DescribeCollectionResp {
      *
      * @return the vector field names
      */
+
+
     public List<String> getVectorFieldNames() {
         return vectorFieldNames;
     }
@@ -153,6 +170,8 @@ public class DescribeCollectionResp {
      *
      * @return the primary field name
      */
+
+
     public String getPrimaryFieldName() {
         return primaryFieldName;
     }
@@ -162,6 +181,8 @@ public class DescribeCollectionResp {
      *
      * @return {@code true} if the dynamic field is enabled
      */
+
+
     public Boolean getEnableDynamicField() {
         return enableDynamicField;
     }
@@ -171,6 +192,8 @@ public class DescribeCollectionResp {
      *
      * @return {@code true} if auto ID is enabled
      */
+
+
     public Boolean getAutoID() {
         return autoID;
     }
@@ -180,6 +203,8 @@ public class DescribeCollectionResp {
      *
      * @return the collection schema
      */
+
+
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
@@ -189,6 +214,8 @@ public class DescribeCollectionResp {
      *
      * @return the creation time
      */
+
+
     public Long getCreateTime() {
         return createTime;
     }
@@ -198,6 +225,8 @@ public class DescribeCollectionResp {
      *
      * @return the UTC creation time
      */
+
+
     public Long getCreateUtcTime() {
         return createUtcTime;
     }
@@ -207,6 +236,8 @@ public class DescribeCollectionResp {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -216,6 +247,8 @@ public class DescribeCollectionResp {
      *
      * @return the number of shards
      */
+
+
     public Integer getShardsNum() {
         return shardsNum;
     }
@@ -225,6 +258,8 @@ public class DescribeCollectionResp {
      *
      * @return the collection properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -234,6 +269,8 @@ public class DescribeCollectionResp {
      *
      * @return the collection aliases
      */
+
+
     public List<String> getAliases() {
         return aliases;
     }
@@ -243,6 +280,8 @@ public class DescribeCollectionResp {
      *
      * @return the update timestamp
      */
+
+
     public Long getUpdateTimestamp() {
         return updateTimestamp;
     }
@@ -252,6 +291,8 @@ public class DescribeCollectionResp {
      *
      * @return {@code true} if the namespace is enabled
      */
+
+
     public Boolean getEnableNamespace() {
         return enableNamespace;
     }
@@ -261,6 +302,8 @@ public class DescribeCollectionResp {
      *
      * @return the schema version
      */
+
+
     public Integer getSchemaVersion() {
         return schemaVersion;
     }
@@ -271,6 +314,7 @@ public class DescribeCollectionResp {
      *
      * @param aliases the collection aliases
      */
+
     public void setAliases(List<String> aliases) {
         this.aliases = aliases;
     }
@@ -280,6 +324,8 @@ public class DescribeCollectionResp {
      *
      * @param updateTimestamp the update timestamp
      */
+
+
     public void setUpdateTimestamp(Long updateTimestamp) {
         this.updateTimestamp = updateTimestamp;
     }
@@ -289,6 +335,8 @@ public class DescribeCollectionResp {
      *
      * @param enableNamespace {@code true} if the namespace is enabled
      */
+
+
     public void setEnableNamespace(Boolean enableNamespace) {
         this.enableNamespace = enableNamespace;
     }
@@ -298,6 +346,8 @@ public class DescribeCollectionResp {
      *
      * @param schemaVersion the schema version
      */
+
+
     public void setSchemaVersion(Integer schemaVersion) {
         this.schemaVersion = schemaVersion;
     }
@@ -306,6 +356,7 @@ public class DescribeCollectionResp {
      *
      * @param collectionName the collection name
      */
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -315,6 +366,8 @@ public class DescribeCollectionResp {
      *
      * @param collectionID the collection ID
      */
+
+
     public void setCollectionID(Long collectionID) {
         this.collectionID = collectionID;
     }
@@ -324,6 +377,8 @@ public class DescribeCollectionResp {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -333,6 +388,8 @@ public class DescribeCollectionResp {
      *
      * @param description the collection description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -342,6 +399,8 @@ public class DescribeCollectionResp {
      *
      * @param numOfPartitions the number of partitions
      */
+
+
     public void setNumOfPartitions(Long numOfPartitions) {
         this.numOfPartitions = numOfPartitions;
     }
@@ -351,6 +410,8 @@ public class DescribeCollectionResp {
      *
      * @param fieldNames the field names
      */
+
+
     public void setFieldNames(List<String> fieldNames) {
         this.fieldNames = fieldNames;
     }
@@ -360,6 +421,8 @@ public class DescribeCollectionResp {
      *
      * @param vectorFieldNames the vector field names
      */
+
+
     public void setVectorFieldNames(List<String> vectorFieldNames) {
         this.vectorFieldNames = vectorFieldNames;
     }
@@ -369,6 +432,8 @@ public class DescribeCollectionResp {
      *
      * @param primaryFieldName the primary field name
      */
+
+
     public void setPrimaryFieldName(String primaryFieldName) {
         this.primaryFieldName = primaryFieldName;
     }
@@ -378,6 +443,8 @@ public class DescribeCollectionResp {
      *
      * @param enableDynamicField {@code true} if the dynamic field is enabled
      */
+
+
     public void setEnableDynamicField(Boolean enableDynamicField) {
         this.enableDynamicField = enableDynamicField;
     }
@@ -387,6 +454,8 @@ public class DescribeCollectionResp {
      *
      * @param autoID {@code true} if auto ID is enabled
      */
+
+
     public void setAutoID(Boolean autoID) {
         this.autoID = autoID;
     }
@@ -396,6 +465,8 @@ public class DescribeCollectionResp {
      *
      * @param collectionSchema the collection schema
      */
+
+
     public void setCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
         this.collectionSchema = collectionSchema;
     }
@@ -405,6 +476,8 @@ public class DescribeCollectionResp {
      *
      * @param createTime the creation time
      */
+
+
     public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
@@ -414,6 +487,8 @@ public class DescribeCollectionResp {
      *
      * @param createUtcTime the UTC creation time
      */
+
+
     public void setCreateUtcTime(Long createUtcTime) {
         this.createUtcTime = createUtcTime;
     }
@@ -423,6 +498,8 @@ public class DescribeCollectionResp {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -432,6 +509,8 @@ public class DescribeCollectionResp {
      *
      * @param shardsNum the number of shards
      */
+
+
     public void setShardsNum(Integer shardsNum) {
         this.shardsNum = shardsNum;
     }
@@ -462,6 +541,11 @@ public class DescribeCollectionResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeCollectionResp} class.
+     */
+
+
     public static class DescribeCollectionRespBuilder {
         private String collectionName;
         private Long collectionID;
@@ -490,6 +574,8 @@ public class DescribeCollectionResp {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -501,6 +587,8 @@ public class DescribeCollectionResp {
          * @param collectionID the collection ID
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder collectionID(Long collectionID) {
             this.collectionID = collectionID;
             return this;
@@ -512,6 +600,8 @@ public class DescribeCollectionResp {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -523,6 +613,8 @@ public class DescribeCollectionResp {
          * @param description the collection description
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder description(String description) {
             this.description = description;
             return this;
@@ -534,6 +626,8 @@ public class DescribeCollectionResp {
          * @param numOfPartitions the number of partitions
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder numOfPartitions(Long numOfPartitions) {
             this.numOfPartitions = numOfPartitions;
             return this;
@@ -545,6 +639,8 @@ public class DescribeCollectionResp {
          * @param fieldNames the field names
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder fieldNames(List<String> fieldNames) {
             this.fieldNames = fieldNames;
             return this;
@@ -556,6 +652,8 @@ public class DescribeCollectionResp {
          * @param vectorFieldNames the vector field names
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder vectorFieldNames(List<String> vectorFieldNames) {
             this.vectorFieldNames = vectorFieldNames;
             return this;
@@ -567,6 +665,8 @@ public class DescribeCollectionResp {
          * @param primaryFieldName the primary field name
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder primaryFieldName(String primaryFieldName) {
             this.primaryFieldName = primaryFieldName;
             return this;
@@ -578,6 +678,8 @@ public class DescribeCollectionResp {
          * @param enableDynamicField {@code true} if the dynamic field is enabled
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder enableDynamicField(Boolean enableDynamicField) {
             this.enableDynamicField = enableDynamicField;
             return this;
@@ -589,6 +691,8 @@ public class DescribeCollectionResp {
          * @param autoID {@code true} if auto ID is enabled
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder autoID(Boolean autoID) {
             this.autoID = autoID;
             return this;
@@ -600,6 +704,8 @@ public class DescribeCollectionResp {
          * @param collectionSchema the collection schema
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder collectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
@@ -611,6 +717,8 @@ public class DescribeCollectionResp {
          * @param createTime the creation time
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder createTime(Long createTime) {
             this.createTime = createTime;
             return this;
@@ -622,6 +730,8 @@ public class DescribeCollectionResp {
          * @param createUtcTime the UTC creation time
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder createUtcTime(Long createUtcTime) {
             this.createUtcTime = createUtcTime;
             return this;
@@ -633,6 +743,8 @@ public class DescribeCollectionResp {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -644,6 +756,8 @@ public class DescribeCollectionResp {
          * @param shardsNum the number of shards
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder shardsNum(Integer shardsNum) {
             this.shardsNum = shardsNum;
             return this;
@@ -655,6 +769,8 @@ public class DescribeCollectionResp {
          * @param properties the collection properties
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -666,6 +782,8 @@ public class DescribeCollectionResp {
          * @param aliases the collection aliases
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder aliases(List<String> aliases) {
             this.aliases = aliases;
             return this;
@@ -677,6 +795,8 @@ public class DescribeCollectionResp {
          * @param updateTimestamp the update timestamp
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder updateTimestamp(Long updateTimestamp) {
             this.updateTimestamp = updateTimestamp;
             return this;
@@ -688,6 +808,8 @@ public class DescribeCollectionResp {
          * @param enableNamespace {@code true} if the namespace is enabled
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder enableNamespace(Boolean enableNamespace) {
             this.enableNamespace = enableNamespace;
             return this;
@@ -699,6 +821,8 @@ public class DescribeCollectionResp {
          * @param schemaVersion the schema version
          * @return this builder
          */
+
+
         public DescribeCollectionRespBuilder schemaVersion(Integer schemaVersion) {
             this.schemaVersion = schemaVersion;
             return this;
@@ -709,6 +833,8 @@ public class DescribeCollectionResp {
          *
          * @return the response
          */
+
+
         public DescribeCollectionResp build() {
             return new DescribeCollectionResp(this);
         }

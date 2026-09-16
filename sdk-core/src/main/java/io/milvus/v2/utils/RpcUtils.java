@@ -41,6 +41,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Helper for executing Milvus RPCs: verifies gRPC responses, applies configurable retry with
+ * back-off for both synchronous and asynchronous calls, and triggers global-cluster topology
+ * refresh on connection or routing errors.
+ */
+
+
 public class RpcUtils {
 
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
@@ -69,6 +76,8 @@ public class RpcUtils {
      * on get()/join() are not left hanging. A later {@link #retryAsync} call lazily recreates
      * the scheduler and keeps working.
      */
+
+
     public void shutdown() {
         asyncRetryExecutor.shutdownNow();
         // create a fresh exception per future so failures stay isolated
@@ -91,9 +100,24 @@ public class RpcUtils {
         return executor;
     }
 
+    /**
+     * Sets the retry configuration used by this {@code RpcUtils}.
+     *
+     * @param retryConfig the retry configuration
+     */
+
+
     public void retryConfig(RetryConfig retryConfig) {
         this.retryConfig = retryConfig;
     }
+
+    /**
+     * Sets the callback used to trigger a global cluster topology refresh when a connection or
+     * routing error is detected.
+     *
+     * @param trigger the topology refresh callback
+     */
+
 
     public void setGlobalRefreshTrigger(Runnable trigger) {
         this.globalRefreshTrigger = trigger;
@@ -130,6 +154,15 @@ public class RpcUtils {
         return false;
     }
 
+    /**
+     * Checks the response status and throws an exception if the operation failed.
+     *
+     * @param requestInfo the name of the operation for error reporting
+     * @param status the response status to check
+     * @throws MilvusClientException if the status indicates a failure
+     */
+
+
     public void handleResponse(String requestInfo, Status status) {
         // the server made a change for error code:
         // for 2.2.x, error code is status.getErrorCode()
@@ -158,6 +191,15 @@ public class RpcUtils {
             logger.debug("{} successfully!", requestInfo);
         }
     }
+
+    /**
+     * Executes the given callable with the configured retry policy.
+     *
+     * @param callable the operation to execute
+     * @param <T> the return type of the operation
+     * @return the result of the operation
+     */
+
 
     public <T> T retry(Callable<T> callable) {
         int maxRetryTimes = retryConfig.getMaxRetryTimes();
@@ -279,7 +321,13 @@ public class RpcUtils {
      * Executes an asynchronous RPC with the same retry policy used by {@link #retry(Callable)}.
      * Validation failures are returned as exceptionally completed futures, retry backoff never
      * blocks a caller thread, and cancellation is propagated to the active RPC or scheduled retry.
+     *
+     * @param supplier the supplier of the asynchronous operation to execute
+     * @param <T> the result type of the asynchronous operation
+     * @return a future completing with the operation result, or exceptionally on failure
      */
+
+
     public <T> CompletableFuture<T> retryAsync(Supplier<CompletableFuture<T>> supplier) {
         RetryFuture<T> result = new RetryFuture<>();
         activeFutures.add(result);

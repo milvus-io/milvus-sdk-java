@@ -19,15 +19,141 @@
 
 package io.milvus.unit.v2.service.utility;
 import io.milvus.v2.service.utility.OptimizeTask;
+import io.milvus.v2.service.utility.OptimizeTask.ExecuteFn;
+import io.milvus.v2.service.utility.OptimizeTask.ProgressStage;
+import io.milvus.v2.service.utility.response.OptimizeResp;
 
 import io.milvus.v2.exception.MilvusClientException;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("unit")
 class OptimizeTaskTest {
+
+    @Test
+    void lifecycleRunsCompletesAndReportsResult() throws Exception {
+        OptimizeResp[] captured = new OptimizeResp[1];
+        ExecuteFn executeFn = (task, collectionName, databaseName, sizeMb, timeout) -> {
+            task.setProgress(ProgressStage.WAITING_FOR_INDEXES);
+            task.setProgress(ProgressStage.COMPACTING);
+            task.checkCancelled();
+            OptimizeResp resp = OptimizeResp.builder()
+                    .status("ok")
+                    .collectionName("coll")
+                    .compactionId(7L)
+                    .targetSize("512MB")
+                    .progress(Collections.singletonList("compacting"))
+                    .build();
+            captured[0] = resp;
+            return resp;
+        };
+        OptimizeTask task = new OptimizeTask("coll", "db", "512MB", 1000L, executeFn);
+
+        assertEquals(ProgressStage.INITIALIZING, task.getProgress());
+        assertFalse(task.isDone());
+        assertFalse(task.isCancelled());
+        assertEquals(Collections.singletonList(ProgressStage.INITIALIZING), task.getProgressHistory());
+        assertEquals(Collections.singletonList("initializing"), task.getProgressHistoryAsStrings());
+
+        task.start();
+        assertTrue(task.getResult(3000L).getCompactionId() == 7L);
+        assertTrue(task.isDone());
+        assertFalse(task.isCancelled());
+        assertEquals(ProgressStage.COMPACTING, task.getProgress());
+        assertEquals(captured[0], task.getResult(null));
+
+        assertTrue(task.getProgressHistory().contains(ProgressStage.INITIALIZING));
+        assertTrue(task.getProgressHistory().contains(ProgressStage.COMPACTING));
+        assertTrue(task.getProgressHistoryAsStrings().contains("compacting"));
+    }
+
+    @Test
+    void lifecycleCancelSetsCancelledAndThrows() throws Exception {
+        ExecuteFn blockingFn = (task, collectionName, databaseName, sizeMb, timeout) -> {
+            try {
+                Thread.sleep(2_000L);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            return OptimizeResp.builder().build();
+        };
+        OptimizeTask task = new OptimizeTask("coll", "db", null, null, blockingFn);
+
+        task.start();
+        assertTrue(task.cancel());
+        assertTrue(task.isCancelled());
+        assertTrue(task.isDone());
+        assertEquals(ProgressStage.CANCELLED, task.getProgress());
+        assertTrue(task.getProgressHistory().contains(ProgressStage.CANCELLED));
+
+        MilvusClientException e = assertThrows(MilvusClientException.class, () -> task.getResult(null));
+        assertTrue(e.getMessage().contains("cancelled"));
+
+        // cancel() again after cancellation returns true and does not change state
+        assertTrue(task.cancel());
+    }
+
+    @Test
+    void lifecycleCancelAfterDoneReturnsFalse() throws Exception {
+        ExecuteFn fastFn = (task, collectionName, databaseName, sizeMb, timeout) ->
+                OptimizeResp.builder().collectionName("coll").build();
+        OptimizeTask task = new OptimizeTask("coll", "db", "1GB", 1000L, fastFn);
+
+        task.start();
+        assertNotNull(task.getResult(3000L));
+        assertFalse(task.cancel());
+    }
+
+    @Test
+    void lifecycleTimeoutThrows() throws Exception {
+        ExecuteFn blockingFn = (task, collectionName, databaseName, sizeMb, timeout) -> {
+            try {
+                Thread.sleep(2_000L);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            return OptimizeResp.builder().build();
+        };
+        OptimizeTask task = new OptimizeTask("coll", "db", null, null, blockingFn);
+
+        task.start();
+        assertThrows(MilvusClientException.class, () -> task.getResult(10L));
+        task.cancel();
+    }
+
+    @Test
+    void lifecycleSetProgressIgnoredAfterCancel() throws Exception {
+        ExecuteFn blockingFn = (task, collectionName, databaseName, sizeMb, timeout) -> {
+            try {
+                Thread.sleep(2_000L);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            return OptimizeResp.builder().build();
+        };
+        OptimizeTask task = new OptimizeTask("coll", "db", null, null, blockingFn);
+
+        task.cancel();
+        task.setProgress(ProgressStage.COMPACTING);
+        assertEquals(ProgressStage.CANCELLED, task.getProgress());
+    }
+
+    @Test
+    void lifecycleExecutionFailurePropagates() throws Exception {
+        ExecuteFn failingFn = (task, collectionName, databaseName, sizeMb, timeout) -> {
+            throw new IllegalStateException("boom");
+        };
+        OptimizeTask task = new OptimizeTask("coll", "db", "512MB", 1000L, failingFn);
+
+        task.start();
+        MilvusClientException e = assertThrows(MilvusClientException.class, () -> task.getResult(3000L));
+        assertTrue(e.getMessage().contains("boom"));
+        assertTrue(task.isDone());
+    }
 
     @Test
     void parseTargetSize_megabytes() {

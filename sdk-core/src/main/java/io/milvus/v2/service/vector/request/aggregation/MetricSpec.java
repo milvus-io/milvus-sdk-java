@@ -27,6 +27,8 @@ import io.milvus.v2.exception.MilvusClientException;
  * A metric aggregation spec of a {@code group-by} search aggregation, defining an
  * aggregation operation ({@link MetricOps}) applied to a field.
  */
+
+
 public class MetricSpec {
     private final MetricOps op;
     private final String fieldName;
@@ -53,6 +55,8 @@ public class MetricSpec {
      *
      * @return a new builder
      */
+
+
     public static MetricSpecBuilder builder() {
         return new MetricSpecBuilder();
     }
@@ -62,6 +66,8 @@ public class MetricSpec {
      *
      * @return the aggregation operation
      */
+
+
     public MetricOps getOp() {
         return op;
     }
@@ -71,6 +77,8 @@ public class MetricSpec {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -93,6 +101,8 @@ public class MetricSpec {
     /**
      * Builder for {@link MetricSpec}.
      */
+
+
     public static class MetricSpecBuilder {
         private MetricOps op;
         private String fieldName;
@@ -106,6 +116,8 @@ public class MetricSpec {
          * @param op the aggregation operation
          * @return this builder
          */
+
+
         public MetricSpecBuilder op(MetricOps op) {
             this.op = op;
             return this;
@@ -118,6 +130,8 @@ public class MetricSpec {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public MetricSpecBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -128,6 +142,8 @@ public class MetricSpec {
          *
          * @return the built metric spec
          */
+
+
         public MetricSpec build() {
             return new MetricSpec(this);
         }

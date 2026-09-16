@@ -26,6 +26,8 @@ package io.milvus.common.clientenum;
  * consistency guarantees and read latency. Values map to the protocol-defined consistency level
  * codes, with {@code 0} as the strongest and {@code 3} as the weakest.
  */
+
+
 public enum ConsistencyLevelEnum {
 
     /**
@@ -62,6 +64,7 @@ public enum ConsistencyLevelEnum {
      *
      * @return the consistency level name
      */
+
     public String getName() {
         return name;
     }
@@ -71,6 +74,8 @@ public enum ConsistencyLevelEnum {
      *
      * @return the consistency level code
      */
+
+
     public int getCode() {
         return code;
     }
@@ -83,6 +88,8 @@ public enum ConsistencyLevelEnum {
      * @param code the consistency level code
      * @return the matching consistency level, or {@code null} if no level has the given code
      */
+
+
     public static ConsistencyLevelEnum getNameByCode(int code) {
         if (code >= 0 && code < CONSISTENCY_LEVELS.length) {
             return CONSISTENCY_LEVELS[code];

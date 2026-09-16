@@ -24,12 +24,21 @@ import java.util.List;
 /**
  * Response returned by the {@code listRefreshExternalCollectionJobs} API.
  */
+
+
 public class ListRefreshExternalCollectionJobsResp {
     private final List<RefreshExternalCollectionJobInfo> jobs;
 
     private ListRefreshExternalCollectionJobsResp(ListRefreshExternalCollectionJobsRespBuilder builder) {
         this.jobs = builder.jobs;
     }
+
+    /**
+     * Creates a new builder for {@code ListRefreshExternalCollectionJobsResp}.
+     *
+     * @return the builder
+     */
+
 
     public static ListRefreshExternalCollectionJobsRespBuilder builder() {
         return new ListRefreshExternalCollectionJobsRespBuilder();
@@ -40,6 +49,8 @@ public class ListRefreshExternalCollectionJobsResp {
      *
      * @return the list of refresh jobs
      */
+
+
     public List<RefreshExternalCollectionJobInfo> getJobs() {
         return jobs;
     }
@@ -51,6 +62,11 @@ public class ListRefreshExternalCollectionJobsResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListRefreshExternalCollectionJobsResp} class.
+     */
+
+
     public static class ListRefreshExternalCollectionJobsRespBuilder {
         private List<RefreshExternalCollectionJobInfo> jobs;
 
@@ -60,6 +76,8 @@ public class ListRefreshExternalCollectionJobsResp {
          * @param jobs the list of refresh jobs
          * @return this builder
          */
+
+
         public ListRefreshExternalCollectionJobsRespBuilder jobs(List<RefreshExternalCollectionJobInfo> jobs) {
             this.jobs = jobs;
             return this;
@@ -70,6 +88,8 @@ public class ListRefreshExternalCollectionJobsResp {
          *
          * @return the constructed {@code ListRefreshExternalCollectionJobsResp}
          */
+
+
         public ListRefreshExternalCollectionJobsResp build() {
             return new ListRefreshExternalCollectionJobsResp(this);
         }

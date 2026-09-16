@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Response returned by the {@code optimize} API.
  */
+
+
 public class OptimizeResp {
     private String status;
     private String collectionName;
@@ -39,6 +41,13 @@ public class OptimizeResp {
         this.progress = builder.progress;
     }
 
+    /**
+     * Creates a new builder for {@code OptimizeResp}.
+     *
+     * @return the builder
+     */
+
+
     public static OptimizeRespBuilder builder() {
         return new OptimizeRespBuilder();
     }
@@ -48,6 +57,8 @@ public class OptimizeResp {
      *
      * @return the optimization status
      */
+
+
     public String getStatus() {
         return status;
     }
@@ -57,6 +68,8 @@ public class OptimizeResp {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -66,6 +79,8 @@ public class OptimizeResp {
      *
      * @return the compaction ID
      */
+
+
     public Long getCompactionId() {
         return compactionId;
     }
@@ -75,6 +90,8 @@ public class OptimizeResp {
      *
      * @return the target segment size
      */
+
+
     public String getTargetSize() {
         return targetSize;
     }
@@ -84,6 +101,8 @@ public class OptimizeResp {
      *
      * @return the list of progress messages
      */
+
+
     public List<String> getProgress() {
         return progress;
     }
@@ -99,6 +118,11 @@ public class OptimizeResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link OptimizeResp} class.
+     */
+
+
     public static class OptimizeRespBuilder {
         private String status;
         private String collectionName;
@@ -112,6 +136,8 @@ public class OptimizeResp {
          * @param status the optimization status
          * @return this builder
          */
+
+
         public OptimizeRespBuilder status(String status) {
             this.status = status;
             return this;
@@ -123,6 +149,8 @@ public class OptimizeResp {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public OptimizeRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -134,6 +162,8 @@ public class OptimizeResp {
          * @param compactionId the compaction ID
          * @return this builder
          */
+
+
         public OptimizeRespBuilder compactionId(Long compactionId) {
             this.compactionId = compactionId;
             return this;
@@ -145,6 +175,8 @@ public class OptimizeResp {
          * @param targetSize the target segment size
          * @return this builder
          */
+
+
         public OptimizeRespBuilder targetSize(String targetSize) {
             this.targetSize = targetSize;
             return this;
@@ -156,6 +188,8 @@ public class OptimizeResp {
          * @param progress the list of progress messages
          * @return this builder
          */
+
+
         public OptimizeRespBuilder progress(List<String> progress) {
             this.progress = progress;
             return this;
@@ -166,6 +200,8 @@ public class OptimizeResp {
          *
          * @return the constructed {@code OptimizeResp}
          */
+
+
         public OptimizeResp build() {
             return new OptimizeResp(this);
         }

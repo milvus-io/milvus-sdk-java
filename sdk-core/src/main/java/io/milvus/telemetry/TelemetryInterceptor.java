@@ -37,6 +37,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** Records operation telemetry at the common unary gRPC boundary. */
+
+
 public final class TelemetryInterceptor implements ClientInterceptor {
     private static final Set<String> OPERATIONS = new HashSet<>(Arrays.asList(
             "Insert", "Delete", "Upsert", "Search", "HybridSearch", "Query", "RunAnalyzer"));
@@ -45,6 +47,14 @@ public final class TelemetryInterceptor implements ClientInterceptor {
 
     private final ClientTelemetryManager manager;
     private final ThreadLocal<String> requestId;
+
+    /**
+     * Creates a telemetry interceptor for the given manager.
+     *
+     * @param manager   the client telemetry manager that records operations
+     * @param requestId the thread-local carrying the current request ID
+     */
+
 
     public TelemetryInterceptor(ClientTelemetryManager manager, ThreadLocal<String> requestId) {
         this.manager = manager;

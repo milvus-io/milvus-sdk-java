@@ -24,12 +24,16 @@ package io.milvus.bulkwriter.request.volume;
  *
  * <p>It identifies the volume to delete through its volume name.</p>
  */
+
+
 public class DeleteVolumeRequest {
     private String volumeName;
 
     /**
      * Constructs an empty {@code DeleteVolumeRequest}.
      */
+
+
     public DeleteVolumeRequest() {
     }
 
@@ -38,6 +42,8 @@ public class DeleteVolumeRequest {
      *
      * @param volumeName the name of the volume to delete
      */
+
+
     public DeleteVolumeRequest(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -51,6 +57,8 @@ public class DeleteVolumeRequest {
      *
      * @return the volume name
      */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -60,6 +68,8 @@ public class DeleteVolumeRequest {
      *
      * @param volumeName the volume name
      */
+
+
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -76,6 +86,8 @@ public class DeleteVolumeRequest {
      *
      * @return a {@code DeleteVolumeRequest} builder
      */
+
+
     public static DeleteVolumeRequestBuilder builder() {
         return new DeleteVolumeRequestBuilder();
     }
@@ -83,6 +95,8 @@ public class DeleteVolumeRequest {
     /**
      * Builder for {@link DeleteVolumeRequest}.
      */
+
+
     public static class DeleteVolumeRequestBuilder {
         private String volumeName;
 
@@ -96,6 +110,8 @@ public class DeleteVolumeRequest {
          * @param volumeName the volume name
          * @return this builder
          */
+
+
         public DeleteVolumeRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -106,6 +122,8 @@ public class DeleteVolumeRequest {
          *
          * @return the built {@code DeleteVolumeRequest}
          */
+
+
         public DeleteVolumeRequest build() {
             return new DeleteVolumeRequest(this);
         }

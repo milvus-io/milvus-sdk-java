@@ -26,6 +26,8 @@ import java.util.Map;
 /**
  * Response returned by the {@code getPartitionStats} API.
  */
+
+
 public class GetPartitionStatsResp {
     private Long numOfEntities;
     private Map<String, String> stats;
@@ -40,6 +42,8 @@ public class GetPartitionStatsResp {
      *
      * @return the number of entities
      */
+
+
     public Long getNumOfEntities() {
         return numOfEntities;
     }
@@ -49,6 +53,8 @@ public class GetPartitionStatsResp {
      *
      * @return the partition statistics
      */
+
+
     public Map<String, String> getStats() {
         return stats;
     }
@@ -58,6 +64,8 @@ public class GetPartitionStatsResp {
      *
      * @param numOfEntities the number of entities
      */
+
+
     public void setNumOfEntities(Long numOfEntities) {
         this.numOfEntities = numOfEntities;
     }
@@ -67,6 +75,8 @@ public class GetPartitionStatsResp {
      *
      * @param stats the partition statistics
      */
+
+
     public void setStats(Map<String, String> stats) {
         this.stats = stats;
     }
@@ -84,9 +94,16 @@ public class GetPartitionStatsResp {
      *
      * @return the builder
      */
+
+
     public static GetPartitionStatsRespBuilder builder() {
         return new GetPartitionStatsRespBuilder();
     }
+
+    /**
+     * Builder for {@link GetPartitionStatsResp} class.
+     */
+
 
     public static class GetPartitionStatsRespBuilder {
         private Long numOfEntities;
@@ -101,6 +118,8 @@ public class GetPartitionStatsResp {
          * @param numOfEntities the number of entities
          * @return this builder
          */
+
+
         public GetPartitionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
             return this;
@@ -112,6 +131,8 @@ public class GetPartitionStatsResp {
          * @param stats the partition statistics
          * @return this builder
          */
+
+
         public GetPartitionStatsRespBuilder stats(Map<String, String> stats) {
             this.stats = stats;
             return this;
@@ -122,6 +143,8 @@ public class GetPartitionStatsResp {
          *
          * @return the built response
          */
+
+
         public GetPartitionStatsResp build() {
             return new GetPartitionStatsResp(this);
         }

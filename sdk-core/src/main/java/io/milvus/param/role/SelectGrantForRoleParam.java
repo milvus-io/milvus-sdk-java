@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the selectGrantForRole API.
+ */
+
+
 public class SelectGrantForRoleParam {
     private final String databaseName;
 
@@ -35,13 +40,34 @@ public class SelectGrantForRoleParam {
         this.roleName = builder.roleName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static SelectGrantForRoleParam.Builder newBuilder() {
         return new SelectGrantForRoleParam.Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
 
     public String getRoleName() {
         return roleName;
@@ -58,6 +84,8 @@ public class SelectGrantForRoleParam {
     /**
      * Builder for {@link SelectGrantForRoleParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String roleName;
@@ -71,6 +99,8 @@ public class SelectGrantForRoleParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -82,6 +112,8 @@ public class SelectGrantForRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public SelectGrantForRoleParam.Builder withRoleName(String roleName) {
             if (roleName == null) {
                 throw new IllegalArgumentException("Role name cannot be null");
@@ -95,6 +127,8 @@ public class SelectGrantForRoleParam {
          *
          * @return {@link SelectGrantForRoleParam}
          */
+
+
         public SelectGrantForRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");
 

@@ -25,6 +25,8 @@ import io.milvus.v2.exception.MilvusClientException;
 /**
  * The sort direction used by a {@code group-by} search aggregation ordering rule.
  */
+
+
 public enum AggDirection {
     /**
      * Ascending sort order.
@@ -46,6 +48,8 @@ public enum AggDirection {
      *
      * @return the string value
      */
+
+
     public String getValue() {
         return value;
     }
@@ -58,6 +62,8 @@ public enum AggDirection {
      * @return the matching direction
      * @throws MilvusClientException if the value is neither {@code asc} nor {@code desc}
      */
+
+
     public static AggDirection fromValue(String value, String fieldName) {
         for (AggDirection direction : values()) {
             if (direction.value.equals(value)) {

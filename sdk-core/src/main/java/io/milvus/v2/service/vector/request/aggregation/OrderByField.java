@@ -26,6 +26,8 @@ import io.milvus.v2.exception.MilvusClientException;
  * An ordering rule of a {@code group-by} search aggregation that sorts the returned
  * groups by a field, either in ascending or descending order.
  */
+
+
 public class OrderByField {
     private final String fieldName;
     private final AggDirection direction;
@@ -48,6 +50,8 @@ public class OrderByField {
      *
      * @return a new builder
      */
+
+
     public static OrderByFieldBuilder builder() {
         return new OrderByFieldBuilder();
     }
@@ -57,6 +61,8 @@ public class OrderByField {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -66,6 +72,8 @@ public class OrderByField {
      *
      * @return the sort direction
      */
+
+
     public AggDirection getDirection() {
         return direction;
     }
@@ -81,6 +89,8 @@ public class OrderByField {
     /**
      * Builder for {@link OrderByField}.
      */
+
+
     public static class OrderByFieldBuilder {
         private String fieldName;
         private AggDirection direction = AggDirection.ASC;
@@ -91,6 +101,8 @@ public class OrderByField {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public OrderByFieldBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -102,6 +114,8 @@ public class OrderByField {
          * @param direction the sort direction
          * @return this builder
          */
+
+
         public OrderByFieldBuilder direction(AggDirection direction) {
             this.direction = direction;
             return this;
@@ -112,6 +126,8 @@ public class OrderByField {
          *
          * @return the built ordering rule
          */
+
+
         public OrderByField build() {
             return new OrderByField(this);
         }

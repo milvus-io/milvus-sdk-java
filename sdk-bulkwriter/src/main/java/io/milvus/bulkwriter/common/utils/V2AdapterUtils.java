@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Utility class that adapts collection schemas between the Milvus V1 and V2 API models.
  */
+
+
 public class V2AdapterUtils {
 //    public static CollectionSchemaParam convertV2Schema(CreateCollectionReq.CollectionSchema schemaV2) {
 //        CollectionSchemaParam.Builder schemaBuilder = CollectionSchemaParam.newBuilder()
@@ -96,6 +98,8 @@ public class V2AdapterUtils {
      * @param schemaV1 the V1 collection schema to convert
      * @return the converted V2 collection schema
      */
+
+
     public static CreateCollectionReq.CollectionSchema convertV1Schema(CollectionSchemaParam schemaV1) {
         List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
         List<FieldType> fieldTypes = schemaV1.getFieldTypes();
@@ -115,6 +119,8 @@ public class V2AdapterUtils {
      * @param schema the collection schema whose function output fields are collected
      * @return the list of output field names
      */
+
+
     public static List<String> getOutputFieldNames(CreateCollectionReq.CollectionSchema schema) {
         List<String> outputFieldNames = new ArrayList<>();
         List<CreateCollectionReq.Function> functionList = schema.getFunctionList();

@@ -33,6 +33,8 @@ import java.util.Objects;
 /**
  * Parameters for <code>createIndex</code> interface.
  */
+
+
 public class CreateIndexParam {
     private final String databaseName;
     private final String collectionName;
@@ -68,42 +70,110 @@ public class CreateIndexParam {
         this.syncWaitingTimeout = builder.syncWaitingTimeout;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the fieldName.
+     *
+     * @return the fieldName
+     */
+
 
     public String getFieldName() {
         return fieldName;
     }
 
+    /**
+     * Returns the indexName.
+     *
+     * @return the indexName
+     */
+
+
     public String getIndexName() {
         return indexName;
     }
+
+    /**
+     * Returns the indexType.
+     *
+     * @return the indexType
+     */
+
 
     public IndexType getIndexType() {
         return indexType;
     }
 
+    /**
+     * Returns the extraParam.
+     *
+     * @return the extraParam
+     */
+
+
     public Map<String, String> getExtraParam() {
         return extraParam;
     }
+
+    /**
+     * Returns the syncMode.
+     *
+     * @return the syncMode
+     */
+
 
     public boolean isSyncMode() {
         return syncMode;
     }
 
+    /**
+     * Returns the syncWaitingInterval.
+     *
+     * @return the syncWaitingInterval
+     */
+
+
     public long getSyncWaitingInterval() {
         return syncWaitingInterval;
     }
+
+    /**
+     * Returns the syncWaitingTimeout.
+     *
+     * @return the syncWaitingTimeout
+     */
+
 
     public long getSyncWaitingTimeout() {
         return syncWaitingTimeout;
@@ -128,6 +198,8 @@ public class CreateIndexParam {
     /**
      * Builder for {@link CreateIndexParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -160,6 +232,8 @@ public class CreateIndexParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -171,6 +245,8 @@ public class CreateIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -186,6 +262,8 @@ public class CreateIndexParam {
          * @param fieldName field name
          * @return <code>Builder</code>
          */
+
+
         public Builder withFieldName(String fieldName) {
             // Replace @NonNull logic with explicit null check
             if (fieldName == null) {
@@ -201,6 +279,8 @@ public class CreateIndexParam {
          * @param indexType index type
          * @return <code>Builder</code>
          */
+
+
         public Builder withIndexType(IndexType indexType) {
             // Replace @NonNull logic with explicit null check
             if (indexType == null) {
@@ -217,6 +297,8 @@ public class CreateIndexParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
+
+
         public Builder withIndexName(String indexName) {
             // Replace @NonNull logic with explicit null check
             if (indexName == null) {
@@ -232,6 +314,8 @@ public class CreateIndexParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
+
+
         public Builder withMetricType(MetricType metricType) {
             // Replace @NonNull logic with explicit null check
             if (metricType == null) {
@@ -250,6 +334,8 @@ public class CreateIndexParam {
          * @param extraParam extra parameters in .json format
          * @return <code>Builder</code>
          */
+
+
         public Builder withExtraParam(String extraParam) {
             // Replace @NonNull logic with explicit null check
             if (extraParam == null) {
@@ -268,6 +354,8 @@ public class CreateIndexParam {
          * @param syncMode <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withSyncMode(Boolean syncMode) {
             // Replace @NonNull logic with explicit null check
             if (syncMode == null) {
@@ -286,6 +374,8 @@ public class CreateIndexParam {
          * @return <code>Builder</code>
          * @see Constant
          */
+
+
         public Builder withSyncWaitingInterval(Long milliseconds) {
             // Replace @NonNull logic with explicit null check
             if (milliseconds == null) {
@@ -303,6 +393,8 @@ public class CreateIndexParam {
          * @return <code>Builder</code>
          * @see Constant
          */
+
+
         public Builder withSyncWaitingTimeout(Long seconds) {
             // Replace @NonNull logic with explicit null check
             if (seconds == null) {
@@ -317,6 +409,8 @@ public class CreateIndexParam {
          *
          * @return {@link CreateIndexParam}
          */
+
+
         public CreateIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(fieldName, "Field name");

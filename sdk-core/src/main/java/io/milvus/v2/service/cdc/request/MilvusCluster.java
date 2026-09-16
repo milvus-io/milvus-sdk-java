@@ -28,6 +28,8 @@ import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 /**
  * A Milvus cluster participating in a replication task.
  */
+
+
 public class MilvusCluster {
     private String clusterId;
     private String uri;
@@ -40,6 +42,8 @@ public class MilvusCluster {
      * @param cluster the gRPC cluster
      * @return the converted cluster
      */
+
+
     public static MilvusCluster fromGRPC(io.milvus.grpc.MilvusCluster cluster) {
         io.milvus.grpc.ConnectionParam connectionParam = cluster.getConnectionParam();
         return MilvusCluster.builder()
@@ -55,6 +59,8 @@ public class MilvusCluster {
      *
      * @return the gRPC cluster
      */
+
+
     public io.milvus.grpc.MilvusCluster toGRPC() {
         io.milvus.grpc.ConnectionParam.Builder connectionParamBuilder = io.milvus.grpc.ConnectionParam.newBuilder()
                 .setUri(this.uri);
@@ -83,6 +89,8 @@ public class MilvusCluster {
      *
      * @return the cluster ID
      */
+
+
     public String getClusterId() {
         return clusterId;
     }
@@ -92,6 +100,8 @@ public class MilvusCluster {
      *
      * @param clusterId the cluster ID
      */
+
+
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
@@ -101,6 +111,8 @@ public class MilvusCluster {
      *
      * @return the connection URI
      */
+
+
     public String getUri() {
         return uri;
     }
@@ -110,6 +122,8 @@ public class MilvusCluster {
      *
      * @param uri the connection URI
      */
+
+
     public void setUri(String uri) {
         this.uri = uri;
     }
@@ -119,6 +133,8 @@ public class MilvusCluster {
      *
      * @return the access token
      */
+
+
     public String getToken() {
         return token;
     }
@@ -128,6 +144,8 @@ public class MilvusCluster {
      *
      * @param token the access token
      */
+
+
     public void setToken(String token) {
         this.token = token;
     }
@@ -137,6 +155,8 @@ public class MilvusCluster {
      *
      * @return the physical channels
      */
+
+
     public List<String> getPchannels() {
         return pchannels;
     }
@@ -146,6 +166,8 @@ public class MilvusCluster {
      *
      * @param pchannels the physical channels
      */
+
+
     public void setPchannels(List<String> pchannels) {
         this.pchannels = pchannels;
     }
@@ -165,6 +187,8 @@ public class MilvusCluster {
      *
      * @return the builder
      */
+
+
     public static MilvusClusterBuilder builder() {
         return new MilvusClusterBuilder();
     }
@@ -172,6 +196,8 @@ public class MilvusCluster {
     /**
      * Builder for {@link MilvusCluster}.
      */
+
+
     public static class MilvusClusterBuilder {
         private String clusterId;
         private String uri;
@@ -184,6 +210,8 @@ public class MilvusCluster {
          * @param clusterId the cluster ID
          * @return this builder
          */
+
+
         public MilvusClusterBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
@@ -195,6 +223,8 @@ public class MilvusCluster {
          * @param uri the connection URI
          * @return this builder
          */
+
+
         public MilvusClusterBuilder uri(String uri) {
             this.uri = uri;
             return this;
@@ -206,6 +236,8 @@ public class MilvusCluster {
          * @param token the access token
          * @return this builder
          */
+
+
         public MilvusClusterBuilder token(String token) {
             this.token = token;
             return this;
@@ -217,6 +249,8 @@ public class MilvusCluster {
          * @param pchannels the physical channels
          * @return this builder
          */
+
+
         public MilvusClusterBuilder pchannels(List<String> pchannels) {
             this.pchannels = pchannels;
             return this;
@@ -227,6 +261,8 @@ public class MilvusCluster {
          *
          * @return the cluster
          */
+
+
         public MilvusCluster build() {
             return new MilvusCluster(this);
         }

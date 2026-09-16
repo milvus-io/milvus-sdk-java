@@ -37,6 +37,8 @@ import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
  * starts a background {@link TopologyRefresher}. When the topology changes, the stub swaps to a
  * new client for the new primary endpoint and notifies the registered primary-change callback.
  */
+
+
 public class GlobalStub {
     private static final Logger logger = LoggerFactory.getLogger(GlobalStub.class);
 
@@ -92,6 +94,8 @@ public class GlobalStub {
      *
      * @return the primary client
      */
+
+
     public MilvusClientV2 getPrimaryClient() {
         return innerClient;
     }
@@ -101,6 +105,8 @@ public class GlobalStub {
      *
      * @return the current topology
      */
+
+
     public GlobalTopology getTopology() {
         return topology;
     }
@@ -110,6 +116,8 @@ public class GlobalStub {
      *
      * @return the primary endpoint
      */
+
+
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
     }
@@ -117,6 +125,8 @@ public class GlobalStub {
     /**
      * Triggers an immediate topology refresh, which may swap the primary client.
      */
+
+
     public void triggerRefresh() {
         if (refresher != null) {
             refresher.triggerRefresh();
@@ -126,7 +136,10 @@ public class GlobalStub {
     /**
      * Retargets primary-change publication when a prepared global connection is adopted,
      * and publishes the current primary under the same topology lock.
+     * @param callback the consumer notified when the primary cluster changes
      */
+
+
     public void retargetPrimaryChange(Consumer<MilvusClientV2> callback) {
         if (callback == null) {
             throw new IllegalArgumentException("primary-change callback is required");
@@ -149,6 +162,8 @@ public class GlobalStub {
     /**
      * Stops the topology refresher and closes the current primary client.
      */
+
+
     public void close() {
         lock.lock();
         try {

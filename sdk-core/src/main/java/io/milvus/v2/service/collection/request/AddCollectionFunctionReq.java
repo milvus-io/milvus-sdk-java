@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code addCollectionFunction} API.
  */
+
+
 public class AddCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
@@ -38,6 +40,8 @@ public class AddCollectionFunctionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -47,6 +51,8 @@ public class AddCollectionFunctionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -56,6 +62,8 @@ public class AddCollectionFunctionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -65,6 +73,8 @@ public class AddCollectionFunctionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -74,6 +84,8 @@ public class AddCollectionFunctionReq {
      *
      * @return the function
      */
+
+
     public CreateCollectionReq.Function getFunction() {
         return function;
     }
@@ -92,9 +104,16 @@ public class AddCollectionFunctionReq {
      *
      * @return the builder
      */
+
+
     public static AddCollectionFunctionReqBuilder builder() {
         return new AddCollectionFunctionReqBuilder();
     }
+
+    /**
+     * Builder for {@link AddCollectionFunctionReq} class.
+     */
+
 
     public static class AddCollectionFunctionReqBuilder {
         private String collectionName = "";
@@ -110,6 +129,8 @@ public class AddCollectionFunctionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AddCollectionFunctionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -121,6 +142,8 @@ public class AddCollectionFunctionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AddCollectionFunctionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -132,6 +155,8 @@ public class AddCollectionFunctionReq {
          * @param function the function
          * @return this builder
          */
+
+
         public AddCollectionFunctionReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
             return this;
@@ -142,6 +167,8 @@ public class AddCollectionFunctionReq {
          *
          * @return the request
          */
+
+
         public AddCollectionFunctionReq build() {
             return new AddCollectionFunctionReq(this);
         }

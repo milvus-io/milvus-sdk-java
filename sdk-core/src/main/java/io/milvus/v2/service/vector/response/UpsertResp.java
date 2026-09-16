@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code upsert} API.
  */
+
+
 public class UpsertResp {
     private long upsertCnt;
 
@@ -46,6 +48,7 @@ public class UpsertResp {
      *
      * @return the upsert count
      */
+
     public long getUpsertCnt() {
         return upsertCnt;
     }
@@ -55,6 +58,8 @@ public class UpsertResp {
      *
      * @param upsertCnt the upsert count
      */
+
+
     public void setUpsertCnt(long upsertCnt) {
         this.upsertCnt = upsertCnt;
     }
@@ -64,6 +69,8 @@ public class UpsertResp {
      *
      * @return the upserted primary keys
      */
+
+
     public List<Object> getPrimaryKeys() {
         return primaryKeys;
     }
@@ -73,6 +80,8 @@ public class UpsertResp {
      *
      * @param primaryKeys the upserted primary keys
      */
+
+
     public void setPrimaryKeys(List<Object> primaryKeys) {
         this.primaryKeys = primaryKeys;
     }
@@ -82,6 +91,8 @@ public class UpsertResp {
      *
      * @return the cost
      */
+
+
     public Long getCost() {
         return cost;
     }
@@ -91,6 +102,8 @@ public class UpsertResp {
      *
      * @param cost the cost
      */
+
+
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -109,9 +122,16 @@ public class UpsertResp {
      *
      * @return the builder
      */
+
+
     public static UpsertRespBuilder builder() {
         return new UpsertRespBuilder();
     }
+
+    /**
+     * Builder for {@link UpsertResp} class.
+     */
+
 
     public static class UpsertRespBuilder {
         private long upsertCnt;
@@ -127,6 +147,8 @@ public class UpsertResp {
          * @param upsertCnt the upsert count
          * @return this builder
          */
+
+
         public UpsertRespBuilder upsertCnt(long upsertCnt) {
             this.upsertCnt = upsertCnt;
             return this;
@@ -138,6 +160,8 @@ public class UpsertResp {
          * @param primaryKeys the upserted primary keys
          * @return this builder
          */
+
+
         public UpsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
@@ -149,6 +173,8 @@ public class UpsertResp {
          * @param cost the cost
          * @return this builder
          */
+
+
         public UpsertRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
@@ -159,6 +185,8 @@ public class UpsertResp {
          *
          * @return the response
          */
+
+
         public UpsertResp build() {
             return new UpsertResp(this);
         }

@@ -25,6 +25,8 @@ import java.util.Map;
 /**
  * Response of the {@code getCollectionStats} API, holding the statistics of a collection.
  */
+
+
 public class GetCollectionStatsResp {
     private Long numOfEntities;
     private Map<String, String> stats;
@@ -39,6 +41,8 @@ public class GetCollectionStatsResp {
      *
      * @return the builder
      */
+
+
     public static GetCollectionStatsRespBuilder builder() {
         return new GetCollectionStatsRespBuilder();
     }
@@ -49,6 +53,7 @@ public class GetCollectionStatsResp {
      *
      * @return the number of entities
      */
+
     public Long getNumOfEntities() {
         return numOfEntities;
     }
@@ -58,6 +63,8 @@ public class GetCollectionStatsResp {
      *
      * @return the collection stats
      */
+
+
     public Map<String, String> getStats() {
         return stats;
     }
@@ -68,6 +75,7 @@ public class GetCollectionStatsResp {
      *
      * @param numOfEntities the number of entities
      */
+
     public void setNumOfEntities(Long numOfEntities) {
         this.numOfEntities = numOfEntities;
     }
@@ -77,6 +85,8 @@ public class GetCollectionStatsResp {
      *
      * @param stats the collection stats
      */
+
+
     public void setStats(Map<String, String> stats) {
         this.stats = stats;
     }
@@ -89,6 +99,11 @@ public class GetCollectionStatsResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetCollectionStatsResp} class.
+     */
+
+
     public static class GetCollectionStatsRespBuilder {
         private Long numOfEntities;
         private Map<String, String> stats = new HashMap<>();
@@ -99,6 +114,8 @@ public class GetCollectionStatsResp {
          * @param numOfEntities the number of entities
          * @return this builder
          */
+
+
         public GetCollectionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
             return this;
@@ -110,6 +127,8 @@ public class GetCollectionStatsResp {
          * @param stats the collection stats
          * @return this builder
          */
+
+
         public GetCollectionStatsRespBuilder stats(Map<String, String> stats) {
             this.stats = stats;
             return this;
@@ -120,6 +139,8 @@ public class GetCollectionStatsResp {
          *
          * @return the response
          */
+
+
         public GetCollectionStatsResp build() {
             return new GetCollectionStatsResp(this);
         }

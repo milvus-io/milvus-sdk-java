@@ -22,6 +22,8 @@ package io.milvus.v2.service.cdc.request;
 /**
  * Request parameters for the {@code getReplicateInfo} CDC API.
  */
+
+
 public class GetReplicateInfoReq {
     private String sourceClusterId;
     private String targetPchannel;
@@ -31,6 +33,8 @@ public class GetReplicateInfoReq {
      *
      * @return the builder
      */
+
+
     public static GetReplicateInfoReqBuilder builder() {
         return new GetReplicateInfoReqBuilder();
     }
@@ -45,6 +49,8 @@ public class GetReplicateInfoReq {
      *
      * @return the source cluster ID
      */
+
+
     public String getSourceClusterId() {
         return sourceClusterId;
     }
@@ -54,6 +60,8 @@ public class GetReplicateInfoReq {
      *
      * @param sourceClusterId the source cluster ID
      */
+
+
     public void setSourceClusterId(String sourceClusterId) {
         this.sourceClusterId = sourceClusterId;
     }
@@ -63,6 +71,8 @@ public class GetReplicateInfoReq {
      *
      * @return the target physical channel
      */
+
+
     public String getTargetPchannel() {
         return targetPchannel;
     }
@@ -72,6 +82,8 @@ public class GetReplicateInfoReq {
      *
      * @param targetPchannel the target physical channel
      */
+
+
     public void setTargetPchannel(String targetPchannel) {
         this.targetPchannel = targetPchannel;
     }
@@ -84,6 +96,11 @@ public class GetReplicateInfoReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetReplicateInfoReq} class.
+     */
+
+
     public static class GetReplicateInfoReqBuilder {
         private String sourceClusterId;
         private String targetPchannel;
@@ -94,6 +111,8 @@ public class GetReplicateInfoReq {
          * @param sourceClusterId the source cluster ID
          * @return this builder
          */
+
+
         public GetReplicateInfoReqBuilder sourceClusterId(String sourceClusterId) {
             this.sourceClusterId = sourceClusterId;
             return this;
@@ -105,6 +124,8 @@ public class GetReplicateInfoReq {
          * @param targetPchannel the target physical channel
          * @return this builder
          */
+
+
         public GetReplicateInfoReqBuilder targetPchannel(String targetPchannel) {
             this.targetPchannel = targetPchannel;
             return this;
@@ -115,6 +136,8 @@ public class GetReplicateInfoReq {
          *
          * @return the request
          */
+
+
         public GetReplicateInfoReq build() {
             return new GetReplicateInfoReq(this);
         }

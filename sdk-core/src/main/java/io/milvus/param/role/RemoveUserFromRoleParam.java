@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the removeUserFromRole API.
+ */
+
+
 public class RemoveUserFromRoleParam {
     private final String userName;
 
@@ -35,13 +40,34 @@ public class RemoveUserFromRoleParam {
         this.roleName = builder.roleName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static RemoveUserFromRoleParam.Builder newBuilder() {
         return new RemoveUserFromRoleParam.Builder();
     }
 
+    /**
+     * Returns the userName.
+     *
+     * @return the userName
+     */
+
+
     public String getUserName() {
         return userName;
     }
+
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
 
     public String getRoleName() {
         return roleName;
@@ -58,6 +84,8 @@ public class RemoveUserFromRoleParam {
     /**
      * Builder for {@link RemoveUserFromRoleParam} class.
      */
+
+
     public static final class Builder {
         private String userName;
         private String roleName;
@@ -71,6 +99,8 @@ public class RemoveUserFromRoleParam {
          * @param userName userName
          * @return <code>Builder</code>
          */
+
+
         public RemoveUserFromRoleParam.Builder withUserName(String userName) {
             if (userName == null) {
                 throw new IllegalArgumentException("User name cannot be null");
@@ -85,6 +115,8 @@ public class RemoveUserFromRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public RemoveUserFromRoleParam.Builder withRoleName(String roleName) {
             if (roleName == null) {
                 throw new IllegalArgumentException("Role name cannot be null");
@@ -98,6 +130,8 @@ public class RemoveUserFromRoleParam {
          *
          * @return {@link RemoveUserFromRoleParam}
          */
+
+
         public RemoveUserFromRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(userName, "UserName");
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");

@@ -42,6 +42,12 @@ import java.util.List;
 
 import static io.milvus.param.Constant.*;
 
+/**
+ * Iterates over query results in batches using a session timestamp and primary-key based cursor,
+ * supporting offset seeking, resumable cursors, and element-filter iteration.
+ */
+
+
 public class QueryIterator {
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private final IteratorCache iteratorCache;
@@ -63,6 +69,16 @@ public class QueryIterator {
     private final VectorUtils vectorUtils;
     private final String clusterId;
     private long sessionTs = 0;
+
+    /**
+     * Constructs a new QueryIterator.
+     *
+     * @param queryIteratorParam the query iterator parameters
+     * @param blockingStub the gRPC blocking stub
+     * @param primaryField the primary field of the collection
+     * @param collectionId the collection id
+     */
+
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
                          RpcStubWrapper blockingStub,
@@ -89,12 +105,33 @@ public class QueryIterator {
         seek();
     }
 
+    /**
+     * Constructs a new QueryIterator.
+     *
+     * @param queryIteratorReq the query iterator request
+     * @param blockingStub the gRPC blocking stub
+     * @param primaryField the primary field of the collection
+     * @param collectionId the collection id
+     */
+
+
     public QueryIterator(QueryIteratorReq queryIteratorReq,
                          RpcStubWrapper blockingStub,
                          CreateCollectionReq.FieldSchema primaryField,
                          long collectionId) {
         this(queryIteratorReq, blockingStub, primaryField, collectionId, null);
     }
+
+    /**
+     * Constructs a new QueryIterator.
+     *
+     * @param queryIteratorReq the query iterator request
+     * @param blockingStub the gRPC blocking stub
+     * @param primaryField the primary field of the collection
+     * @param collectionId the collection id
+     * @param clusterId the cluster id
+     */
+
 
     public QueryIterator(QueryIteratorReq queryIteratorReq,
                          RpcStubWrapper blockingStub,
@@ -164,6 +201,13 @@ public class QueryIterator {
         offset = 0;
     }
 
+    /**
+     * Returns the next batch of rows.
+     *
+     * @return the next batch of rows
+     */
+
+
     public List<QueryResultsWrapper.RowRecord> next() {
         if (limit != UNLIMITED && returnedCount >= limit) {
             iteratorCache.releaseCache(cacheIdInUse);
@@ -191,6 +235,11 @@ public class QueryIterator {
         return ret;
     }
 
+    /**
+     * Closes the query iterator and releases its resources.
+     */
+
+
     public void close() {
         iteratorCache.releaseCache(cacheIdInUse);
     }
@@ -199,7 +248,11 @@ public class QueryIterator {
      * Capture the current iterator position as a resumable cursor. The cursor holds the
      * session timestamp, the last primary key returned, and (for element-filter iterators)
      * the last matched element offset, so pagination can continue in a new iterator.
+     *
+     * @return the resumable cursor capturing the current iterator position
      */
+
+
     public QueryIteratorCursor getCursor() {
         QueryIteratorCursor.QueryIteratorCursorBuilder builder = QueryIteratorCursor.builder()
                 .sessionTs(sessionTs)

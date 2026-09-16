@@ -21,6 +21,13 @@ package io.milvus.bulkwriter.request.describe;
 
 import java.io.Serializable;
 
+/**
+ * Base request class for describing an import job.
+ *
+ * <p>Holds the API key required to query the status of an import job.</p>
+ */
+
+
 public class BaseDescribeImportRequest implements Serializable {
     private static final long serialVersionUID = -787626534606813089L;
 
@@ -29,9 +36,19 @@ public class BaseDescribeImportRequest implements Serializable {
      * If you are using Milvus directly, this parameter should be set to your userName:password.
      */
     private String apiKey;
+    /**
+     * Creates a new BaseDescribeImportRequest.
+     */
+
 
     public BaseDescribeImportRequest() {
     }
+    /**
+     * Creates a new BaseDescribeImportRequest.
+     *
+     * @param apiKey the apiKey
+     */
+
 
     public BaseDescribeImportRequest(String apiKey) {
         this.apiKey = apiKey;
@@ -40,10 +57,22 @@ public class BaseDescribeImportRequest implements Serializable {
     protected BaseDescribeImportRequest(BaseDescribeImportRequestBuilder<?> builder) {
         this.apiKey = builder.apiKey;
     }
+    /**
+     * Returns the apiKey.
+     *
+     * @return the apiKey
+     */
+
 
     public String getApiKey() {
         return apiKey;
     }
+    /**
+     * Sets the apiKey.
+     *
+     * @param apiKey the apiKey
+     */
+
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
@@ -55,10 +84,21 @@ public class BaseDescribeImportRequest implements Serializable {
                 "apiKey='" + apiKey + '\'' +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static BaseDescribeImportRequestBuilder<?> builder() {
         return new BaseDescribeImportRequestBuilder<>();
     }
+
+    /**
+     * Builder for {@link BaseDescribeImportRequest} class.
+     */
+
 
     public static class BaseDescribeImportRequestBuilder<T extends BaseDescribeImportRequestBuilder<T>> {
         private String apiKey = "";
@@ -66,11 +106,24 @@ public class BaseDescribeImportRequest implements Serializable {
         protected BaseDescribeImportRequestBuilder() {
             this.apiKey = "";
         }
+        /**
+         * Sets the apiKey.
+         *
+         * @param apiKey the apiKey
+         * @return this builder
+         */
+
 
         public T apiKey(String apiKey) {
             this.apiKey = apiKey;
             return (T) this;
         }
+        /**
+         * Builds the BaseDescribeImportRequest.
+         *
+         * @return the built BaseDescribeImportRequest
+         */
+
 
         public BaseDescribeImportRequest build() {
             return new BaseDescribeImportRequest(this);

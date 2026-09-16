@@ -11,6 +11,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code searchIterator} API.
  */
+
+
 public class SearchIteratorReq {
     private String databaseName;
     private String collectionName;
@@ -61,6 +63,8 @@ public class SearchIteratorReq {
      *
      * @return the builder
      */
+
+
     public static SearchIteratorReqBuilder builder() {
         return new SearchIteratorReqBuilder();
     }
@@ -70,6 +74,8 @@ public class SearchIteratorReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -79,6 +85,8 @@ public class SearchIteratorReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -88,6 +96,8 @@ public class SearchIteratorReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -97,6 +107,8 @@ public class SearchIteratorReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -104,6 +116,7 @@ public class SearchIteratorReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @return the cluster ID
      */
     @Deprecated
     public String getClusterId() {
@@ -113,6 +126,7 @@ public class SearchIteratorReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @param clusterId the cluster ID
      */
     @Deprecated
     public void setClusterId(String clusterId) {
@@ -124,6 +138,8 @@ public class SearchIteratorReq {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -133,6 +149,8 @@ public class SearchIteratorReq {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -142,6 +160,8 @@ public class SearchIteratorReq {
      *
      * @return the metric type
      */
+
+
     public IndexParam.MetricType getMetricType() {
         return metricType;
     }
@@ -151,6 +171,8 @@ public class SearchIteratorReq {
      *
      * @param metricType the metric type
      */
+
+
     public void setMetricType(IndexParam.MetricType metricType) {
         this.metricType = metricType;
     }
@@ -160,6 +182,8 @@ public class SearchIteratorReq {
      *
      * @return the vector field name
      */
+
+
     public String getVectorFieldName() {
         return vectorFieldName;
     }
@@ -169,6 +193,8 @@ public class SearchIteratorReq {
      *
      * @param vectorFieldName the vector field name
      */
+
+
     public void setVectorFieldName(String vectorFieldName) {
         this.vectorFieldName = vectorFieldName;
     }
@@ -201,6 +227,8 @@ public class SearchIteratorReq {
      *
      * @return the limit value
      */
+
+
     public long getLimit() {
         return limit;
     }
@@ -210,6 +238,8 @@ public class SearchIteratorReq {
      *
      * @param limit the limit value
      */
+
+
     public void setLimit(long limit) {
         this.limit = limit;
         this.topK = (int) limit;
@@ -220,6 +250,8 @@ public class SearchIteratorReq {
      *
      * @return the filter expression
      */
+
+
     public String getExpr() {
         return expr;
     }
@@ -229,6 +261,8 @@ public class SearchIteratorReq {
      *
      * @param expr the filter expression
      */
+
+
     public void setExpr(String expr) {
         this.expr = expr;
     }
@@ -238,6 +272,8 @@ public class SearchIteratorReq {
      *
      * @return the output fields
      */
+
+
     public List<String> getOutputFields() {
         return outputFields;
     }
@@ -247,6 +283,8 @@ public class SearchIteratorReq {
      *
      * @param outputFields the output fields
      */
+
+
     public void setOutputFields(List<String> outputFields) {
         this.outputFields = outputFields;
     }
@@ -256,6 +294,8 @@ public class SearchIteratorReq {
      *
      * @return the query vectors
      */
+
+
     public List<BaseVector> getVectors() {
         return vectors;
     }
@@ -265,6 +305,8 @@ public class SearchIteratorReq {
      *
      * @param vectors the query vectors
      */
+
+
     public void setVectors(List<BaseVector> vectors) {
         this.vectors = vectors;
     }
@@ -274,6 +316,8 @@ public class SearchIteratorReq {
      *
      * @return the round decimal value
      */
+
+
     public int getRoundDecimal() {
         return roundDecimal;
     }
@@ -283,6 +327,8 @@ public class SearchIteratorReq {
      *
      * @param roundDecimal the round decimal value
      */
+
+
     public void setRoundDecimal(int roundDecimal) {
         this.roundDecimal = roundDecimal;
     }
@@ -292,6 +338,8 @@ public class SearchIteratorReq {
      *
      * @return the search parameters
      */
+
+
     public String getParams() {
         return params;
     }
@@ -301,6 +349,8 @@ public class SearchIteratorReq {
      *
      * @param params the search parameters
      */
+
+
     public void setParams(String params) {
         this.params = params;
     }
@@ -310,6 +360,8 @@ public class SearchIteratorReq {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -319,6 +371,8 @@ public class SearchIteratorReq {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -328,6 +382,8 @@ public class SearchIteratorReq {
      *
      * @return {@code true} if growing segments are ignored
      */
+
+
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
@@ -337,6 +393,8 @@ public class SearchIteratorReq {
      *
      * @param ignoreGrowing {@code true} if growing segments are ignored
      */
+
+
     public void setIgnoreGrowing(boolean ignoreGrowing) {
         this.ignoreGrowing = ignoreGrowing;
     }
@@ -346,6 +404,8 @@ public class SearchIteratorReq {
      *
      * @return the group-by field name
      */
+
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
@@ -355,6 +415,8 @@ public class SearchIteratorReq {
      *
      * @param groupByFieldName the group-by field name
      */
+
+
     public void setGroupByFieldName(String groupByFieldName) {
         this.groupByFieldName = groupByFieldName;
     }
@@ -364,6 +426,8 @@ public class SearchIteratorReq {
      *
      * @return the batch size
      */
+
+
     public long getBatchSize() {
         return batchSize;
     }
@@ -373,6 +437,8 @@ public class SearchIteratorReq {
      *
      * @param batchSize the batch size
      */
+
+
     public void setBatchSize(long batchSize) {
         this.batchSize = batchSize;
     }
@@ -400,6 +466,11 @@ public class SearchIteratorReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link SearchIteratorReq} class.
+     */
+
+
     public static class SearchIteratorReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -425,6 +496,8 @@ public class SearchIteratorReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -436,6 +509,8 @@ public class SearchIteratorReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -444,6 +519,8 @@ public class SearchIteratorReq {
         /**
          * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
          * {@code MilvusClientV2Session}.
+         * @param clusterId the cluster ID
+         * @return this builder
          */
         @Deprecated
         public SearchIteratorReqBuilder clusterId(String clusterId) {
@@ -457,6 +534,8 @@ public class SearchIteratorReq {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -468,6 +547,8 @@ public class SearchIteratorReq {
          * @param metricType the metric type
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
             return this;
@@ -479,12 +560,29 @@ public class SearchIteratorReq {
          * @param vectorFieldName the vector field name
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
         }
 
+        /**
+         * Sets the maximum number of results to return.
+         *
+         * @deprecated replaced by {@link #limit(long)}. {@code topK} and {@code limit} must be the
+         * same value.
+         * @param val the topK value
+         * @return this builder
+         */
         // topK is deprecated, topK and limit must be the same value
+        /**
+         * Sets the top-k value, keeping it in sync with the limit.
+         *
+         * @param val the top-k value
+         * @return this builder
+         * @deprecated use {@link #limit(long)} instead; topK and limit must be the same value
+         */
         @Deprecated
         public SearchIteratorReqBuilder topK(int val) {
             this.topK = val;
@@ -498,6 +596,8 @@ public class SearchIteratorReq {
          * @param val the limit value
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder limit(long val) {
             this.topK = (int) val;
             this.limit = val;
@@ -510,6 +610,8 @@ public class SearchIteratorReq {
          * @param expr the filter expression
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder expr(String expr) {
             this.expr = expr;
             return this;
@@ -521,6 +623,8 @@ public class SearchIteratorReq {
          * @param outputFields the output fields
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
@@ -532,6 +636,8 @@ public class SearchIteratorReq {
          * @param vectors the query vectors
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder vectors(List<BaseVector> vectors) {
             this.vectors = vectors;
             return this;
@@ -543,6 +649,8 @@ public class SearchIteratorReq {
          * @param roundDecimal the round decimal value
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder roundDecimal(int roundDecimal) {
             this.roundDecimal = roundDecimal;
             return this;
@@ -554,6 +662,8 @@ public class SearchIteratorReq {
          * @param params the search parameters
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder params(String params) {
             this.params = params;
             return this;
@@ -565,6 +675,8 @@ public class SearchIteratorReq {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -576,6 +688,8 @@ public class SearchIteratorReq {
          * @param ignoreGrowing {@code true} if growing segments are ignored
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
@@ -587,6 +701,8 @@ public class SearchIteratorReq {
          * @param groupByFieldName the group-by field name
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
@@ -598,6 +714,8 @@ public class SearchIteratorReq {
          * @param batchSize the batch size
          * @return this builder
          */
+
+
         public SearchIteratorReqBuilder batchSize(long batchSize) {
             this.batchSize = batchSize;
             return this;
@@ -608,6 +726,8 @@ public class SearchIteratorReq {
          *
          * @return the request
          */
+
+
         public SearchIteratorReq build() {
             return new SearchIteratorReq(this);
         }

@@ -23,6 +23,8 @@ import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
  * quotes string values and serializes {@link java.util.List} and {@link java.util.Map} values as
  * JSON. Separator and null placeholder values are taken from the supplied configuration.
  */
+
+
 public class CSVFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(CSVFileWriter.class);
 
@@ -41,6 +43,8 @@ public class CSVFileWriter implements FormatFileWriter {
      *               {@code nullkey} (placeholder for null values)
      * @throws IOException if the CSV data file cannot be created
      */
+
+
     public CSVFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix, Map<String, Object> config) throws IOException {
         this.collectionSchema = collectionSchema;
         this.config = config;

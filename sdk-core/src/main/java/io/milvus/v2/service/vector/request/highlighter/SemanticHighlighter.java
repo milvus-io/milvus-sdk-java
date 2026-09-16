@@ -30,6 +30,8 @@ import java.util.Map;
  * returned text fields that are semantically relevant to the queries, using an embedding
  * model.
  */
+
+
 public class SemanticHighlighter implements Highlighter {
     private final List<String> queries;
     private final List<String> inputFields;
@@ -45,6 +47,8 @@ public class SemanticHighlighter implements Highlighter {
      *
      * @param builder the builder holding the highlighter settings
      */
+
+
     public SemanticHighlighter(SemanticHighlighterBuilder builder) {
         this.queries = builder.queries;
         this.inputFields = builder.inputFields;
@@ -104,6 +108,8 @@ public class SemanticHighlighter implements Highlighter {
     /**
      * Builder for {@link SemanticHighlighter}.
      */
+
+
     public static class SemanticHighlighterBuilder {
         private List<String> queries;
         private List<String> inputFields;
@@ -123,6 +129,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param queries the queries
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder queries(List<String> queries) {
             this.queries = queries;
             return this;
@@ -134,6 +142,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param q the query text
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder addQuery(String q) {
             if (this.queries == null) this.queries = new ArrayList<>();
             this.queries.add(q);
@@ -146,6 +156,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param inputFields the input fields
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder inputFields(List<String> inputFields) {
             this.inputFields = inputFields;
             return this;
@@ -157,6 +169,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param f the input field name
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder addInputField(String f) {
             if (this.inputFields == null) this.inputFields = new ArrayList<>();
             this.inputFields.add(f);
@@ -169,6 +183,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param preTags the pre-tags
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder preTags(List<String> preTags) {
             this.preTags = preTags;
             return this;
@@ -180,6 +196,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param tag the pre-tag
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder addPreTag(String tag) {
             if (this.preTags == null) this.preTags = new ArrayList<>();
             this.preTags.add(tag);
@@ -192,6 +210,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param postTags the post-tags
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder postTags(List<String> postTags) {
             this.postTags = postTags;
             return this;
@@ -203,6 +223,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param tag the post-tag
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder addPostTag(String tag) {
             if (this.postTags == null) this.postTags = new ArrayList<>();
             this.postTags.add(tag);
@@ -215,6 +237,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param threshold the relevance threshold
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder threshold(Float threshold) {
             this.threshold = threshold;
             return this;
@@ -226,6 +250,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param highlightOnly {@code true} to return only highlighted passages
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder highlightOnly(Boolean highlightOnly) {
             this.highlightOnly = highlightOnly;
             return this;
@@ -237,6 +263,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param modelDeploymentID the model deployment ID
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder modelDeploymentID(String modelDeploymentID) {
             this.modelDeploymentID = modelDeploymentID;
             return this;
@@ -248,6 +276,8 @@ public class SemanticHighlighter implements Highlighter {
          * @param size the maximum batch size
          * @return this builder
          */
+
+
         public SemanticHighlighterBuilder maxClientBatchSize(Integer size) {
             this.maxClientBatchSize = size;
             return this;
@@ -258,6 +288,8 @@ public class SemanticHighlighter implements Highlighter {
          *
          * @return the built highlighter
          */
+
+
         public SemanticHighlighter build() {
             return new SemanticHighlighter(this);
         }
@@ -268,6 +300,8 @@ public class SemanticHighlighter implements Highlighter {
      *
      * @return a new builder
      */
+
+
     public static SemanticHighlighterBuilder builder() {
         return new SemanticHighlighterBuilder();
     }

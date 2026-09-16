@@ -31,6 +31,8 @@ import java.util.List;
  * A collection of vectors that is mainly used for searching vectors stored in a struct
  * field. All vectors in the list must share the same vector type.
  */
+
+
 public class EmbeddingList implements BaseVector {
     private List<BaseVector> data = new ArrayList<>();
 
@@ -41,6 +43,8 @@ public class EmbeddingList implements BaseVector {
      * @throws MilvusClientException if the vector type differs from the type of the
      *                               vectors already in the list
      */
+
+
     public void add(BaseVector vector) {
         if (!data.isEmpty() && data.get(0).getPlaceholderType() != vector.getPlaceholderType()) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Not allow to add different types of vector");

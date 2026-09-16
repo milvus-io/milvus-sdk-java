@@ -10,6 +10,8 @@ import java.time.Duration;
  * small client-side pool: one minimum idle client per key, a maximum of five idle clients per key
  * and a maximum of 1000 total clients.
  */
+
+
 public class PoolConfig {
     private int maxIdlePerKey;
     private int minIdlePerKey;
@@ -40,6 +42,8 @@ public class PoolConfig {
      *
      * @return a new builder
      */
+
+
     public static Builder builder() {
         return new Builder();
     }
@@ -50,6 +54,7 @@ public class PoolConfig {
      *
      * @return the max idle clients per key
      */
+
     public int getMaxIdlePerKey() {
         return maxIdlePerKey;
     }
@@ -59,6 +64,8 @@ public class PoolConfig {
      *
      * @return the min idle clients per key
      */
+
+
     public int getMinIdlePerKey() {
         return minIdlePerKey;
     }
@@ -68,6 +75,8 @@ public class PoolConfig {
      *
      * @return the max total clients per key
      */
+
+
     public int getMaxTotalPerKey() {
         return maxTotalPerKey;
     }
@@ -77,6 +86,8 @@ public class PoolConfig {
      *
      * @return the max total clients
      */
+
+
     public int getMaxTotal() {
         return maxTotal;
     }
@@ -86,6 +97,8 @@ public class PoolConfig {
      *
      * @return {@code true} if calls block when the pool is exhausted
      */
+
+
     public boolean isBlockWhenExhausted() {
         return blockWhenExhausted;
     }
@@ -95,6 +108,8 @@ public class PoolConfig {
      *
      * @return the max block wait duration
      */
+
+
     public Duration getMaxBlockWaitDuration() {
         return maxBlockWaitDuration;
     }
@@ -104,6 +119,8 @@ public class PoolConfig {
      *
      * @return the eviction polling interval
      */
+
+
     public Duration getEvictionPollingInterval() {
         return evictionPollingInterval;
     }
@@ -113,6 +130,8 @@ public class PoolConfig {
      *
      * @return the min evictable idle duration
      */
+
+
     public Duration getMinEvictableIdleDuration() {
         return minEvictableIdleDuration;
     }
@@ -122,6 +141,8 @@ public class PoolConfig {
      *
      * @return {@code true} if clients are tested on borrow
      */
+
+
     public boolean isTestOnBorrow() {
         return testOnBorrow;
     }
@@ -131,6 +152,8 @@ public class PoolConfig {
      *
      * @return {@code true} if clients are tested on return
      */
+
+
     public boolean isTestOnReturn() {
         return testOnReturn;
     }
@@ -141,6 +164,7 @@ public class PoolConfig {
      *
      * @param maxIdlePerKey the max idle clients per key
      */
+
     public void setMaxIdlePerKey(int maxIdlePerKey) {
         this.maxIdlePerKey = maxIdlePerKey;
     }
@@ -150,6 +174,8 @@ public class PoolConfig {
      *
      * @param minIdlePerKey the min idle clients per key
      */
+
+
     public void setMinIdlePerKey(int minIdlePerKey) {
         this.minIdlePerKey = minIdlePerKey;
     }
@@ -159,6 +185,8 @@ public class PoolConfig {
      *
      * @param maxTotalPerKey the max total clients per key
      */
+
+
     public void setMaxTotalPerKey(int maxTotalPerKey) {
         this.maxTotalPerKey = maxTotalPerKey;
     }
@@ -168,6 +196,8 @@ public class PoolConfig {
      *
      * @param maxTotal the max total clients
      */
+
+
     public void setMaxTotal(int maxTotal) {
         this.maxTotal = maxTotal;
     }
@@ -177,6 +207,8 @@ public class PoolConfig {
      *
      * @param blockWhenExhausted {@code true} to block when the pool is exhausted
      */
+
+
     public void setBlockWhenExhausted(boolean blockWhenExhausted) {
         this.blockWhenExhausted = blockWhenExhausted;
     }
@@ -186,6 +218,8 @@ public class PoolConfig {
      *
      * @param maxBlockWaitDuration the max block wait duration
      */
+
+
     public void setMaxBlockWaitDuration(Duration maxBlockWaitDuration) {
         this.maxBlockWaitDuration = maxBlockWaitDuration;
     }
@@ -195,6 +229,8 @@ public class PoolConfig {
      *
      * @param evictionPollingInterval the eviction polling interval
      */
+
+
     public void setEvictionPollingInterval(Duration evictionPollingInterval) {
         this.evictionPollingInterval = evictionPollingInterval;
     }
@@ -204,6 +240,8 @@ public class PoolConfig {
      *
      * @param minEvictableIdleDuration the min evictable idle duration
      */
+
+
     public void setMinEvictableIdleDuration(Duration minEvictableIdleDuration) {
         this.minEvictableIdleDuration = minEvictableIdleDuration;
     }
@@ -213,6 +251,8 @@ public class PoolConfig {
      *
      * @param testOnBorrow {@code true} to test clients on borrow
      */
+
+
     public void setTestOnBorrow(boolean testOnBorrow) {
         this.testOnBorrow = testOnBorrow;
     }
@@ -222,6 +262,8 @@ public class PoolConfig {
      *
      * @param testOnReturn {@code true} to test clients on return
      */
+
+
     public void setTestOnReturn(boolean testOnReturn) {
         this.testOnReturn = testOnReturn;
     }
@@ -245,6 +287,8 @@ public class PoolConfig {
     /**
      * Builder for {@link PoolConfig}.
      */
+
+
     public static class Builder {
         private int minIdlePerKey = 1;
         private int maxIdlePerKey = 2;
@@ -266,6 +310,8 @@ public class PoolConfig {
          * @param maxIdlePerKey the max idle clients per key
          * @return this builder
          */
+
+
         public Builder maxIdlePerKey(int maxIdlePerKey) {
             this.maxIdlePerKey = maxIdlePerKey;
             return this;
@@ -277,6 +323,8 @@ public class PoolConfig {
          * @param minIdlePerKey the min idle clients per key
          * @return this builder
          */
+
+
         public Builder minIdlePerKey(int minIdlePerKey) {
             this.minIdlePerKey = minIdlePerKey;
             return this;
@@ -288,6 +336,8 @@ public class PoolConfig {
          * @param maxTotalPerKey the max total clients per key
          * @return this builder
          */
+
+
         public Builder maxTotalPerKey(int maxTotalPerKey) {
             this.maxTotalPerKey = maxTotalPerKey;
             return this;
@@ -299,6 +349,8 @@ public class PoolConfig {
          * @param maxTotal the max total clients
          * @return this builder
          */
+
+
         public Builder maxTotal(int maxTotal) {
             this.maxTotal = maxTotal;
             return this;
@@ -310,6 +362,8 @@ public class PoolConfig {
          * @param blockWhenExhausted {@code true} to block when the pool is exhausted
          * @return this builder
          */
+
+
         public Builder blockWhenExhausted(boolean blockWhenExhausted) {
             this.blockWhenExhausted = blockWhenExhausted;
             return this;
@@ -322,6 +376,8 @@ public class PoolConfig {
          * @return this builder
          * @throws IllegalArgumentException if {@code maxBlockWaitDuration} is {@code null}
          */
+
+
         public Builder maxBlockWaitDuration(Duration maxBlockWaitDuration) {
             if (maxBlockWaitDuration == null) {
                 throw new IllegalArgumentException("maxBlockWaitDuration cannot be null");
@@ -337,6 +393,8 @@ public class PoolConfig {
          * @return this builder
          * @throws IllegalArgumentException if {@code evictionPollingInterval} is {@code null}
          */
+
+
         public Builder evictionPollingInterval(Duration evictionPollingInterval) {
             if (evictionPollingInterval == null) {
                 throw new IllegalArgumentException("evictionPollingInterval cannot be null");
@@ -352,6 +410,8 @@ public class PoolConfig {
          * @return this builder
          * @throws IllegalArgumentException if {@code minEvictableIdleDuration} is {@code null}
          */
+
+
         public Builder minEvictableIdleDuration(Duration minEvictableIdleDuration) {
             if (minEvictableIdleDuration == null) {
                 throw new IllegalArgumentException("minEvictableIdleDuration cannot be null");
@@ -366,6 +426,8 @@ public class PoolConfig {
          * @param testOnBorrow {@code true} to test clients on borrow
          * @return this builder
          */
+
+
         public Builder testOnBorrow(boolean testOnBorrow) {
             this.testOnBorrow = testOnBorrow;
             return this;
@@ -377,6 +439,8 @@ public class PoolConfig {
          * @param testOnReturn {@code true} to test clients on return
          * @return this builder
          */
+
+
         public Builder testOnReturn(boolean testOnReturn) {
             this.testOnReturn = testOnReturn;
             return this;
@@ -387,6 +451,8 @@ public class PoolConfig {
          *
          * @return the built {@code PoolConfig}
          */
+
+
         public PoolConfig build() {
             return new PoolConfig(this);
         }

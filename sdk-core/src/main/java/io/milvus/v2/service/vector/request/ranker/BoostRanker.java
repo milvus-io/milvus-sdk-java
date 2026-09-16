@@ -53,6 +53,8 @@ import java.util.Map;
  * .param("random_score", "{\"seed\": 123, \"field\": \"id\"}")
  * .build();
  */
+
+
 public class BoostRanker extends CreateCollectionReq.Function {
     private String filter;
     private Float weight;
@@ -72,6 +74,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return {@link FunctionType#RERANK}
      */
+
+
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
@@ -82,6 +86,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return the ranker parameters
      */
+
+
     public Map<String, String> getParams() {
         Map<String, String> props = super.getParams();
         props.put("reranker", "boost");
@@ -111,6 +117,7 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return the boost filter expression
      */
+
     public String getFilter() {
         return filter;
     }
@@ -120,6 +127,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return the boost weight
      */
+
+
     public Float getWeight() {
         return weight;
     }
@@ -129,6 +138,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return the random score seed
      */
+
+
     public Long getRandomScoreSeed() {
         return randomScoreSeed;
     }
@@ -138,6 +149,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return the random score field
      */
+
+
     public String getRandomScoreField() {
         return randomScoreField;
     }
@@ -147,6 +160,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
      *
      * @return a new builder
      */
+
+
     public static BoostRankerBuilder builder() {
         return new BoostRankerBuilder();
     }
@@ -154,6 +169,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
     /**
      * Builder for {@link BoostRanker}.
      */
+
+
     public static class BoostRankerBuilder extends Function.FunctionBuilder<BoostRankerBuilder> {
         private String filter;
         private Float weight;
@@ -170,6 +187,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
          * @param filter the boost filter expression
          * @return this builder
          */
+
+
         public BoostRankerBuilder filter(String filter) {
             this.filter = filter;
             return this;
@@ -181,6 +200,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
          * @param weight the boost weight
          * @return this builder
          */
+
+
         public BoostRankerBuilder weight(Float weight) {
             this.weight = weight;
             return this;
@@ -192,6 +213,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
          * @param randomScoreSeed the random score seed
          * @return this builder
          */
+
+
         public BoostRankerBuilder randomScoreSeed(Long randomScoreSeed) {
             this.randomScoreSeed = randomScoreSeed;
             return this;
@@ -203,6 +226,8 @@ public class BoostRanker extends CreateCollectionReq.Function {
          * @param randomScoreField the random score field
          * @return this builder
          */
+
+
         public BoostRankerBuilder randomScoreField(String randomScoreField) {
             this.randomScoreField = randomScoreField;
             return this;

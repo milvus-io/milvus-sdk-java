@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.request;
 /**
  * Request parameters for the {@code listSnapshots} API.
  */
+
+
 public class ListSnapshotsReq {
     private String databaseName;
     private String collectionName;
@@ -30,6 +32,13 @@ public class ListSnapshotsReq {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
+
+    /**
+     * Creates a new builder for {@code ListSnapshotsReq}.
+     *
+     * @return the builder
+     */
+
 
     public static ListSnapshotsReqBuilder builder() {
         return new ListSnapshotsReqBuilder();
@@ -40,6 +49,8 @@ public class ListSnapshotsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +60,8 @@ public class ListSnapshotsReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +71,8 @@ public class ListSnapshotsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -67,6 +82,8 @@ public class ListSnapshotsReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -79,6 +96,11 @@ public class ListSnapshotsReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListSnapshotsReq} class.
+     */
+
+
     public static class ListSnapshotsReqBuilder {
         private String databaseName = "";
         private String collectionName = "";
@@ -89,6 +111,8 @@ public class ListSnapshotsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ListSnapshotsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -100,6 +124,8 @@ public class ListSnapshotsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ListSnapshotsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -110,6 +136,8 @@ public class ListSnapshotsReq {
          *
          * @return the built request
          */
+
+
         public ListSnapshotsReq build() {
             return new ListSnapshotsReq(this);
         }

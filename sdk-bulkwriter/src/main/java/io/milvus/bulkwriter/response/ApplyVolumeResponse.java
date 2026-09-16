@@ -10,6 +10,9 @@ import java.io.Serializable;
  * constraints enforced by the volume service, and is used by the BulkWriter to upload
  * files before bulk importing them.</p>
  */
+
+
+
 public class ApplyVolumeResponse implements Serializable {
     private String endpoint;
     private String cloud;
@@ -24,6 +27,8 @@ public class ApplyVolumeResponse implements Serializable {
     /**
      * Constructs an empty {@code ApplyVolumeResponse}.
      */
+
+
     public ApplyVolumeResponse() {
     }
 
@@ -40,6 +45,8 @@ public class ApplyVolumeResponse implements Serializable {
      * @param volumeName   the name of the applied volume
      * @param volumePrefix the prefix of the applied volume
      */
+
+
     public ApplyVolumeResponse(String endpoint, String cloud, String region, String bucketName, String uploadPath,
                                Credentials credentials, Condition condition, String volumeName, String volumePrefix) {
         this.endpoint = endpoint;
@@ -70,6 +77,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the storage endpoint
      */
+
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -79,6 +88,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param endpoint the storage endpoint
      */
+
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
@@ -88,6 +99,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the cloud provider name
      */
+
+
     public String getCloud() {
         return cloud;
     }
@@ -97,6 +110,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param cloud the cloud provider name
      */
+
+
     public void setCloud(String cloud) {
         this.cloud = cloud;
     }
@@ -106,6 +121,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the region of the applied volume
      */
+
+
     public String getRegion() {
         return region;
     }
@@ -115,6 +132,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param region the region of the applied volume
      */
+
+
     public void setRegion(String region) {
         this.region = region;
     }
@@ -124,6 +143,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the bucket name
      */
+
+
     public String getBucketName() {
         return bucketName;
     }
@@ -133,6 +154,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param bucketName the bucket name
      */
+
+
     public void setBucketName(String bucketName) {
         this.bucketName = bucketName;
     }
@@ -142,6 +165,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the upload path
      */
+
+
     public String getUploadPath() {
         return uploadPath;
     }
@@ -151,6 +176,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param uploadPath the upload path
      */
+
+
     public void setUploadPath(String uploadPath) {
         this.uploadPath = uploadPath;
     }
@@ -160,6 +187,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the temporary credentials
      */
+
+
     public Credentials getCredentials() {
         return credentials;
     }
@@ -169,6 +198,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param credentials the temporary credentials
      */
+
+
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
     }
@@ -178,6 +209,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the upload constraints
      */
+
+
     public Condition getCondition() {
         return condition;
     }
@@ -187,6 +220,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param condition the upload constraints
      */
+
+
     public void setCondition(Condition condition) {
         this.condition = condition;
     }
@@ -196,6 +231,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the volume name
      */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -205,6 +242,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param volumeName the volume name
      */
+
+
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -214,6 +253,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return the volume prefix
      */
+
+
     public String getVolumePrefix() {
         return volumePrefix;
     }
@@ -223,6 +264,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @param volumePrefix the volume prefix
      */
+
+
     public void setVolumePrefix(String volumePrefix) {
         this.volumePrefix = volumePrefix;
     }
@@ -247,6 +290,8 @@ public class ApplyVolumeResponse implements Serializable {
      *
      * @return an {@code ApplyVolumeResponse} builder
      */
+
+
     public static ApplyVolumeResponseBuilder builder() {
         return new ApplyVolumeResponseBuilder();
     }
@@ -254,6 +299,8 @@ public class ApplyVolumeResponse implements Serializable {
     /**
      * Builder for {@link ApplyVolumeResponse}.
      */
+
+
     public static class ApplyVolumeResponseBuilder {
         private String endpoint;
         private String cloud;
@@ -283,6 +330,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param endpoint the storage endpoint
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
@@ -294,6 +343,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param cloud the cloud provider name
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder cloud(String cloud) {
             this.cloud = cloud;
             return this;
@@ -305,6 +356,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param region the region of the applied volume
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder region(String region) {
             this.region = region;
             return this;
@@ -316,6 +369,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param bucketName the bucket name
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder bucketName(String bucketName) {
             this.bucketName = bucketName;
             return this;
@@ -327,6 +382,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param uploadPath the upload path
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder uploadPath(String uploadPath) {
             this.uploadPath = uploadPath;
             return this;
@@ -338,6 +395,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param credentials the temporary credentials
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder credentials(Credentials credentials) {
             this.credentials = credentials;
             return this;
@@ -349,6 +408,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param condition the upload constraints
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder condition(Condition condition) {
             this.condition = condition;
             return this;
@@ -360,6 +421,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param volumeName the volume name
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -371,6 +434,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param volumePrefix the volume prefix
          * @return this builder
          */
+
+
         public ApplyVolumeResponseBuilder volumePrefix(String volumePrefix) {
             this.volumePrefix = volumePrefix;
             return this;
@@ -381,6 +446,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the built {@code ApplyVolumeResponse}
          */
+
+
         public ApplyVolumeResponse build() {
             return new ApplyVolumeResponse(this);
         }
@@ -389,6 +456,8 @@ public class ApplyVolumeResponse implements Serializable {
     /**
      * Temporary credentials granted for accessing the applied volume.
      */
+
+
     public static class Credentials implements Serializable {
         private static final long serialVersionUID = 623702599895113789L;
         private String tmpAK;
@@ -399,6 +468,8 @@ public class ApplyVolumeResponse implements Serializable {
         /**
          * Constructs an empty {@code Credentials}.
          */
+
+
         public Credentials() {
         }
 
@@ -410,6 +481,8 @@ public class ApplyVolumeResponse implements Serializable {
          * @param sessionToken the temporary session token
          * @param expireTime   the expiration time of the credentials
          */
+
+
         public Credentials(String tmpAK, String tmpSK, String sessionToken, String expireTime) {
             this.tmpAK = tmpAK;
             this.tmpSK = tmpSK;
@@ -429,6 +502,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the temporary access key
          */
+
+
         public String getTmpAK() {
             return tmpAK;
         }
@@ -438,6 +513,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @param tmpAK the temporary access key
          */
+
+
         public void setTmpAK(String tmpAK) {
             this.tmpAK = tmpAK;
         }
@@ -447,6 +524,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the temporary secret key
          */
+
+
         public String getTmpSK() {
             return tmpSK;
         }
@@ -456,6 +535,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @param tmpSK the temporary secret key
          */
+
+
         public void setTmpSK(String tmpSK) {
             this.tmpSK = tmpSK;
         }
@@ -465,6 +546,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the temporary session token
          */
+
+
         public String getSessionToken() {
             return sessionToken;
         }
@@ -474,6 +557,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @param sessionToken the temporary session token
          */
+
+
         public void setSessionToken(String sessionToken) {
             this.sessionToken = sessionToken;
         }
@@ -483,6 +568,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the expiration time
          */
+
+
         public String getExpireTime() {
             return expireTime;
         }
@@ -492,6 +579,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @param expireTime the expiration time
          */
+
+
         public void setExpireTime(String expireTime) {
             this.expireTime = expireTime;
         }
@@ -509,6 +598,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return a {@code Credentials} builder
          */
+
+
         public static CredentialsBuilder builder() {
             return new CredentialsBuilder();
         }
@@ -516,6 +607,8 @@ public class ApplyVolumeResponse implements Serializable {
         /**
          * Builder for {@link Credentials}.
          */
+
+
         public static class CredentialsBuilder {
             private String tmpAK;
             private String tmpSK;
@@ -535,6 +628,8 @@ public class ApplyVolumeResponse implements Serializable {
              * @param tmpAK the temporary access key
              * @return this builder
              */
+
+
             public CredentialsBuilder tmpAK(String tmpAK) {
                 this.tmpAK = tmpAK;
                 return this;
@@ -546,6 +641,8 @@ public class ApplyVolumeResponse implements Serializable {
              * @param tmpSK the temporary secret key
              * @return this builder
              */
+
+
             public CredentialsBuilder tmpSK(String tmpSK) {
                 this.tmpSK = tmpSK;
                 return this;
@@ -557,6 +654,8 @@ public class ApplyVolumeResponse implements Serializable {
              * @param sessionToken the temporary session token
              * @return this builder
              */
+
+
             public CredentialsBuilder sessionToken(String sessionToken) {
                 this.sessionToken = sessionToken;
                 return this;
@@ -568,6 +667,8 @@ public class ApplyVolumeResponse implements Serializable {
              * @param expireTime the expiration time
              * @return this builder
              */
+
+
             public CredentialsBuilder expireTime(String expireTime) {
                 this.expireTime = expireTime;
                 return this;
@@ -578,6 +679,8 @@ public class ApplyVolumeResponse implements Serializable {
              *
              * @return the built {@code Credentials}
              */
+
+
             public Credentials build() {
                 return new Credentials(this);
             }
@@ -587,6 +690,8 @@ public class ApplyVolumeResponse implements Serializable {
     /**
      * Upload constraints enforced by the volume service.
      */
+
+
     public static class Condition implements Serializable {
         private static final long serialVersionUID = -2613029991242322109L;
         private Long maxContentLength;
@@ -595,6 +700,8 @@ public class ApplyVolumeResponse implements Serializable {
         /**
          * Constructs an empty {@code Condition}.
          */
+
+
         public Condition() {
         }
 
@@ -603,6 +710,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @param maxContentLength the maximum content length of a single upload in bytes
          */
+
+
         public Condition(Long maxContentLength) {
             this.maxContentLength = maxContentLength;
         }
@@ -616,6 +725,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the maximum content length
          */
+
+
         public Long getMaxContentLength() {
             return maxContentLength;
         }
@@ -625,6 +736,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return the maximum file number
          */
+
+
         public Long getMaxFileNumber() {
             return maxFileNumber;
         }
@@ -634,6 +747,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @param maxContentLength the maximum content length
          */
+
+
         public void setMaxContentLength(Long maxContentLength) {
             this.maxContentLength = maxContentLength;
         }
@@ -651,6 +766,8 @@ public class ApplyVolumeResponse implements Serializable {
          *
          * @return a {@code Condition} builder
          */
+
+
         public static ConditionBuilder builder() {
             return new ConditionBuilder();
         }
@@ -658,6 +775,8 @@ public class ApplyVolumeResponse implements Serializable {
         /**
          * Builder for {@link Condition}.
          */
+
+
         public static class ConditionBuilder {
             private Long maxContentLength;
 
@@ -671,6 +790,8 @@ public class ApplyVolumeResponse implements Serializable {
              * @param maxContentLength the maximum content length
              * @return this builder
              */
+
+
             public ConditionBuilder maxContentLength(Long maxContentLength) {
                 this.maxContentLength = maxContentLength;
                 return this;
@@ -681,6 +802,8 @@ public class ApplyVolumeResponse implements Serializable {
              *
              * @return the built {@code Condition}
              */
+
+
             public Condition build() {
                 return new Condition(this);
             }

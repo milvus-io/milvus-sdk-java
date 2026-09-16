@@ -26,6 +26,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>volumeFileManager</code> interface.
  */
+
+
 public class VolumeFileManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
@@ -44,6 +46,8 @@ public class VolumeFileManagerParam {
     *
     * @return the cloud endpoint of the volume service
     */
+
+
     public String getCloudEndpoint() {
         return cloudEndpoint;
     }
@@ -53,6 +57,8 @@ public class VolumeFileManagerParam {
     *
     * @return the API key for the volume service
     */
+
+
     public String getApiKey() {
         return apiKey;
     }
@@ -62,6 +68,8 @@ public class VolumeFileManagerParam {
     *
     * @return the name of the target volume
     */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -71,6 +79,8 @@ public class VolumeFileManagerParam {
     *
     * @return the connection type for the volume service
     */
+
+
     public ConnectType getConnectType() {
         return connectType;
     }
@@ -83,6 +93,12 @@ public class VolumeFileManagerParam {
                 ", connectType=" + connectType +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -91,6 +107,8 @@ public class VolumeFileManagerParam {
     /**
      * Builder for {@link VolumeFileManagerParam} class.
      */
+
+
     public static final class Builder {
         private String cloudEndpoint;
 
@@ -104,16 +122,16 @@ public class VolumeFileManagerParam {
         }
 
         /**
+         * Sets the cloud endpoint of the volume service.
          * The value of the URL is fixed.
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
+         *
+         * @param cloudEndpoint the cloud endpoint of the volume service
+         * @return this builder
          */
-        /**
-        * Sets the cloud endpoint of the volume service.
-        *
-        * @param c the cloud endpoint of the volume service
-        * @return this builder
-        */
+
+
         public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
@@ -122,9 +140,11 @@ public class VolumeFileManagerParam {
         /**
         * Sets the API key for the volume service.
         *
-        * @param a the API key for the volume service
+        * @param apiKey the API key for the volume service
         * @return this builder
         */
+
+
         public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
@@ -133,9 +153,11 @@ public class VolumeFileManagerParam {
         /**
         * Sets the name of the target volume.
         *
-        * @param v the name of the target volume
+        * @param volumeName the name of the target volume
         * @return this builder
         */
+
+
         public Builder withVolumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -146,7 +168,12 @@ public class VolumeFileManagerParam {
          * In the default case, if the OSS bucket is reachable via the internal endpoint, the internal endpoint will be used;
          * otherwise, the public endpoint will be used.
          * You can also force the use of either the internal or public endpoint.
+         *
+         * @param connectType the connection type for the volume service
+         * @return this builder
          */
+
+
         public Builder withConnectType(ConnectType connectType) {
             this.connectType = connectType;
             return this;
@@ -156,7 +183,10 @@ public class VolumeFileManagerParam {
          * Verifies parameters and creates a new {@link VolumeFileManagerParam} instance.
          *
          * @return {@link VolumeFileManagerParam}
+         * @throws ParamException if the required parameters are invalid
          */
+
+
         public VolumeFileManagerParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(cloudEndpoint, "cloudEndpoint");
             ParamUtils.CheckNullEmptyString(apiKey, "apiKey");

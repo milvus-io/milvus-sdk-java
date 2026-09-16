@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code alterRole} API.
  */
+
+
 public class AlterRoleReq {
     private String roleName;
     private String description;
@@ -36,6 +38,8 @@ public class AlterRoleReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -45,6 +49,8 @@ public class AlterRoleReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -54,6 +60,8 @@ public class AlterRoleReq {
      *
      * @return the role description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -63,6 +71,8 @@ public class AlterRoleReq {
      *
      * @param description the role description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -80,9 +90,16 @@ public class AlterRoleReq {
      *
      * @return a new {@link AlterRoleReqBuilder}
      */
+
+
     public static AlterRoleReqBuilder builder() {
         return new AlterRoleReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterRoleReq} class.
+     */
+
 
     public static class AlterRoleReqBuilder {
         private String roleName;
@@ -97,6 +114,8 @@ public class AlterRoleReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public AlterRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -108,6 +127,8 @@ public class AlterRoleReq {
          * @param description the role description
          * @return this builder
          */
+
+
         public AlterRoleReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -118,6 +139,8 @@ public class AlterRoleReq {
          *
          * @return the built request
          */
+
+
         public AlterRoleReq build() {
             return new AlterRoleReq(this);
         }

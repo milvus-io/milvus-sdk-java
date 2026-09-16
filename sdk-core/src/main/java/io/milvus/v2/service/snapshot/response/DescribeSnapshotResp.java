@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Response returned by the {@code describeSnapshot} API.
  */
+
+
 public class DescribeSnapshotResp {
     private String name;
     private String description;
@@ -41,6 +43,13 @@ public class DescribeSnapshotResp {
         this.s3Location = builder.s3Location;
     }
 
+    /**
+     * Creates a new builder for {@code DescribeSnapshotResp}.
+     *
+     * @return the builder
+     */
+
+
     public static DescribeSnapshotRespBuilder builder() {
         return new DescribeSnapshotRespBuilder();
     }
@@ -50,6 +59,8 @@ public class DescribeSnapshotResp {
      *
      * @return the snapshot name
      */
+
+
     public String getName() {
         return name;
     }
@@ -59,6 +70,8 @@ public class DescribeSnapshotResp {
      *
      * @param name the snapshot name
      */
+
+
     public void setName(String name) {
         this.name = name;
     }
@@ -68,6 +81,8 @@ public class DescribeSnapshotResp {
      *
      * @return the snapshot description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -77,6 +92,8 @@ public class DescribeSnapshotResp {
      *
      * @param description the snapshot description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -86,6 +103,8 @@ public class DescribeSnapshotResp {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -95,6 +114,8 @@ public class DescribeSnapshotResp {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -104,6 +125,8 @@ public class DescribeSnapshotResp {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -113,6 +136,8 @@ public class DescribeSnapshotResp {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -122,6 +147,8 @@ public class DescribeSnapshotResp {
      *
      * @return the creation timestamp
      */
+
+
     public Long getCreateTs() {
         return createTs;
     }
@@ -131,6 +158,8 @@ public class DescribeSnapshotResp {
      *
      * @param createTs the creation timestamp
      */
+
+
     public void setCreateTs(Long createTs) {
         this.createTs = createTs;
     }
@@ -140,6 +169,8 @@ public class DescribeSnapshotResp {
      *
      * @return the S3 location
      */
+
+
     public String getS3Location() {
         return s3Location;
     }
@@ -149,6 +180,8 @@ public class DescribeSnapshotResp {
      *
      * @param s3Location the S3 location
      */
+
+
     public void setS3Location(String s3Location) {
         this.s3Location = s3Location;
     }
@@ -165,6 +198,11 @@ public class DescribeSnapshotResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeSnapshotResp} class.
+     */
+
+
     public static class DescribeSnapshotRespBuilder {
         private String name;
         private String description;
@@ -179,6 +217,8 @@ public class DescribeSnapshotResp {
          * @param name the snapshot name
          * @return this builder
          */
+
+
         public DescribeSnapshotRespBuilder name(String name) {
             this.name = name;
             return this;
@@ -190,6 +230,8 @@ public class DescribeSnapshotResp {
          * @param description the snapshot description
          * @return this builder
          */
+
+
         public DescribeSnapshotRespBuilder description(String description) {
             this.description = description;
             return this;
@@ -201,6 +243,8 @@ public class DescribeSnapshotResp {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DescribeSnapshotRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -212,6 +256,8 @@ public class DescribeSnapshotResp {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public DescribeSnapshotRespBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -223,6 +269,8 @@ public class DescribeSnapshotResp {
          * @param createTs the creation timestamp
          * @return this builder
          */
+
+
         public DescribeSnapshotRespBuilder createTs(Long createTs) {
             this.createTs = createTs;
             return this;
@@ -234,6 +282,8 @@ public class DescribeSnapshotResp {
          * @param s3Location the S3 location
          * @return this builder
          */
+
+
         public DescribeSnapshotRespBuilder s3Location(String s3Location) {
             this.s3Location = s3Location;
             return this;
@@ -244,6 +294,8 @@ public class DescribeSnapshotResp {
          *
          * @return the built response
          */
+
+
         public DescribeSnapshotResp build() {
             return new DescribeSnapshotResp(this);
         }

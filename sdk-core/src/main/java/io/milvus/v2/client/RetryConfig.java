@@ -25,6 +25,8 @@ package io.milvus.v2.client;
  * Use {@link #builder()} to create a configuration, then pass it to
  * {@link MilvusClientV2#withRetry(RetryConfig)}.
  */
+
+
 public class RetryConfig {
     private int maxRetryTimes = 75;
     private long initialBackOffMs = 10;
@@ -71,6 +73,8 @@ public class RetryConfig {
      *
      * @return a retry configuration builder
      */
+
+
     public static RetryConfigBuilder builder() {
         return new RetryConfigBuilder();
     }
@@ -81,6 +85,7 @@ public class RetryConfig {
      *
      * @return the maximum number of retries
      */
+
     public int getMaxRetryTimes() {
         return maxRetryTimes;
     }
@@ -90,6 +95,8 @@ public class RetryConfig {
      *
      * @return the initial back-off in milliseconds
      */
+
+
     public long getInitialBackOffMs() {
         return initialBackOffMs;
     }
@@ -99,6 +106,8 @@ public class RetryConfig {
      *
      * @return the maximum back-off in milliseconds
      */
+
+
     public long getMaxBackOffMs() {
         return maxBackOffMs;
     }
@@ -108,6 +117,8 @@ public class RetryConfig {
      *
      * @return the back-off multiplier
      */
+
+
     public int getBackOffMultiplier() {
         return backOffMultiplier;
     }
@@ -117,6 +128,8 @@ public class RetryConfig {
      *
      * @return true if rate-limit errors are retried
      */
+
+
     public boolean isRetryOnRateLimit() {
         return retryOnRateLimit;
     }
@@ -126,6 +139,8 @@ public class RetryConfig {
      *
      * @return the retry timeout in milliseconds
      */
+
+
     public long getMaxRetryTimeoutMs() {
         return maxRetryTimeoutMs;
     }
@@ -136,6 +151,7 @@ public class RetryConfig {
      *
      * @param maxRetryTimes the maximum number of retries
      */
+
     public void setMaxRetryTimes(int maxRetryTimes) {
         this.maxRetryTimes = maxRetryTimes;
     }
@@ -145,6 +161,8 @@ public class RetryConfig {
      *
      * @param initialBackOffMs the initial back-off in milliseconds
      */
+
+
     public void setInitialBackOffMs(long initialBackOffMs) {
         requireNonNegative("initialBackOffMs", initialBackOffMs);
         this.initialBackOffMs = initialBackOffMs;
@@ -155,6 +173,8 @@ public class RetryConfig {
      *
      * @param maxBackOffMs the maximum back-off in milliseconds
      */
+
+
     public void setMaxBackOffMs(long maxBackOffMs) {
         requireNonNegative("maxBackOffMs", maxBackOffMs);
         this.maxBackOffMs = maxBackOffMs;
@@ -165,6 +185,8 @@ public class RetryConfig {
      *
      * @param backOffMultiplier the back-off multiplier
      */
+
+
     public void setBackOffMultiplier(int backOffMultiplier) {
         requireAtLeastOne("backOffMultiplier", backOffMultiplier);
         this.backOffMultiplier = backOffMultiplier;
@@ -175,6 +197,8 @@ public class RetryConfig {
      *
      * @param retryOnRateLimit whether rate-limit errors are retried
      */
+
+
     public void setRetryOnRateLimit(boolean retryOnRateLimit) {
         this.retryOnRateLimit = retryOnRateLimit;
     }
@@ -184,6 +208,8 @@ public class RetryConfig {
      *
      * @param maxRetryTimeoutMs the retry timeout in milliseconds
      */
+
+
     public void setMaxRetryTimeoutMs(long maxRetryTimeoutMs) {
         this.maxRetryTimeoutMs = maxRetryTimeoutMs;
     }
@@ -201,6 +227,10 @@ public class RetryConfig {
     }
 
     // Builder class with public access modifier
+    /**
+     * Builder for {@link RetryConfig} class.
+     */
+
     public static class RetryConfigBuilder {
         private int maxRetryTimes = 75;
         private long initialBackOffMs = 10;
@@ -215,6 +245,8 @@ public class RetryConfig {
          * @param maxRetryTimes the maximum number of retries
          * @return this builder
          */
+
+
         public RetryConfigBuilder maxRetryTimes(int maxRetryTimes) {
             this.maxRetryTimes = maxRetryTimes;
             return this;
@@ -226,6 +258,8 @@ public class RetryConfig {
          * @param initialBackOffMs the initial back-off in milliseconds
          * @return this builder
          */
+
+
         public RetryConfigBuilder initialBackOffMs(long initialBackOffMs) {
             this.initialBackOffMs = initialBackOffMs;
             return this;
@@ -237,6 +271,8 @@ public class RetryConfig {
          * @param maxBackOffMs the maximum back-off in milliseconds
          * @return this builder
          */
+
+
         public RetryConfigBuilder maxBackOffMs(long maxBackOffMs) {
             this.maxBackOffMs = maxBackOffMs;
             return this;
@@ -248,6 +284,8 @@ public class RetryConfig {
          * @param backOffMultiplier the back-off multiplier
          * @return this builder
          */
+
+
         public RetryConfigBuilder backOffMultiplier(int backOffMultiplier) {
             this.backOffMultiplier = backOffMultiplier;
             return this;
@@ -259,6 +297,8 @@ public class RetryConfig {
          * @param retryOnRateLimit whether rate-limit errors are retried
          * @return this builder
          */
+
+
         public RetryConfigBuilder retryOnRateLimit(boolean retryOnRateLimit) {
             this.retryOnRateLimit = retryOnRateLimit;
             return this;
@@ -270,6 +310,8 @@ public class RetryConfig {
          * @param maxRetryTimeoutMs the retry timeout in milliseconds
          * @return this builder
          */
+
+
         public RetryConfigBuilder maxRetryTimeoutMs(long maxRetryTimeoutMs) {
             this.maxRetryTimeoutMs = maxRetryTimeoutMs;
             return this;
@@ -280,6 +322,8 @@ public class RetryConfig {
          *
          * @return the built retry configuration
          */
+
+
         public RetryConfig build() {
             return new RetryConfig(this);
         }

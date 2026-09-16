@@ -31,6 +31,8 @@ import io.milvus.grpc.QueryCursor;
  * primary key returned, and (for element-filter iterators) the last matched element
  * offset. Resume by passing it back through {@code QueryIteratorReq.cursor(...)}.
  */
+
+
 public class QueryIteratorCursor {
     private final long sessionTs;
     private final Long intPk;
@@ -44,21 +46,56 @@ public class QueryIteratorCursor {
         this.lastElementOffset = builder.lastElementOffset;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static QueryIteratorCursorBuilder builder() {
         return new QueryIteratorCursorBuilder();
     }
+
+    /**
+     * Returns the sessionTs.
+     *
+     * @return the sessionTs
+     */
+
 
     public long getSessionTs() {
         return sessionTs;
     }
 
+    /**
+     * Returns the intPk.
+     *
+     * @return the intPk
+     */
+
+
     public Long getIntPk() {
         return intPk;
     }
 
+    /**
+     * Returns the strPk.
+     *
+     * @return the strPk
+     */
+
+
     public String getStrPk() {
         return strPk;
     }
+
+    /**
+     * Returns the lastElementOffset.
+     *
+     * @return the lastElementOffset
+     */
+
 
     public Long getLastElementOffset() {
         return lastElementOffset;
@@ -71,8 +108,11 @@ public class QueryIteratorCursor {
      * serializing an element-filter cursor would silently drop the element position and cause
      * the resumed iterator to skip rows. Reject such cursors to avoid the data loss.
      *
+     * @return the serialized gRPC {@code QueryCursor} message
      * @throws ParamException if this cursor carries an element offset
      */
+
+
     public QueryCursor toProto() {
         if (lastElementOffset != null) {
             throw new ParamException("Cannot serialize an element-filter cursor to QueryCursor: "
@@ -91,7 +131,12 @@ public class QueryIteratorCursor {
     /**
      * Reconstruct a cursor from a gRPC {@code QueryCursor} message, or {@code null}
      * when the input is null.
+     *
+     * @param cursor the gRPC {@code QueryCursor} message, or {@code null}
+     * @return the reconstructed cursor, or {@code null} when the input is {@code null}
      */
+
+
     public static QueryIteratorCursor fromProto(QueryCursor cursor) {
         if (cursor == null) {
             return null;
@@ -121,31 +166,75 @@ public class QueryIteratorCursor {
                 '}';
     }
 
+    /**
+     * Builder for {@link QueryIteratorCursor} class.
+     */
+
+
     public static class QueryIteratorCursorBuilder {
         private long sessionTs;
         private Long intPk;
         private String strPk;
         private Long lastElementOffset;
 
+        /**
+         * Sets the sessionTs.
+         *
+         * @param sessionTs the sessionTs
+         * @return this builder
+         */
+
+
         public QueryIteratorCursorBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
             return this;
         }
+
+        /**
+         * Sets the intPk.
+         *
+         * @param intPk the intPk
+         * @return this builder
+         */
+
 
         public QueryIteratorCursorBuilder intPk(Long intPk) {
             this.intPk = intPk;
             return this;
         }
 
+        /**
+         * Sets the strPk.
+         *
+         * @param strPk the strPk
+         * @return this builder
+         */
+
+
         public QueryIteratorCursorBuilder strPk(String strPk) {
             this.strPk = strPk;
             return this;
         }
 
+        /**
+         * Sets the lastElementOffset.
+         *
+         * @param lastElementOffset the lastElementOffset
+         * @return this builder
+         */
+
+
         public QueryIteratorCursorBuilder lastElementOffset(Long lastElementOffset) {
             this.lastElementOffset = lastElementOffset;
             return this;
         }
+
+        /**
+         * Builds the QueryIteratorCursor.
+         *
+         * @return the built QueryIteratorCursor
+         */
+
 
         public QueryIteratorCursor build() {
             return new QueryIteratorCursor(this);

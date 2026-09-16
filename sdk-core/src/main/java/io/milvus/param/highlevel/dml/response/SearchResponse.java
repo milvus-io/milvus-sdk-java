@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Parameters for <code>search</code> interface.
  */
+
+
 public class SearchResponse {
     private List<List<QueryResultsWrapper.RowRecord>> rowRecords;
 
@@ -34,13 +36,34 @@ public class SearchResponse {
         this.rowRecords = builder.rowRecords;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Returns the rowRecords.
+     *
+     * @return the rowRecords
+     */
+
+
     public List<List<QueryResultsWrapper.RowRecord>> getRowRecords() {
         return rowRecords;
     }
+
+    /**
+     * Sets the rowRecords.
+     *
+     * @param rowRecords the rowRecords
+     */
+
 
     public void setRowRecords(List<List<QueryResultsWrapper.RowRecord>> rowRecords) {
         this.rowRecords = rowRecords;
@@ -56,6 +79,14 @@ public class SearchResponse {
     public List<QueryResultsWrapper.RowRecord> getRowRecordsForFirstTarget() {
         return getRowRecords(0);
     }
+
+    /**
+     * Gets the row records of the search result at the specified target index.
+     *
+     * @param indexOfTarget the index of the target search
+     * @return the row records of the target search
+     */
+
 
     public List<QueryResultsWrapper.RowRecord> getRowRecords(int indexOfTarget) {
         if (indexOfTarget >= rowRecords.size()) {
@@ -73,13 +104,33 @@ public class SearchResponse {
                 '}';
     }
 
+    /**
+     * Builder for {@link SearchResponse} class.
+     */
+
+
     public static class Builder {
         private List<List<QueryResultsWrapper.RowRecord>> rowRecords;
+
+        /**
+         * Sets the rowRecords.
+         *
+         * @param rowRecords the rowRecords
+         * @return this builder
+         */
+
 
         public Builder rowRecords(List<List<QueryResultsWrapper.RowRecord>> rowRecords) {
             this.rowRecords = rowRecords;
             return this;
         }
+
+        /**
+         * Builds the SearchResponse.
+         *
+         * @return the built SearchResponse
+         */
+
 
         public SearchResponse build() {
             return new SearchResponse(this);

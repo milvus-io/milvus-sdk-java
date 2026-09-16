@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Response returned by the {@code getCompactionPlans} API.
  */
+
+
 public class GetCompactionPlansResp {
     private Long compactionId;
     private CompactionState state;
@@ -39,6 +41,13 @@ public class GetCompactionPlansResp {
         this.plans = builder.plans;
     }
 
+    /**
+     * Creates a new builder for {@code GetCompactionPlansResp}.
+     *
+     * @return the builder
+     */
+
+
     public static GetCompactionPlansRespBuilder builder() {
         return new GetCompactionPlansRespBuilder();
     }
@@ -48,6 +57,8 @@ public class GetCompactionPlansResp {
      *
      * @return the compaction ID
      */
+
+
     public Long getCompactionId() {
         return compactionId;
     }
@@ -57,6 +68,8 @@ public class GetCompactionPlansResp {
      *
      * @param compactionId the compaction ID
      */
+
+
     public void setCompactionId(Long compactionId) {
         this.compactionId = compactionId;
     }
@@ -66,6 +79,8 @@ public class GetCompactionPlansResp {
      *
      * @return the compaction state
      */
+
+
     public CompactionState getState() {
         return state;
     }
@@ -75,6 +90,8 @@ public class GetCompactionPlansResp {
      *
      * @return the list of compaction plans
      */
+
+
     public List<CompactionPlan> getPlans() {
         return plans;
     }
@@ -89,6 +106,11 @@ public class GetCompactionPlansResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetCompactionPlansResp} class.
+     */
+
+
     public static class GetCompactionPlansRespBuilder {
         private Long compactionId;
         private CompactionState state = CompactionState.UndefiedState;
@@ -100,6 +122,8 @@ public class GetCompactionPlansResp {
          * @param compactionId the compaction ID
          * @return this builder
          */
+
+
         public GetCompactionPlansRespBuilder compactionId(Long compactionId) {
             this.compactionId = compactionId;
             return this;
@@ -111,6 +135,8 @@ public class GetCompactionPlansResp {
          * @param state the compaction state
          * @return this builder
          */
+
+
         public GetCompactionPlansRespBuilder state(CompactionState state) {
             this.state = state;
             return this;
@@ -122,6 +148,8 @@ public class GetCompactionPlansResp {
          * @param plans the list of compaction plans
          * @return this builder
          */
+
+
         public GetCompactionPlansRespBuilder plans(List<CompactionPlan> plans) {
             this.plans = plans;
             return this;
@@ -132,6 +160,8 @@ public class GetCompactionPlansResp {
          *
          * @return the constructed {@code GetCompactionPlansResp}
          */
+
+
         public GetCompactionPlansResp build() {
             return new GetCompactionPlansResp(this);
         }

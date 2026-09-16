@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code runAnalyzer} API.
  */
+
+
 public class RunAnalyzerResp {
     private List<AnalyzerResult> results;
 
@@ -37,6 +39,8 @@ public class RunAnalyzerResp {
      *
      * @return the builder
      */
+
+
     public static RunAnalyzerRespBuilder builder() {
         return new RunAnalyzerRespBuilder();
     }
@@ -46,6 +50,8 @@ public class RunAnalyzerResp {
      *
      * @return the analyzer results
      */
+
+
     public List<AnalyzerResult> getResults() {
         return results;
     }
@@ -55,6 +61,8 @@ public class RunAnalyzerResp {
      *
      * @param results the analyzer results
      */
+
+
     public void setResults(List<AnalyzerResult> results) {
         this.results = results;
     }
@@ -66,6 +74,11 @@ public class RunAnalyzerResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link RunAnalyzerResp} class.
+     */
+
+
     public static class RunAnalyzerRespBuilder {
         private List<AnalyzerResult> results = new ArrayList<>();
 
@@ -75,6 +88,8 @@ public class RunAnalyzerResp {
          * @param results the analyzer results
          * @return this builder
          */
+
+
         public RunAnalyzerRespBuilder results(List<AnalyzerResult> results) {
             this.results = results;
             return this;
@@ -85,6 +100,8 @@ public class RunAnalyzerResp {
          *
          * @return the response
          */
+
+
         public RunAnalyzerResp build() {
             return new RunAnalyzerResp(this);
         }
@@ -93,6 +110,8 @@ public class RunAnalyzerResp {
     /**
      * The analysis result of a single analyzed text.
      */
+
+
     public static final class AnalyzerResult {
         private List<AnalyzerToken> tokens;
 
@@ -105,6 +124,8 @@ public class RunAnalyzerResp {
          *
          * @return the builder
          */
+
+
         public static AnalyzerResultBuilder builder() {
             return new AnalyzerResultBuilder();
         }
@@ -114,6 +135,8 @@ public class RunAnalyzerResp {
          *
          * @return the analyzer tokens
          */
+
+
         public List<AnalyzerToken> getTokens() {
             return tokens;
         }
@@ -123,6 +146,8 @@ public class RunAnalyzerResp {
          *
          * @param tokens the analyzer tokens
          */
+
+
         public void setTokens(List<AnalyzerToken> tokens) {
             this.tokens = tokens;
         }
@@ -134,6 +159,11 @@ public class RunAnalyzerResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link RunAnalyzerResp.AnalyzerResult} class.
+         */
+
+
         public static class AnalyzerResultBuilder {
             private List<AnalyzerToken> tokens = new ArrayList<>();
 
@@ -143,6 +173,8 @@ public class RunAnalyzerResp {
              * @param tokens the analyzer tokens
              * @return this builder
              */
+
+
             public AnalyzerResultBuilder tokens(List<AnalyzerToken> tokens) {
                 this.tokens = tokens;
                 return this;
@@ -153,6 +185,8 @@ public class RunAnalyzerResp {
              *
              * @return the analyzer result
              */
+
+
             public AnalyzerResult build() {
                 return new AnalyzerResult(this);
             }
@@ -162,6 +196,8 @@ public class RunAnalyzerResp {
     /**
      * A single token produced by the analyzer.
      */
+
+
     public static final class AnalyzerToken {
         private String token;
         private Long startOffset;
@@ -184,6 +220,8 @@ public class RunAnalyzerResp {
          *
          * @return the builder
          */
+
+
         public static AnalyzerTokenBuilder builder() {
             return new AnalyzerTokenBuilder();
         }
@@ -193,6 +231,8 @@ public class RunAnalyzerResp {
          *
          * @return the token text
          */
+
+
         public String getToken() {
             return token;
         }
@@ -202,6 +242,8 @@ public class RunAnalyzerResp {
          *
          * @param token the token text
          */
+
+
         public void setToken(String token) {
             this.token = token;
         }
@@ -211,6 +253,8 @@ public class RunAnalyzerResp {
          *
          * @return the start offset
          */
+
+
         public Long getStartOffset() {
             return startOffset;
         }
@@ -220,6 +264,8 @@ public class RunAnalyzerResp {
          *
          * @param startOffset the start offset
          */
+
+
         public void setStartOffset(Long startOffset) {
             this.startOffset = startOffset;
         }
@@ -229,6 +275,8 @@ public class RunAnalyzerResp {
          *
          * @return the end offset
          */
+
+
         public Long getEndOffset() {
             return endOffset;
         }
@@ -238,6 +286,8 @@ public class RunAnalyzerResp {
          *
          * @param endOffset the end offset
          */
+
+
         public void setEndOffset(Long endOffset) {
             this.endOffset = endOffset;
         }
@@ -247,6 +297,8 @@ public class RunAnalyzerResp {
          *
          * @return the token position
          */
+
+
         public Long getPosition() {
             return position;
         }
@@ -256,6 +308,8 @@ public class RunAnalyzerResp {
          *
          * @param position the token position
          */
+
+
         public void setPosition(Long position) {
             this.position = position;
         }
@@ -265,6 +319,8 @@ public class RunAnalyzerResp {
          *
          * @return the token position length
          */
+
+
         public Long getPositionLength() {
             return positionLength;
         }
@@ -274,6 +330,8 @@ public class RunAnalyzerResp {
          *
          * @param positionLength the token position length
          */
+
+
         public void setPositionLength(Long positionLength) {
             this.positionLength = positionLength;
         }
@@ -283,6 +341,8 @@ public class RunAnalyzerResp {
          *
          * @return the token hash
          */
+
+
         public Long getHash() {
             return hash;
         }
@@ -292,6 +352,8 @@ public class RunAnalyzerResp {
          *
          * @param hash the token hash
          */
+
+
         public void setHash(Long hash) {
             this.hash = hash;
         }
@@ -308,6 +370,11 @@ public class RunAnalyzerResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link RunAnalyzerResp.AnalyzerToken} class.
+         */
+
+
         public static class AnalyzerTokenBuilder {
             private String token;
             private Long startOffset;
@@ -322,6 +389,8 @@ public class RunAnalyzerResp {
              * @param token the token text
              * @return this builder
              */
+
+
             public AnalyzerTokenBuilder token(String token) {
                 this.token = token;
                 return this;
@@ -333,6 +402,8 @@ public class RunAnalyzerResp {
              * @param startOffset the start offset
              * @return this builder
              */
+
+
             public AnalyzerTokenBuilder startOffset(Long startOffset) {
                 this.startOffset = startOffset;
                 return this;
@@ -344,6 +415,8 @@ public class RunAnalyzerResp {
              * @param endOffset the end offset
              * @return this builder
              */
+
+
             public AnalyzerTokenBuilder endOffset(Long endOffset) {
                 this.endOffset = endOffset;
                 return this;
@@ -355,6 +428,8 @@ public class RunAnalyzerResp {
              * @param position the token position
              * @return this builder
              */
+
+
             public AnalyzerTokenBuilder position(Long position) {
                 this.position = position;
                 return this;
@@ -366,6 +441,8 @@ public class RunAnalyzerResp {
              * @param positionLength the token position length
              * @return this builder
              */
+
+
             public AnalyzerTokenBuilder positionLength(Long positionLength) {
                 this.positionLength = positionLength;
                 return this;
@@ -377,6 +454,8 @@ public class RunAnalyzerResp {
              * @param hash the token hash
              * @return this builder
              */
+
+
             public AnalyzerTokenBuilder hash(Long hash) {
                 this.hash = hash;
                 return this;
@@ -387,6 +466,8 @@ public class RunAnalyzerResp {
              *
              * @return the analyzer token
              */
+
+
             public AnalyzerToken build() {
                 return new AnalyzerToken(this);
             }

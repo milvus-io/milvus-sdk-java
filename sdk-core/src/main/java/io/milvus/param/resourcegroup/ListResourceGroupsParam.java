@@ -21,12 +21,24 @@ package io.milvus.param.resourcegroup;
 
 import io.milvus.exception.ParamException;
 
+/**
+ * Request parameters for the listResourceGroups API.
+ */
+
+
 public class ListResourceGroupsParam {
     private ListResourceGroupsParam(Builder builder) {
         if (builder == null) {
             throw new IllegalArgumentException("Builder cannot be null");
         }
     }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -40,6 +52,8 @@ public class ListResourceGroupsParam {
     /**
      * Builder for {@link ListResourceGroupsParam} class.
      */
+
+
     public static final class Builder {
 
         private Builder() {
@@ -50,6 +64,8 @@ public class ListResourceGroupsParam {
          *
          * @return {@link ListResourceGroupsParam}
          */
+
+
         public ListResourceGroupsParam build() throws ParamException {
             return new ListResourceGroupsParam(this);
         }

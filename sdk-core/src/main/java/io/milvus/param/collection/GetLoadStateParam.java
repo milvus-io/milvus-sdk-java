@@ -28,10 +28,19 @@ import java.util.List;
 /**
  * Parameters for <code>getLoadState</code> interface.
  */
+
+
 public class GetLoadStateParam {
     private final String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
+
+    /**
+     * Constructs a new GetLoadStateParam.
+     *
+     * @param builder the builder
+     */
+
 
     public GetLoadStateParam(Builder builder) {
         if (builder.collectionName == null) {
@@ -42,13 +51,34 @@ public class GetLoadStateParam {
         this.partitionNames = builder.partitionNames;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -63,6 +93,13 @@ public class GetLoadStateParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -70,6 +107,8 @@ public class GetLoadStateParam {
     /**
      * Builder for {@link GetLoadStateParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -85,6 +124,8 @@ public class GetLoadStateParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -96,6 +137,8 @@ public class GetLoadStateParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -110,6 +153,8 @@ public class GetLoadStateParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             if (partitionNames == null) {
                 throw new IllegalArgumentException("partitionNames cannot be null");
@@ -124,6 +169,8 @@ public class GetLoadStateParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             if (partitionName == null) {
                 throw new IllegalArgumentException("partitionName cannot be null");
@@ -139,6 +186,8 @@ public class GetLoadStateParam {
          *
          * @return {@link GetLoadStateParam}
          */
+
+
         public GetLoadStateParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

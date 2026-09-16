@@ -28,9 +28,23 @@ import io.milvus.bulkwriter.response.volume.ListVolumesResponse;
 import io.milvus.bulkwriter.response.volume.VolumeInfo;
 import io.milvus.bulkwriter.restful.DataVolumeUtils;
 
+/**
+ * Manages Zilliz cloud Volume lifecycle operations.
+ *
+ * <p>Provides methods to create, describe, delete, and paginated-list volumes under a
+ * specified project.</p>
+ */
+
+
 public class VolumeManager {
     private final String cloudEndpoint;
     private final String apiKey;
+    /**
+     * Creates a volume manager for Zilliz cloud Volume lifecycle operations.
+     *
+     * @param volumeManagerParam the volume manager parameters
+     */
+
 
     public VolumeManager(VolumeManagerParam volumeManagerParam) {
         cloudEndpoint = volumeManagerParam.getCloudEndpoint();
@@ -42,6 +56,8 @@ public class VolumeManager {
      *
      * @param request the create volume request
      */
+
+
     public void createVolume(CreateVolumeRequest request) {
         DataVolumeUtils.createVolume(cloudEndpoint, apiKey, request);
     }
@@ -52,6 +68,8 @@ public class VolumeManager {
      * @param request the describe volume request
      * @return the volume information
      */
+
+
     public VolumeInfo describeVolume(DescribeVolumeRequest request) {
         String result = DataVolumeUtils.describeVolume(cloudEndpoint, apiKey, request);
         return new Gson().fromJson(result, VolumeInfo.class);
@@ -62,6 +80,8 @@ public class VolumeManager {
      *
      * @param request the delete volume request
      */
+
+
     public void deleteVolume(DeleteVolumeRequest request) {
         DataVolumeUtils.deleteVolume(cloudEndpoint, apiKey, request);
     }
@@ -72,6 +92,8 @@ public class VolumeManager {
      * @param request the list volumes request
      * @return the list of volumes
      */
+
+
     public ListVolumesResponse listVolumes(ListVolumesRequest request) {
         String result = DataVolumeUtils.listVolumes(cloudEndpoint, apiKey, request);
         return new Gson().fromJson(result, ListVolumesResponse.class);

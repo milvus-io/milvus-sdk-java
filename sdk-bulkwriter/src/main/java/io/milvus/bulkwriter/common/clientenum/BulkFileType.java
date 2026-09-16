@@ -23,6 +23,8 @@ package io.milvus.bulkwriter.common.clientenum;
  * The bulk data file types supported by the Milvus BulkWriter, together with their numeric codes and
  * file name suffixes.
  */
+
+
 public enum BulkFileType {
     /** Parquet bulk file. */
     PARQUET(1, ".parquet"),
@@ -45,6 +47,8 @@ public enum BulkFileType {
      *
      * @return the bulk file type code
      */
+
+
     public Integer getCode() {
         return code;
     }
@@ -54,6 +58,8 @@ public enum BulkFileType {
      *
      * @return the file name suffix
      */
+
+
     public String getSuffix() {
         return suffix;
     }

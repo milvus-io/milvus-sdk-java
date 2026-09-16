@@ -25,6 +25,8 @@ import io.milvus.v2.exception.MilvusClientException;
 /**
  * The metric aggregation operations supported by a {@code group-by} search aggregation.
  */
+
+
 public enum MetricOps {
     /**
      * Average of the values of the field.
@@ -58,6 +60,8 @@ public enum MetricOps {
      *
      * @return the string value
      */
+
+
     public String getValue() {
         return value;
     }
@@ -70,6 +74,8 @@ public enum MetricOps {
      * @throws MilvusClientException if the value is not one of {@code avg}, {@code sum},
      *                               {@code count}, {@code min}, or {@code max}
      */
+
+
     public static MetricOps fromValue(String value) {
         for (MetricOps op : values()) {
             if (op.value.equals(value)) {

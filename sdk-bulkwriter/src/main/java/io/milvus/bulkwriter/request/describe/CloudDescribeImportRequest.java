@@ -19,6 +19,14 @@
 
 package io.milvus.bulkwriter.request.describe;
 
+/**
+ * Request for describing an import job on a Zilliz cloud instance.
+ *
+ * <p>The job is identified by clusterId (or projectId and regionId for project database
+ * deployments) together with the jobId.</p>
+ */
+
+
 public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
     private static final long serialVersionUID = -6479634844757426430L;
     private String clusterId;
@@ -33,14 +41,34 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
      */
     private String regionId;
     private String jobId;
+    /**
+     * Creates a new CloudDescribeImportRequest.
+     */
+
 
     public CloudDescribeImportRequest() {
     }
+    /**
+     * Creates a new CloudDescribeImportRequest.
+     *
+     * @param clusterId the clusterId
+     * @param jobId the jobId
+     */
+
 
     public CloudDescribeImportRequest(String clusterId, String jobId) {
         this.clusterId = clusterId;
         this.jobId = jobId;
     }
+    /**
+     * Creates a new CloudDescribeImportRequest.
+     *
+     * @param clusterId the clusterId
+     * @param projectId the projectId
+     * @param regionId the regionId
+     * @param jobId the jobId
+     */
+
 
     public CloudDescribeImportRequest(String clusterId, String projectId, String regionId, String jobId) {
         this.clusterId = clusterId;
@@ -56,34 +84,82 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
         this.regionId = builder.regionId;
         this.jobId = builder.jobId;
     }
+    /**
+     * Returns the clusterId.
+     *
+     * @return the clusterId
+     */
+
 
     public String getClusterId() {
         return clusterId;
     }
+    /**
+     * Sets the clusterId.
+     *
+     * @param clusterId the clusterId
+     */
+
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
+    /**
+     * Returns the projectId.
+     *
+     * @return the projectId
+     */
+
 
     public String getProjectId() {
         return projectId;
     }
+    /**
+     * Sets the projectId.
+     *
+     * @param projectId the projectId
+     */
+
 
     public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
+    /**
+     * Returns the regionId.
+     *
+     * @return the regionId
+     */
+
 
     public String getRegionId() {
         return regionId;
     }
+    /**
+     * Sets the regionId.
+     *
+     * @param regionId the regionId
+     */
+
 
     public void setRegionId(String regionId) {
         this.regionId = regionId;
     }
+    /**
+     * Returns the jobId.
+     *
+     * @return the jobId
+     */
+
 
     public String getJobId() {
         return jobId;
     }
+    /**
+     * Sets the jobId.
+     *
+     * @param jobId the jobId
+     */
+
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
@@ -98,10 +174,21 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
                 ", jobId='" + jobId + '\'' +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static CloudDescribeImportRequestBuilder builder() {
         return new CloudDescribeImportRequestBuilder();
     }
+
+    /**
+     * Builder for {@link CloudDescribeImportRequest} class.
+     */
+
 
     public static class CloudDescribeImportRequestBuilder extends BaseDescribeImportRequestBuilder<CloudDescribeImportRequestBuilder> {
         private String clusterId;
@@ -115,26 +202,60 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
             this.regionId = "";
             this.jobId = "";
         }
+        /**
+         * Sets the clusterId.
+         *
+         * @param clusterId the clusterId
+         * @return this builder
+         */
+
 
         public CloudDescribeImportRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
         }
+        /**
+         * Sets the projectId.
+         *
+         * @param projectId the projectId
+         * @return this builder
+         */
+
 
         public CloudDescribeImportRequestBuilder projectId(String projectId) {
             this.projectId = projectId;
             return this;
         }
+        /**
+         * Sets the regionId.
+         *
+         * @param regionId the regionId
+         * @return this builder
+         */
+
 
         public CloudDescribeImportRequestBuilder regionId(String regionId) {
             this.regionId = regionId;
             return this;
         }
+        /**
+         * Sets the jobId.
+         *
+         * @param jobId the jobId
+         * @return this builder
+         */
+
 
         public CloudDescribeImportRequestBuilder jobId(String jobId) {
             this.jobId = jobId;
             return this;
         }
+        /**
+         * Builds the CloudDescribeImportRequest.
+         *
+         * @return the built CloudDescribeImportRequest
+         */
+
 
         public CloudDescribeImportRequest build() {
             return new CloudDescribeImportRequest(this);

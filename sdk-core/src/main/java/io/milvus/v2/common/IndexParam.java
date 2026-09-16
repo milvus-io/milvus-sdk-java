@@ -24,6 +24,8 @@ import java.util.Map;
 /**
  * Parameters used to create or describe an index on a collection field.
  */
+
+
 public class IndexParam {
     private String fieldName;
     private String indexName;
@@ -48,6 +50,8 @@ public class IndexParam {
      *
      * @return the builder
      */
+
+
     public static IndexParamBuilder builder() {
         return new IndexParamBuilder();
     }
@@ -58,6 +62,7 @@ public class IndexParam {
      *
      * @return the field name
      */
+
     public String getFieldName() {
         return fieldName;
     }
@@ -67,6 +72,8 @@ public class IndexParam {
      *
      * @return the index name
      */
+
+
     public String getIndexName() {
         return indexName;
     }
@@ -76,6 +83,8 @@ public class IndexParam {
      *
      * @return the index type
      */
+
+
     public IndexType getIndexType() {
         return indexType;
     }
@@ -85,6 +94,8 @@ public class IndexParam {
      *
      * @return the metric type
      */
+
+
     public MetricType getMetricType() {
         return metricType;
     }
@@ -94,6 +105,8 @@ public class IndexParam {
      *
      * @return the extra index parameters
      */
+
+
     public Map<String, Object> getExtraParams() {
         return extraParams;
     }
@@ -104,6 +117,7 @@ public class IndexParam {
      *
      * @param fieldName the field name
      */
+
     public void setFieldName(String fieldName) {
         if (fieldName == null) {
             throw new NullPointerException("fieldName cannot be null");
@@ -116,6 +130,8 @@ public class IndexParam {
      *
      * @param indexName the index name
      */
+
+
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
@@ -125,6 +141,8 @@ public class IndexParam {
      *
      * @param indexType the index type
      */
+
+
     public void setIndexType(IndexType indexType) {
         this.indexType = indexType;
     }
@@ -134,6 +152,8 @@ public class IndexParam {
      *
      * @param metricType the metric type
      */
+
+
     public void setMetricType(MetricType metricType) {
         this.metricType = metricType;
     }
@@ -143,6 +163,8 @@ public class IndexParam {
      *
      * @param extraParams the extra index parameters
      */
+
+
     public void setExtraParams(Map<String, Object> extraParams) {
         this.extraParams = extraParams;
     }
@@ -162,6 +184,7 @@ public class IndexParam {
     /**
      * Builder for {@link IndexParam}.
      */
+
     public static class IndexParamBuilder {
         private String fieldName;
         private String indexName;
@@ -175,6 +198,8 @@ public class IndexParam {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public IndexParamBuilder fieldName(String fieldName) {
             if (fieldName == null) {
                 throw new NullPointerException("fieldName cannot be null");
@@ -189,6 +214,8 @@ public class IndexParam {
          * @param indexName the index name
          * @return this builder
          */
+
+
         public IndexParamBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
@@ -200,6 +227,8 @@ public class IndexParam {
          * @param indexType the index type
          * @return this builder
          */
+
+
         public IndexParamBuilder indexType(IndexType indexType) {
             this.indexType = indexType;
             return this;
@@ -211,6 +240,8 @@ public class IndexParam {
          * @param metricType the metric type
          * @return this builder
          */
+
+
         public IndexParamBuilder metricType(MetricType metricType) {
             this.metricType = metricType;
             return this;
@@ -222,6 +253,8 @@ public class IndexParam {
          * @param extraParams the extra index parameters
          * @return this builder
          */
+
+
         public IndexParamBuilder extraParams(Map<String, Object> extraParams) {
             this.extraParams = extraParams;
             return this;
@@ -232,6 +265,8 @@ public class IndexParam {
          *
          * @return the index parameters
          */
+
+
         public IndexParam build() {
             return new IndexParam(this);
         }
@@ -240,6 +275,8 @@ public class IndexParam {
     /**
      * Metric type used to measure the similarity between vectors.
      */
+
+
     public enum MetricType {
         /**
          * An invalid metric type.
@@ -311,6 +348,8 @@ public class IndexParam {
     /**
      * Index type used to create an index on a collection field.
      */
+
+
     public enum IndexType {
         /**
          * No index type.
@@ -480,6 +519,7 @@ public class IndexParam {
          *
          * @return the index type name
          */
+
         public String getName() {
             return name;
         }
@@ -489,6 +529,8 @@ public class IndexParam {
          *
          * @return the numeric code
          */
+
+
         public int getCode() {
             return code;
         }
