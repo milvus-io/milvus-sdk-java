@@ -42,6 +42,8 @@ import java.io.FileNotFoundException;
  * endpoint, or a token credential, and maps cloud-storage buckets and object keys onto Azure blob
  * containers and blobs.
  */
+
+
 public class AzureStorageClient implements StorageClient {
     private static final Logger logger = LoggerFactory.getLogger(AzureStorageClient.class);
 
@@ -59,6 +61,8 @@ public class AzureStorageClient implements StorageClient {
      * @param credential the token credential, or {@code null}
      * @return the configured {@link AzureStorageClient}
      */
+
+
     public static AzureStorageClient getStorageClient(String connStr,
                                                       String accountUrl,
                                                       TokenCredential credential) {
@@ -86,6 +90,8 @@ public class AzureStorageClient implements StorageClient {
      * @param objectKey the blob name
      * @return the blob size in bytes
      */
+
+
     public Long getObjectEntity(String bucketName, String objectKey) {
         BlobClient blobClient = blobServiceClient.getBlobContainerClient(bucketName).getBlobClient(objectKey);
         return blobClient.getProperties().getBlobSize();
@@ -99,6 +105,8 @@ public class AzureStorageClient implements StorageClient {
      * @param objectKey the blob name
      * @throws FileNotFoundException if the local data file does not exist
      */
+
+
     public void putObject(File file, String bucketName, String objectKey) throws FileNotFoundException {
         FileInputStream fileInputStream = new FileInputStream(file);
         BlobClient blobClient = blobServiceClient.getBlobContainerClient(bucketName).getBlobClient(objectKey);
@@ -111,6 +119,8 @@ public class AzureStorageClient implements StorageClient {
      * @param bucketName the Azure blob container name
      * @return {@code true} if the container exists, {@code false} otherwise
      */
+
+
     public boolean checkBucketExist(String bucketName) {
         BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(bucketName);
         return blobContainerClient.exists();

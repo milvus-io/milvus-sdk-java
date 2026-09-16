@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
  * <p>The wrapped stub is reused across iterator calls; each call to {@link #get()} returns a stub
  * with the deadline reset so the deadline applies to that single call.
  */
+
+
 public class RpcStubWrapper {
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
@@ -50,6 +52,8 @@ public class RpcStubWrapper {
      * @param databaseName the database name; empty is normalized to {@code "default"}
      * @throws IllegalArgumentException if {@code endpoint} is empty
      */
+
+
     public RpcStubWrapper(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                           long rpcDeadlineMs,
                           String endpoint,
@@ -72,6 +76,8 @@ public class RpcStubWrapper {
      *
      * @return the blocking stub
      */
+
+
     public MilvusServiceGrpc.MilvusServiceBlockingStub get() {
         if (rpcDeadlineMs > 0) {
             return blockingStub.withDeadlineAfter(rpcDeadlineMs, TimeUnit.MILLISECONDS);
@@ -85,6 +91,8 @@ public class RpcStubWrapper {
      *
      * @return the endpoint
      */
+
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -94,6 +102,8 @@ public class RpcStubWrapper {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }

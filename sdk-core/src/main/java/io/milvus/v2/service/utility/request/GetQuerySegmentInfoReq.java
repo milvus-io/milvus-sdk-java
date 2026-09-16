@@ -22,6 +22,8 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code getQuerySegmentInfo} API.
  */
+
+
 public class GetQuerySegmentInfoReq {
     private String databaseName;
     private String collectionName;
@@ -30,6 +32,13 @@ public class GetQuerySegmentInfoReq {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
+
+    /**
+     * Creates a new builder for {@code GetQuerySegmentInfoReq}.
+     *
+     * @return the builder
+     */
+
 
     public static GetQuerySegmentInfoReqBuilder builder() {
         return new GetQuerySegmentInfoReqBuilder();
@@ -40,6 +49,8 @@ public class GetQuerySegmentInfoReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +60,8 @@ public class GetQuerySegmentInfoReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +71,8 @@ public class GetQuerySegmentInfoReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -67,6 +82,8 @@ public class GetQuerySegmentInfoReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -79,6 +96,11 @@ public class GetQuerySegmentInfoReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetQuerySegmentInfoReq} class.
+     */
+
+
     public static class GetQuerySegmentInfoReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -89,6 +111,8 @@ public class GetQuerySegmentInfoReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public GetQuerySegmentInfoReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -100,6 +124,8 @@ public class GetQuerySegmentInfoReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public GetQuerySegmentInfoReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -110,6 +136,8 @@ public class GetQuerySegmentInfoReq {
          *
          * @return the constructed {@code GetQuerySegmentInfoReq}
          */
+
+
         public GetQuerySegmentInfoReq build() {
             return new GetQuerySegmentInfoReq(this);
         }

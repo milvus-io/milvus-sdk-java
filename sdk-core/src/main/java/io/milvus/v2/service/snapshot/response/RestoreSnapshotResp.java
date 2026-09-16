@@ -22,12 +22,21 @@ package io.milvus.v2.service.snapshot.response;
 /**
  * Response returned by the {@code restoreSnapshot} API.
  */
+
+
 public class RestoreSnapshotResp {
     private Long jobId;
 
     private RestoreSnapshotResp(RestoreSnapshotRespBuilder builder) {
         this.jobId = builder.jobId;
     }
+
+    /**
+     * Creates a new builder for {@code RestoreSnapshotResp}.
+     *
+     * @return the builder
+     */
+
 
     public static RestoreSnapshotRespBuilder builder() {
         return new RestoreSnapshotRespBuilder();
@@ -38,6 +47,8 @@ public class RestoreSnapshotResp {
      *
      * @return the restore snapshot job ID
      */
+
+
     public Long getJobId() {
         return jobId;
     }
@@ -47,6 +58,8 @@ public class RestoreSnapshotResp {
      *
      * @param jobId the restore snapshot job ID
      */
+
+
     public void setJobId(Long jobId) {
         this.jobId = jobId;
     }
@@ -58,6 +71,11 @@ public class RestoreSnapshotResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link RestoreSnapshotResp} class.
+     */
+
+
     public static class RestoreSnapshotRespBuilder {
         private Long jobId;
 
@@ -67,6 +85,8 @@ public class RestoreSnapshotResp {
          * @param jobId the restore snapshot job ID
          * @return this builder
          */
+
+
         public RestoreSnapshotRespBuilder jobId(Long jobId) {
             this.jobId = jobId;
             return this;
@@ -77,6 +97,8 @@ public class RestoreSnapshotResp {
          *
          * @return the built response
          */
+
+
         public RestoreSnapshotResp build() {
             return new RestoreSnapshotResp(this);
         }

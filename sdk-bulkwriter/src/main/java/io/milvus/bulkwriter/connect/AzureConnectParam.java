@@ -27,6 +27,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Parameters for <code>RemoteBulkWriter</code> interface.
  */
+
+
 public class AzureConnectParam extends StorageConnectParam {
     private final String containerName;
     private final String connStr;
@@ -39,18 +41,42 @@ public class AzureConnectParam extends StorageConnectParam {
         this.accountUrl = builder.accountUrl;
         this.credential = builder.credential;
     }
+    /**
+     * Returns the containerName.
+     *
+     * @return the containerName
+     */
+
 
     public String getContainerName() {
         return containerName;
     }
+    /**
+     * Returns the connStr.
+     *
+     * @return the connStr
+     */
+
 
     public String getConnStr() {
         return connStr;
     }
+    /**
+     * Returns the accountUrl.
+     *
+     * @return the accountUrl
+     */
+
 
     public String getAccountUrl() {
         return accountUrl;
     }
+    /**
+     * Returns the credential.
+     *
+     * @return the credential
+     */
+
 
     public TokenCredential getCredential() {
         return credential;
@@ -64,6 +90,12 @@ public class AzureConnectParam extends StorageConnectParam {
                 ", accountUrl='" + accountUrl + '\'' +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -72,6 +104,8 @@ public class AzureConnectParam extends StorageConnectParam {
     /**
      * Builder for {@link AzureConnectParam} class.
      */
+
+
     public static final class Builder {
         private String containerName;
         private String connStr;
@@ -82,9 +116,13 @@ public class AzureConnectParam extends StorageConnectParam {
         }
 
         /**
+         * Sets the Azure container name.
+         *
          * @param containerName The target container name
          * @return <code>Builder</code>
          */
+
+
         public Builder withContainerName(@NotNull String containerName) {
             this.containerName = containerName;
             return this;
@@ -97,6 +135,8 @@ public class AzureConnectParam extends StorageConnectParam {
          *                <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string">...</a>
          * @return <code>Builder</code>
          */
+
+
         public Builder withConnStr(@NotNull String connStr) {
             this.connStr = connStr;
             return this;
@@ -108,6 +148,8 @@ public class AzureConnectParam extends StorageConnectParam {
          *                   <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview">...</a>
          * @return <code>Builder</code>
          */
+
+
         public Builder withAccountUrl(@NotNull String accountUrl) {
             this.accountUrl = accountUrl;
             return this;
@@ -119,6 +161,8 @@ public class AzureConnectParam extends StorageConnectParam {
          *                   <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys">...</a>
          * @return <code>Builder</code>
          */
+
+
         public Builder withCredential(@NotNull TokenCredential credential) {
             this.credential = credential;
             return this;
@@ -128,7 +172,10 @@ public class AzureConnectParam extends StorageConnectParam {
          * Verifies parameters and creates a new {@link AzureConnectParam} instance.
          *
          * @return {@link AzureConnectParam}
+         * @throws ParamException if the required parameters are invalid
          */
+
+
         public AzureConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(containerName, "containerName");
 

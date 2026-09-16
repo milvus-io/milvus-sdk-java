@@ -28,8 +28,17 @@ import java.util.List;
 /**
  * Util class to wrap response of <code>showPartitions</code> interface.
  */
+
+
 public class ShowPartResponseWrapper {
     private final ShowPartitionsResponse response;
+
+    /**
+     * Wraps the given show partitions response.
+     *
+     * @param response the gRPC {@code ShowPartitionsResponse}, must not be {@code null}
+     */
+
 
     public ShowPartResponseWrapper(ShowPartitionsResponse response) {
         if (response == null) {
@@ -43,6 +52,8 @@ public class ShowPartResponseWrapper {
      *
      * @return List of PartitionInfo, information array of the partitions
      */
+
+
     public List<PartitionInfo> getPartitionsInfo() throws IllegalResponseException {
         if (response.getPartitionNamesCount() != response.getPartitionIDsCount()
                 || response.getPartitionNamesCount() != response.getCreatedUtcTimestampsCount()) {
@@ -68,6 +79,8 @@ public class ShowPartResponseWrapper {
      * @param partitionName partition name to get information
      * @return {@link PartitionInfo} information of the partition
      */
+
+
     public PartitionInfo getPartitionInfoByName(String partitionName) {
         if (partitionName == null) {
             throw new IllegalArgumentException("Partition name cannot be null");
@@ -89,11 +102,22 @@ public class ShowPartResponseWrapper {
     /**
      * Internal-use class to wrap response of <code>showPartitions</code> interface.
      */
+
+
     public static final class PartitionInfo {
         private final String name;
         private final long id;
         private final long utcTimestamp;
         private long inMemoryPercentage = 0;
+
+        /**
+         * Creates a partition info entry.
+         *
+         * @param name         the partition name
+         * @param id           the partition ID
+         * @param utcTimestamp the creation timestamp in UTC
+         */
+
 
         public PartitionInfo(String name, long id, long utcTimestamp) {
             this.name = name;
@@ -101,22 +125,56 @@ public class ShowPartResponseWrapper {
             this.utcTimestamp = utcTimestamp;
         }
 
+        /**
+         * Sets the in-memory load percentage of the partition.
+         *
+         * @param inMemoryPercentage the percentage value
+         */
+
+
         public void setInMemoryPercentage(long inMemoryPercentage) {
             this.inMemoryPercentage = inMemoryPercentage;
         }
 
-        // Getter methods
+        /**
+         * Returns the partition name.
+         *
+         * @return the name
+         */
+
+
         public String getName() {
             return name;
         }
+
+        /**
+         * Returns the partition ID.
+         *
+         * @return the ID
+         */
+
 
         public long getId() {
             return id;
         }
 
+        /**
+         * Returns the creation timestamp of the partition in UTC.
+         *
+         * @return the UTC timestamp
+         */
+
+
         public long getUtcTimestamp() {
             return utcTimestamp;
         }
+
+        /**
+         * Returns the in-memory load percentage of the partition.
+         *
+         * @return the in-memory percentage
+         */
+
 
         public long getInMemoryPercentage() {
             return inMemoryPercentage;

@@ -33,7 +33,18 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A background task that optimizes collection segments asynchronously. Tracks progress through
+ * stages, supports cancellation, and blocks on {@link #getResult(Long)} until completion or timeout.
+ */
+
+
 public class OptimizeTask {
+
+    /**
+     * Lifecycle stages of an optimize task.
+     */
+
 
     public enum ProgressStage {
         INITIALIZING("initializing"),
@@ -50,6 +61,13 @@ public class OptimizeTask {
             this.description = description;
         }
 
+        /**
+         * Returns the description.
+         *
+         * @return the description
+         */
+
+
         public String getDescription() {
             return description;
         }
@@ -60,8 +78,21 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Function executed by an optimize task to trigger the optimize operation.
+     */
     @FunctionalInterface
     public interface ExecuteFn {
+        /**
+         * Executes the optimize operation.
+         *
+         * @param task the task being executed
+         * @param collectionName the name of the collection to optimize
+         * @param databaseName the name of the database containing the collection
+         * @param sizeMb the target segment size in MB
+         * @param timeout the timeout in milliseconds
+         * @return the optimize response
+         */
         OptimizeResp execute(OptimizeTask task, String collectionName, String databaseName,
                              Long sizeMb, Long timeout);
     }
@@ -95,6 +126,17 @@ public class OptimizeTask {
     private ProgressStage progressStage = ProgressStage.INITIALIZING;
     private final List<ProgressStage> progressHistory = new ArrayList<>();
 
+    /**
+     * Constructs an {@code OptimizeTask}.
+     *
+     * @param collectionName the name of the collection to optimize
+     * @param databaseName the name of the database containing the collection
+     * @param targetSize the target segment size as a string (e.g. "512MB"), or null
+     * @param timeout the timeout in milliseconds, or null for no timeout
+     * @param executeFn the function that triggers the optimize operation
+     */
+
+
     public OptimizeTask(String collectionName, String databaseName, String targetSize,
                         Long timeout, ExecuteFn executeFn) {
         this.collectionName = collectionName;
@@ -108,6 +150,11 @@ public class OptimizeTask {
         this.thread = new Thread(this::run, "milvus-optimize-" + collectionName);
         this.thread.setDaemon(true);
     }
+
+    /**
+     * Starts the optimize task in the background.
+     */
+
 
     public void start() {
         thread.start();
@@ -126,6 +173,13 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns whether the task has completed.
+     *
+     * @return {@code true} if the task is done, otherwise {@code false}
+     */
+
+
     public boolean isDone() {
         lock.lock();
         try {
@@ -134,6 +188,13 @@ public class OptimizeTask {
             lock.unlock();
         }
     }
+
+    /**
+     * Returns whether the task has been cancelled.
+     *
+     * @return {@code true} if the task is cancelled, otherwise {@code false}
+     */
+
 
     public boolean isCancelled() {
         lock.lock();
@@ -144,6 +205,13 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns the current progress stage of the task.
+     *
+     * @return the current progress stage
+     */
+
+
     public ProgressStage getProgress() {
         lock.lock();
         try {
@@ -153,6 +221,13 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns a copy of the progress stage history of the task.
+     *
+     * @return the progress stage history
+     */
+
+
     public List<ProgressStage> getProgressHistory() {
         lock.lock();
         try {
@@ -161,6 +236,13 @@ public class OptimizeTask {
             lock.unlock();
         }
     }
+
+    /**
+     * Returns the progress stage history as a list of stage descriptions.
+     *
+     * @return the progress stage descriptions
+     */
+
 
     public List<String> getProgressHistoryAsStrings() {
         lock.lock();
@@ -174,6 +256,13 @@ public class OptimizeTask {
             lock.unlock();
         }
     }
+
+    /**
+     * Cancels the task.
+     *
+     * @return {@code true} if the task was cancelled, {@code false} if it had already completed
+     */
+
 
     public boolean cancel() {
         lock.lock();
@@ -196,6 +285,13 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Throws a {@link MilvusClientException} if the task has been cancelled.
+     *
+     * @throws MilvusClientException if the task has been cancelled
+     */
+
+
     public void checkCancelled() {
         lock.lock();
         try {
@@ -206,6 +302,15 @@ public class OptimizeTask {
             lock.unlock();
         }
     }
+
+    /**
+     * Returns the result of the task, blocking until it completes or the timeout is reached.
+     *
+     * @param timeoutMs the maximum time to wait in milliseconds, or null to wait indefinitely
+     * @return the optimize response
+     * @throws MilvusClientException if the task fails, is cancelled, or times out
+     */
+
 
     public OptimizeResp getResult(Long timeoutMs) {
         lock.lock();
@@ -245,6 +350,13 @@ public class OptimizeTask {
             lock.unlock();
         }
     }
+
+    /**
+     * Sets the current progress stage.
+     *
+     * @param stage the new progress stage
+     */
+
 
     public void setProgress(ProgressStage stage) {
         lock.lock();
@@ -287,6 +399,8 @@ public class OptimizeTask {
      * @param targetSize size string like "512MB", "1GB", "1.5gb", or null
      * @return size in MB, or null if targetSize is null
      */
+
+
     public static Long parseTargetSize(String targetSize) {
         if (targetSize == null) {
             return null;

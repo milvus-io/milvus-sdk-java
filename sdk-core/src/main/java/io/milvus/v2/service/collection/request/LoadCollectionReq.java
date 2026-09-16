@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code loadCollection} API.
  */
+
+
 public class LoadCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -56,6 +58,8 @@ public class LoadCollectionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -65,6 +69,8 @@ public class LoadCollectionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -74,6 +80,8 @@ public class LoadCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -83,6 +91,8 @@ public class LoadCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -92,6 +102,8 @@ public class LoadCollectionReq {
      *
      * @return the number of replicas
      */
+
+
     public Integer getNumReplicas() {
         return numReplicas;
     }
@@ -101,6 +113,8 @@ public class LoadCollectionReq {
      *
      * @param numReplicas the number of replicas
      */
+
+
     public void setNumReplicas(Integer numReplicas) {
         this.numReplicas = numReplicas;
     }
@@ -133,6 +147,8 @@ public class LoadCollectionReq {
      *
      * @return {@code true} if the operation waits for the collection to be loaded
      */
+
+
     public Boolean getSync() {
         return sync;
     }
@@ -142,6 +158,8 @@ public class LoadCollectionReq {
      *
      * @param sync {@code true} to wait for the collection to be loaded
      */
+
+
     public void setSync(Boolean sync) {
         this.sync = sync;
         this.async = !sync;
@@ -152,6 +170,8 @@ public class LoadCollectionReq {
      *
      * @return the timeout in milliseconds
      */
+
+
     public Long getTimeout() {
         return timeout;
     }
@@ -161,6 +181,8 @@ public class LoadCollectionReq {
      *
      * @param timeout the timeout in milliseconds
      */
+
+
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -170,6 +192,8 @@ public class LoadCollectionReq {
      *
      * @return {@code true} to refresh the memory replicas
      */
+
+
     public Boolean getRefresh() {
         return refresh;
     }
@@ -179,6 +203,8 @@ public class LoadCollectionReq {
      *
      * @param refresh {@code true} to refresh the memory replicas
      */
+
+
     public void setRefresh(Boolean refresh) {
         this.refresh = refresh;
     }
@@ -188,6 +214,8 @@ public class LoadCollectionReq {
      *
      * @return the load fields
      */
+
+
     public List<String> getLoadFields() {
         return loadFields;
     }
@@ -197,6 +225,8 @@ public class LoadCollectionReq {
      *
      * @param loadFields the load fields
      */
+
+
     public void setLoadFields(List<String> loadFields) {
         this.loadFields = loadFields;
     }
@@ -206,6 +236,8 @@ public class LoadCollectionReq {
      *
      * @return {@code true} to skip loading the dynamic field
      */
+
+
     public Boolean getSkipLoadDynamicField() {
         return skipLoadDynamicField;
     }
@@ -215,6 +247,8 @@ public class LoadCollectionReq {
      *
      * @param skipLoadDynamicField {@code true} to skip loading the dynamic field
      */
+
+
     public void setSkipLoadDynamicField(Boolean skipLoadDynamicField) {
         this.skipLoadDynamicField = skipLoadDynamicField;
     }
@@ -224,6 +258,8 @@ public class LoadCollectionReq {
      *
      * @return the resource groups
      */
+
+
     public List<String> getResourceGroups() {
         return resourceGroups;
     }
@@ -233,6 +269,8 @@ public class LoadCollectionReq {
      *
      * @param resourceGroups the resource groups
      */
+
+
     public void setResourceGroups(List<String> resourceGroups) {
         this.resourceGroups = resourceGroups;
     }
@@ -258,9 +296,16 @@ public class LoadCollectionReq {
      *
      * @return the builder
      */
+
+
     public static LoadCollectionReqBuilder builder() {
         return new LoadCollectionReqBuilder();
     }
+
+    /**
+     * Builder for {@link LoadCollectionReq} class.
+     */
+
 
     public static class LoadCollectionReqBuilder {
         private String databaseName;
@@ -283,6 +328,8 @@ public class LoadCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -294,6 +341,8 @@ public class LoadCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -305,6 +354,8 @@ public class LoadCollectionReq {
          * @param numReplicas the number of replicas
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder numReplicas(Integer numReplicas) {
             this.numReplicas = numReplicas;
             return this;
@@ -330,6 +381,8 @@ public class LoadCollectionReq {
          * @param sync {@code true} to wait for the collection to be loaded
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder sync(Boolean sync) {
             this.sync = sync;
             this.async = !sync;
@@ -342,6 +395,8 @@ public class LoadCollectionReq {
          * @param timeout the timeout in milliseconds
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
@@ -353,6 +408,8 @@ public class LoadCollectionReq {
          * @param refresh {@code true} to refresh the memory replicas
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder refresh(Boolean refresh) {
             this.refresh = refresh;
             return this;
@@ -364,6 +421,8 @@ public class LoadCollectionReq {
          * @param loadFields the load fields
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder loadFields(List<String> loadFields) {
             this.loadFields = loadFields;
             return this;
@@ -375,6 +434,8 @@ public class LoadCollectionReq {
          * @param skipLoadDynamicField {@code true} to skip loading the dynamic field
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder skipLoadDynamicField(Boolean skipLoadDynamicField) {
             this.skipLoadDynamicField = skipLoadDynamicField;
             return this;
@@ -386,6 +447,8 @@ public class LoadCollectionReq {
          * @param resourceGroups the resource groups
          * @return this builder
          */
+
+
         public LoadCollectionReqBuilder resourceGroups(List<String> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
@@ -396,6 +459,8 @@ public class LoadCollectionReq {
          *
          * @return the request
          */
+
+
         public LoadCollectionReq build() {
             return new LoadCollectionReq(this);
         }

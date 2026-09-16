@@ -22,6 +22,8 @@ package io.milvus.v2.service.vector.request;
 /**
  * Execution stage where a {@link FunctionChain} runs.
  */
+
+
 public enum FunctionChainStage {
     /**
      * The stage is unspecified or not applicable.
@@ -63,6 +65,8 @@ public enum FunctionChainStage {
      *
      * @return the gRPC stage
      */
+
+
     public io.milvus.grpc.FunctionChainStage toGrpc() {
         return grpcStage;
     }

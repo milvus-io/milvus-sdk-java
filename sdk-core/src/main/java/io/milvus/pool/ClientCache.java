@@ -28,14 +28,18 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @param <T> the client type, such as {@code MilvusClient} or {@code MilvusClientV2}
  */
+
+
 public class ClientCache<T> {
     /**
      * Per-client calls per second above which the cache borrows additional clients.
      */
+
     public static final int THRESHOLD_INCREASE = 100;
     /**
      * Per-client calls per second below which the cache retires a client.
      */
+
     public static final int THRESHOLD_DECREASE = 50;
 
     private static final Logger logger = LoggerFactory.getLogger(ClientCache.class);
@@ -75,6 +79,8 @@ public class ClientCache<T> {
      * <p>Calling this method before the first business request reduces the latency of the first
      * {@link #getClient()} call.
      */
+
+
     public void preparePool() {
         try {
             // preparePool() will create minIdlePerKey MilvusClient objects in advance
@@ -232,6 +238,8 @@ public class ClientCache<T> {
     /**
      * Stops the periodic QPS-check timer and returns all active and retired clients to the pool.
      */
+
+
     public void stopTimer() {
         // Stop scheduled tasks and wait for any in-flight checkQPS() execution to finish
         scheduler.shutdownNow();
@@ -262,6 +270,8 @@ public class ClientCache<T> {
      *
      * @return a client object, or {@code null} if no client could be fetched
      */
+
+
     public T getClient() {
         if (activeClientList.isEmpty()) {
             // multiple threads can run into this section, add a lock to ensure only one thread can fetch the first
@@ -315,6 +325,8 @@ public class ClientCache<T> {
      *
      * @param grpcClient the client to return
      */
+
+
     public void returnClient(T grpcClient) {
         // for-loop of CopyOnWriteArrayList is thread safe
         // this method only decrements the call number, the checkQPS timer will retire client accordingly
@@ -365,6 +377,8 @@ public class ClientCache<T> {
      *
      * @return the fetch rate per second
      */
+
+
     public float fetchClientPerSecond() {
         return this.fetchClientPerSecond;
     }
@@ -372,6 +386,13 @@ public class ClientCache<T> {
     private static class ClientWrapper<T> {
         private final T client;
         private final AtomicInteger refCount = new AtomicInteger(0);
+
+        /**
+         * Wraps the given client with a zero reference count.
+         *
+         * @param client the client to wrap
+         */
+
 
         public ClientWrapper(T client) {
             this.client = client;
@@ -403,18 +424,44 @@ public class ClientCache<T> {
             return false;
         }
 
+        /**
+         * Returns the wrapped client, incrementing its reference count.
+         *
+         * @return the wrapped client
+         */
+
+
         public T getClient() {
             this.refCount.incrementAndGet();
             return this.client;
         }
 
+        /**
+         * Returns the wrapped client without changing its reference count.
+         *
+         * @return the wrapped client
+         */
+
+
         public T getRawClient() {
             return this.client;
         }
 
+        /**
+         * Decrements the reference count of the wrapped client.
+         */
+
+
         public void returnClient() {
             this.refCount.decrementAndGet();
         }
+
+        /**
+         * Returns the current reference count of the wrapped client.
+         *
+         * @return the reference count
+         */
+
 
         public int getRefCount() {
             return refCount.get();

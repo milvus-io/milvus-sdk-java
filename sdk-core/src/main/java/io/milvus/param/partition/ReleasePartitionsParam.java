@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Parameters for <code>releasePartitions</code> interface.
  */
+
+
 public class ReleasePartitionsParam {
     private final String databaseName;
     private final String collectionName;
@@ -43,18 +45,44 @@ public class ReleasePartitionsParam {
         this.partitionNames = builder.partitionNames;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
 
     public List<String> getPartitionNames() {
         return partitionNames;
@@ -73,6 +101,8 @@ public class ReleasePartitionsParam {
     /**
      * Builder for {@link ReleasePartitionsParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -87,6 +117,8 @@ public class ReleasePartitionsParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -98,6 +130,8 @@ public class ReleasePartitionsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -113,6 +147,8 @@ public class ReleasePartitionsParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             // Replace @NonNull logic with explicit null check
             if (partitionNames == null) {
@@ -128,6 +164,8 @@ public class ReleasePartitionsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -144,6 +182,8 @@ public class ReleasePartitionsParam {
          *
          * @return {@link ReleasePartitionsParam}
          */
+
+
         public ReleasePartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

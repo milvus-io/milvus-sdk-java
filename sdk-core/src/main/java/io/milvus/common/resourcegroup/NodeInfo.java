@@ -25,6 +25,8 @@ package io.milvus.common.resourcegroup;
  * <p>This class is used to represent the nodes transferred between resource groups, for example in
  * the {@code transferNode} operation.
  */
+
+
 public class NodeInfo {
     private Long nodeId;
     private String address;
@@ -41,6 +43,8 @@ public class NodeInfo {
      *
      * @return the node ID
      */
+
+
     public Long getNodeId() {
         return nodeId;
     }
@@ -50,6 +54,8 @@ public class NodeInfo {
      *
      * @param nodeId the node ID
      */
+
+
     public void setNodeId(Long nodeId) {
         this.nodeId = nodeId;
     }
@@ -59,6 +65,8 @@ public class NodeInfo {
      *
      * @return the node address
      */
+
+
     public String getAddress() {
         return address;
     }
@@ -68,6 +76,8 @@ public class NodeInfo {
      *
      * @param address the node address
      */
+
+
     public void setAddress(String address) {
         this.address = address;
     }
@@ -77,6 +87,8 @@ public class NodeInfo {
      *
      * @return the node hostname
      */
+
+
     public String getHostname() {
         return hostname;
     }
@@ -86,6 +98,8 @@ public class NodeInfo {
      *
      * @param hostname the node hostname
      */
+
+
     public void setHostname(String hostname) {
         this.hostname = hostname;
     }
@@ -104,6 +118,8 @@ public class NodeInfo {
      *
      * @return a new builder
      */
+
+
     public static Builder builder() {
         return new Builder();
     }
@@ -111,6 +127,8 @@ public class NodeInfo {
     /**
      * Builder for {@link NodeInfo}.
      */
+
+
     public static class Builder {
         private Long nodeId;
         private String address;
@@ -125,6 +143,8 @@ public class NodeInfo {
          * @param nodeId the node ID
          * @return this builder
          */
+
+
         public Builder nodeId(Long nodeId) {
             this.nodeId = nodeId;
             return this;
@@ -136,6 +156,8 @@ public class NodeInfo {
          * @param address the node address
          * @return this builder
          */
+
+
         public Builder address(String address) {
             this.address = address;
             return this;
@@ -147,6 +169,8 @@ public class NodeInfo {
          * @param hostname the node hostname
          * @return this builder
          */
+
+
         public Builder hostname(String hostname) {
             this.hostname = hostname;
             return this;
@@ -157,6 +181,8 @@ public class NodeInfo {
          *
          * @return the built {@code NodeInfo}
          */
+
+
         public NodeInfo build() {
             return new NodeInfo(this);
         }

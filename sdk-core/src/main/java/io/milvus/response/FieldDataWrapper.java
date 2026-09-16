@@ -40,9 +40,18 @@ import static io.milvus.grpc.DataType.JSON;
 /**
  * Utility class to wrap response of <code>query/search</code> interface.
  */
+
+
 public class FieldDataWrapper {
     private final FieldData fieldData;
     private List<?> cacheData = null;
+
+    /**
+     * Wraps the given field data of a query/search result.
+     *
+     * @param fieldData the gRPC {@code FieldData}, must not be {@code null}
+     */
+
 
     public FieldDataWrapper(FieldData fieldData) {
         if (fieldData == null) {
@@ -51,13 +60,34 @@ public class FieldDataWrapper {
         this.fieldData = fieldData;
     }
 
+    /**
+     * Returns whether this field holds vector data.
+     *
+     * @return {@code true} if the field is a vector field
+     */
+
+
     public boolean isVectorField() {
         return ParamUtils.isVectorDataType(fieldData.getType());
     }
 
+    /**
+     * Returns whether this field holds JSON data.
+     *
+     * @return {@code true} if the field type is {@code JSON}
+     */
+
+
     public boolean isJsonField() {
         return fieldData.getType() == JSON;
     }
+
+    /**
+     * Returns whether this field is the dynamic field of the collection.
+     *
+     * @return {@code true} if the field is a dynamic JSON field
+     */
+
 
     public boolean isDynamicField() {
         return fieldData.getType() == JSON && fieldData.getIsDynamic();
@@ -69,6 +99,8 @@ public class FieldDataWrapper {
      *
      * @return <code>int</code> dimension of the vector field
      */
+
+
     public int getDim() throws IllegalResponseException {
         if (!isVectorField()) {
             throw new IllegalResponseException("Not a vector field");
@@ -134,6 +166,8 @@ public class FieldDataWrapper {
      *
      * @return <code>long</code> row count of the field
      */
+
+
     public long getRowCount() throws IllegalResponseException {
         DataType dt = fieldData.getType();
         switch (dt) {
@@ -243,6 +277,8 @@ public class FieldDataWrapper {
      *
      * @return <code>List</code>
      */
+
+
     public List<?> getFieldData() throws IllegalResponseException {
         if (cacheData != null) {
             return cacheData;
@@ -536,6 +572,16 @@ public class FieldDataWrapper {
         return aligned;
     }
 
+    /**
+     * Gets an integer value from a JSON field.
+     *
+     * @param index     which row
+     * @param paramName which field
+     * @return the parsed integer value, or {@code null} if the JSON value is null
+     * @throws IllegalResponseException if the field is not a JSON field
+     */
+
+
     public Integer getAsInt(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             String result = getAsString(index, paramName);
@@ -543,6 +589,16 @@ public class FieldDataWrapper {
         }
         throw new IllegalResponseException("Only JSON type support this operation");
     }
+
+    /**
+     * Gets a string value from a JSON field.
+     *
+     * @param index     which row
+     * @param paramName which field
+     * @return the string value of the JSON field
+     * @throws IllegalResponseException if the field is not a JSON field
+     */
+
 
     public String getAsString(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
@@ -556,6 +612,16 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
+    /**
+     * Gets a boolean value from a JSON field.
+     *
+     * @param index     which row
+     * @param paramName which field
+     * @return the parsed boolean value, or {@code null} if the JSON value is null
+     * @throws IllegalResponseException if the field is not a JSON field
+     */
+
+
     public Boolean getAsBool(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             String result = getAsString(index, paramName);
@@ -563,6 +629,16 @@ public class FieldDataWrapper {
         }
         throw new IllegalResponseException("Only JSON type support this operation");
     }
+
+    /**
+     * Gets a double value from a JSON field.
+     *
+     * @param index     which row
+     * @param paramName which field
+     * @return the parsed double value, or {@code null} if the JSON value is null
+     * @throws IllegalResponseException if the field is not a JSON field
+     */
+
 
     public Double getAsDouble(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
@@ -580,6 +656,8 @@ public class FieldDataWrapper {
      * @return returns Long for integer value, returns Double for decimal value,
      * returns String for string value, returns JsonElement for JSON object and Array.
      */
+
+
     public Object get(int index, String paramName) throws IllegalResponseException {
         if (!isJsonField()) {
             throw new IllegalResponseException("Only JSON type support this operation");
@@ -594,6 +672,15 @@ public class FieldDataWrapper {
         return ValueOfJSONElement(element);
     }
 
+    /**
+     * Gets the value at the given row index of this field.
+     *
+     * @param index which row
+     * @return the value at the index
+     * @throws ParamException if the index is out of range
+     */
+
+
     public Object valueByIdx(int index) throws ParamException {
         List<?> data = getFieldData();
         if (index < 0 || index >= data.size()) {
@@ -607,6 +694,15 @@ public class FieldDataWrapper {
         return ParseJSONObject(object);
     }
 
+    /**
+     * Parses the given object as a JSON element.
+     *
+     * @param object the object to parse, either a {@code String} or a {@code byte[]}
+     * @return the parsed {@link JsonElement}
+     * @throws IllegalResponseException if the object is {@code null} or of an illegal type
+     */
+
+
     public static JsonElement ParseJSONObject(Object object) {
         if (object == null) {
             throw new IllegalResponseException("Object cannot be null");
@@ -619,6 +715,15 @@ public class FieldDataWrapper {
             throw new IllegalResponseException("Illegal type value for JSON parser");
         }
     }
+
+    /**
+     * Converts a JSON element into a Java value.
+     *
+     * @param element the JSON element to convert
+     * @return {@code null} for null elements, {@code String}/{@code Boolean}/{@code Long}/{@code Double}
+     *         for primitives, or the original element for objects and arrays
+     */
+
 
     public static Object ValueOfJSONElement(JsonElement element) {
         if (element == null || element.isJsonNull()) {

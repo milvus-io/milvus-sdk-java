@@ -31,6 +31,8 @@ import java.util.Objects;
  * Parameters for <code>flush</code> interface.
  * Note that the flush interface is not exposed currently.
  */
+
+
 public class FlushParam {
     private final String databaseName;
     private final List<String> collectionNames;
@@ -49,21 +51,56 @@ public class FlushParam {
         this.syncFlushWaitingTimeout = builder.syncFlushWaitingTimeout;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the collectionNames.
+     *
+     * @return the collectionNames
+     */
+
 
     public List<String> getCollectionNames() {
         return collectionNames;
     }
 
+    /**
+     * Returns the syncFlush.
+     *
+     * @return the syncFlush
+     */
+
+
     public Boolean getSyncFlush() {
         return syncFlush;
     }
 
+    /**
+     * Returns the syncFlushWaitingInterval.
+     *
+     * @return the syncFlushWaitingInterval
+     */
+
+
     public long getSyncFlushWaitingInterval() {
         return syncFlushWaitingInterval;
     }
+
+    /**
+     * Returns the syncFlushWaitingTimeout.
+     *
+     * @return the syncFlushWaitingTimeout
+     */
+
 
     public long getSyncFlushWaitingTimeout() {
         return syncFlushWaitingTimeout;
@@ -80,6 +117,13 @@ public class FlushParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -87,6 +131,8 @@ public class FlushParam {
     /**
      * Builder for {@link FlushParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private final List<String> collectionNames = new ArrayList<>();
@@ -114,6 +160,8 @@ public class FlushParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -125,6 +173,8 @@ public class FlushParam {
          * @param collectionNames a list of collections
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionNames(List<String> collectionNames) {
             if (collectionNames == null) {
                 throw new IllegalArgumentException("collectionNames cannot be null");
@@ -139,6 +189,8 @@ public class FlushParam {
          * @param collectionName name of the collections
          * @return <code>Builder</code>
          */
+
+
         public Builder addCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -156,6 +208,8 @@ public class FlushParam {
          * @param syncFlush <code>Boolean.TRUE</code> is sync mode, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withSyncFlush(Boolean syncFlush) {
             if (syncFlush == null) {
                 throw new IllegalArgumentException("syncFlush cannot be null");
@@ -172,6 +226,8 @@ public class FlushParam {
          * @return <code>Builder</code>
          * @see Constant
          */
+
+
         public Builder withSyncFlushWaitingInterval(Long milliseconds) {
             if (milliseconds == null) {
                 throw new IllegalArgumentException("milliseconds cannot be null");
@@ -188,6 +244,8 @@ public class FlushParam {
          * @return <code>Builder</code>
          * @see Constant
          */
+
+
         public Builder withSyncFlushWaitingTimeout(Long seconds) {
             if (seconds == null) {
                 throw new IllegalArgumentException("seconds cannot be null");
@@ -201,6 +259,8 @@ public class FlushParam {
          *
          * @return {@link FlushParam}
          */
+
+
         public FlushParam build() throws ParamException {
             if (collectionNames.isEmpty()) {
                 throw new ParamException("CollectionNames can not be empty");

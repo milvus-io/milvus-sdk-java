@@ -22,6 +22,8 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code listRefreshExternalCollectionJobs} API.
  */
+
+
 public class ListRefreshExternalCollectionJobsReq {
     private final String databaseName;
     private final String collectionName;
@@ -30,6 +32,13 @@ public class ListRefreshExternalCollectionJobsReq {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName != null ? builder.collectionName : "";
     }
+
+    /**
+     * Creates a new builder for {@code ListRefreshExternalCollectionJobsReq}.
+     *
+     * @return the builder
+     */
+
 
     public static ListRefreshExternalCollectionJobsReqBuilder builder() {
         return new ListRefreshExternalCollectionJobsReqBuilder();
@@ -40,6 +49,8 @@ public class ListRefreshExternalCollectionJobsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +60,8 @@ public class ListRefreshExternalCollectionJobsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -61,6 +74,11 @@ public class ListRefreshExternalCollectionJobsReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListRefreshExternalCollectionJobsReq} class.
+     */
+
+
     public static class ListRefreshExternalCollectionJobsReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -71,6 +89,8 @@ public class ListRefreshExternalCollectionJobsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ListRefreshExternalCollectionJobsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -82,6 +102,8 @@ public class ListRefreshExternalCollectionJobsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ListRefreshExternalCollectionJobsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -92,6 +114,8 @@ public class ListRefreshExternalCollectionJobsReq {
          *
          * @return the constructed {@code ListRefreshExternalCollectionJobsReq}
          */
+
+
         public ListRefreshExternalCollectionJobsReq build() {
             return new ListRefreshExternalCollectionJobsReq(this);
         }

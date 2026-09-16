@@ -25,10 +25,13 @@ import java.util.List;
 /**
  * Response returned by the {@code getQuerySegmentInfo} API.
  */
+
+
 public class GetQuerySegmentInfoResp {
     /**
      * Information about a query segment loaded in the query nodes.
      */
+
     public static class QuerySegmentInfo {
         private String collectionName;
         private Long segmentID;
@@ -60,6 +63,13 @@ public class GetQuerySegmentInfoResp {
             this.isSorted = builder.isSorted;
         }
 
+        /**
+         * Creates a new builder for {@code QuerySegmentInfo}.
+         *
+         * @return the builder
+         */
+
+
         public static QuerySegmentInfoBuilder builder() {
             return new QuerySegmentInfoBuilder();
         }
@@ -69,6 +79,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the collection name
          */
+
+
         public String getCollectionName() {
             return collectionName;
         }
@@ -78,6 +90,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param collectionName the collection name
          */
+
+
         public void setCollectionName(String collectionName) {
             this.collectionName = collectionName;
         }
@@ -87,6 +101,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the segment ID
          */
+
+
         public Long getSegmentID() {
             return segmentID;
         }
@@ -96,6 +112,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param segmentID the segment ID
          */
+
+
         public void setSegmentID(Long segmentID) {
             this.segmentID = segmentID;
         }
@@ -105,6 +123,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the collection ID
          */
+
+
         public Long getCollectionID() {
             return collectionID;
         }
@@ -114,6 +134,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param collectionID the collection ID
          */
+
+
         public void setCollectionID(Long collectionID) {
             this.collectionID = collectionID;
         }
@@ -123,6 +145,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the partition ID
          */
+
+
         public Long getPartitionID() {
             return partitionID;
         }
@@ -132,6 +156,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param partitionID the partition ID
          */
+
+
         public void setPartitionID(Long partitionID) {
             this.partitionID = partitionID;
         }
@@ -141,6 +167,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the memory size
          */
+
+
         public Long getMemSize() {
             return memSize;
         }
@@ -150,6 +178,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param memSize the memory size
          */
+
+
         public void setMemSize(Long memSize) {
             this.memSize = memSize;
         }
@@ -159,6 +189,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the number of rows
          */
+
+
         public Long getNumOfRows() {
             return numOfRows;
         }
@@ -168,6 +200,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param numOfRows the number of rows
          */
+
+
         public void setNumOfRows(Long numOfRows) {
             this.numOfRows = numOfRows;
         }
@@ -177,6 +211,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the index name
          */
+
+
         public String getIndexName() {
             return indexName;
         }
@@ -186,6 +222,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param indexName the index name
          */
+
+
         public void setIndexName(String indexName) {
             this.indexName = indexName;
         }
@@ -195,6 +233,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the index ID
          */
+
+
         public Long getIndexID() {
             return indexID;
         }
@@ -204,6 +244,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param indexID the index ID
          */
+
+
         public void setIndexID(Long indexID) {
             this.indexID = indexID;
         }
@@ -213,6 +255,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the segment state
          */
+
+
         public String getState() {
             return state;
         }
@@ -222,6 +266,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param state the segment state
          */
+
+
         public void setState(String state) {
             this.state = state;
         }
@@ -231,6 +277,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the segment level
          */
+
+
         public String getLevel() {
             return level;
         }
@@ -240,6 +288,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param level the segment level
          */
+
+
         public void setLevel(String level) {
             this.level = level;
         }
@@ -249,6 +299,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the list of query node IDs
          */
+
+
         public List<Long> getNodeIDs() {
             return nodeIDs;
         }
@@ -258,6 +310,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param nodeIDs the list of query node IDs
          */
+
+
         public void setNodeIDs(List<Long> nodeIDs) {
             this.nodeIDs = nodeIDs;
         }
@@ -267,6 +321,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the storage version
          */
+
+
         public Long getStorageVersion() {
             return storageVersion;
         }
@@ -276,6 +332,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param storageVersion the storage version
          */
+
+
         public void setStorageVersion(Long storageVersion) {
             this.storageVersion = storageVersion;
         }
@@ -285,6 +343,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return {@code true} if the segment is sorted, {@code false} otherwise
          */
+
+
         public Boolean getIsSorted() {
             return isSorted;
         }
@@ -294,6 +354,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @param isSorted {@code true} if the segment is sorted, {@code false} otherwise
          */
+
+
         public void setIsSorted(Boolean isSorted) {
             this.isSorted = isSorted;
         }
@@ -317,6 +379,11 @@ public class GetQuerySegmentInfoResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link GetQuerySegmentInfoResp.QuerySegmentInfo} class.
+         */
+
+
         public static class QuerySegmentInfoBuilder {
             private String collectionName;
             private Long segmentID;
@@ -338,6 +405,8 @@ public class GetQuerySegmentInfoResp {
              * @param collectionName the collection name
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder collectionName(String collectionName) {
                 this.collectionName = collectionName;
                 return this;
@@ -349,6 +418,8 @@ public class GetQuerySegmentInfoResp {
              * @param segmentID the segment ID
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder segmentID(Long segmentID) {
                 this.segmentID = segmentID;
                 return this;
@@ -360,6 +431,8 @@ public class GetQuerySegmentInfoResp {
              * @param collectionID the collection ID
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder collectionID(Long collectionID) {
                 this.collectionID = collectionID;
                 return this;
@@ -371,6 +444,8 @@ public class GetQuerySegmentInfoResp {
              * @param partitionID the partition ID
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder partitionID(Long partitionID) {
                 this.partitionID = partitionID;
                 return this;
@@ -382,6 +457,8 @@ public class GetQuerySegmentInfoResp {
              * @param memSize the memory size
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder memSize(Long memSize) {
                 this.memSize = memSize;
                 return this;
@@ -393,6 +470,8 @@ public class GetQuerySegmentInfoResp {
              * @param numOfRows the number of rows
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder numOfRows(Long numOfRows) {
                 this.numOfRows = numOfRows;
                 return this;
@@ -404,6 +483,8 @@ public class GetQuerySegmentInfoResp {
              * @param indexName the index name
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder indexName(String indexName) {
                 this.indexName = indexName;
                 return this;
@@ -415,6 +496,8 @@ public class GetQuerySegmentInfoResp {
              * @param indexID the index ID
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder indexID(Long indexID) {
                 this.indexID = indexID;
                 return this;
@@ -426,6 +509,8 @@ public class GetQuerySegmentInfoResp {
              * @param state the segment state
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder state(String state) {
                 this.state = state;
                 return this;
@@ -437,6 +522,8 @@ public class GetQuerySegmentInfoResp {
              * @param level the segment level
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder level(String level) {
                 this.level = level;
                 return this;
@@ -448,6 +535,8 @@ public class GetQuerySegmentInfoResp {
              * @param nodeIDs the list of query node IDs
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder nodeIDs(List<Long> nodeIDs) {
                 this.nodeIDs = nodeIDs;
                 return this;
@@ -459,6 +548,8 @@ public class GetQuerySegmentInfoResp {
              * @param storageVersion the storage version
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder storageVersion(Long storageVersion) {
                 this.storageVersion = storageVersion;
                 return this;
@@ -470,6 +561,8 @@ public class GetQuerySegmentInfoResp {
              * @param isSorted {@code true} if the segment is sorted, {@code false} otherwise
              * @return this builder
              */
+
+
             public QuerySegmentInfoBuilder isSorted(Boolean isSorted) {
                 this.isSorted = isSorted;
                 return this;
@@ -480,6 +573,8 @@ public class GetQuerySegmentInfoResp {
              *
              * @return the constructed {@code QuerySegmentInfo}
              */
+
+
             public QuerySegmentInfo build() {
                 return new QuerySegmentInfo(this);
             }
@@ -492,6 +587,13 @@ public class GetQuerySegmentInfoResp {
         this.segmentInfos = builder.segmentInfos;
     }
 
+    /**
+     * Creates a new builder for {@code GetQuerySegmentInfoResp}.
+     *
+     * @return the builder
+     */
+
+
     public static GetQuerySegmentInfoRespBuilder builder() {
         return new GetQuerySegmentInfoRespBuilder();
     }
@@ -501,6 +603,8 @@ public class GetQuerySegmentInfoResp {
      *
      * @return the list of query segment information
      */
+
+
     public List<QuerySegmentInfo> getSegmentInfos() {
         return segmentInfos;
     }
@@ -510,6 +614,8 @@ public class GetQuerySegmentInfoResp {
      *
      * @param segmentInfos the list of query segment information
      */
+
+
     public void setSegmentInfos(List<QuerySegmentInfo> segmentInfos) {
         this.segmentInfos = segmentInfos;
     }
@@ -521,6 +627,11 @@ public class GetQuerySegmentInfoResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetQuerySegmentInfoResp} class.
+     */
+
+
     public static class GetQuerySegmentInfoRespBuilder {
         private List<QuerySegmentInfo> segmentInfos = new ArrayList<>();
 
@@ -530,6 +641,8 @@ public class GetQuerySegmentInfoResp {
          * @param segmentInfos the list of query segment information
          * @return this builder
          */
+
+
         public GetQuerySegmentInfoRespBuilder segmentInfos(List<QuerySegmentInfo> segmentInfos) {
             this.segmentInfos = segmentInfos;
             return this;
@@ -540,6 +653,8 @@ public class GetQuerySegmentInfoResp {
          *
          * @return the constructed {@code GetQuerySegmentInfoResp}
          */
+
+
         public GetQuerySegmentInfoResp build() {
             return new GetQuerySegmentInfoResp(this);
         }

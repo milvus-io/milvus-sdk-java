@@ -28,10 +28,20 @@ import java.util.List;
 /**
  * Parameters for <code>upsert</code> interface.
  */
+
+
+
 public class UpsertParam extends InsertParam {
     private UpsertParam(Builder builder) {
         super(builder);
     }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static UpsertParam.Builder newBuilder() {
         return new UpsertParam.Builder();
@@ -40,6 +50,8 @@ public class UpsertParam extends InsertParam {
     /**
      * Builder for {@link UpsertParam} class.
      */
+
+
     public static class Builder extends InsertParam.Builder {
         private Builder() {
         }
@@ -50,6 +62,8 @@ public class UpsertParam extends InsertParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             super.withDatabaseName(databaseName);
             return this;
@@ -61,6 +75,8 @@ public class UpsertParam extends InsertParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -77,6 +93,8 @@ public class UpsertParam extends InsertParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -93,6 +111,8 @@ public class UpsertParam extends InsertParam {
          * @return <code>Builder</code>
          * @see InsertParam.Field
          */
+
+
         public Builder withFields(List<Field> fields) {
             // Replace @NonNull logic with explicit null check
             if (fields == null) {
@@ -128,6 +148,8 @@ public class UpsertParam extends InsertParam {
          * @return <code>Builder</code>
          * @see JsonObject
          */
+
+
         public Builder withRows(List<JsonObject> rows) {
             // Replace @NonNull logic with explicit null check
             if (rows == null) {
@@ -142,6 +164,8 @@ public class UpsertParam extends InsertParam {
          *
          * @return {@link UpsertParam}
          */
+
+
         public UpsertParam build() throws ParamException {
             super.build();
             return new UpsertParam(this);

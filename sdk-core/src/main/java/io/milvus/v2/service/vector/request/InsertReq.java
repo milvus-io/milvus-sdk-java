@@ -26,6 +26,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code insert} API.
  */
+
+
 public class InsertReq {
     //private List<> fields;
 
@@ -70,6 +72,8 @@ public class InsertReq {
      *
      * @return the builder
      */
+
+
     public static InsertReqBuilder builder() {
         return new InsertReqBuilder();
     }
@@ -79,6 +83,8 @@ public class InsertReq {
      *
      * @return the row data
      */
+
+
     public List<JsonObject> getData() {
         return data;
     }
@@ -88,6 +94,8 @@ public class InsertReq {
      *
      * @param data the row data
      */
+
+
     public void setData(List<JsonObject> data) {
         this.data = data;
     }
@@ -97,6 +105,8 @@ public class InsertReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -106,6 +116,8 @@ public class InsertReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -115,6 +127,8 @@ public class InsertReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -124,6 +138,8 @@ public class InsertReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -133,6 +149,8 @@ public class InsertReq {
      *
      * @return the partition name
      */
+
+
     public String getPartitionName() {
         return partitionName;
     }
@@ -142,6 +160,8 @@ public class InsertReq {
      *
      * @param partitionName the partition name
      */
+
+
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -156,6 +176,11 @@ public class InsertReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link InsertReq} class.
+     */
+
+
     public static class InsertReqBuilder {
         private List<JsonObject> data;
         private String databaseName = "";
@@ -168,6 +193,8 @@ public class InsertReq {
          * @param data the row data
          * @return this builder
          */
+
+
         public InsertReqBuilder data(List<JsonObject> data) {
             this.data = data;
             return this;
@@ -179,6 +206,8 @@ public class InsertReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public InsertReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -190,6 +219,8 @@ public class InsertReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public InsertReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -201,6 +232,8 @@ public class InsertReq {
          * @param partitionName the partition name
          * @return this builder
          */
+
+
         public InsertReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
@@ -211,6 +244,8 @@ public class InsertReq {
          *
          * @return the request
          */
+
+
         public InsertReq build() {
             return new InsertReq(this);
         }

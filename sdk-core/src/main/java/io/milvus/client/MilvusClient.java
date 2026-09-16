@@ -70,6 +70,8 @@ import java.util.concurrent.TimeUnit;
  * rename, truncate, or schema alteration, must not run concurrently with DML or DQL operations on the affected
  * database or collection. Serialize these operations to avoid undefined ordering and unexpected results.
  */
+
+
 public interface MilvusClient {
 
     Logger logger = LoggerFactory.getLogger(MilvusClient.class);

@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 /**
  * Factory with managing multi cluster.
  */
+
+
 public class ClusterFactory {
 
     private final List<ServerSetting> serverSettings;
@@ -53,9 +55,23 @@ public class ClusterFactory {
         }
     }
 
+    /**
+     * Returns the first configured server, used as the initial default.
+     *
+     * @return the default {@link ServerSetting}
+     */
+
+
     public ServerSetting getDefaultServer() {
         return serverSettings.get(0);
     }
+
+    /**
+     * Checks whether the current master server is among the available servers.
+     *
+     * @return {@code true} if the master is running
+     */
+
 
     public boolean masterIsRunning() {
         List<ServerAddress> serverAddresses = availableServerSettings.stream()
@@ -65,17 +81,43 @@ public class ClusterFactory {
         return serverAddresses.contains(master.getServerAddress());
     }
 
+    /**
+     * Sets the server to act as the master of the cluster.
+     *
+     * @param serverSetting the server to become the master
+     */
+
+
     public void masterChange(ServerSetting serverSetting) {
         this.master = serverSetting;
     }
+
+    /**
+     * Updates the list of servers currently available.
+     *
+     * @param serverSettings the newly available servers
+     */
+
 
     public void availableServerChange(List<ServerSetting> serverSettings) {
         this.availableServerSettings = serverSettings;
     }
 
+    /**
+     * Elects a master from the available servers, falling back to the default server.
+     *
+     * @return the elected {@link ServerSetting}
+     */
+
+
     public ServerSetting electMaster() {
         return CollectionUtils.isNotEmpty(availableServerSettings) ? availableServerSettings.get(0) : getDefaultServer();
     }
+
+    /**
+     * Stops the server monitor, if one is running.
+     */
+
 
     public void close() {
         if (null != monitor) {
@@ -83,17 +125,45 @@ public class ClusterFactory {
         }
     }
 
+    /**
+     * Returns all configured servers of the cluster.
+     *
+     * @return the server settings
+     */
+
+
     public List<ServerSetting> getServerSettings() {
         return serverSettings;
     }
+
+    /**
+     * Returns the current master server.
+     *
+     * @return the master {@link ServerSetting}
+     */
+
 
     public ServerSetting getMaster() {
         return master;
     }
 
+    /**
+     * Returns the servers currently available.
+     *
+     * @return the available server settings
+     */
+
+
     public List<ServerSetting> getAvailableServerSettings() {
         return availableServerSettings;
     }
+
+    /**
+     * Creates a new {@link ClusterFactory} builder.
+     *
+     * @return a new builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -102,6 +172,8 @@ public class ClusterFactory {
     /**
      * Builder for {@link ClusterFactory}
      */
+
+
     public static class Builder {
         private List<ServerSetting> serverSettings;
         private boolean keepMonitor = false;
@@ -116,6 +188,8 @@ public class ClusterFactory {
          * @param serverSettings ServerSetting
          * @return <code>Builder</code>
          */
+
+
         public Builder withServerSetting(List<ServerSetting> serverSettings) {
             if (serverSettings == null) {
                 throw new NullPointerException("serverSettings cannot be null");
@@ -130,6 +204,8 @@ public class ClusterFactory {
          * @param enable true keep-monitor
          * @return <code>Builder</code>
          */
+
+
         public Builder keepMonitor(boolean enable) {
             this.keepMonitor = enable;
             return this;
@@ -141,6 +217,8 @@ public class ClusterFactory {
          * @param queryNodeSingleSearch query node single search for listener
          * @return <code>Builder</code>
          */
+
+
         public Builder withQueryNodeSingleSearch(QueryNodeSingleSearch queryNodeSingleSearch) {
             this.queryNodeSingleSearch = queryNodeSingleSearch;
             return this;
@@ -151,6 +229,8 @@ public class ClusterFactory {
          *
          * @return {@link ClusterFactory}
          */
+
+
         public ClusterFactory build() throws ParamException {
 
             if (CollectionUtils.isEmpty(serverSettings)) {

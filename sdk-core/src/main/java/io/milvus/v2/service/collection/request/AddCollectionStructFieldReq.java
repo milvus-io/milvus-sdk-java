@@ -31,6 +31,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code addCollectionStructField} API.
  */
+
+
 public class AddCollectionStructFieldReq {
     private String collectionName;
     private String databaseName;
@@ -57,6 +59,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -66,6 +70,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -75,6 +81,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -84,6 +92,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -93,6 +103,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -102,6 +114,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -111,6 +125,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the field description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -120,6 +136,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param description the field description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -129,6 +147,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the max capacity
      */
+
+
     public Integer getMaxCapacity() {
         return maxCapacity;
     }
@@ -138,6 +158,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param maxCapacity the max capacity
      */
+
+
     public void setMaxCapacity(Integer maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
@@ -147,6 +169,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return {@code true} if the field is nullable
      */
+
+
     public Boolean getNullable() {
         return nullable;
     }
@@ -156,6 +180,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param nullable {@code true} to make the field nullable
      */
+
+
     public void setNullable(Boolean nullable) {
         this.nullable = nullable;
     }
@@ -165,6 +191,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the struct sub-fields
      */
+
+
     public List<FieldSchema> getStructFields() {
         return structFields;
     }
@@ -174,6 +202,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param structFields the struct sub-fields
      */
+
+
     public void setStructFields(List<FieldSchema> structFields) {
         this.structFields = structFields;
     }
@@ -183,6 +213,8 @@ public class AddCollectionStructFieldReq {
      *
      * @return the type parameters
      */
+
+
     public Map<String, String> getTypeParams() {
         return typeParams;
     }
@@ -192,6 +224,8 @@ public class AddCollectionStructFieldReq {
      *
      * @param typeParams the type parameters
      */
+
+
     public void setTypeParams(Map<String, String> typeParams) {
         this.typeParams = typeParams;
     }
@@ -202,6 +236,8 @@ public class AddCollectionStructFieldReq {
      * @return the struct field schema
      * @throws ParamException if the field is not nullable or the schema conversion fails
      */
+
+
     public CreateCollectionReq.StructFieldSchema toStructFieldSchema() {
         if (Boolean.FALSE.equals(nullable)) {
             throw new ParamException("Adding struct field to existing collection requires nullable=true");
@@ -238,9 +274,16 @@ public class AddCollectionStructFieldReq {
      *
      * @return the builder
      */
+
+
     public static AddCollectionStructFieldReqBuilder builder() {
         return new AddCollectionStructFieldReqBuilder();
     }
+
+    /**
+     * Builder for {@link AddCollectionStructFieldReq} class.
+     */
+
 
     public static class AddCollectionStructFieldReqBuilder {
         private String collectionName = "";
@@ -261,6 +304,8 @@ public class AddCollectionStructFieldReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -272,6 +317,8 @@ public class AddCollectionStructFieldReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -283,6 +330,8 @@ public class AddCollectionStructFieldReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -294,6 +343,8 @@ public class AddCollectionStructFieldReq {
          * @param description the field description
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -305,6 +356,8 @@ public class AddCollectionStructFieldReq {
          * @param maxCapacity the max capacity
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder maxCapacity(Integer maxCapacity) {
             this.maxCapacity = maxCapacity;
             return this;
@@ -316,6 +369,8 @@ public class AddCollectionStructFieldReq {
          * @param nullable {@code true} to make the field nullable
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder nullable(Boolean nullable) {
             this.nullable = nullable;
             return this;
@@ -327,6 +382,8 @@ public class AddCollectionStructFieldReq {
          * @param structFields the struct sub-fields
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder structFields(List<FieldSchema> structFields) {
             this.structFields = structFields;
             return this;
@@ -339,6 +396,8 @@ public class AddCollectionStructFieldReq {
          * @param addFieldReq the field request
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder addStructField(AddFieldReq addFieldReq) {
             if (this.structFields == null) {
                 this.structFields = new ArrayList<>();
@@ -353,6 +412,8 @@ public class AddCollectionStructFieldReq {
          * @param typeParams the type parameters
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder typeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
             return this;
@@ -365,6 +426,8 @@ public class AddCollectionStructFieldReq {
          * @param value the parameter value
          * @return this builder
          */
+
+
         public AddCollectionStructFieldReqBuilder typeParam(String key, String value) {
             if (this.typeParams == null) {
                 this.typeParams = new HashMap<>();
@@ -378,6 +441,8 @@ public class AddCollectionStructFieldReq {
          *
          * @return the request
          */
+
+
         public AddCollectionStructFieldReq build() {
             return new AddCollectionStructFieldReq(this);
         }

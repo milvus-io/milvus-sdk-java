@@ -35,6 +35,8 @@ import java.util.Map;
  * the matching entities by one or more fields and optionally computes metrics, orders the
  * groups, returns top hits, and applies nested sub-aggregations.
  */
+
+
 public class SearchAggregation {
     private static final List<String> SPECIAL_ORDER_KEYS = Arrays.asList("_count", "_key");
 
@@ -75,6 +77,8 @@ public class SearchAggregation {
      *
      * @return a new builder
      */
+
+
     public static SearchAggregationBuilder builder() {
         return new SearchAggregationBuilder();
     }
@@ -84,6 +88,8 @@ public class SearchAggregation {
      *
      * @return the group-by fields
      */
+
+
     public List<String> getFields() {
         return fields;
     }
@@ -93,6 +99,8 @@ public class SearchAggregation {
      *
      * @return the number of groups
      */
+
+
     public long getSize() {
         return size;
     }
@@ -102,6 +110,8 @@ public class SearchAggregation {
      *
      * @return the metric aggregations
      */
+
+
     public Map<String, MetricSpec> getMetrics() {
         return metrics;
     }
@@ -111,6 +121,8 @@ public class SearchAggregation {
      *
      * @return the ordering rules
      */
+
+
     public List<OrderSpec> getOrder() {
         return order;
     }
@@ -120,6 +132,8 @@ public class SearchAggregation {
      *
      * @return the top-hits aggregation, or {@code null} if none was specified
      */
+
+
     public TopHitsSpec getTopHits() {
         return topHits;
     }
@@ -129,6 +143,8 @@ public class SearchAggregation {
      *
      * @return the sub-aggregation, or {@code null} if none was specified
      */
+
+
     public SearchAggregation getSubAggregation() {
         return subAggregation;
     }
@@ -138,6 +154,8 @@ public class SearchAggregation {
      *
      * @return the gRPC aggregation spec
      */
+
+
     public SearchAggregationSpec toProto() {
         SearchAggregationSpec.Builder builder = SearchAggregationSpec.newBuilder()
                 .addAllFields(fields)
@@ -182,6 +200,8 @@ public class SearchAggregation {
     /**
      * Builder for {@link SearchAggregation}.
      */
+
+
     public static class SearchAggregationBuilder {
         private final List<String> fields = new ArrayList<>();
         private long size;
@@ -199,6 +219,8 @@ public class SearchAggregation {
          * @param fields the group-by fields
          * @return this builder
          */
+
+
         public SearchAggregationBuilder fields(List<String> fields) {
             this.fields.clear();
             if (fields != null) {
@@ -213,6 +235,8 @@ public class SearchAggregation {
          * @param field the group-by field
          * @return this builder
          */
+
+
         public SearchAggregationBuilder addField(String field) {
             this.fields.add(field);
             return this;
@@ -224,6 +248,8 @@ public class SearchAggregation {
          * @param size the number of groups
          * @return this builder
          */
+
+
         public SearchAggregationBuilder size(long size) {
             this.size = size;
             return this;
@@ -235,6 +261,8 @@ public class SearchAggregation {
          * @param metrics the metric aggregations
          * @return this builder
          */
+
+
         public SearchAggregationBuilder metrics(Map<String, MetricSpec> metrics) {
             this.metrics.clear();
             if (metrics != null) {
@@ -251,6 +279,8 @@ public class SearchAggregation {
          * @return this builder
          * @throws MilvusClientException if the alias is empty or the metric is {@code null}
          */
+
+
         public SearchAggregationBuilder addMetric(String alias, MetricSpec metric) {
             if (alias == null || alias.isEmpty()) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -270,6 +300,8 @@ public class SearchAggregation {
          * @param order the ordering rules
          * @return this builder
          */
+
+
         public SearchAggregationBuilder order(List<OrderSpec> order) {
             this.order.clear();
             if (order != null) {
@@ -285,6 +317,8 @@ public class SearchAggregation {
          * @return this builder
          * @throws MilvusClientException if the ordering rule is {@code null}
          */
+
+
         public SearchAggregationBuilder addOrder(OrderSpec order) {
             if (order == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -300,6 +334,8 @@ public class SearchAggregation {
          * @param topHits the top-hits aggregation
          * @return this builder
          */
+
+
         public SearchAggregationBuilder topHits(TopHitsSpec topHits) {
             this.topHits = topHits;
             return this;
@@ -311,6 +347,8 @@ public class SearchAggregation {
          * @param subAggregation the sub-aggregation
          * @return this builder
          */
+
+
         public SearchAggregationBuilder subAggregation(SearchAggregation subAggregation) {
             this.subAggregation = subAggregation;
             return this;
@@ -321,6 +359,8 @@ public class SearchAggregation {
          *
          * @return the built aggregation
          */
+
+
         public SearchAggregation build() {
             return new SearchAggregation(this);
         }

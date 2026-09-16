@@ -22,10 +22,14 @@ package io.milvus.bulkwriter.request.import_;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
-  If you want to import data into open-source Milvus,
-  you can use this method to import the data files stored in the bucket where Milvus resides.
+/**
+ * Request for importing data into an open-source Milvus instance.
+ *
+ * <p>Imports data files stored in the bucket where Milvus resides, supporting single-file
+ * or multi-path import through the files parameter.</p>
  */
+
+
 public class MilvusImportRequest extends BaseImportRequest {
     private static final long serialVersionUID = -1958858397962018740L;
     /**
@@ -60,9 +64,22 @@ public class MilvusImportRequest extends BaseImportRequest {
      * ]
      */
     private List<List<String>> files;
+    /**
+     * Creates a new MilvusImportRequest.
+     */
+
 
     public MilvusImportRequest() {
     }
+    /**
+     * Creates a new MilvusImportRequest.
+     *
+     * @param dbName the dbName
+     * @param collectionName the collectionName
+     * @param partitionName the partitionName
+     * @param files the files
+     */
+
 
     public MilvusImportRequest(String dbName, String collectionName, String partitionName, List<List<String>> files) {
         this.dbName = dbName;
@@ -78,34 +95,82 @@ public class MilvusImportRequest extends BaseImportRequest {
         this.partitionName = builder.partitionName;
         this.files = builder.files;
     }
+    /**
+     * Returns the dbName.
+     *
+     * @return the dbName
+     */
+
 
     public String getDbName() {
         return dbName;
     }
+    /**
+     * Sets the dbName.
+     *
+     * @param dbName the dbName
+     */
+
 
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
 
     public String getCollectionName() {
         return collectionName;
     }
+    /**
+     * Sets the collectionName.
+     *
+     * @param collectionName the collectionName
+     */
+
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
 
     public String getPartitionName() {
         return partitionName;
     }
+    /**
+     * Sets the partitionName.
+     *
+     * @param partitionName the partitionName
+     */
+
 
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
+    /**
+     * Returns the files.
+     *
+     * @return the files
+     */
+
 
     public List<List<String>> getFiles() {
         return files;
     }
+    /**
+     * Sets the files.
+     *
+     * @param files the files
+     */
+
 
     public void setFiles(List<List<String>> files) {
         this.files = files;
@@ -120,10 +185,21 @@ public class MilvusImportRequest extends BaseImportRequest {
                 ", files=" + files +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static MilvusImportRequestBuilder builder() {
         return new MilvusImportRequestBuilder();
     }
+
+    /**
+     * Builder for {@link MilvusImportRequest} class.
+     */
+
 
     public static class MilvusImportRequestBuilder extends BaseImportRequestBuilder<MilvusImportRequestBuilder> {
         private String dbName;
@@ -137,26 +213,60 @@ public class MilvusImportRequest extends BaseImportRequest {
             this.partitionName = "";
             this.files = new ArrayList<>();
         }
+        /**
+         * Sets the dbName.
+         *
+         * @param dbName the dbName
+         * @return this builder
+         */
+
 
         public MilvusImportRequestBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
+        /**
+         * Sets the collectionName.
+         *
+         * @param collectionName the collectionName
+         * @return this builder
+         */
+
 
         public MilvusImportRequestBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
+        /**
+         * Sets the partitionName.
+         *
+         * @param partitionName the partitionName
+         * @return this builder
+         */
+
 
         public MilvusImportRequestBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
+        /**
+         * Sets the files.
+         *
+         * @param files the files
+         * @return this builder
+         */
+
 
         public MilvusImportRequestBuilder files(List<List<String>> files) {
             this.files = files;
             return this;
         }
+        /**
+         * Builds the MilvusImportRequest.
+         *
+         * @return the built MilvusImportRequest
+         */
+
 
         public MilvusImportRequest build() {
             return new MilvusImportRequest(this);

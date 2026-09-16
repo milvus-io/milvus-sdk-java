@@ -23,6 +23,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Base request class for data import operations.
+ *
+ * <p>Holds the API key and additional import options shared by all import requests.</p>
+ */
+
+
 public class BaseImportRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
@@ -32,9 +39,20 @@ public class BaseImportRequest implements Serializable {
     private String apiKey;
 
     private Map<String, Object> options;
+    /**
+     * Creates a new BaseImportRequest.
+     */
+
 
     public BaseImportRequest() {
     }
+    /**
+     * Creates a new BaseImportRequest.
+     *
+     * @param apiKey the apiKey
+     * @param options the options
+     */
+
 
     public BaseImportRequest(String apiKey, Map<String, Object> options) {
         this.apiKey = apiKey;
@@ -45,18 +63,42 @@ public class BaseImportRequest implements Serializable {
         this.apiKey = builder.apiKey;
         this.options = builder.options;
     }
+    /**
+     * Returns the apiKey.
+     *
+     * @return the apiKey
+     */
+
 
     public String getApiKey() {
         return apiKey;
     }
+    /**
+     * Sets the apiKey.
+     *
+     * @param apiKey the apiKey
+     */
+
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
+    /**
+     * Returns the options.
+     *
+     * @return the options
+     */
+
 
     public Map<String, Object> getOptions() {
         return options;
     }
+    /**
+     * Sets the options.
+     *
+     * @param options the options
+     */
+
 
     public void setOptions(Map<String, Object> options) {
         this.options = options;
@@ -69,10 +111,21 @@ public class BaseImportRequest implements Serializable {
                 "options=" + options +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static BaseImportRequestBuilder<?> builder() {
         return new BaseImportRequestBuilder<>();
     }
+
+    /**
+     * Builder for {@link BaseImportRequest} class.
+     */
+
 
     public static class BaseImportRequestBuilder<T extends BaseImportRequestBuilder<T>> {
         private String apiKey = "";
@@ -82,16 +135,36 @@ public class BaseImportRequest implements Serializable {
             this.apiKey = "";
             this.options = new HashMap<>();
         }
+        /**
+         * Sets the apiKey.
+         *
+         * @param apiKey the apiKey
+         * @return this builder
+         */
+
 
         public T apiKey(String apiKey) {
             this.apiKey = apiKey;
             return (T) this;
         }
+        /**
+         * Sets the options.
+         *
+         * @param options the options
+         * @return this builder
+         */
+
 
         public T options(Map<String, Object> options) {
             this.options = options;
             return (T) this;
         }
+        /**
+         * Builds the BaseImportRequest.
+         *
+         * @return the built BaseImportRequest
+         */
+
 
         public BaseImportRequest build() {
             return new BaseImportRequest(this);

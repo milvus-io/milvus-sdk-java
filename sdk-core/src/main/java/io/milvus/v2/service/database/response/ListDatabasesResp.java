@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code listDatabases} API.
  */
+
+
 public class ListDatabasesResp {
     private List<String> databaseNames;
 
@@ -37,6 +39,8 @@ public class ListDatabasesResp {
      *
      * @return the list of database names
      */
+
+
     public List<String> getDatabaseNames() {
         return databaseNames;
     }
@@ -46,6 +50,8 @@ public class ListDatabasesResp {
      *
      * @param databaseNames the list of database names
      */
+
+
     public void setDatabaseNames(List<String> databaseNames) {
         this.databaseNames = databaseNames;
     }
@@ -62,9 +68,16 @@ public class ListDatabasesResp {
      *
      * @return a new {@link ListDatabasesRespBuilder}
      */
+
+
     public static ListDatabasesRespBuilder builder() {
         return new ListDatabasesRespBuilder();
     }
+
+    /**
+     * Builder for {@link ListDatabasesResp} class.
+     */
+
 
     public static class ListDatabasesRespBuilder {
         private List<String> databaseNames = new ArrayList<>();
@@ -78,6 +91,8 @@ public class ListDatabasesResp {
          * @param databaseNames the list of database names
          * @return this builder
          */
+
+
         public ListDatabasesRespBuilder databaseNames(List<String> databaseNames) {
             this.databaseNames = databaseNames;
             return this;
@@ -88,6 +103,8 @@ public class ListDatabasesResp {
          *
          * @return the built response
          */
+
+
         public ListDatabasesResp build() {
             return new ListDatabasesResp(this);
         }

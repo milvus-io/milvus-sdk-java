@@ -52,6 +52,8 @@ import static io.milvus.param.Constant.UNLIMITED;
  * probing until a batch that satisfies the filter is collected. The configured limit caps the total
  * number of returned rows, and {@link #next()} returns an empty list once the limit is reached.
  */
+
+
 public class SearchIteratorV2 {
     private static final Logger logger = LoggerFactory.getLogger(SearchIteratorV2.class);
     private final RpcStubWrapper blockingStub;
@@ -77,6 +79,8 @@ public class SearchIteratorV2 {
      * @param searchIteratorReq the search iterator request
      * @param blockingStub      the gRPC stub wrapper used to perform searches
      */
+
+
     public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
                             RpcStubWrapper blockingStub) {
         this(searchIteratorReq, blockingStub, null);
@@ -91,6 +95,8 @@ public class SearchIteratorV2 {
      * @param blockingStub      the gRPC stub wrapper used to perform searches
      * @param clusterId         the cluster ID for global cluster routing, may be empty
      */
+
+
     public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
                             RpcStubWrapper blockingStub,
                             String clusterId) {
@@ -214,6 +220,8 @@ public class SearchIteratorV2 {
      *
      * @return the next batch of rows, or an empty list if the iteration is finished
      */
+
+
     public List<SearchResp.SearchResult> next() {
         if (leftResCnt != null && leftResCnt <= 0) {
             cache.clear();
@@ -303,6 +311,8 @@ public class SearchIteratorV2 {
     /**
      * Clears the internal cache of buffered search results.
      */
+
+
     public void close() {
         cache.clear();
     }

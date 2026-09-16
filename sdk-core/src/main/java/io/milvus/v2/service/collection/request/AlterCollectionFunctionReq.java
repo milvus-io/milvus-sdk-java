@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code alterCollectionFunction} API.
  */
+
+
 public class AlterCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
@@ -38,6 +40,8 @@ public class AlterCollectionFunctionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -47,6 +51,8 @@ public class AlterCollectionFunctionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -56,6 +62,8 @@ public class AlterCollectionFunctionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -65,6 +73,8 @@ public class AlterCollectionFunctionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -74,6 +84,8 @@ public class AlterCollectionFunctionReq {
      *
      * @return the function
      */
+
+
     public CreateCollectionReq.Function getFunction() {
         return function;
     }
@@ -92,9 +104,16 @@ public class AlterCollectionFunctionReq {
      *
      * @return the builder
      */
+
+
     public static AlterCollectionFunctionReqBuilder builder() {
         return new AlterCollectionFunctionReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterCollectionFunctionReq} class.
+     */
+
 
     public static class AlterCollectionFunctionReqBuilder {
         private String collectionName = "";
@@ -110,6 +129,8 @@ public class AlterCollectionFunctionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AlterCollectionFunctionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -121,6 +142,8 @@ public class AlterCollectionFunctionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AlterCollectionFunctionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -132,6 +155,8 @@ public class AlterCollectionFunctionReq {
          * @param function the function
          * @return this builder
          */
+
+
         public AlterCollectionFunctionReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
             return this;
@@ -142,6 +167,8 @@ public class AlterCollectionFunctionReq {
          *
          * @return the request
          */
+
+
         public AlterCollectionFunctionReq build() {
             return new AlterCollectionFunctionReq(this);
         }

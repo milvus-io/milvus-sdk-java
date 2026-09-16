@@ -22,14 +22,30 @@ package io.milvus.param;
 /**
  * Utility class to wrap a message.
  */
+
+
 public class RpcStatus {
     public static final String SUCCESS_MSG = "Success";
 
     private final String msg;
 
+    /**
+     * Returns the msg.
+     *
+     * @return the msg
+     */
+
+
     public String getMsg() {
         return msg;
     }
+
+    /**
+     * Constructs a new RpcStatus.
+     *
+     * @param msg the msg
+     */
+
 
     public RpcStatus(String msg) {
         this.msg = msg;

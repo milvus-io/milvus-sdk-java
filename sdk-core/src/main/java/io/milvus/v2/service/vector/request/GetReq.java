@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code get} API.
  */
+
+
 public class GetReq {
     private String databaseName;
     private String collectionName;
@@ -53,6 +55,8 @@ public class GetReq {
      *
      * @return the builder
      */
+
+
     public static GetReqBuilder builder() {
         return new GetReqBuilder();
     }
@@ -62,6 +66,8 @@ public class GetReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -71,6 +77,8 @@ public class GetReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -80,6 +88,8 @@ public class GetReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -89,6 +99,8 @@ public class GetReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -96,6 +108,7 @@ public class GetReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @return the cluster ID
      */
     @Deprecated
     public String getClusterId() {
@@ -105,6 +118,7 @@ public class GetReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @param clusterId the cluster ID
      */
     @Deprecated
     public void setClusterId(String clusterId) {
@@ -116,6 +130,8 @@ public class GetReq {
      *
      * @return the partition name
      */
+
+
     public String getPartitionName() {
         return partitionName;
     }
@@ -125,6 +141,8 @@ public class GetReq {
      *
      * @param partitionName the partition name
      */
+
+
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -134,6 +152,8 @@ public class GetReq {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -143,6 +163,8 @@ public class GetReq {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -152,6 +174,8 @@ public class GetReq {
      *
      * @return the primary key values
      */
+
+
     public List<Object> getIds() {
         return ids;
     }
@@ -161,6 +185,8 @@ public class GetReq {
      *
      * @param ids the primary key values
      */
+
+
     public void setIds(List<Object> ids) {
         this.ids = ids;
     }
@@ -170,6 +196,8 @@ public class GetReq {
      *
      * @return the output fields
      */
+
+
     public List<String> getOutputFields() {
         return outputFields;
     }
@@ -179,6 +207,8 @@ public class GetReq {
      *
      * @param outputFields the output fields
      */
+
+
     public void setOutputFields(List<String> outputFields) {
         this.outputFields = outputFields;
     }
@@ -196,6 +226,11 @@ public class GetReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetReq} class.
+     */
+
+
     public static class GetReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -211,6 +246,8 @@ public class GetReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public GetReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -222,6 +259,8 @@ public class GetReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public GetReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -230,6 +269,8 @@ public class GetReq {
         /**
          * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
          * {@code MilvusClientV2Session}.
+         * @param clusterId the cluster ID
+         * @return this builder
          */
         @Deprecated
         public GetReqBuilder clusterId(String clusterId) {
@@ -243,6 +284,8 @@ public class GetReq {
          * @param partitionName the partition name
          * @return this builder
          */
+
+
         public GetReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
@@ -254,6 +297,8 @@ public class GetReq {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public GetReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -265,6 +310,8 @@ public class GetReq {
          * @param ids the primary key values
          * @return this builder
          */
+
+
         public GetReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
@@ -276,6 +323,8 @@ public class GetReq {
          * @param outputFields the output fields
          * @return this builder
          */
+
+
         public GetReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
@@ -286,6 +335,8 @@ public class GetReq {
          *
          * @return the request
          */
+
+
         public GetReq build() {
             return new GetReq(this);
         }

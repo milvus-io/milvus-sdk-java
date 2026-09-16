@@ -28,6 +28,12 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * gRPC client interceptor that attaches a client request ID and the client request timestamp
+ * to each outgoing RPC as metadata headers, enabling request correlation on the server side.
+ */
+
+
 public class ClientRequestInterceptor implements ClientInterceptor {
     public static final CallOptions.Key<String> CLIENT_REQUEST_ID_OPTION =
             CallOptions.Key.create("milvus-client-request-id");
@@ -38,6 +44,13 @@ public class ClientRequestInterceptor implements ClientInterceptor {
             Metadata.Key.of("client-request-unixmsec", Metadata.ASCII_STRING_MARSHALLER);
 
     private final ThreadLocal<String> clientRequestId;
+
+    /**
+     * Creates an interceptor that reads the request ID to attach from the given thread-local.
+     *
+     * @param clientRequestId the thread-local holding the current request ID, may be {@code null}
+     */
+
 
     public ClientRequestInterceptor(ThreadLocal<String> clientRequestId) {
         this.clientRequestId = clientRequestId;
@@ -67,7 +80,15 @@ public class ClientRequestInterceptor implements ClientInterceptor {
         };
     }
 
-    /** Mirrors the server's OpenTelemetry TraceID parser. */
+    /**
+     * Mirrors the server's OpenTelemetry TraceID parser.
+     *
+     * @param requestId the request ID to validate
+     * @return {@code true} if the value is a 32-character lowercase hexadecimal TraceID that is not
+     *         all zeros
+     */
+
+
     public static boolean isValidClientRequestId(String requestId) {
         if (StringUtils.length(requestId) != 32) {
             return false;

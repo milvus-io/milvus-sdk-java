@@ -22,6 +22,8 @@ package io.milvus.v2.service.cdc.response;
 /**
  * Response returned by the {@code updateReplicateConfiguration} CDC API. Contains no payload.
  */
+
+
 public class UpdateReplicateConfigurationResp {
 
     private UpdateReplicateConfigurationResp(UpdateReplicateConfigurationRespBuilder builder) {
@@ -32,9 +34,16 @@ public class UpdateReplicateConfigurationResp {
      *
      * @return the builder
      */
+
+
     public static UpdateReplicateConfigurationRespBuilder builder() {
         return new UpdateReplicateConfigurationRespBuilder();
     }
+
+    /**
+     * Builder for {@link UpdateReplicateConfigurationResp} class.
+     */
+
 
     public static class UpdateReplicateConfigurationRespBuilder {
         /**
@@ -42,6 +51,7 @@ public class UpdateReplicateConfigurationResp {
          *
          * @return the response
          */
+
         public UpdateReplicateConfigurationResp build() {
             return new UpdateReplicateConfigurationResp(this);
         }

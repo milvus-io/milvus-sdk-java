@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Response returned by the {@code listAliases} API.
  */
+
+
 public class ListAliasResp {
     private String collectionName;
     private List<String> alias;
@@ -35,6 +37,13 @@ public class ListAliasResp {
         this.dbName = builder.dbName;
     }
 
+    /**
+     * Creates a new builder for {@code ListAliasResp}.
+     *
+     * @return the builder
+     */
+
+
     public static ListAliasRespBuilder builder() {
         return new ListAliasRespBuilder();
     }
@@ -44,6 +53,8 @@ public class ListAliasResp {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -53,6 +64,8 @@ public class ListAliasResp {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -62,6 +75,8 @@ public class ListAliasResp {
      *
      * @return the list of aliases
      */
+
+
     public List<String> getAlias() {
         return alias;
     }
@@ -71,6 +86,8 @@ public class ListAliasResp {
      *
      * @param alias the list of aliases
      */
+
+
     public void setAlias(List<String> alias) {
         this.alias = alias;
     }
@@ -80,6 +97,8 @@ public class ListAliasResp {
      *
      * @return the database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -89,6 +108,8 @@ public class ListAliasResp {
      *
      * @param dbName the database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -102,6 +123,11 @@ public class ListAliasResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListAliasResp} class.
+     */
+
+
     public static class ListAliasRespBuilder {
         private String collectionName;
         private List<String> alias;
@@ -113,6 +139,8 @@ public class ListAliasResp {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ListAliasRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -124,6 +152,8 @@ public class ListAliasResp {
          * @param alias the list of aliases
          * @return this builder
          */
+
+
         public ListAliasRespBuilder alias(List<String> alias) {
             this.alias = alias;
             return this;
@@ -135,6 +165,8 @@ public class ListAliasResp {
          * @param dbName the database name
          * @return this builder
          */
+
+
         public ListAliasRespBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -145,6 +177,8 @@ public class ListAliasResp {
          *
          * @return the constructed {@code ListAliasResp}
          */
+
+
         public ListAliasResp build() {
             return new ListAliasResp(this);
         }

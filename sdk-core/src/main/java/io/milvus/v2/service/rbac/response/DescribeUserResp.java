@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code describeUser} API.
  */
+
+
 public class DescribeUserResp {
     private String userName;
     private List<String> roles;
@@ -41,6 +43,8 @@ public class DescribeUserResp {
      *
      * @return the user name
      */
+
+
     public String getUserName() {
         return userName;
     }
@@ -50,6 +54,8 @@ public class DescribeUserResp {
      *
      * @param userName the user name
      */
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -59,6 +65,8 @@ public class DescribeUserResp {
      *
      * @return the roles of the user
      */
+
+
     public List<String> getRoles() {
         return roles;
     }
@@ -68,6 +76,8 @@ public class DescribeUserResp {
      *
      * @param roles the roles of the user
      */
+
+
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
@@ -77,6 +87,8 @@ public class DescribeUserResp {
      *
      * @return the user description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -86,6 +98,8 @@ public class DescribeUserResp {
      *
      * @param description the user description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -104,9 +118,16 @@ public class DescribeUserResp {
      *
      * @return a new {@link DescribeUserRespBuilder}
      */
+
+
     public static DescribeUserRespBuilder builder() {
         return new DescribeUserRespBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeUserResp} class.
+     */
+
 
     public static class DescribeUserRespBuilder {
         private String userName = "";
@@ -122,6 +143,8 @@ public class DescribeUserResp {
          * @param userName the user name
          * @return this builder
          */
+
+
         public DescribeUserRespBuilder userName(String userName) {
             this.userName = userName;
             return this;
@@ -133,6 +156,8 @@ public class DescribeUserResp {
          * @param roles the roles of the user
          * @return this builder
          */
+
+
         public DescribeUserRespBuilder roles(List<String> roles) {
             this.roles = roles;
             return this;
@@ -144,6 +169,8 @@ public class DescribeUserResp {
          * @param description the user description
          * @return this builder
          */
+
+
         public DescribeUserRespBuilder description(String description) {
             this.description = description;
             return this;
@@ -154,6 +181,8 @@ public class DescribeUserResp {
          *
          * @return the built response
          */
+
+
         public DescribeUserResp build() {
             return new DescribeUserResp(this);
         }

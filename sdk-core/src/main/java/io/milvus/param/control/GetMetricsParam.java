@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>getMetric</code> interface.
  */
+
+
 public class GetMetricsParam {
     private final String request;
 
@@ -32,9 +34,23 @@ public class GetMetricsParam {
         this.request = builder.request;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the request.
+     *
+     * @return the request
+     */
+
 
     public String getRequest() {
         return request;
@@ -50,6 +66,8 @@ public class GetMetricsParam {
     /**
      * Builder for {@link GetMetricsParam} class.
      */
+
+
     public static final class Builder {
         private String request;
 
@@ -63,6 +81,8 @@ public class GetMetricsParam {
          * @return <code>Builder</code>
          * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy">Metric function design</a>
          */
+
+
         public Builder withRequest(String request) {
             if (request == null) {
                 throw new IllegalArgumentException("request cannot be null");
@@ -76,6 +96,8 @@ public class GetMetricsParam {
          *
          * @return {@link GetMetricsParam}
          */
+
+
         public GetMetricsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(request, "Request string");
 

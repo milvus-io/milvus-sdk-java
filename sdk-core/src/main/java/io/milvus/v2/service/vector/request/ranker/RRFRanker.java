@@ -47,6 +47,8 @@ import java.util.Map;
  * .param("k", "60")
  * .build();
  */
+
+
 public class RRFRanker extends CreateCollectionReq.Function {
     private int k;
 
@@ -78,6 +80,8 @@ public class RRFRanker extends CreateCollectionReq.Function {
      *
      * @return the rank fusion constant
      */
+
+
     public int getK() {
         return k;
     }
@@ -88,6 +92,8 @@ public class RRFRanker extends CreateCollectionReq.Function {
      *
      * @param k the rank fusion constant
      */
+
+
     public void setK(int k) {
         this.k = k;
     }
@@ -137,6 +143,8 @@ public class RRFRanker extends CreateCollectionReq.Function {
      *
      * @return a new builder
      */
+
+
     public static RRFRankerBuilder builder() {
         return new RRFRankerBuilder();
     }
@@ -144,6 +152,8 @@ public class RRFRanker extends CreateCollectionReq.Function {
     /**
      * Builder for {@link RRFRanker}.
      */
+
+
     public static class RRFRankerBuilder extends Function.FunctionBuilder<RRFRankerBuilder> {
         private int k = 60;
 
@@ -156,6 +166,8 @@ public class RRFRanker extends CreateCollectionReq.Function {
          * @param k the rank fusion constant
          * @return this builder
          */
+
+
         public RRFRankerBuilder k(int k) {
             this.k = k;
             return this;

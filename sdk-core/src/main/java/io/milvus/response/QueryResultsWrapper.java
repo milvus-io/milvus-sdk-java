@@ -34,8 +34,17 @@ import java.util.Map;
 /**
  * Utility class to wrap response of <code>query</code> interface.
  */
+
+
 public class QueryResultsWrapper extends RowRecordWrapper {
     private final QueryResults results;
+
+    /**
+     * Wraps the given query results.
+     *
+     * @param results the gRPC {@code QueryResults}, must not be {@code null}
+     */
+
 
     public QueryResultsWrapper(QueryResults results) {
         if (results == null) {
@@ -51,6 +60,8 @@ public class QueryResultsWrapper extends RowRecordWrapper {
      * @param fieldName field name to get output data
      * @return {@link FieldDataWrapper}
      */
+
+
     public FieldDataWrapper getFieldWrapper(String fieldName) throws ParamException {
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name cannot be null");
@@ -100,6 +111,8 @@ public class QueryResultsWrapper extends RowRecordWrapper {
      *
      * @return <code>long</code> row count of the result
      */
+
+
     public long getRowCount() {
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {
@@ -122,15 +135,38 @@ public class QueryResultsWrapper extends RowRecordWrapper {
     /**
      * Internal-use class to wrap response of <code>query</code> interface.
      */
+
+
     public static final class RowRecord {
         Map<String, Object> fieldValues = new HashMap<>();
+
+        /**
+         * Creates an empty row record.
+         */
+
 
         public RowRecord() {
         }
 
+        /**
+         * Returns all field values of this record as a map.
+         *
+         * @return the field values keyed by field name
+         */
+
+
         public Map<String, Object> getFieldValues() {
             return fieldValues;
         }
+
+        /**
+         * Puts a field value into this record if the key is not already present.
+         *
+         * @param keyName the field name
+         * @param obj     the field value
+         * @return {@code true} if the value was inserted, {@code false} if the key already exists
+         */
+
 
         public boolean put(String keyName, Object obj) {
             if (fieldValues.containsKey(keyName)) {
@@ -149,6 +185,8 @@ public class QueryResultsWrapper extends RowRecordWrapper {
          * @param keyName a field name or dynamic field name
          * @return {@link Object}
          */
+
+
         public Object get(String keyName) throws ParamException {
             if (fieldValues.isEmpty()) {
                 throw new ParamException("This record is empty");
@@ -176,6 +214,8 @@ public class QueryResultsWrapper extends RowRecordWrapper {
          * @param keyName a field name or dynamic field name
          * @return boolean
          */
+
+
         public boolean contains(String keyName) {
             return fieldValues.containsKey(keyName);
         }

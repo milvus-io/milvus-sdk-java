@@ -29,6 +29,8 @@ import java.util.Map;
 /**
  * Parameters for <code>alterIndex</code> interface.
  */
+
+
 public class AlterIndexParam {
     private final String collectionName;
     private final String databaseName;
@@ -46,22 +48,55 @@ public class AlterIndexParam {
         this.properties.putAll(builder.properties);
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter methods to replace @Getter annotation
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the indexName.
+     *
+     * @return the indexName
+     */
+
+
     public String getIndexName() {
         return indexName;
     }
+
+    /**
+     * Returns the properties.
+     *
+     * @return the properties
+     */
+
 
     public Map<String, String> getProperties() {
         return properties;
@@ -81,6 +116,8 @@ public class AlterIndexParam {
     /**
      * Builder for {@link AlterIndexParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
         private String databaseName;
@@ -97,6 +134,8 @@ public class AlterIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -112,6 +151,8 @@ public class AlterIndexParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -123,6 +164,8 @@ public class AlterIndexParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
+
+
         public Builder withIndexName(String indexName) {
             // Replace @NonNull logic with explicit null check
             if (indexName == null) {
@@ -138,6 +181,8 @@ public class AlterIndexParam {
          * @param enabledMMap enabled or not
          * @return <code>Builder</code>
          */
+
+
         public Builder withMMapEnabled(boolean enabledMMap) {
             return this.withProperty(Constant.MMAP_ENABLED, Boolean.toString(enabledMMap));
         }
@@ -149,6 +194,8 @@ public class AlterIndexParam {
          * @param value the value
          * @return <code>Builder</code>
          */
+
+
         public Builder withProperty(String key, String value) {
             // Replace @NonNull logic with explicit null check
             if (key == null) {
@@ -166,6 +213,8 @@ public class AlterIndexParam {
          *
          * @return {@link AlterIndexParam}
          */
+
+
         public AlterIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(indexName, "Index name");

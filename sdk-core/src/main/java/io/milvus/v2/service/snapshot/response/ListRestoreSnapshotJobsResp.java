@@ -25,12 +25,21 @@ import java.util.List;
 /**
  * Response returned by the {@code listRestoreSnapshotJobs} API.
  */
+
+
 public class ListRestoreSnapshotJobsResp {
     private List<RestoreSnapshotJobInfo> jobs;
 
     private ListRestoreSnapshotJobsResp(ListRestoreSnapshotJobsRespBuilder builder) {
         this.jobs = builder.jobs == null ? new ArrayList<>() : builder.jobs;
     }
+
+    /**
+     * Creates a new builder for {@code ListRestoreSnapshotJobsResp}.
+     *
+     * @return the builder
+     */
+
 
     public static ListRestoreSnapshotJobsRespBuilder builder() {
         return new ListRestoreSnapshotJobsRespBuilder();
@@ -41,6 +50,8 @@ public class ListRestoreSnapshotJobsResp {
      *
      * @return the list of restore snapshot jobs
      */
+
+
     public List<RestoreSnapshotJobInfo> getJobs() {
         return jobs;
     }
@@ -50,6 +61,8 @@ public class ListRestoreSnapshotJobsResp {
      *
      * @param jobs the list of restore snapshot jobs
      */
+
+
     public void setJobs(List<RestoreSnapshotJobInfo> jobs) {
         this.jobs = jobs;
     }
@@ -61,6 +74,11 @@ public class ListRestoreSnapshotJobsResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListRestoreSnapshotJobsResp} class.
+     */
+
+
     public static class ListRestoreSnapshotJobsRespBuilder {
         private List<RestoreSnapshotJobInfo> jobs = new ArrayList<>();
 
@@ -70,6 +88,8 @@ public class ListRestoreSnapshotJobsResp {
          * @param jobs the list of restore snapshot jobs
          * @return this builder
          */
+
+
         public ListRestoreSnapshotJobsRespBuilder jobs(List<RestoreSnapshotJobInfo> jobs) {
             this.jobs = jobs;
             return this;
@@ -80,6 +100,8 @@ public class ListRestoreSnapshotJobsResp {
          *
          * @return the built response
          */
+
+
         public ListRestoreSnapshotJobsResp build() {
             return new ListRestoreSnapshotJobsResp(this);
         }

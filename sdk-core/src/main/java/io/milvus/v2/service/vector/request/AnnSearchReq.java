@@ -30,15 +30,21 @@ import java.util.Map;
  * Request parameters for an ANN (approximate nearest neighbor) search, used as part of a
  * {@link HybridSearchReq hybrid search}.
  */
+
+
 public class AnnSearchReq {
     private String vectorFieldName;
     /**
+     * The top-k value; kept for backward compatibility.
+     *
      * @deprecated replaced by {@link #limit}
      */
     @Deprecated
     private int topK;
     private long limit;
     /**
+     * The filter expression; kept for backward compatibility.
+     *
      * @deprecated replaced by {@link #filter}
      */
     @Deprecated
@@ -77,6 +83,8 @@ public class AnnSearchReq {
      *
      * @return the builder
      */
+
+
     public static AnnSearchReqBuilder builder() {
         return new AnnSearchReqBuilder();
     }
@@ -86,6 +94,8 @@ public class AnnSearchReq {
      *
      * @return the vector field name
      */
+
+
     public String getVectorFieldName() {
         return vectorFieldName;
     }
@@ -95,6 +105,8 @@ public class AnnSearchReq {
      *
      * @param vectorFieldName the vector field name
      */
+
+
     public void setVectorFieldName(String vectorFieldName) {
         this.vectorFieldName = vectorFieldName;
     }
@@ -127,6 +139,8 @@ public class AnnSearchReq {
      *
      * @return the limit value
      */
+
+
     public long getLimit() {
         return limit;
     }
@@ -136,6 +150,8 @@ public class AnnSearchReq {
      *
      * @param limit the limit value
      */
+
+
     public void setLimit(long limit) {
         this.limit = limit;
         this.topK = (int) limit;
@@ -169,6 +185,8 @@ public class AnnSearchReq {
      *
      * @return the filter expression
      */
+
+
     public String getFilter() {
         return filter;
     }
@@ -178,6 +196,8 @@ public class AnnSearchReq {
      *
      * @param filter the filter expression
      */
+
+
     public void setFilter(String filter) {
         this.filter = filter;
         this.expr = filter;
@@ -188,6 +208,8 @@ public class AnnSearchReq {
      *
      * @return the query vectors
      */
+
+
     public List<BaseVector> getVectors() {
         return vectors;
     }
@@ -197,6 +219,8 @@ public class AnnSearchReq {
      *
      * @param vectors the query vectors
      */
+
+
     public void setVectors(List<BaseVector> vectors) {
         this.vectors = vectors;
     }
@@ -206,6 +230,8 @@ public class AnnSearchReq {
      *
      * @return the search parameters
      */
+
+
     public String getParams() {
         return params;
     }
@@ -215,6 +241,8 @@ public class AnnSearchReq {
      *
      * @param params the search parameters
      */
+
+
     public void setParams(String params) {
         this.params = params;
     }
@@ -224,6 +252,8 @@ public class AnnSearchReq {
      *
      * @return the metric type
      */
+
+
     public IndexParam.MetricType getMetricType() {
         return metricType;
     }
@@ -233,6 +263,8 @@ public class AnnSearchReq {
      *
      * @param metricType the metric type
      */
+
+
     public void setMetricType(IndexParam.MetricType metricType) {
         this.metricType = metricType;
     }
@@ -242,6 +274,8 @@ public class AnnSearchReq {
      *
      * @return the timezone
      */
+
+
     public String getTimezone() {
         return timezone;
     }
@@ -251,6 +285,8 @@ public class AnnSearchReq {
      *
      * @return the filter template values
      */
+
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -271,6 +307,11 @@ public class AnnSearchReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link AnnSearchReq} class.
+     */
+
+
     public static class AnnSearchReqBuilder {
         private String vectorFieldName;
         private int topK = 0;
@@ -289,6 +330,8 @@ public class AnnSearchReq {
          * @param vectorFieldName the vector field name
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
@@ -315,13 +358,30 @@ public class AnnSearchReq {
          * @param val the limit value
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder limit(long val) {
             this.topK = (int) val;
             this.limit = val;
             return this;
         }
 
+        /**
+         * Sets the filter expression.
+         *
+         * @deprecated replaced by {@link #filter(String)}. {@code expr} and {@code filter} must be
+         * the same value.
+         * @param val the filter expression
+         * @return this builder
+         */
         // expr is deprecated replaced by filter, expr and filter must be the same value
+        /**
+         * Sets the filter expression, keeping it in sync with the filter.
+         *
+         * @param val the filter expression
+         * @return this builder
+         * @deprecated use {@link #filter(String)} instead; expr and filter must be the same value
+         */
         @Deprecated
         public AnnSearchReqBuilder expr(String val) {
             this.expr = val;
@@ -335,6 +395,8 @@ public class AnnSearchReq {
          * @param val the filter expression
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder filter(String val) {
             this.expr = val;
             this.filter = val;
@@ -347,6 +409,8 @@ public class AnnSearchReq {
          * @param vectors the query vectors
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder vectors(List<BaseVector> vectors) {
             this.vectors = vectors;
             return this;
@@ -358,6 +422,8 @@ public class AnnSearchReq {
          * @param params the search parameters
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder params(String params) {
             this.params = params;
             return this;
@@ -369,6 +435,8 @@ public class AnnSearchReq {
          * @param metricType the metric type
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
             return this;
@@ -380,6 +448,8 @@ public class AnnSearchReq {
          * @param timezone the timezone
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder timezone(String timezone) {
             this.timezone = timezone;
             return this;
@@ -391,6 +461,8 @@ public class AnnSearchReq {
          * @param filterTemplateValues the filter template values
          * @return this builder
          */
+
+
         public AnnSearchReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
@@ -401,6 +473,8 @@ public class AnnSearchReq {
          *
          * @return the request
          */
+
+
         public AnnSearchReq build() {
             return new AnnSearchReq(this);
         }

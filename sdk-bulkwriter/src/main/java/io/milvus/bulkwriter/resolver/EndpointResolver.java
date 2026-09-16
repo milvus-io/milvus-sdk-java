@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
  * its reachability is verified before being returned. For other clouds, the provided default
  * endpoint is returned unchanged.
  */
+
+
 public class EndpointResolver {
     private static final Logger logger = LoggerFactory.getLogger(EndpointResolver.class);
 
@@ -28,6 +30,8 @@ public class EndpointResolver {
      * @param connectType the connection type ({@code INTERNAL}, {@code PUBLIC}, or {@code AUTO})
      * @return the resolved storage endpoint
      */
+
+
     public static String resolveEndpoint(String defaultEndpoint, String cloud, String region, ConnectType connectType) {
         logger.info("Start resolving endpoint, cloud:{}, region:{}, connectType:{}", cloud, region, connectType);
         if (CloudStorage.isAliCloud(cloud)) {

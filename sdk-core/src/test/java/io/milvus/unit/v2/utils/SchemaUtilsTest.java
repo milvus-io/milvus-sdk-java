@@ -144,6 +144,77 @@ public class SchemaUtilsTest {
     }
 
     @Test
+    void testCheckNullEmptyString() {
+        Assertions.assertDoesNotThrow(() -> SchemaUtils.checkNullEmptyString("value", "field"));
+        Assertions.assertThrows(MilvusClientException.class, () -> SchemaUtils.checkNullEmptyString("", "field"));
+        Assertions.assertThrows(MilvusClientException.class, () -> SchemaUtils.checkNullEmptyString(null, "field"));
+    }
+
+    @Test
+    void testConvertFromGrpcCollectionSchemaAndStructFieldSchema() {
+        FieldSchema idField = FieldSchema.newBuilder()
+                .setName("id")
+                .setDataType(DataType.Int64)
+                .setIsPrimaryKey(true)
+                .build();
+        StructArrayFieldSchema structField = StructArrayFieldSchema.newBuilder()
+                .setName("clips")
+                .setNullable(true)
+                .addFields(FieldSchema.newBuilder()
+                        .setName("score")
+                        .setDataType(DataType.Float)
+                        .setNullable(true)
+                        .build())
+                .build();
+        CollectionSchema schema = CollectionSchema.newBuilder()
+                .setEnableDynamicField(true)
+                .addFields(idField)
+                .addStructArrayFields(structField)
+                .build();
+
+        CreateCollectionReq.CollectionSchema sdkSchema = SchemaUtils.convertFromGrpcCollectionSchema(schema);
+        Assertions.assertTrue(sdkSchema.isEnableDynamicField());
+        Assertions.assertEquals(1, sdkSchema.getFieldSchemaList().size());
+        Assertions.assertEquals(1, sdkSchema.getStructFields().size());
+        Assertions.assertEquals("clips", sdkSchema.getStructFields().get(0).getName());
+
+        CreateCollectionReq.StructFieldSchema sdkStruct =
+                SchemaUtils.convertFromGrpcStructFieldSchema(structField);
+        Assertions.assertEquals("clips", sdkStruct.getName());
+        Assertions.assertEquals(Boolean.TRUE, sdkStruct.getNullable());
+        Assertions.assertEquals(1, sdkStruct.getFields().size());
+        Assertions.assertEquals("score", sdkStruct.getFields().get(0).getName());
+    }
+
+    @Test
+    void testConvertFieldReqToFieldSchemaAndStructFieldSchema() {
+        AddFieldReq fieldReq = AddFieldReq.builder()
+                .fieldName("vec")
+                .dataType(io.milvus.v2.common.DataType.FloatVector)
+                .dimension(128)
+                .build();
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(fieldReq);
+        Assertions.assertEquals("vec", fieldSchema.getName());
+        Assertions.assertEquals(io.milvus.v2.common.DataType.FloatVector, fieldSchema.getDataType());
+
+        AddFieldReq structReq = AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(io.milvus.v2.common.DataType.Array)
+                .elementType(io.milvus.v2.common.DataType.Struct)
+                .maxCapacity(100)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(io.milvus.v2.common.DataType.Float)
+                        .build())
+                .build();
+        CreateCollectionReq.StructFieldSchema structFieldSchema =
+                SchemaUtils.convertFieldReqToStructFieldSchema(structReq);
+        Assertions.assertEquals("clips", structFieldSchema.getName());
+        Assertions.assertEquals(1, structFieldSchema.getFields().size());
+        Assertions.assertEquals("score", structFieldSchema.getFields().get(0).getName());
+    }
+
+    @Test
     void testConvertFromGrpcFunction() {
         for (FunctionType type : FunctionType.values()) {
             if (type == FunctionType.UNRECOGNIZED) {

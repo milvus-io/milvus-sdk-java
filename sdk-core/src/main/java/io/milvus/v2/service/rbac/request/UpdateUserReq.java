@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code updateUser} API.
  */
+
+
 public class UpdateUserReq {
     private String userName;
     private String description;
@@ -36,6 +38,8 @@ public class UpdateUserReq {
      *
      * @return the user name
      */
+
+
     public String getUserName() {
         return userName;
     }
@@ -45,6 +49,8 @@ public class UpdateUserReq {
      *
      * @param userName the user name
      */
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -54,6 +60,8 @@ public class UpdateUserReq {
      *
      * @return the user description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -63,6 +71,8 @@ public class UpdateUserReq {
      *
      * @param description the user description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -80,9 +90,16 @@ public class UpdateUserReq {
      *
      * @return a new {@link UpdateUserReqBuilder}
      */
+
+
     public static UpdateUserReqBuilder builder() {
         return new UpdateUserReqBuilder();
     }
+
+    /**
+     * Builder for {@link UpdateUserReq} class.
+     */
+
 
     public static class UpdateUserReqBuilder {
         private String userName;
@@ -97,6 +114,8 @@ public class UpdateUserReq {
          * @param userName the user name
          * @return this builder
          */
+
+
         public UpdateUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
@@ -108,6 +127,8 @@ public class UpdateUserReq {
          * @param description the user description
          * @return this builder
          */
+
+
         public UpdateUserReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -118,6 +139,8 @@ public class UpdateUserReq {
          *
          * @return the built request
          */
+
+
         public UpdateUserReq build() {
             return new UpdateUserReq(this);
         }

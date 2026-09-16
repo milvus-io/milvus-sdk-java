@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code revokePrivilege} API.
  */
+
+
 public class RevokePrivilegeReq {
     private String roleName;
     private String dbName;
@@ -42,6 +44,8 @@ public class RevokePrivilegeReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -51,6 +55,8 @@ public class RevokePrivilegeReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -60,6 +66,8 @@ public class RevokePrivilegeReq {
      *
      * @return the database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -69,6 +77,8 @@ public class RevokePrivilegeReq {
      *
      * @param dbName the database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -78,6 +88,8 @@ public class RevokePrivilegeReq {
      *
      * @return the object type
      */
+
+
     public String getObjectType() {
         return objectType;
     }
@@ -87,6 +99,8 @@ public class RevokePrivilegeReq {
      *
      * @param objectType the object type
      */
+
+
     public void setObjectType(String objectType) {
         this.objectType = objectType;
     }
@@ -96,6 +110,8 @@ public class RevokePrivilegeReq {
      *
      * @return the privilege to revoke
      */
+
+
     public String getPrivilege() {
         return privilege;
     }
@@ -105,6 +121,8 @@ public class RevokePrivilegeReq {
      *
      * @param privilege the privilege to revoke
      */
+
+
     public void setPrivilege(String privilege) {
         this.privilege = privilege;
     }
@@ -114,6 +132,8 @@ public class RevokePrivilegeReq {
      *
      * @return the object name
      */
+
+
     public String getObjectName() {
         return objectName;
     }
@@ -123,6 +143,8 @@ public class RevokePrivilegeReq {
      *
      * @param objectName the object name
      */
+
+
     public void setObjectName(String objectName) {
         this.objectName = objectName;
     }
@@ -143,9 +165,16 @@ public class RevokePrivilegeReq {
      *
      * @return a new {@link RevokePrivilegeReqBuilder}
      */
+
+
     public static RevokePrivilegeReqBuilder builder() {
         return new RevokePrivilegeReqBuilder();
     }
+
+    /**
+     * Builder for {@link RevokePrivilegeReq} class.
+     */
+
 
     public static class RevokePrivilegeReqBuilder {
         private String roleName;
@@ -163,6 +192,8 @@ public class RevokePrivilegeReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public RevokePrivilegeReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -174,6 +205,8 @@ public class RevokePrivilegeReq {
          * @param dbName the database name
          * @return this builder
          */
+
+
         public RevokePrivilegeReqBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -185,6 +218,8 @@ public class RevokePrivilegeReq {
          * @param objectType the object type
          * @return this builder
          */
+
+
         public RevokePrivilegeReqBuilder objectType(String objectType) {
             this.objectType = objectType;
             return this;
@@ -196,6 +231,8 @@ public class RevokePrivilegeReq {
          * @param privilege the privilege to revoke
          * @return this builder
          */
+
+
         public RevokePrivilegeReqBuilder privilege(String privilege) {
             this.privilege = privilege;
             return this;
@@ -207,6 +244,8 @@ public class RevokePrivilegeReq {
          * @param objectName the object name
          * @return this builder
          */
+
+
         public RevokePrivilegeReqBuilder objectName(String objectName) {
             this.objectName = objectName;
             return this;
@@ -217,6 +256,8 @@ public class RevokePrivilegeReq {
          *
          * @return the built request
          */
+
+
         public RevokePrivilegeReq build() {
             return new RevokePrivilegeReq(this);
         }

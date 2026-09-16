@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code loadPartitions} API.
  */
+
+
 public class LoadPartitionsReq {
     private String databaseName;
     private String collectionName;
@@ -55,6 +57,8 @@ public class LoadPartitionsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -64,6 +68,8 @@ public class LoadPartitionsReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -73,6 +79,8 @@ public class LoadPartitionsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -82,6 +90,8 @@ public class LoadPartitionsReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -91,6 +101,8 @@ public class LoadPartitionsReq {
      *
      * @return the list of partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -100,6 +112,8 @@ public class LoadPartitionsReq {
      *
      * @param partitionNames the list of partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -109,6 +123,8 @@ public class LoadPartitionsReq {
      *
      * @return the number of replicas
      */
+
+
     public Integer getNumReplicas() {
         return numReplicas;
     }
@@ -118,6 +134,8 @@ public class LoadPartitionsReq {
      *
      * @param numReplicas the number of replicas
      */
+
+
     public void setNumReplicas(Integer numReplicas) {
         this.numReplicas = numReplicas;
     }
@@ -127,6 +145,8 @@ public class LoadPartitionsReq {
      *
      * @return {@code true} to wait for the partitions to be fully loaded
      */
+
+
     public Boolean getSync() {
         return sync;
     }
@@ -136,6 +156,8 @@ public class LoadPartitionsReq {
      *
      * @param sync {@code true} to wait for the partitions to be fully loaded
      */
+
+
     public void setSync(Boolean sync) {
         this.sync = sync;
     }
@@ -145,6 +167,8 @@ public class LoadPartitionsReq {
      *
      * @return the timeout value in milliseconds
      */
+
+
     public Long getTimeout() {
         return timeout;
     }
@@ -154,6 +178,8 @@ public class LoadPartitionsReq {
      *
      * @param timeout the timeout value in milliseconds
      */
+
+
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -163,6 +189,8 @@ public class LoadPartitionsReq {
      *
      * @return {@code true} to refresh the load
      */
+
+
     public Boolean getRefresh() {
         return refresh;
     }
@@ -172,6 +200,8 @@ public class LoadPartitionsReq {
      *
      * @param refresh {@code true} to refresh the load
      */
+
+
     public void setRefresh(Boolean refresh) {
         this.refresh = refresh;
     }
@@ -181,6 +211,8 @@ public class LoadPartitionsReq {
      *
      * @return the list of field names
      */
+
+
     public List<String> getLoadFields() {
         return loadFields;
     }
@@ -190,6 +222,8 @@ public class LoadPartitionsReq {
      *
      * @param loadFields the list of field names
      */
+
+
     public void setLoadFields(List<String> loadFields) {
         this.loadFields = loadFields;
     }
@@ -199,6 +233,8 @@ public class LoadPartitionsReq {
      *
      * @return {@code true} to skip loading the dynamic field
      */
+
+
     public Boolean getSkipLoadDynamicField() {
         return skipLoadDynamicField;
     }
@@ -208,6 +244,8 @@ public class LoadPartitionsReq {
      *
      * @param skipLoadDynamicField {@code true} to skip loading the dynamic field
      */
+
+
     public void setSkipLoadDynamicField(Boolean skipLoadDynamicField) {
         this.skipLoadDynamicField = skipLoadDynamicField;
     }
@@ -217,6 +255,8 @@ public class LoadPartitionsReq {
      *
      * @return the list of resource group names
      */
+
+
     public List<String> getResourceGroups() {
         return resourceGroups;
     }
@@ -226,6 +266,8 @@ public class LoadPartitionsReq {
      *
      * @param resourceGroups the list of resource group names
      */
+
+
     public void setResourceGroups(List<String> resourceGroups) {
         this.resourceGroups = resourceGroups;
     }
@@ -251,9 +293,16 @@ public class LoadPartitionsReq {
      *
      * @return the builder
      */
+
+
     public static LoadPartitionsReqBuilder builder() {
         return new LoadPartitionsReqBuilder();
     }
+
+    /**
+     * Builder for {@link LoadPartitionsReq} class.
+     */
+
 
     public static class LoadPartitionsReqBuilder {
         private String databaseName;
@@ -276,6 +325,8 @@ public class LoadPartitionsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -287,6 +338,8 @@ public class LoadPartitionsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -298,6 +351,8 @@ public class LoadPartitionsReq {
          * @param partitionNames the list of partition names
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -309,6 +364,8 @@ public class LoadPartitionsReq {
          * @param numReplicas the number of replicas
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder numReplicas(Integer numReplicas) {
             this.numReplicas = numReplicas;
             return this;
@@ -320,6 +377,8 @@ public class LoadPartitionsReq {
          * @param sync {@code true} to wait for the partitions to be fully loaded
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder sync(Boolean sync) {
             this.sync = sync;
             return this;
@@ -331,6 +390,8 @@ public class LoadPartitionsReq {
          * @param timeout the timeout value in milliseconds
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
@@ -342,6 +403,8 @@ public class LoadPartitionsReq {
          * @param refresh {@code true} to refresh the load
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder refresh(Boolean refresh) {
             this.refresh = refresh;
             return this;
@@ -353,6 +416,8 @@ public class LoadPartitionsReq {
          * @param loadFields the list of field names
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder loadFields(List<String> loadFields) {
             this.loadFields = loadFields;
             return this;
@@ -364,6 +429,8 @@ public class LoadPartitionsReq {
          * @param skipLoadDynamicField {@code true} to skip loading the dynamic field
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder skipLoadDynamicField(Boolean skipLoadDynamicField) {
             this.skipLoadDynamicField = skipLoadDynamicField;
             return this;
@@ -375,6 +442,8 @@ public class LoadPartitionsReq {
          * @param resourceGroups the list of resource group names
          * @return this builder
          */
+
+
         public LoadPartitionsReqBuilder resourceGroups(List<String> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
@@ -385,6 +454,8 @@ public class LoadPartitionsReq {
          *
          * @return the built request
          */
+
+
         public LoadPartitionsReq build() {
             return new LoadPartitionsReq(this);
         }

@@ -6,6 +6,8 @@ package io.milvus.bulkwriter.model;
  * <p>It carries the name of the volume the files were uploaded to and the path of the
  * uploaded files within that volume.</p>
  */
+
+
 public class UploadFilesResult {
     private String volumeName;
     private String path;
@@ -13,6 +15,8 @@ public class UploadFilesResult {
     /**
      * Constructs an empty {@code UploadFilesResult}.
      */
+
+
     public UploadFilesResult() {
     }
 
@@ -22,6 +26,8 @@ public class UploadFilesResult {
      * @param volumeName the name of the volume the files were uploaded to
      * @param path       the path of the uploaded files within the volume
      */
+
+
     public UploadFilesResult(String volumeName, String path) {
         this.volumeName = volumeName;
         this.path = path;
@@ -37,6 +43,8 @@ public class UploadFilesResult {
      *
      * @return the volume name
      */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -46,6 +54,8 @@ public class UploadFilesResult {
      *
      * @param volumeName the volume name
      */
+
+
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -55,6 +65,8 @@ public class UploadFilesResult {
      *
      * @return the upload path
      */
+
+
     public String getPath() {
         return path;
     }
@@ -64,6 +76,8 @@ public class UploadFilesResult {
      *
      * @param path the upload path
      */
+
+
     public void setPath(String path) {
         this.path = path;
     }
@@ -81,6 +95,8 @@ public class UploadFilesResult {
      *
      * @return an {@code UploadFilesResult} builder
      */
+
+
     public static UploadFilesResultBuilder builder() {
         return new UploadFilesResultBuilder();
     }
@@ -88,6 +104,8 @@ public class UploadFilesResult {
     /**
      * Builder for {@link UploadFilesResult}.
      */
+
+
     public static class UploadFilesResultBuilder {
         private String volumeName;
         private String path;
@@ -103,6 +121,8 @@ public class UploadFilesResult {
          * @param volumeName the volume name
          * @return this builder
          */
+
+
         public UploadFilesResultBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -114,6 +134,8 @@ public class UploadFilesResult {
          * @param path the upload path
          * @return this builder
          */
+
+
         public UploadFilesResultBuilder path(String path) {
             this.path = path;
             return this;
@@ -124,6 +146,8 @@ public class UploadFilesResult {
          *
          * @return the built {@code UploadFilesResult}
          */
+
+
         public UploadFilesResult build() {
             return new UploadFilesResult(this);
         }

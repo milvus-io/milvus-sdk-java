@@ -11,6 +11,8 @@ import io.milvus.param.ConnectParam;
  * {@link ClientPool}. Use {@code getClient}/{@code returnClient} to borrow and return clients keyed
  * by endpoint.
  */
+
+
 public class MilvusClientV1Pool extends ClientPool<ConnectParam, MilvusClient> {
     /**
      * Creates a pool of v1 Milvus clients.
@@ -20,6 +22,7 @@ public class MilvusClientV1Pool extends ClientPool<ConnectParam, MilvusClient> {
      * @throws ClassNotFoundException if the client class cannot be found
      * @throws NoSuchMethodException  if the client class lacks the expected constructor or methods
      */
+
     public MilvusClientV1Pool(PoolConfig poolConfig, ConnectParam connectParam) throws ClassNotFoundException, NoSuchMethodException {
         super(poolConfig, new PoolClientFactory<ConnectParam, MilvusClient>(connectParam, MilvusServiceClient.class.getName()));
     }

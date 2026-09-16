@@ -25,12 +25,21 @@ import java.util.List;
 /**
  * Response returned by the {@code listSnapshots} API.
  */
+
+
 public class ListSnapshotsResp {
     private List<String> snapshots;
 
     private ListSnapshotsResp(ListSnapshotsRespBuilder builder) {
         this.snapshots = builder.snapshots == null ? new ArrayList<>() : builder.snapshots;
     }
+
+    /**
+     * Creates a new builder for {@code ListSnapshotsResp}.
+     *
+     * @return the builder
+     */
+
 
     public static ListSnapshotsRespBuilder builder() {
         return new ListSnapshotsRespBuilder();
@@ -41,6 +50,8 @@ public class ListSnapshotsResp {
      *
      * @return the list of snapshot names
      */
+
+
     public List<String> getSnapshots() {
         return snapshots;
     }
@@ -50,6 +61,8 @@ public class ListSnapshotsResp {
      *
      * @param snapshots the list of snapshot names
      */
+
+
     public void setSnapshots(List<String> snapshots) {
         this.snapshots = snapshots;
     }
@@ -61,6 +74,11 @@ public class ListSnapshotsResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListSnapshotsResp} class.
+     */
+
+
     public static class ListSnapshotsRespBuilder {
         private List<String> snapshots = new ArrayList<>();
 
@@ -70,6 +88,8 @@ public class ListSnapshotsResp {
          * @param snapshots the list of snapshot names
          * @return this builder
          */
+
+
         public ListSnapshotsRespBuilder snapshots(List<String> snapshots) {
             this.snapshots = snapshots;
             return this;
@@ -80,6 +100,8 @@ public class ListSnapshotsResp {
          *
          * @return the built response
          */
+
+
         public ListSnapshotsResp build() {
             return new ListSnapshotsResp(this);
         }

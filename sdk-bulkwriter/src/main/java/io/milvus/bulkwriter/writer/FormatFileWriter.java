@@ -11,6 +11,8 @@ import java.util.Map;
  * {@link #appendRow(Map, boolean)} indicates the first row of a new data file chunk, allowing
  * format-specific headers to be emitted once before the first row is flushed.
  */
+
+
 public interface FormatFileWriter {
     /**
      * Appends a row of values to the data file.

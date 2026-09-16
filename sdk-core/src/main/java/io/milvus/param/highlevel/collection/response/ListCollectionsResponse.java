@@ -24,12 +24,21 @@ import java.util.List;
 /**
  * Parameters for <code>showCollections</code> interface.
  */
+
+
 public class ListCollectionsResponse {
     public List<String> collectionNames;
 
     private ListCollectionsResponse(Builder builder) {
         this.collectionNames = builder.collectionNames;
     }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder builder() {
         return new Builder();
@@ -46,16 +55,33 @@ public class ListCollectionsResponse {
     /**
      * Builder for {@link ListCollectionsResponse} class to replace @Builder annotation.
      */
+
+
     public static class Builder {
         private List<String> collectionNames;
 
         private Builder() {
         }
 
+        /**
+         * Sets the collectionNames.
+         *
+         * @param collectionNames the collectionNames
+         * @return this builder
+         */
+
+
         public Builder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
+
+        /**
+         * Builds the ListCollectionsResponse.
+         *
+         * @return the built ListCollectionsResponse
+         */
+
 
         public ListCollectionsResponse build() {
             return new ListCollectionsResponse(this);

@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 /**
  * Utility class for batch import file path handling.
  */
+
+
 public class ImportUtils {
     /**
      * Computes the common prefix shared by all file paths in the given batch file groups.
@@ -33,6 +35,7 @@ public class ImportUtils {
      * @param batchFiles the batch files grouped by partition, where each group is a list of file paths
      * @return the longest common prefix of all file paths, or an empty string if the input is empty
      */
+
     public static String getCommonPrefix(List<List<String>> batchFiles) {
         List<String> allFilePaths = batchFiles.stream().flatMap(Collection::stream).collect(Collectors.toList());
         return longestCommonPrefix(allFilePaths);

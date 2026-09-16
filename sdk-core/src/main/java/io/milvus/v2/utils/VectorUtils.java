@@ -58,6 +58,8 @@ import java.util.stream.Collectors;
  * <p>Also provides helpers for building filter expression templates and primary key filter
  * expressions.</p>
  */
+
+
 public class VectorUtils {
     private String endpoint = "";
     private String currentDbName;
@@ -65,6 +67,8 @@ public class VectorUtils {
     /**
      * Constructs a new {@code VectorUtils}.
      */
+
+
     public VectorUtils() {
     }
 
@@ -74,6 +78,8 @@ public class VectorUtils {
      *
      * @param endpoint the server endpoint
      */
+
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint == null ? "" : endpoint;
     }
@@ -83,6 +89,8 @@ public class VectorUtils {
      *
      * @param currentDbName the current database name
      */
+
+
     public void setCurrentDbName(String currentDbName) {
         this.currentDbName = currentDbName;
     }
@@ -97,6 +105,8 @@ public class VectorUtils {
      * @return the gRPC query request
      * @throws NullPointerException if {@code request} is null
      */
+
+
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request) {
         if (request == null) {
             throw new NullPointerException("request cannot be null");
@@ -304,6 +314,8 @@ public class VectorUtils {
      * @param request the SDK v2 search request
      * @return the gRPC search request
      */
+
+
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
         if (request.getLimit() <= 0) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -595,6 +607,8 @@ public class VectorUtils {
      * @return the gRPC template value
      * @throws MilvusClientException if the value type is not supported
      */
+
+
     public static TemplateValue deduceAndCreateTemplateValue(Object value) {
         if (value instanceof Boolean) {
             return TemplateValue.newBuilder()
@@ -642,6 +656,8 @@ public class VectorUtils {
      * @return the gRPC search request
      * @throws NullPointerException if {@code annSearchReq} is null
      */
+
+
     public static SearchRequest convertAnnSearchParam(AnnSearchReq annSearchReq,
                                                       ConsistencyLevel consistencyLevel) {
         if (annSearchReq == null) {
@@ -735,6 +751,8 @@ public class VectorUtils {
      * @throws MilvusClientException if the sub-request list is empty or both a ranker and a function
      *                               score are set
      */
+
+
     public HybridSearchRequest ConvertToGrpcHybridSearchRequest(HybridSearchReq request) {
         if (request.getLimit() <= 0) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -880,6 +898,8 @@ public class VectorUtils {
      * @param ids              the list of primary key values
      * @return the built filter expression
      */
+
+
     public String getExprById(String primaryFieldName, List<?> ids) {
         StringBuilder sb = new StringBuilder();
         sb.append(primaryFieldName).append(" in [");

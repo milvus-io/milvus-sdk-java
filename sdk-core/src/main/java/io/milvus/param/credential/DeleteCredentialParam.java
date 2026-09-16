@@ -22,6 +22,11 @@ package io.milvus.param.credential;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the deleteCredential API.
+ */
+
+
 public class DeleteCredentialParam {
     private final String username;
 
@@ -32,10 +37,22 @@ public class DeleteCredentialParam {
         this.username = builder.username;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static DeleteCredentialParam.Builder newBuilder() {
         return new DeleteCredentialParam.Builder();
     }
 
+    /**
+     * Returns the username.
+     *
+     * @return the username
+     */
     // Getter method to replace @Getter annotation
     public String getUsername() {
         return username;
@@ -52,6 +69,8 @@ public class DeleteCredentialParam {
     /**
      * Builder for {@link DeleteCredentialParam} class.
      */
+
+
     public static final class Builder {
         private String username;
 
@@ -64,6 +83,8 @@ public class DeleteCredentialParam {
          * @param username username
          * @return <code>Builder</code>
          */
+
+
         public DeleteCredentialParam.Builder withUsername(String username) {
             // Replace @NonNull logic with explicit null check
             if (username == null) {
@@ -78,6 +99,8 @@ public class DeleteCredentialParam {
          *
          * @return {@link DeleteCredentialParam}
          */
+
+
         public DeleteCredentialParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(username, "Username");
 

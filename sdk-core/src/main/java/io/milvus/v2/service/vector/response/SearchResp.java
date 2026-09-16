@@ -28,6 +28,8 @@ import java.util.*;
 /**
  * Response returned by the {@code search} API.
  */
+
+
 public class SearchResp {
     private List<List<SearchResult>> searchResults;
     private long sessionTs; // default eventually ts
@@ -54,6 +56,8 @@ public class SearchResp {
      *
      * @return the builder
      */
+
+
     public static SearchRespBuilder builder() {
         return new SearchRespBuilder();
     }
@@ -63,6 +67,8 @@ public class SearchResp {
      *
      * @return the search results
      */
+
+
     public List<List<SearchResult>> getSearchResults() {
         return searchResults;
     }
@@ -72,6 +78,8 @@ public class SearchResp {
      *
      * @param searchResults the search results
      */
+
+
     public void setSearchResults(List<List<SearchResult>> searchResults) {
         this.searchResults = searchResults;
     }
@@ -81,6 +89,8 @@ public class SearchResp {
      *
      * @return the session timestamp
      */
+
+
     public long getSessionTs() {
         return sessionTs;
     }
@@ -90,6 +100,8 @@ public class SearchResp {
      *
      * @param sessionTs the session timestamp
      */
+
+
     public void setSessionTs(long sessionTs) {
         this.sessionTs = sessionTs;
     }
@@ -99,6 +111,8 @@ public class SearchResp {
      *
      * @return the recalls
      */
+
+
     public List<Float> getRecalls() {
         return recalls;
     }
@@ -108,6 +122,8 @@ public class SearchResp {
      *
      * @param recalls the recalls
      */
+
+
     public void setRecalls(List<Float> recalls) {
         this.recalls = recalls;
     }
@@ -117,6 +133,8 @@ public class SearchResp {
      *
      * @return the cost
      */
+
+
     public Long getCost() {
         return cost;
     }
@@ -126,6 +144,8 @@ public class SearchResp {
      *
      * @param cost the cost
      */
+
+
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -135,6 +155,8 @@ public class SearchResp {
      *
      * @return the scanned remote bytes
      */
+
+
     public Long getScannedRemoteBytes() {
         return scannedRemoteBytes;
     }
@@ -144,6 +166,8 @@ public class SearchResp {
      *
      * @param scannedRemoteBytes the scanned remote bytes
      */
+
+
     public void setScannedRemoteBytes(Long scannedRemoteBytes) {
         this.scannedRemoteBytes = scannedRemoteBytes;
     }
@@ -153,6 +177,8 @@ public class SearchResp {
      *
      * @return the scanned total bytes
      */
+
+
     public Long getScannedTotalBytes() {
         return scannedTotalBytes;
     }
@@ -162,6 +188,8 @@ public class SearchResp {
      *
      * @param scannedTotalBytes the scanned total bytes
      */
+
+
     public void setScannedTotalBytes(Long scannedTotalBytes) {
         this.scannedTotalBytes = scannedTotalBytes;
     }
@@ -171,6 +199,8 @@ public class SearchResp {
      *
      * @return the cache hit ratio
      */
+
+
     public Float getCacheHitRatio() {
         return cacheHitRatio;
     }
@@ -180,6 +210,8 @@ public class SearchResp {
      *
      * @param cacheHitRatio the cache hit ratio
      */
+
+
     public void setCacheHitRatio(Float cacheHitRatio) {
         this.cacheHitRatio = cacheHitRatio;
     }
@@ -189,6 +221,8 @@ public class SearchResp {
      *
      * @return the aggregation buckets
      */
+
+
     public List<List<AggregationBucket>> getAggregationBuckets() {
         return aggregationBuckets;
     }
@@ -198,6 +232,8 @@ public class SearchResp {
      *
      * @param aggregationBuckets the aggregation buckets
      */
+
+
     public void setAggregationBuckets(List<List<AggregationBucket>> aggregationBuckets) {
         this.aggregationBuckets = aggregationBuckets;
     }
@@ -216,6 +252,11 @@ public class SearchResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link SearchResp} class.
+     */
+
+
     public static class SearchRespBuilder {
         private List<List<SearchResult>> searchResults = new ArrayList<>();
         private long sessionTs = 1L; // default eventually ts
@@ -232,6 +273,8 @@ public class SearchResp {
          * @param searchResults the search results
          * @return this builder
          */
+
+
         public SearchRespBuilder searchResults(List<List<SearchResult>> searchResults) {
             this.searchResults = searchResults;
             return this;
@@ -243,6 +286,8 @@ public class SearchResp {
          * @param sessionTs the session timestamp
          * @return this builder
          */
+
+
         public SearchRespBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
             return this;
@@ -254,6 +299,8 @@ public class SearchResp {
          * @param recalls the recalls
          * @return this builder
          */
+
+
         public SearchRespBuilder recalls(List<Float> recalls) {
             this.recalls = recalls;
             return this;
@@ -265,6 +312,8 @@ public class SearchResp {
          * @param cost the cost
          * @return this builder
          */
+
+
         public SearchRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
@@ -276,6 +325,8 @@ public class SearchResp {
          * @param scannedRemoteBytes the scanned remote bytes
          * @return this builder
          */
+
+
         public SearchRespBuilder scannedRemoteBytes(Long scannedRemoteBytes) {
             this.scannedRemoteBytes = scannedRemoteBytes;
             return this;
@@ -287,6 +338,8 @@ public class SearchResp {
          * @param scannedTotalBytes the scanned total bytes
          * @return this builder
          */
+
+
         public SearchRespBuilder scannedTotalBytes(Long scannedTotalBytes) {
             this.scannedTotalBytes = scannedTotalBytes;
             return this;
@@ -298,6 +351,8 @@ public class SearchResp {
          * @param cacheHitRatio the cache hit ratio
          * @return this builder
          */
+
+
         public SearchRespBuilder cacheHitRatio(Float cacheHitRatio) {
             this.cacheHitRatio = cacheHitRatio;
             return this;
@@ -309,6 +364,8 @@ public class SearchResp {
          * @param aggregationBuckets the aggregation buckets
          * @return this builder
          */
+
+
         public SearchRespBuilder aggregationBuckets(List<List<AggregationBucket>> aggregationBuckets) {
             this.aggregationBuckets = aggregationBuckets;
             return this;
@@ -319,6 +376,8 @@ public class SearchResp {
          *
          * @return the response
          */
+
+
         public SearchResp build() {
             return new SearchResp(this);
         }
@@ -327,6 +386,8 @@ public class SearchResp {
     /**
      * A single entity returned by the {@code search} API.
      */
+
+
     public static class SearchResult {
         private Map<String, Object> entity;
         private Float score;
@@ -349,6 +410,8 @@ public class SearchResp {
          *
          * @return the builder
          */
+
+
         public static SearchResultBuilder builder() {
             return new SearchResultBuilder();
         }
@@ -358,6 +421,8 @@ public class SearchResp {
          *
          * @return the entity map
          */
+
+
         public Map<String, Object> getEntity() {
             return entity;
         }
@@ -367,6 +432,8 @@ public class SearchResp {
          *
          * @param entity the entity map
          */
+
+
         public void setEntity(Map<String, Object> entity) {
             this.entity = entity;
         }
@@ -376,6 +443,8 @@ public class SearchResp {
          *
          * @return the score
          */
+
+
         public Float getScore() {
             return score;
         }
@@ -385,6 +454,8 @@ public class SearchResp {
          *
          * @param score the score
          */
+
+
         public void setScore(Float score) {
             this.score = score;
         }
@@ -394,6 +465,8 @@ public class SearchResp {
          *
          * @return the primary key value
          */
+
+
         public Object getId() {
             return id;
         }
@@ -403,6 +476,8 @@ public class SearchResp {
          *
          * @param id the primary key value
          */
+
+
         public void setId(Object id) {
             this.id = id;
         }
@@ -412,6 +487,8 @@ public class SearchResp {
          *
          * @return the primary key field name
          */
+
+
         public String getPrimaryKey() {
             return primaryKey;
         }
@@ -421,6 +498,8 @@ public class SearchResp {
          *
          * @param primaryKey the primary key field name
          */
+
+
         public void setPrimaryKey(String primaryKey) {
             this.primaryKey = primaryKey;
         }
@@ -430,6 +509,8 @@ public class SearchResp {
          *
          * @return the highlight results
          */
+
+
         public Map<String, HighlightResult> getHighlightResults() {
             return highlightResults;
         }
@@ -440,6 +521,8 @@ public class SearchResp {
          * @param fieldName the field name
          * @return the highlight result, or {@code null} if none exists
          */
+
+
         public HighlightResult getHighlightResult(String fieldName) {
             return this.highlightResults.get(fieldName);
         }
@@ -450,6 +533,8 @@ public class SearchResp {
          * @param fieldName the field name
          * @param highlightResult the highlight result
          */
+
+
         public void addHighlightResult(String fieldName, HighlightResult highlightResult) {
             if (this.highlightResults == null) this.highlightResults = new HashMap<>();
             this.highlightResults.put(fieldName, highlightResult);
@@ -460,6 +545,8 @@ public class SearchResp {
          *
          * @return the element offset, or {@code null} for ordinary queries
          */
+
+
         public Long getElementOffset() {
             return elementOffset;
         }
@@ -469,6 +556,8 @@ public class SearchResp {
          *
          * @param elementOffset the element offset
          */
+
+
         public void setElementOffset(Long elementOffset) {
             this.elementOffset = elementOffset;
         }
@@ -479,6 +568,11 @@ public class SearchResp {
                     (MapUtils.isEmpty(highlightResults) ? "" : (", HighlightResults: " + highlightResults)) +
                     (elementOffset == null ? "" : (", ElementOffset: " + elementOffset)) + "}";
         }
+
+        /**
+         * Builder for {@link SearchResp.SearchResult} class.
+         */
+
 
         public static class SearchResultBuilder {
             private Map<String, Object> entity = new HashMap<>();
@@ -494,6 +588,8 @@ public class SearchResp {
              * @param entity the entity map
              * @return this builder
              */
+
+
             public SearchResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
                 return this;
@@ -505,6 +601,8 @@ public class SearchResp {
              * @param score the score
              * @return this builder
              */
+
+
             public SearchResultBuilder score(Float score) {
                 this.score = score;
                 return this;
@@ -516,6 +614,8 @@ public class SearchResp {
              * @param id the primary key value
              * @return this builder
              */
+
+
             public SearchResultBuilder id(Object id) {
                 this.id = id;
                 return this;
@@ -527,6 +627,8 @@ public class SearchResp {
              * @param primaryKey the primary key field name
              * @return this builder
              */
+
+
             public SearchResultBuilder primaryKey(String primaryKey) {
                 this.primaryKey = primaryKey;
                 return this;
@@ -538,6 +640,8 @@ public class SearchResp {
              * @param highlightResults the highlight results
              * @return this builder
              */
+
+
             public SearchResultBuilder highlightResults(Map<String, HighlightResult> highlightResults) {
                 this.highlightResults = highlightResults;
                 return this;
@@ -550,6 +654,8 @@ public class SearchResp {
              * @param highlightResult the highlight result
              * @return this builder
              */
+
+
             public SearchResultBuilder addHighlightResult(String fieldName, HighlightResult highlightResult) {
                 if (this.highlightResults == null) this.highlightResults = new HashMap<>();
                 this.highlightResults.put(fieldName, highlightResult);
@@ -562,6 +668,8 @@ public class SearchResp {
              * @param elementOffset the element offset
              * @return this builder
              */
+
+
             public SearchResultBuilder elementOffset(Long elementOffset) {
                 this.elementOffset = elementOffset;
                 return this;
@@ -572,6 +680,8 @@ public class SearchResp {
              *
              * @return the search result
              */
+
+
             public SearchResult build() {
                 return new SearchResult(this);
             }
@@ -581,6 +691,8 @@ public class SearchResp {
     /**
      * The highlighted fragments of a field in a search result.
      */
+
+
     public static class HighlightResult {
         private final String fieldName;
         private final List<String> fragments;
@@ -597,6 +709,8 @@ public class SearchResp {
          *
          * @return the builder
          */
+
+
         public static HighlightResultBuilder builder() {
             return new HighlightResultBuilder();
         }
@@ -606,6 +720,8 @@ public class SearchResp {
          *
          * @return the field name
          */
+
+
         public String getFieldName() {
             return fieldName;
         }
@@ -615,6 +731,8 @@ public class SearchResp {
          *
          * @return the highlighted fragments
          */
+
+
         public List<String> getFragments() {
             return fragments;
         }
@@ -624,6 +742,8 @@ public class SearchResp {
          *
          * @return the fragment scores
          */
+
+
         public List<Float> getScores() {
             return scores;
         }
@@ -637,6 +757,11 @@ public class SearchResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link SearchResp.HighlightResult} class.
+         */
+
+
         public static class HighlightResultBuilder {
             private String fieldName = "";
             private List<String> fragments = new ArrayList<>();
@@ -648,6 +773,8 @@ public class SearchResp {
              * @param fieldName the field name
              * @return this builder
              */
+
+
             public HighlightResultBuilder fieldName(String fieldName) {
                 this.fieldName = fieldName;
                 return this;
@@ -659,6 +786,8 @@ public class SearchResp {
              * @param fragments the highlighted fragments
              * @return this builder
              */
+
+
             public HighlightResultBuilder fragments(List<String> fragments) {
                 this.fragments = fragments;
                 return this;
@@ -670,6 +799,8 @@ public class SearchResp {
              * @param fragment the highlighted fragment
              * @return this builder
              */
+
+
             public HighlightResultBuilder addFragment(String fragment) {
                 if (this.fragments == null) this.fragments = new ArrayList<>();
                 this.fragments.add(fragment);
@@ -682,6 +813,8 @@ public class SearchResp {
              * @param scores the fragment scores
              * @return this builder
              */
+
+
             public HighlightResultBuilder scores(List<Float> scores) {
                 this.scores = scores;
                 return this;
@@ -693,6 +826,8 @@ public class SearchResp {
              * @param score the fragment score
              * @return this builder
              */
+
+
             public HighlightResultBuilder addScore(Float score) {
                 if (this.scores == null) this.scores = new ArrayList<>();
                 this.scores.add(score);
@@ -704,6 +839,8 @@ public class SearchResp {
              *
              * @return the highlight result
              */
+
+
             public HighlightResult build() {
                 return new HighlightResult(this);
             }

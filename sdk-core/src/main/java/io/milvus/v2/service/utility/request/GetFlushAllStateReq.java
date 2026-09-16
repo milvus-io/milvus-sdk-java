@@ -22,6 +22,8 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code getFlushAllState} API.
  */
+
+
 public class GetFlushAllStateReq {
     private String databaseName;
     private Long flushAllTs;
@@ -30,6 +32,13 @@ public class GetFlushAllStateReq {
         this.databaseName = builder.databaseName;
         this.flushAllTs = builder.flushAllTs;
     }
+
+    /**
+     * Creates a new builder for {@code GetFlushAllStateReq}.
+     *
+     * @return the builder
+     */
+
 
     public static GetFlushAllStateReqBuilder builder() {
         return new GetFlushAllStateReqBuilder();
@@ -40,6 +49,8 @@ public class GetFlushAllStateReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +60,8 @@ public class GetFlushAllStateReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +71,8 @@ public class GetFlushAllStateReq {
      *
      * @return the flush-all timestamp
      */
+
+
     public Long getFlushAllTs() {
         return flushAllTs;
     }
@@ -67,6 +82,8 @@ public class GetFlushAllStateReq {
      *
      * @param flushAllTs the flush-all timestamp
      */
+
+
     public void setFlushAllTs(Long flushAllTs) {
         this.flushAllTs = flushAllTs;
     }
@@ -79,6 +96,11 @@ public class GetFlushAllStateReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetFlushAllStateReq} class.
+     */
+
+
     public static class GetFlushAllStateReqBuilder {
         private String databaseName;
         private Long flushAllTs = 0L;
@@ -89,6 +111,8 @@ public class GetFlushAllStateReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public GetFlushAllStateReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -100,6 +124,8 @@ public class GetFlushAllStateReq {
          * @param flushAllTs the flush-all timestamp
          * @return this builder
          */
+
+
         public GetFlushAllStateReqBuilder flushAllTs(Long flushAllTs) {
             this.flushAllTs = flushAllTs;
             return this;
@@ -110,6 +136,8 @@ public class GetFlushAllStateReq {
          *
          * @return the constructed {@code GetFlushAllStateReq}
          */
+
+
         public GetFlushAllStateReq build() {
             return new GetFlushAllStateReq(this);
         }

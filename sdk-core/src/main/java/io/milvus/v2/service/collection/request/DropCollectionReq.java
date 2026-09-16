@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code dropCollection} API.
  */
+
+
 public class DropCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -41,6 +43,8 @@ public class DropCollectionReq {
      *
      * @return the builder
      */
+
+
     public static DropCollectionReqBuilder builder() {
         return new DropCollectionReqBuilder();
     }
@@ -51,6 +55,7 @@ public class DropCollectionReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -60,6 +65,8 @@ public class DropCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -80,6 +87,8 @@ public class DropCollectionReq {
      *
      * @return the timeout in milliseconds
      */
+
+
     public Long getTimeout() {
         return timeout;
     }
@@ -90,6 +99,7 @@ public class DropCollectionReq {
      *
      * @param databaseName the database name
      */
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -99,6 +109,8 @@ public class DropCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -119,6 +131,8 @@ public class DropCollectionReq {
      *
      * @param timeout the timeout in milliseconds
      */
+
+
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -132,6 +146,11 @@ public class DropCollectionReq {
                 ", timeout=" + timeout +
                 '}';
     }
+
+    /**
+     * Builder for {@link DropCollectionReq} class.
+     */
+
 
     public static class DropCollectionReqBuilder {
         private String databaseName;
@@ -148,6 +167,8 @@ public class DropCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -159,6 +180,8 @@ public class DropCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DropCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -183,6 +206,8 @@ public class DropCollectionReq {
          * @param timeout the timeout in milliseconds
          * @return this builder
          */
+
+
         public DropCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
@@ -193,6 +218,8 @@ public class DropCollectionReq {
          *
          * @return the request
          */
+
+
         public DropCollectionReq build() {
             return new DropCollectionReq(this);
         }

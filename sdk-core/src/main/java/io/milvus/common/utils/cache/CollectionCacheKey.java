@@ -31,6 +31,8 @@ import java.util.Objects;
  * lower-case {@code host:port} form so that the same server address expressed in different ways maps
  * to the same key.
  */
+
+
 public final class CollectionCacheKey {
     private final String endpoint;
     private final String databaseName;
@@ -50,6 +52,8 @@ public final class CollectionCacheKey {
      * @param collectionName the collection name
      * @return the cache key
      */
+
+
     public static CollectionCacheKey create(String endpoint, String databaseName, String collectionName) {
         return new CollectionCacheKey(endpoint, databaseName, collectionName);
     }
@@ -59,6 +63,8 @@ public final class CollectionCacheKey {
      *
      * @return the endpoint
      */
+
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -68,6 +74,8 @@ public final class CollectionCacheKey {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -77,6 +85,8 @@ public final class CollectionCacheKey {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }

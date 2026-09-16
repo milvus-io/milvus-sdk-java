@@ -29,6 +29,8 @@ import java.util.Map;
 /**
  * Parameters for <code>alterCollection</code> interface.
  */
+
+
 public class AlterCollectionParam {
     private final String collectionName;
     private final String databaseName;
@@ -43,13 +45,34 @@ public class AlterCollectionParam {
         this.properties.putAll(builder.properties);
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the properties.
+     *
+     * @return the properties
+     */
+
 
     public Map<String, String> getProperties() {
         return properties;
@@ -64,6 +87,13 @@ public class AlterCollectionParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -71,6 +101,8 @@ public class AlterCollectionParam {
     /**
      * Builder for {@link AlterCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
         private String databaseName;
@@ -86,6 +118,8 @@ public class AlterCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -100,6 +134,8 @@ public class AlterCollectionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -114,6 +150,8 @@ public class AlterCollectionParam {
          * @param ttlSeconds TTL seconds, value should be 0 or greater
          * @return <code>Builder</code>
          */
+
+
         public Builder withTTL(Integer ttlSeconds) {
             if (ttlSeconds == null) {
                 throw new IllegalArgumentException("ttlSeconds cannot be null");
@@ -131,6 +169,8 @@ public class AlterCollectionParam {
          * @param enabledMMap enabled or not
          * @return <code>Builder</code>
          */
+
+
         public Builder withMMapEnabled(boolean enabledMMap) {
             return this.withProperty(Constant.MMAP_ENABLED, Boolean.toString(enabledMMap));
         }
@@ -142,6 +182,8 @@ public class AlterCollectionParam {
          * @param value the value
          * @return <code>Builder</code>
          */
+
+
         public Builder withProperty(String key, String value) {
             if (key == null) {
                 throw new IllegalArgumentException("key cannot be null");
@@ -158,6 +200,8 @@ public class AlterCollectionParam {
          *
          * @return {@link AlterCollectionParam}
          */
+
+
         public AlterCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

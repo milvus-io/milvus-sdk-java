@@ -35,6 +35,8 @@ import java.lang.reflect.Type;
  * <p>The underlying Gson is configured with the {@code LONG_OR_DOUBLE} number policy so that
  * integer values are parsed as {@code long} and float values as {@code double}.
  */
+
+
 public class JsonUtils {
     // Set ToNumberPolicy.LONG_OR_DOUBLE so that integer can be parsed as integer, float be parsed as float.
     // Gson doc declared "Gson instances are Thread-safe so you can reuse them freely across multiple threads."
@@ -51,6 +53,8 @@ public class JsonUtils {
      * @param classOfT the class of the target object
      * @return the deserialized object
      */
+
+
     public static <T> T fromJson(String jsonStr, Class<T> classOfT) {
         return GSON_INSTANCE.fromJson(jsonStr, classOfT);
     }
@@ -62,6 +66,8 @@ public class JsonUtils {
      * @param typeOfT the generic type of the target object
      * @return the deserialized object
      */
+
+
     public static <T> T fromJson(String jsonStr, Type typeOfT) {
         return GSON_INSTANCE.fromJson(jsonStr, typeOfT);
     }
@@ -73,6 +79,8 @@ public class JsonUtils {
      * @param typeOfT the type token of the target object
      * @return the deserialized object
      */
+
+
     public static <T> T fromJson(String jsonStr, TypeToken<T> typeOfT) {
         return GSON_INSTANCE.fromJson(jsonStr, typeOfT);
     }
@@ -85,6 +93,9 @@ public class JsonUtils {
      * @param classOfT the class of the target object
      * @return the deserialized object
      */
+
+
+
     public static <T> T fromJson(JsonElement jsonElement, Class<T> classOfT) {
         return GSON_INSTANCE.fromJson(jsonElement, classOfT);
     }
@@ -96,6 +107,8 @@ public class JsonUtils {
      * @param typeOfT the generic type of the target object
      * @return the deserialized object
      */
+
+
     public static <T> T fromJson(JsonElement jsonElement, Type typeOfT) {
         return GSON_INSTANCE.fromJson(jsonElement, typeOfT);
     }
@@ -107,6 +120,8 @@ public class JsonUtils {
      * @param typeOfT the type token of the target object
      * @return the deserialized object
      */
+
+
     public static <T> T fromJson(JsonElement jsonElement, TypeToken<T> typeOfT) {
         return GSON_INSTANCE.fromJson(jsonElement, typeOfT);
     }
@@ -117,6 +132,8 @@ public class JsonUtils {
      * @param obj the object to serialize
      * @return the JSON string
      */
+
+
     public static String toJson(Object obj) {
         return GSON_INSTANCE.toJson(obj);
     }
@@ -127,6 +144,8 @@ public class JsonUtils {
      * @param jsonElement the JSON element to serialize
      * @return the JSON string
      */
+
+
     public static String toJson(JsonElement jsonElement) {
         return GSON_INSTANCE.toJson(jsonElement);
     }
@@ -137,6 +156,8 @@ public class JsonUtils {
      * @param obj the object to convert
      * @return the JSON element tree
      */
+
+
     public static <T> JsonElement toJsonTree(T obj) {
         return GSON_INSTANCE.toJsonTree(obj);
     }
@@ -149,6 +170,8 @@ public class JsonUtils {
      * @param jsonStr the JSON string to parse
      * @return the parsed JSON object
      */
+
+
     public static JsonObject parseFromString(String jsonStr) {
         if (jsonStr == null || jsonStr.isEmpty()) {
             return new JsonObject();
@@ -164,6 +187,8 @@ public class JsonUtils {
      * @param jsonObject the JSON object to serialize
      * @return the JSON string
      */
+
+
     public static String toJsonString(JsonObject jsonObject) {
         return jsonObject != null ? jsonObject.toString() : "";
     }

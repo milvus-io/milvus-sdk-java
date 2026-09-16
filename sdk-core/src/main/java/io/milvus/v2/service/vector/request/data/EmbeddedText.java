@@ -25,6 +25,8 @@ import io.milvus.grpc.PlaceholderType;
  * An embedded text used for searching text stored in a struct field of a collection,
  * where the text is embedded on the server side during the search.
  */
+
+
 public class EmbeddedText implements BaseVector {
     private final String data;
 
@@ -33,6 +35,8 @@ public class EmbeddedText implements BaseVector {
      *
      * @param data the text data
      */
+
+
     public EmbeddedText(String data) {
         this.data = data;
     }

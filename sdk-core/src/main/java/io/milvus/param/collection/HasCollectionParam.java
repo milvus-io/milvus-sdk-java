@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>hasCollection</code> interface.
  */
+
+
 public class HasCollectionParam {
     private final String collectionName;
     private final String databaseName;
@@ -37,9 +39,23 @@ public class HasCollectionParam {
         this.databaseName = builder.databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -53,6 +69,13 @@ public class HasCollectionParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -60,6 +83,8 @@ public class HasCollectionParam {
     /**
      * Builder for {@link HasCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
         private String databaseName;
@@ -73,6 +98,8 @@ public class HasCollectionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -84,6 +111,8 @@ public class HasCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -97,6 +126,8 @@ public class HasCollectionParam {
          *
          * @return {@link HasCollectionParam}
          */
+
+
         public HasCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

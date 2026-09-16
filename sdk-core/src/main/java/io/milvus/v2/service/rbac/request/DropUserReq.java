@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code dropUser} API.
  */
+
+
 public class DropUserReq {
     private String userName;
 
@@ -34,6 +36,8 @@ public class DropUserReq {
      *
      * @return the user name
      */
+
+
     public String getUserName() {
         return userName;
     }
@@ -43,6 +47,8 @@ public class DropUserReq {
      *
      * @param userName the user name
      */
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -59,9 +65,16 @@ public class DropUserReq {
      *
      * @return a new {@link DropUserReqBuilder}
      */
+
+
     public static DropUserReqBuilder builder() {
         return new DropUserReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropUserReq} class.
+     */
+
 
     public static class DropUserReqBuilder {
         private String userName;
@@ -75,6 +88,8 @@ public class DropUserReq {
          * @param userName the user name
          * @return this builder
          */
+
+
         public DropUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
@@ -85,6 +100,8 @@ public class DropUserReq {
          *
          * @return the built request
          */
+
+
         public DropUserReq build() {
             return new DropUserReq(this);
         }

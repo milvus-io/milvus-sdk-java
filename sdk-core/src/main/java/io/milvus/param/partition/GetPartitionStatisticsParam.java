@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>getPartitionStatistics</code> interface.
  */
+
+
 public class GetPartitionStatisticsParam {
     private final String databaseName;
     private final String collectionName;
@@ -42,22 +44,55 @@ public class GetPartitionStatisticsParam {
         this.flushCollection = builder.flushCollection;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
+
     public String getPartitionName() {
         return partitionName;
     }
+
+    /**
+     * Returns the flushCollection.
+     *
+     * @return the flushCollection
+     */
+
 
     public boolean isFlushCollection() {
         return flushCollection;
@@ -77,6 +112,8 @@ public class GetPartitionStatisticsParam {
     /**
      * Builder for {@link GetPartitionStatisticsParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -95,6 +132,8 @@ public class GetPartitionStatisticsParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -106,6 +145,8 @@ public class GetPartitionStatisticsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -121,6 +162,8 @@ public class GetPartitionStatisticsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -136,6 +179,8 @@ public class GetPartitionStatisticsParam {
          * @param flush <code>Boolean.TRUE</code> require a flush action
          * @return <code>Builder</code>
          */
+
+
         public Builder withFlush(Boolean flush) {
             // Replace @NonNull logic with explicit null check
             if (flush == null) {
@@ -150,6 +195,8 @@ public class GetPartitionStatisticsParam {
          *
          * @return {@link GetPartitionStatisticsParam}
          */
+
+
         public GetPartitionStatisticsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(partitionName, "Partition name");

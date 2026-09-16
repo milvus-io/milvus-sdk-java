@@ -23,6 +23,8 @@ package io.milvus.v2.service.snapshot.request;
  * Request parameters for the {@code pinSnapshotData} API.
  * Pinning snapshot data protects the underlying data from garbage collection for a limited time.
  */
+
+
 public class PinSnapshotDataReq {
     private String snapshotName;
     private String databaseName;
@@ -36,6 +38,13 @@ public class PinSnapshotDataReq {
         this.ttlSeconds = builder.ttlSeconds;
     }
 
+    /**
+     * Creates a new builder for {@code PinSnapshotDataReq}.
+     *
+     * @return the builder
+     */
+
+
     public static PinSnapshotDataReqBuilder builder() {
         return new PinSnapshotDataReqBuilder();
     }
@@ -45,6 +54,8 @@ public class PinSnapshotDataReq {
      *
      * @return the snapshot name
      */
+
+
     public String getSnapshotName() {
         return snapshotName;
     }
@@ -54,6 +65,8 @@ public class PinSnapshotDataReq {
      *
      * @param snapshotName the snapshot name
      */
+
+
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
@@ -63,6 +76,8 @@ public class PinSnapshotDataReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -72,6 +87,8 @@ public class PinSnapshotDataReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -81,6 +98,8 @@ public class PinSnapshotDataReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -90,6 +109,8 @@ public class PinSnapshotDataReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -99,6 +120,8 @@ public class PinSnapshotDataReq {
      *
      * @return the pin TTL in seconds
      */
+
+
     public Long getTtlSeconds() {
         return ttlSeconds;
     }
@@ -108,6 +131,8 @@ public class PinSnapshotDataReq {
      *
      * @param ttlSeconds the pin TTL in seconds
      */
+
+
     public void setTtlSeconds(Long ttlSeconds) {
         this.ttlSeconds = ttlSeconds;
     }
@@ -122,6 +147,11 @@ public class PinSnapshotDataReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link PinSnapshotDataReq} class.
+     */
+
+
     public static class PinSnapshotDataReqBuilder {
         private String snapshotName;
         private String databaseName = "";
@@ -134,6 +164,8 @@ public class PinSnapshotDataReq {
          * @param snapshotName the snapshot name
          * @return this builder
          */
+
+
         public PinSnapshotDataReqBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
@@ -145,6 +177,8 @@ public class PinSnapshotDataReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public PinSnapshotDataReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -156,6 +190,8 @@ public class PinSnapshotDataReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public PinSnapshotDataReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -167,6 +203,8 @@ public class PinSnapshotDataReq {
          * @param ttlSeconds the pin TTL in seconds
          * @return this builder
          */
+
+
         public PinSnapshotDataReqBuilder ttlSeconds(Long ttlSeconds) {
             this.ttlSeconds = ttlSeconds;
             return this;
@@ -177,6 +215,8 @@ public class PinSnapshotDataReq {
          *
          * @return the built request
          */
+
+
         public PinSnapshotDataReq build() {
             return new PinSnapshotDataReq(this);
         }

@@ -34,6 +34,8 @@ import java.util.Map;
 /**
  * Parameters for <code>search</code> interface.
  */
+
+
 public class SearchSimpleParam {
     private final String collectionName;
     private final List<?> vectors;
@@ -60,38 +62,99 @@ public class SearchSimpleParam {
         this.consistencyLevel = builder.consistencyLevel;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter methods to replace @Getter annotation
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the vectors.
+     *
+     * @return the vectors
+     */
+
+
     public List<?> getVectors() {
         return vectors;
     }
+
+    /**
+     * Returns the outputFields.
+     *
+     * @return the outputFields
+     */
+
 
     public List<String> getOutputFields() {
         return outputFields;
     }
 
+    /**
+     * Returns the filter.
+     *
+     * @return the filter
+     */
+
+
     public String getFilter() {
         return filter;
     }
+
+    /**
+     * Returns the offset.
+     *
+     * @return the offset
+     */
+
 
     public Long getOffset() {
         return offset;
     }
 
+    /**
+     * Returns the limit.
+     *
+     * @return the limit
+     */
+
+
     public int getLimit() {
         return limit;
     }
 
+    /**
+     * Returns the params.
+     *
+     * @return the params
+     */
+
+
     public Map<String, Object> getParams() {
         return params;
     }
+
+    /**
+     * Returns the consistencyLevel.
+     *
+     * @return the consistencyLevel
+     */
+
 
     public ConsistencyLevelEnum getConsistencyLevel() {
         return consistencyLevel;
@@ -100,6 +163,8 @@ public class SearchSimpleParam {
     /**
      * Builder for {@link SearchSimpleParam} class.
      */
+
+
     public static class Builder {
         private String collectionName;
         private List<?> vectors;
@@ -120,6 +185,8 @@ public class SearchSimpleParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -136,6 +203,8 @@ public class SearchSimpleParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
+
+
         public Builder withFilter(String filter) {
             // Replace @NonNull logic with explicit null check
             if (filter == null) {
@@ -151,6 +220,8 @@ public class SearchSimpleParam {
          * @param outputFields output fields
          * @return <code>Builder</code>
          */
+
+
         public Builder withOutputFields(List<String> outputFields) {
             // Replace @NonNull logic with explicit null check
             if (outputFields == null) {
@@ -166,6 +237,8 @@ public class SearchSimpleParam {
          * @param vectors list of target vectors: List of List Float;
          * @return <code>Builder</code>
          */
+
+
         public Builder withVectors(List<?> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -182,6 +255,8 @@ public class SearchSimpleParam {
          * @param offset a value to define the position
          * @return <code>Builder</code>
          */
+
+
         public Builder withOffset(Long offset) {
             // Replace @NonNull logic with explicit null check
             if (offset == null) {
@@ -199,6 +274,8 @@ public class SearchSimpleParam {
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
+
+
         public Builder withLimit(Long limit) {
             // Replace @NonNull logic with explicit null check
             if (limit == null) {
@@ -214,6 +291,8 @@ public class SearchSimpleParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -224,6 +303,8 @@ public class SearchSimpleParam {
          *
          * @return {@link SearchSimpleParam}
          */
+
+
         public SearchSimpleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             if (CollectionUtils.isEmpty(vectors)) {

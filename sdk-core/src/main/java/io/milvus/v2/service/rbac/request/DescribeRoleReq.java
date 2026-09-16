@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code describeRole} API.
  */
+
+
 public class DescribeRoleReq {
     private String roleName;
     private String dbName;
@@ -36,6 +38,8 @@ public class DescribeRoleReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -45,6 +49,8 @@ public class DescribeRoleReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -54,6 +60,8 @@ public class DescribeRoleReq {
      *
      * @return the database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -63,6 +71,8 @@ public class DescribeRoleReq {
      *
      * @param dbName the database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -80,9 +90,16 @@ public class DescribeRoleReq {
      *
      * @return a new {@link DescribeRoleReqBuilder}
      */
+
+
     public static DescribeRoleReqBuilder builder() {
         return new DescribeRoleReqBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeRoleReq} class.
+     */
+
 
     public static class DescribeRoleReqBuilder {
         private String roleName;
@@ -97,6 +114,8 @@ public class DescribeRoleReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public DescribeRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -108,6 +127,8 @@ public class DescribeRoleReq {
          * @param dbName the database name
          * @return this builder
          */
+
+
         public DescribeRoleReqBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -118,6 +139,8 @@ public class DescribeRoleReq {
          *
          * @return the built request
          */
+
+
         public DescribeRoleReq build() {
             return new DescribeRoleReq(this);
         }

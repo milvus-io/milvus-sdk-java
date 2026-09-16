@@ -27,6 +27,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code updateResourceGroups} API.
  */
+
+
 public class UpdateResourceGroupsReq {
     private Map<String, ResourceGroupConfig> resourceGroups;
 
@@ -39,6 +41,8 @@ public class UpdateResourceGroupsReq {
      *
      * @return the builder
      */
+
+
     public static UpdateResourceGroupsReqBuilder builder() {
         return new UpdateResourceGroupsReqBuilder();
     }
@@ -48,6 +52,8 @@ public class UpdateResourceGroupsReq {
      *
      * @return a map of resource group name to its config
      */
+
+
     public Map<String, ResourceGroupConfig> getResourceGroups() {
         return resourceGroups;
     }
@@ -57,6 +63,8 @@ public class UpdateResourceGroupsReq {
      *
      * @param resourceGroups a map of resource group name to its config
      */
+
+
     public void setResourceGroups(Map<String, ResourceGroupConfig> resourceGroups) {
         this.resourceGroups = resourceGroups;
     }
@@ -68,6 +76,11 @@ public class UpdateResourceGroupsReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link UpdateResourceGroupsReq} class.
+     */
+
+
     public static class UpdateResourceGroupsReqBuilder {
         private Map<String, ResourceGroupConfig> resourceGroups = new HashMap<>();
 
@@ -77,6 +90,8 @@ public class UpdateResourceGroupsReq {
          * @param resourceGroups a map of resource group name to its config
          * @return this builder
          */
+
+
         public UpdateResourceGroupsReqBuilder resourceGroups(Map<String, ResourceGroupConfig> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
@@ -87,6 +102,8 @@ public class UpdateResourceGroupsReq {
          *
          * @return the built request
          */
+
+
         public UpdateResourceGroupsReq build() {
             return new UpdateResourceGroupsReq(this);
         }

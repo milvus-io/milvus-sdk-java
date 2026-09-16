@@ -3,6 +3,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code describeReplicas} API.
  */
+
+
 public class DescribeReplicasReq {
     private String collectionName;
     private String databaseName;
@@ -17,6 +19,8 @@ public class DescribeReplicasReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -26,6 +30,8 @@ public class DescribeReplicasReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -35,6 +41,8 @@ public class DescribeReplicasReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -44,6 +52,8 @@ public class DescribeReplicasReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -61,9 +71,16 @@ public class DescribeReplicasReq {
      *
      * @return the builder
      */
+
+
     public static DescribeReplicasReqBuilder builder() {
         return new DescribeReplicasReqBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeReplicasReq} class.
+     */
+
 
     public static class DescribeReplicasReqBuilder {
         private String collectionName;
@@ -78,6 +95,8 @@ public class DescribeReplicasReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DescribeReplicasReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -89,6 +108,8 @@ public class DescribeReplicasReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DescribeReplicasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -99,6 +120,8 @@ public class DescribeReplicasReq {
          *
          * @return the request
          */
+
+
         public DescribeReplicasReq build() {
             return new DescribeReplicasReq(this);
         }

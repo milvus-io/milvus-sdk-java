@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code insert} API.
  */
+
+
 public class InsertResp {
     // TODO: the first character should be lower case, add a new member and deprecate the old member
     private long InsertCnt;
@@ -42,6 +44,8 @@ public class InsertResp {
      *
      * @return the builder
      */
+
+
     public static InsertRespBuilder builder() {
         return new InsertRespBuilder();
     }
@@ -51,6 +55,8 @@ public class InsertResp {
      *
      * @return the insert count
      */
+
+
     public long getInsertCnt() {
         return InsertCnt;
     }
@@ -60,6 +66,8 @@ public class InsertResp {
      *
      * @param insertCnt the insert count
      */
+
+
     public void setInsertCnt(long insertCnt) {
         InsertCnt = insertCnt;
     }
@@ -69,6 +77,8 @@ public class InsertResp {
      *
      * @return the inserted primary keys
      */
+
+
     public List<Object> getPrimaryKeys() {
         return primaryKeys;
     }
@@ -78,6 +88,8 @@ public class InsertResp {
      *
      * @param primaryKeys the inserted primary keys
      */
+
+
     public void setPrimaryKeys(List<Object> primaryKeys) {
         this.primaryKeys = primaryKeys;
     }
@@ -87,6 +99,8 @@ public class InsertResp {
      *
      * @return the cost
      */
+
+
     public Long getCost() {
         return cost;
     }
@@ -96,6 +110,8 @@ public class InsertResp {
      *
      * @param cost the cost
      */
+
+
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -109,6 +125,11 @@ public class InsertResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link InsertResp} class.
+     */
+
+
     public static class InsertRespBuilder {
         private long InsertCnt;
         private List<Object> primaryKeys = new ArrayList<>();
@@ -120,6 +141,8 @@ public class InsertResp {
          * @param insertCnt the insert count
          * @return this builder
          */
+
+
         public InsertRespBuilder InsertCnt(long insertCnt) {
             InsertCnt = insertCnt;
             return this;
@@ -131,6 +154,8 @@ public class InsertResp {
          * @param primaryKeys the inserted primary keys
          * @return this builder
          */
+
+
         public InsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
@@ -142,6 +167,8 @@ public class InsertResp {
          * @param cost the cost
          * @return this builder
          */
+
+
         public InsertRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
@@ -152,6 +179,8 @@ public class InsertResp {
          *
          * @return the response
          */
+
+
         public InsertResp build() {
             return new InsertResp(this);
         }

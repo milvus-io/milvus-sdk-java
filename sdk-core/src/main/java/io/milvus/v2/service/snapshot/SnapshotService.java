@@ -34,6 +34,8 @@ import java.util.List;
  * Service for snapshot-related operations, including creating, dropping, listing, describing,
  * restoring snapshots, and pinning snapshot data.
  */
+
+
 public class SnapshotService extends BaseService {
     /**
      * Creates a snapshot of the specified collection.
@@ -42,6 +44,7 @@ public class SnapshotService extends BaseService {
      * @param request the create snapshot request
      * @return {@code null}
      */
+
     public Void createSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -71,6 +74,8 @@ public class SnapshotService extends BaseService {
      * @param request the drop snapshot request
      * @return {@code null}
      */
+
+
     public Void dropSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -97,6 +102,8 @@ public class SnapshotService extends BaseService {
      * @param request the list snapshots request
      * @return the list snapshots response
      */
+
+
     public ListSnapshotsResp listSnapshots(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListSnapshotsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -123,6 +130,8 @@ public class SnapshotService extends BaseService {
      * @param request the describe snapshot request
      * @return the describe snapshot response
      */
+
+
     public DescribeSnapshotResp describeSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -156,6 +165,8 @@ public class SnapshotService extends BaseService {
      * @param request the restore snapshot request
      * @return the restore snapshot response
      */
+
+
     public RestoreSnapshotResp restoreSnapshot(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RestoreSnapshotReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getSourceCollectionName(), "Source collection name cannot be null or empty");
@@ -188,6 +199,8 @@ public class SnapshotService extends BaseService {
      * @param request the get restore snapshot state request
      * @return the get restore snapshot state response
      */
+
+
     public GetRestoreSnapshotStateResp getRestoreSnapshotState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                                GetRestoreSnapshotStateReq request) {
         requirePositive(request.getJobId(), "Restore snapshot job ID must be positive");
@@ -210,6 +223,8 @@ public class SnapshotService extends BaseService {
      * @param request the list restore snapshot jobs request
      * @return the list restore snapshot jobs response
      */
+
+
     public ListRestoreSnapshotJobsResp listRestoreSnapshotJobs(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                                ListRestoreSnapshotJobsReq request) {
         String dbName = request.getDatabaseName();
@@ -242,6 +257,8 @@ public class SnapshotService extends BaseService {
      * @param request the pin snapshot data request
      * @return the pin snapshot data response
      */
+
+
     public PinSnapshotDataResp pinSnapshotData(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, PinSnapshotDataReq request) {
         requireNotEmpty(request.getSnapshotName(), "Snapshot name cannot be null or empty");
         requireNotEmpty(request.getCollectionName(), "Collection name cannot be null or empty");
@@ -272,6 +289,8 @@ public class SnapshotService extends BaseService {
      * @param request the unpin snapshot data request
      * @return {@code null}
      */
+
+
     public Void unpinSnapshotData(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UnpinSnapshotDataReq request) {
         requirePositive(request.getPinId(), "Snapshot pin ID must be positive");
         String title = String.format("UnpinSnapshotData pinId: %d", request.getPinId());

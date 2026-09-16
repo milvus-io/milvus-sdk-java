@@ -45,6 +45,8 @@ import java.util.Map;
  * .param("endpoint", "http://model-service:8080")
  * .build();
  */
+
+
 public class ModelRanker extends CreateCollectionReq.Function {
     private String provider;
     private List<String> queries;
@@ -62,6 +64,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @return the model provider
      */
+
+
     public String getProvider() {
         return provider;
     }
@@ -71,6 +75,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @param provider the model provider
      */
+
+
     public void setProvider(String provider) {
         this.provider = provider;
     }
@@ -80,6 +86,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @return the rerank queries
      */
+
+
     public List<String> getQueries() {
         return queries;
     }
@@ -89,6 +97,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @param queries the rerank queries
      */
+
+
     public void setQueries(List<String> queries) {
         this.queries = queries;
     }
@@ -98,6 +108,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @return the model endpoint
      */
+
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -107,6 +119,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @param endpoint the model endpoint
      */
+
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
@@ -162,6 +176,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
      *
      * @return a new builder
      */
+
+
     public static ModelRankerBuilder builder() {
         return new ModelRankerBuilder();
     }
@@ -169,6 +185,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
     /**
      * Builder for {@link ModelRanker}.
      */
+
+
     public static class ModelRankerBuilder extends Function.FunctionBuilder<ModelRankerBuilder> {
         private String provider = "tei";
         private List<String> queries = new ArrayList<>();
@@ -184,6 +202,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
          * @param provider the model provider
          * @return this builder
          */
+
+
         public ModelRankerBuilder provider(String provider) {
             this.provider = provider;
             return this;
@@ -195,6 +215,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
          * @param queries the rerank queries
          * @return this builder
          */
+
+
         public ModelRankerBuilder queries(List<String> queries) {
             this.queries = queries;
             return this;
@@ -206,6 +228,8 @@ public class ModelRanker extends CreateCollectionReq.Function {
          * @param endpoint the model endpoint
          * @return this builder
          */
+
+
         public ModelRankerBuilder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;

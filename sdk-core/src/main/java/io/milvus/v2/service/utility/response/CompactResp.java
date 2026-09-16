@@ -22,12 +22,21 @@ package io.milvus.v2.service.utility.response;
 /**
  * Response returned by the {@code compact} API.
  */
+
+
 public class CompactResp {
     private Long compactionID;
 
     private CompactResp(CompactRespBuilder builder) {
         this.compactionID = builder.compactionID;
     }
+
+    /**
+     * Creates a new builder for {@code CompactResp}.
+     *
+     * @return the builder
+     */
+
 
     public static CompactRespBuilder builder() {
         return new CompactRespBuilder();
@@ -38,6 +47,8 @@ public class CompactResp {
      *
      * @return the compaction ID
      */
+
+
     public Long getCompactionID() {
         return compactionID;
     }
@@ -47,6 +58,8 @@ public class CompactResp {
      *
      * @param compactionID the compaction ID
      */
+
+
     public void setCompactionID(Long compactionID) {
         this.compactionID = compactionID;
     }
@@ -58,6 +71,11 @@ public class CompactResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link CompactResp} class.
+     */
+
+
     public static class CompactRespBuilder {
         private Long compactionID = 0L;
 
@@ -67,6 +85,8 @@ public class CompactResp {
          * @param compactionID the compaction ID
          * @return this builder
          */
+
+
         public CompactRespBuilder compactionID(Long compactionID) {
             this.compactionID = compactionID;
             return this;
@@ -77,6 +97,8 @@ public class CompactResp {
          *
          * @return the constructed {@code CompactResp}
          */
+
+
         public CompactResp build() {
             return new CompactResp(this);
         }

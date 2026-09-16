@@ -25,6 +25,8 @@ import io.milvus.v2.common.DataType;
 /**
  * Maps Milvus scalar data types to the size in bytes that each value occupies in bulk data files.
  */
+
+
 public enum TypeSize {
     /** Boolean values, 1 byte. */
     BOOL(DataType.Bool, 1),
@@ -56,6 +58,8 @@ public enum TypeSize {
      * @param dataType the Milvus data type to check
      * @return {@code true} if the data type is mapped to a size
      */
+
+
     public static boolean contains(DataType dataType) {
         for (TypeSize typeSize : values()) {
             if (typeSize.dataType == dataType) {
@@ -72,6 +76,8 @@ public enum TypeSize {
      * @return the size in bytes
      * @throws io.milvus.exception.ParamException if the data type has no mapped size
      */
+
+
     public static Integer getSize(DataType dataType) {
         for (TypeSize typeSize : values()) {
             if (typeSize.dataType == dataType) {

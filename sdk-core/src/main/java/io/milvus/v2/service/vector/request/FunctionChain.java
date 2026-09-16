@@ -46,6 +46,8 @@ import java.util.List;
  *         .build();
  * }</pre>
  */
+
+
 public class FunctionChain {
     private final FunctionChainStage stage;
     private final String name;
@@ -62,6 +64,8 @@ public class FunctionChain {
      *
      * @return a new builder
      */
+
+
     public static FunctionChainBuilder builder() {
         return new FunctionChainBuilder();
     }
@@ -71,6 +75,8 @@ public class FunctionChain {
      *
      * @return the execution stage
      */
+
+
     public FunctionChainStage getStage() {
         return stage;
     }
@@ -80,6 +86,8 @@ public class FunctionChain {
      *
      * @return the chain name
      */
+
+
     public String getName() {
         return name;
     }
@@ -89,6 +97,8 @@ public class FunctionChain {
      *
      * @return the chain operations
      */
+
+
     public List<FunctionChainOp> getOps() {
         return ops;
     }
@@ -98,6 +108,8 @@ public class FunctionChain {
      *
      * @return the gRPC function chain
      */
+
+
     public io.milvus.grpc.FunctionChain toGrpc() {
         io.milvus.grpc.FunctionChain.Builder builder = io.milvus.grpc.FunctionChain.newBuilder()
                 .setName(name)
@@ -109,6 +121,8 @@ public class FunctionChain {
     /**
      * Builder for {@link FunctionChain}.
      */
+
+
     public static class FunctionChainBuilder {
         private FunctionChainStage stage = FunctionChainStage.UNSPECIFIED;
         private String name = "";
@@ -124,6 +138,8 @@ public class FunctionChain {
          * @return this builder
          * @throws MilvusClientException if the stage is {@code null}
          */
+
+
         public FunctionChainBuilder stage(FunctionChainStage stage) {
             if (stage == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -139,6 +155,8 @@ public class FunctionChain {
          * @param name the chain name
          * @return this builder
          */
+
+
         public FunctionChainBuilder name(String name) {
             this.name = name == null ? "" : name;
             return this;
@@ -152,6 +170,8 @@ public class FunctionChain {
          * @param expr   the expression to evaluate
          * @return this builder
          */
+
+
         public FunctionChainBuilder map(String output, FunctionChainExpr expr) {
             this.ops.add(FunctionChainOp.map(output, expr));
             return this;
@@ -165,6 +185,8 @@ public class FunctionChain {
          * @param tieBreakCol  the column used to break ties, or {@code null} to omit it
          * @return this builder
          */
+
+
         public FunctionChainBuilder sort(String by, boolean desc, String tieBreakCol) {
             this.ops.add(FunctionChainOp.sort(by, desc, tieBreakCol));
             return this;
@@ -177,6 +199,8 @@ public class FunctionChain {
          * @param limit the maximum number of results to keep
          * @return this builder
          */
+
+
         public FunctionChainBuilder limit(int limit) {
             this.ops.add(FunctionChainOp.limit(limit, 0));
             return this;
@@ -190,6 +214,8 @@ public class FunctionChain {
          * @param offset the number of results to skip
          * @return this builder
          */
+
+
         public FunctionChainBuilder limit(int limit, int offset) {
             this.ops.add(FunctionChainOp.limit(limit, offset));
             return this;
@@ -200,6 +226,8 @@ public class FunctionChain {
          *
          * @return the built function chain
          */
+
+
         public FunctionChain build() {
             return new FunctionChain(this);
         }

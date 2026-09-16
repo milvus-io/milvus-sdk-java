@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.response;
 /**
  * Holds the state and progress of a restore snapshot job.
  */
+
+
 public class RestoreSnapshotJobInfo {
     public static final String STATE_NONE = "RestoreSnapshotNone";
     public static final String STATE_PENDING = "RestoreSnapshotPending";
@@ -51,6 +53,13 @@ public class RestoreSnapshotJobInfo {
         this.timeCost = builder.timeCost;
     }
 
+    /**
+     * Creates a new builder for {@code RestoreSnapshotJobInfo}.
+     *
+     * @return the builder
+     */
+
+
     public static RestoreSnapshotJobInfoBuilder builder() {
         return new RestoreSnapshotJobInfoBuilder();
     }
@@ -60,6 +69,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the job ID
      */
+
+
     public Long getJobId() {
         return jobId;
     }
@@ -69,6 +80,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param jobId the job ID
      */
+
+
     public void setJobId(Long jobId) {
         this.jobId = jobId;
     }
@@ -78,6 +91,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the snapshot name
      */
+
+
     public String getSnapshotName() {
         return snapshotName;
     }
@@ -87,6 +102,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param snapshotName the snapshot name
      */
+
+
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
@@ -96,6 +113,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the target database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -105,6 +124,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param dbName the target database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -114,6 +135,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the target collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -123,6 +146,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param collectionName the target collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -132,6 +157,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return one of the {@code STATE_*} constants
      */
+
+
     public String getState() {
         return state;
     }
@@ -141,6 +168,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param state one of the {@code STATE_*} constants
      */
+
+
     public void setState(String state) {
         this.state = state;
     }
@@ -150,6 +179,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the progress percentage
      */
+
+
     public Integer getProgress() {
         return progress;
     }
@@ -159,6 +190,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param progress the progress percentage
      */
+
+
     public void setProgress(Integer progress) {
         this.progress = progress;
     }
@@ -168,6 +201,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the failure reason
      */
+
+
     public String getReason() {
         return reason;
     }
@@ -177,6 +212,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param reason the failure reason
      */
+
+
     public void setReason(String reason) {
         this.reason = reason;
     }
@@ -186,6 +223,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the start time
      */
+
+
     public Long getStartTime() {
         return startTime;
     }
@@ -195,6 +234,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param startTime the start time
      */
+
+
     public void setStartTime(Long startTime) {
         this.startTime = startTime;
     }
@@ -204,6 +245,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @return the time cost
      */
+
+
     public Long getTimeCost() {
         return timeCost;
     }
@@ -213,6 +256,8 @@ public class RestoreSnapshotJobInfo {
      *
      * @param timeCost the time cost
      */
+
+
     public void setTimeCost(Long timeCost) {
         this.timeCost = timeCost;
     }
@@ -232,6 +277,11 @@ public class RestoreSnapshotJobInfo {
                 '}';
     }
 
+    /**
+     * Builder for {@link RestoreSnapshotJobInfo} class.
+     */
+
+
     public static class RestoreSnapshotJobInfoBuilder {
         private Long jobId;
         private String snapshotName;
@@ -249,6 +299,8 @@ public class RestoreSnapshotJobInfo {
          * @param jobId the job ID
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder jobId(Long jobId) {
             this.jobId = jobId;
             return this;
@@ -260,6 +312,8 @@ public class RestoreSnapshotJobInfo {
          * @param snapshotName the snapshot name
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
@@ -271,6 +325,8 @@ public class RestoreSnapshotJobInfo {
          * @param dbName the target database name
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -282,6 +338,8 @@ public class RestoreSnapshotJobInfo {
          * @param collectionName the target collection name
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -293,6 +351,8 @@ public class RestoreSnapshotJobInfo {
          * @param state one of the {@code STATE_*} constants
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder state(String state) {
             this.state = state;
             return this;
@@ -304,6 +364,8 @@ public class RestoreSnapshotJobInfo {
          * @param progress the progress percentage
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder progress(Integer progress) {
             this.progress = progress;
             return this;
@@ -315,6 +377,8 @@ public class RestoreSnapshotJobInfo {
          * @param reason the failure reason
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder reason(String reason) {
             this.reason = reason;
             return this;
@@ -326,6 +390,8 @@ public class RestoreSnapshotJobInfo {
          * @param startTime the start time
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder startTime(Long startTime) {
             this.startTime = startTime;
             return this;
@@ -337,6 +403,8 @@ public class RestoreSnapshotJobInfo {
          * @param timeCost the time cost
          * @return this builder
          */
+
+
         public RestoreSnapshotJobInfoBuilder timeCost(Long timeCost) {
             this.timeCost = timeCost;
             return this;
@@ -347,6 +415,8 @@ public class RestoreSnapshotJobInfo {
          *
          * @return the built job info
          */
+
+
         public RestoreSnapshotJobInfo build() {
             return new RestoreSnapshotJobInfo(this);
         }

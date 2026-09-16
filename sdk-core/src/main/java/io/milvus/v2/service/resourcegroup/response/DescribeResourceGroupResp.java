@@ -11,6 +11,8 @@ import java.util.Map;
 /**
  * Response returned by the {@code describeResourceGroup} API.
  */
+
+
 public class DescribeResourceGroupResp {
     private String groupName;
     private Integer capacity;
@@ -37,6 +39,8 @@ public class DescribeResourceGroupResp {
      *
      * @return the builder
      */
+
+
     public static DescribeResourceGroupRespBuilder builder() {
         return new DescribeResourceGroupRespBuilder();
     }
@@ -46,6 +50,8 @@ public class DescribeResourceGroupResp {
      *
      * @return the resource group name
      */
+
+
     public String getGroupName() {
         return groupName;
     }
@@ -55,6 +61,8 @@ public class DescribeResourceGroupResp {
      *
      * @param groupName the resource group name
      */
+
+
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
@@ -64,6 +72,8 @@ public class DescribeResourceGroupResp {
      *
      * @return the capacity of the resource group
      */
+
+
     public Integer getCapacity() {
         return capacity;
     }
@@ -73,6 +83,8 @@ public class DescribeResourceGroupResp {
      *
      * @param capacity the capacity of the resource group
      */
+
+
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
     }
@@ -82,6 +94,8 @@ public class DescribeResourceGroupResp {
      *
      * @return the number of available nodes
      */
+
+
     public Integer getNumberOfAvailableNode() {
         return numberOfAvailableNode;
     }
@@ -91,6 +105,8 @@ public class DescribeResourceGroupResp {
      *
      * @param numberOfAvailableNode the number of available nodes
      */
+
+
     public void setNumberOfAvailableNode(Integer numberOfAvailableNode) {
         this.numberOfAvailableNode = numberOfAvailableNode;
     }
@@ -100,6 +116,8 @@ public class DescribeResourceGroupResp {
      *
      * @return a map of collection name to the number of loaded replicas
      */
+
+
     public Map<String, Integer> getNumberOfLoadedReplica() {
         return numberOfLoadedReplica;
     }
@@ -109,6 +127,8 @@ public class DescribeResourceGroupResp {
      *
      * @param numberOfLoadedReplica a map of collection name to the number of loaded replicas
      */
+
+
     public void setNumberOfLoadedReplica(Map<String, Integer> numberOfLoadedReplica) {
         this.numberOfLoadedReplica = numberOfLoadedReplica;
     }
@@ -118,6 +138,8 @@ public class DescribeResourceGroupResp {
      *
      * @return a map of target resource group name to the number of outgoing nodes
      */
+
+
     public Map<String, Integer> getNumberOfOutgoingNode() {
         return numberOfOutgoingNode;
     }
@@ -127,6 +149,8 @@ public class DescribeResourceGroupResp {
      *
      * @param numberOfOutgoingNode a map of target resource group name to the number of outgoing nodes
      */
+
+
     public void setNumberOfOutgoingNode(Map<String, Integer> numberOfOutgoingNode) {
         this.numberOfOutgoingNode = numberOfOutgoingNode;
     }
@@ -136,6 +160,8 @@ public class DescribeResourceGroupResp {
      *
      * @return a map of source resource group name to the number of incoming nodes
      */
+
+
     public Map<String, Integer> getNumberOfIncomingNode() {
         return numberOfIncomingNode;
     }
@@ -145,6 +171,8 @@ public class DescribeResourceGroupResp {
      *
      * @param numberOfIncomingNode a map of source resource group name to the number of incoming nodes
      */
+
+
     public void setNumberOfIncomingNode(Map<String, Integer> numberOfIncomingNode) {
         this.numberOfIncomingNode = numberOfIncomingNode;
     }
@@ -154,6 +182,8 @@ public class DescribeResourceGroupResp {
      *
      * @return the resource group config
      */
+
+
     public ResourceGroupConfig getConfig() {
         return config;
     }
@@ -163,6 +193,8 @@ public class DescribeResourceGroupResp {
      *
      * @param config the resource group config
      */
+
+
     public void setConfig(ResourceGroupConfig config) {
         this.config = config;
     }
@@ -172,6 +204,8 @@ public class DescribeResourceGroupResp {
      *
      * @return the list of node information
      */
+
+
     public List<NodeInfo> getNodes() {
         return nodes;
     }
@@ -181,6 +215,8 @@ public class DescribeResourceGroupResp {
      *
      * @param nodes the list of node information
      */
+
+
     public void setNodes(List<NodeInfo> nodes) {
         this.nodes = nodes;
     }
@@ -199,6 +235,11 @@ public class DescribeResourceGroupResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeResourceGroupResp} class.
+     */
+
+
     public static class DescribeResourceGroupRespBuilder {
         private String groupName;
         private Integer capacity;
@@ -215,6 +256,8 @@ public class DescribeResourceGroupResp {
          * @param groupName the resource group name
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
@@ -226,6 +269,8 @@ public class DescribeResourceGroupResp {
          * @param capacity the capacity of the resource group
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder capacity(Integer capacity) {
             this.capacity = capacity;
             return this;
@@ -237,6 +282,8 @@ public class DescribeResourceGroupResp {
          * @param numberOfAvailableNode the number of available nodes
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder numberOfAvailableNode(Integer numberOfAvailableNode) {
             this.numberOfAvailableNode = numberOfAvailableNode;
             return this;
@@ -248,6 +295,8 @@ public class DescribeResourceGroupResp {
          * @param numberOfLoadedReplica a map of collection name to the number of loaded replicas
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder numberOfLoadedReplica(Map<String, Integer> numberOfLoadedReplica) {
             this.numberOfLoadedReplica = numberOfLoadedReplica;
             return this;
@@ -259,6 +308,8 @@ public class DescribeResourceGroupResp {
          * @param numberOfOutgoingNode a map of target resource group name to the number of outgoing nodes
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder numberOfOutgoingNode(Map<String, Integer> numberOfOutgoingNode) {
             this.numberOfOutgoingNode = numberOfOutgoingNode;
             return this;
@@ -270,6 +321,8 @@ public class DescribeResourceGroupResp {
          * @param numberOfIncomingNode a map of source resource group name to the number of incoming nodes
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder numberOfIncomingNode(Map<String, Integer> numberOfIncomingNode) {
             this.numberOfIncomingNode = numberOfIncomingNode;
             return this;
@@ -281,6 +334,8 @@ public class DescribeResourceGroupResp {
          * @param config the resource group config
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder config(ResourceGroupConfig config) {
             this.config = config;
             return this;
@@ -292,6 +347,8 @@ public class DescribeResourceGroupResp {
          * @param nodes the list of node information
          * @return this builder
          */
+
+
         public DescribeResourceGroupRespBuilder nodes(List<NodeInfo> nodes) {
             this.nodes = nodes;
             return this;
@@ -302,6 +359,8 @@ public class DescribeResourceGroupResp {
          *
          * @return the built response
          */
+
+
         public DescribeResourceGroupResp build() {
             return new DescribeResourceGroupResp(this);
         }

@@ -30,6 +30,52 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
 class CompactReqTest {
+
+    @Test
+    void builderAndAccessorsExposeAllFields() {
+        CompactReq request = CompactReq.builder()
+                .databaseName("db")
+                .collectionName("coll")
+                .isClustering(true)
+                .isL0(true)
+                .targetSize(512L)
+                .targetSizeUnit("mb")
+                .build();
+
+        assertEquals("db", request.getDatabaseName());
+        assertEquals("coll", request.getCollectionName());
+        assertEquals(Boolean.TRUE, request.getIsClustering());
+        assertEquals(Boolean.TRUE, request.getIsL0());
+        assertEquals(Long.valueOf(512L), request.getTargetSize());
+        assertEquals("mb", request.getTargetSizeUnit());
+
+        request.setDatabaseName("db2");
+        request.setCollectionName("coll2");
+        request.setIsClustering(false);
+        request.setIsL0(false);
+        request.setTargetSize(1024L);
+        request.setTargetSizeUnit("gb");
+        assertEquals("db2", request.getDatabaseName());
+        assertEquals("coll2", request.getCollectionName());
+        assertEquals(Boolean.FALSE, request.getIsClustering());
+        assertEquals(Boolean.FALSE, request.getIsL0());
+        assertEquals(Long.valueOf(1024L), request.getTargetSize());
+        assertEquals("gb", request.getTargetSizeUnit());
+
+        String str = request.toString();
+        assertEquals(true, str.contains("db2"));
+        assertEquals(true, str.contains("coll2"));
+    }
+
+    @Test
+    void builderDefaults() {
+        CompactReq request = CompactReq.builder().build();
+        assertEquals(Boolean.FALSE, request.getIsClustering());
+        assertEquals(Boolean.FALSE, request.getIsL0());
+        assertEquals("mb", request.getTargetSizeUnit());
+        assertEquals(null, request.getTargetSize());
+    }
+
     @Test
     void targetSizeDefaultsToMegabytes() {
         CompactReq request = CompactReq.builder()

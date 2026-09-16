@@ -25,6 +25,8 @@ package io.milvus.bulkwriter.request.volume;
  * <p>It specifies the volume to apply for and the path within it where files are uploaded,
  * and inherits the API key and options handling from {@link BaseVolumeRequest}.</p>
  */
+
+
 public class ApplyVolumeRequest extends BaseVolumeRequest {
     private String volumeName;
     private String path;
@@ -48,6 +50,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
      *
      * @return the volume name
      */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -57,6 +61,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
      *
      * @param volumeName the volume name
      */
+
+
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -66,6 +72,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
      *
      * @return the upload path
      */
+
+
     public String getPath() {
         return path;
     }
@@ -75,6 +83,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
      *
      * @param path the upload path
      */
+
+
     public void setPath(String path) {
         this.path = path;
     }
@@ -92,6 +102,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
      *
      * @return an {@code ApplyVolumeRequest} builder
      */
+
+
     public static ApplyVolumeRequestBuilder builder() {
         return new ApplyVolumeRequestBuilder();
     }
@@ -99,6 +111,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
     /**
      * Builder for {@link ApplyVolumeRequest}.
      */
+
+
     public static class ApplyVolumeRequestBuilder extends BaseVolumeRequestBuilder<ApplyVolumeRequestBuilder> {
         private String volumeName;
         private String path;
@@ -114,6 +128,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
          * @param volumeName the volume name
          * @return this builder
          */
+
+
         public ApplyVolumeRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -125,6 +141,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
          * @param path the upload path
          * @return this builder
          */
+
+
         public ApplyVolumeRequestBuilder path(String path) {
             this.path = path;
             return this;
@@ -135,6 +153,8 @@ public class ApplyVolumeRequest extends BaseVolumeRequest {
          *
          * @return the built {@code ApplyVolumeRequest}
          */
+
+
         public ApplyVolumeRequest build() {
             return new ApplyVolumeRequest(this);
         }

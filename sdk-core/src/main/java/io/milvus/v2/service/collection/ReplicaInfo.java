@@ -8,6 +8,8 @@ import java.util.Map;
 /**
  * Information of a replica of a loaded collection, as returned by the {@code describeReplicas} API.
  */
+
+
 public class ReplicaInfo {
     private Long replicaID;
     private Long collectionID;
@@ -32,6 +34,8 @@ public class ReplicaInfo {
      *
      * @return the builder
      */
+
+
     public static ReplicaInfoBuilder builder() {
         return new ReplicaInfoBuilder();
     }
@@ -42,6 +46,7 @@ public class ReplicaInfo {
      *
      * @return the replica ID
      */
+
     public Long getReplicaID() {
         return replicaID;
     }
@@ -51,6 +56,8 @@ public class ReplicaInfo {
      *
      * @return the collection ID
      */
+
+
     public Long getCollectionID() {
         return collectionID;
     }
@@ -60,6 +67,8 @@ public class ReplicaInfo {
      *
      * @return the partition IDs
      */
+
+
     public List<Long> getPartitionIDs() {
         return partitionIDs;
     }
@@ -69,6 +78,8 @@ public class ReplicaInfo {
      *
      * @return the shard replicas
      */
+
+
     public List<ShardReplica> getShardReplicas() {
         return shardReplicas;
     }
@@ -78,6 +89,8 @@ public class ReplicaInfo {
      *
      * @return the query node IDs
      */
+
+
     public List<Long> getNodeIDs() {
         return nodeIDs;
     }
@@ -87,6 +100,8 @@ public class ReplicaInfo {
      *
      * @return the resource group name
      */
+
+
     public String getResourceGroupName() {
         return resourceGroupName;
     }
@@ -96,6 +111,8 @@ public class ReplicaInfo {
      *
      * @return a map of resource group name to the number of outbound nodes
      */
+
+
     public Map<String, Integer> getNumOutboundNode() {
         return numOutboundNode;
     }
@@ -106,6 +123,7 @@ public class ReplicaInfo {
      *
      * @param replicaID the replica ID
      */
+
     public void setReplicaID(Long replicaID) {
         this.replicaID = replicaID;
     }
@@ -115,6 +133,8 @@ public class ReplicaInfo {
      *
      * @param collectionID the collection ID
      */
+
+
     public void setCollectionID(Long collectionID) {
         this.collectionID = collectionID;
     }
@@ -124,6 +144,8 @@ public class ReplicaInfo {
      *
      * @param partitionIDs the partition IDs
      */
+
+
     public void setPartitionIDs(List<Long> partitionIDs) {
         this.partitionIDs = partitionIDs;
     }
@@ -133,6 +155,8 @@ public class ReplicaInfo {
      *
      * @param shardReplicas the shard replicas
      */
+
+
     public void setShardReplicas(List<ShardReplica> shardReplicas) {
         this.shardReplicas = shardReplicas;
     }
@@ -142,6 +166,8 @@ public class ReplicaInfo {
      *
      * @param nodeIDs the query node IDs
      */
+
+
     public void setNodeIDs(List<Long> nodeIDs) {
         this.nodeIDs = nodeIDs;
     }
@@ -151,6 +177,8 @@ public class ReplicaInfo {
      *
      * @param resourceGroupName the resource group name
      */
+
+
     public void setResourceGroupName(String resourceGroupName) {
         this.resourceGroupName = resourceGroupName;
     }
@@ -160,6 +188,8 @@ public class ReplicaInfo {
      *
      * @param numOutboundNode a map of resource group name to the number of outbound nodes
      */
+
+
     public void setNumOutboundNode(Map<String, Integer> numOutboundNode) {
         this.numOutboundNode = numOutboundNode;
     }
@@ -180,6 +210,8 @@ public class ReplicaInfo {
     /**
      * Builder for {@link ReplicaInfo}.
      */
+
+
     public static class ReplicaInfoBuilder {
         private Long replicaID;
         private Long collectionID;
@@ -195,6 +227,8 @@ public class ReplicaInfo {
          * @param replicaID the replica ID
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder replicaID(Long replicaID) {
             this.replicaID = replicaID;
             return this;
@@ -206,6 +240,8 @@ public class ReplicaInfo {
          * @param collectionID the collection ID
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder collectionID(Long collectionID) {
             this.collectionID = collectionID;
             return this;
@@ -217,6 +253,8 @@ public class ReplicaInfo {
          * @param partitionIDs the partition IDs
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder partitionIDs(List<Long> partitionIDs) {
             this.partitionIDs = partitionIDs;
             return this;
@@ -228,6 +266,8 @@ public class ReplicaInfo {
          * @param shardReplicas the shard replicas
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder shardReplicas(List<ShardReplica> shardReplicas) {
             this.shardReplicas = shardReplicas;
             return this;
@@ -239,6 +279,8 @@ public class ReplicaInfo {
          * @param nodeIDs the query node IDs
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder nodeIDs(List<Long> nodeIDs) {
             this.nodeIDs = nodeIDs;
             return this;
@@ -250,6 +292,8 @@ public class ReplicaInfo {
          * @param resourceGroupName the resource group name
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder resourceGroupName(String resourceGroupName) {
             this.resourceGroupName = resourceGroupName;
             return this;
@@ -261,6 +305,8 @@ public class ReplicaInfo {
          * @param numOutboundNode a map of resource group name to the number of outbound nodes
          * @return this builder
          */
+
+
         public ReplicaInfoBuilder numOutboundNode(Map<String, Integer> numOutboundNode) {
             this.numOutboundNode = numOutboundNode;
             return this;
@@ -271,6 +317,8 @@ public class ReplicaInfo {
          *
          * @return the replica information
          */
+
+
         public ReplicaInfo build() {
             return new ReplicaInfo(this);
         }

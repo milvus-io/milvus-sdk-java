@@ -38,6 +38,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code createCollection} API.
  */
+
+
 public class CreateCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -101,6 +103,7 @@ public class CreateCollectionReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -110,6 +113,8 @@ public class CreateCollectionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -119,6 +124,8 @@ public class CreateCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -128,6 +135,8 @@ public class CreateCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -140,6 +149,8 @@ public class CreateCollectionReq {
      *
      * @return the collection description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -149,6 +160,8 @@ public class CreateCollectionReq {
      *
      * @param description the collection description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -158,6 +171,8 @@ public class CreateCollectionReq {
      *
      * @return the vector dimension
      */
+
+
     public Integer getDimension() {
         return dimension;
     }
@@ -167,6 +182,8 @@ public class CreateCollectionReq {
      *
      * @param dimension the vector dimension
      */
+
+
     public void setDimension(Integer dimension) {
         this.dimension = dimension;
     }
@@ -176,6 +193,8 @@ public class CreateCollectionReq {
      *
      * @return the primary field name
      */
+
+
     public String getPrimaryFieldName() {
         return primaryFieldName;
     }
@@ -185,6 +204,8 @@ public class CreateCollectionReq {
      *
      * @param primaryFieldName the primary field name
      */
+
+
     public void setPrimaryFieldName(String primaryFieldName) {
         this.primaryFieldName = primaryFieldName;
     }
@@ -194,6 +215,8 @@ public class CreateCollectionReq {
      *
      * @return the primary field data type
      */
+
+
     public DataType getIdType() {
         return idType;
     }
@@ -203,6 +226,8 @@ public class CreateCollectionReq {
      *
      * @param idType the primary field data type
      */
+
+
     public void setIdType(DataType idType) {
         this.idType = idType;
     }
@@ -212,6 +237,8 @@ public class CreateCollectionReq {
      *
      * @return the primary field max length
      */
+
+
     public Integer getMaxLength() {
         return maxLength;
     }
@@ -221,6 +248,8 @@ public class CreateCollectionReq {
      *
      * @param maxLength the primary field max length
      */
+
+
     public void setMaxLength(Integer maxLength) {
         this.maxLength = maxLength;
     }
@@ -230,6 +259,8 @@ public class CreateCollectionReq {
      *
      * @return the vector field name
      */
+
+
     public String getVectorFieldName() {
         return vectorFieldName;
     }
@@ -239,6 +270,8 @@ public class CreateCollectionReq {
      *
      * @param vectorFieldName the vector field name
      */
+
+
     public void setVectorFieldName(String vectorFieldName) {
         this.vectorFieldName = vectorFieldName;
     }
@@ -248,6 +281,8 @@ public class CreateCollectionReq {
      *
      * @return the metric type
      */
+
+
     public String getMetricType() {
         return metricType;
     }
@@ -257,6 +292,8 @@ public class CreateCollectionReq {
      *
      * @param metricType the metric type
      */
+
+
     public void setMetricType(String metricType) {
         this.metricType = metricType;
     }
@@ -266,6 +303,8 @@ public class CreateCollectionReq {
      *
      * @return {@code true} if auto ID is enabled
      */
+
+
     public Boolean getAutoID() {
         return autoID;
     }
@@ -275,6 +314,8 @@ public class CreateCollectionReq {
      *
      * @param autoID {@code true} to enable auto ID
      */
+
+
     public void setAutoID(Boolean autoID) {
         this.autoID = autoID;
     }
@@ -284,6 +325,8 @@ public class CreateCollectionReq {
      *
      * @return {@code true} if the dynamic field is enabled
      */
+
+
     public Boolean getEnableDynamicField() {
         return enableDynamicField;
     }
@@ -293,6 +336,8 @@ public class CreateCollectionReq {
      *
      * @param enableDynamicField {@code true} to enable the dynamic field
      */
+
+
     public void setEnableDynamicField(Boolean enableDynamicField) {
         this.enableDynamicField = enableDynamicField;
     }
@@ -302,6 +347,8 @@ public class CreateCollectionReq {
      *
      * @return the number of shards
      */
+
+
     public Integer getNumShards() {
         return numShards;
     }
@@ -311,6 +358,8 @@ public class CreateCollectionReq {
      *
      * @param numShards the number of shards
      */
+
+
     public void setNumShards(Integer numShards) {
         this.numShards = numShards;
     }
@@ -320,6 +369,8 @@ public class CreateCollectionReq {
      *
      * @return the collection schema
      */
+
+
     public CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
@@ -329,6 +380,8 @@ public class CreateCollectionReq {
      *
      * @param collectionSchema the collection schema
      */
+
+
     public void setCollectionSchema(CollectionSchema collectionSchema) {
         this.collectionSchema = collectionSchema;
     }
@@ -338,6 +391,8 @@ public class CreateCollectionReq {
      *
      * @return the index parameters
      */
+
+
     public List<IndexParam> getIndexParams() {
         return indexParams;
     }
@@ -347,6 +402,8 @@ public class CreateCollectionReq {
      *
      * @param indexParams the index parameters
      */
+
+
     public void setIndexParams(List<IndexParam> indexParams) {
         this.indexParams = indexParams;
     }
@@ -356,6 +413,8 @@ public class CreateCollectionReq {
      *
      * @return the number of partitions
      */
+
+
     public Integer getNumPartitions() {
         return numPartitions;
     }
@@ -365,6 +424,8 @@ public class CreateCollectionReq {
      *
      * @param numPartitions the number of partitions
      */
+
+
     public void setNumPartitions(Integer numPartitions) {
         this.numPartitions = numPartitions;
     }
@@ -374,6 +435,8 @@ public class CreateCollectionReq {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -383,6 +446,8 @@ public class CreateCollectionReq {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -392,6 +457,8 @@ public class CreateCollectionReq {
      *
      * @return the collection properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -424,9 +491,16 @@ public class CreateCollectionReq {
      *
      * @return the builder
      */
+
+
     public static CreateCollectionReqBuilder builder() {
         return new CreateCollectionReqBuilder();
     }
+
+    /**
+     * Builder for {@link CreateCollectionReq} class.
+     */
+
 
     public static class CreateCollectionReqBuilder {
         private String databaseName;
@@ -457,6 +531,8 @@ public class CreateCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -468,6 +544,8 @@ public class CreateCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -482,6 +560,8 @@ public class CreateCollectionReq {
          * @param description the collection description
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -493,6 +573,8 @@ public class CreateCollectionReq {
          * @param dimension the vector dimension
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder dimension(Integer dimension) {
             this.dimension = dimension;
             return this;
@@ -504,6 +586,8 @@ public class CreateCollectionReq {
          * @param primaryFieldName the primary field name
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder primaryFieldName(String primaryFieldName) {
             this.primaryFieldName = primaryFieldName;
             return this;
@@ -515,6 +599,8 @@ public class CreateCollectionReq {
          * @param idType the primary field data type
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder idType(DataType idType) {
             this.idType = idType;
             return this;
@@ -526,6 +612,8 @@ public class CreateCollectionReq {
          * @param maxLength the primary field max length
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder maxLength(Integer maxLength) {
             this.maxLength = maxLength;
             return this;
@@ -537,6 +625,8 @@ public class CreateCollectionReq {
          * @param vectorFieldName the vector field name
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
@@ -548,6 +638,8 @@ public class CreateCollectionReq {
          * @param metricType the metric type
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder metricType(String metricType) {
             this.metricType = metricType;
             return this;
@@ -559,6 +651,8 @@ public class CreateCollectionReq {
          * @param autoID {@code true} to enable auto ID
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder autoID(Boolean autoID) {
             this.autoID = autoID;
             return this;
@@ -570,6 +664,8 @@ public class CreateCollectionReq {
          * @param numShards the number of shards
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder numShards(Integer numShards) {
             this.numShards = numShards;
             return this;
@@ -581,6 +677,8 @@ public class CreateCollectionReq {
          * @param indexParams the index parameters
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder indexParams(List<IndexParam> indexParams) {
             this.indexParams = indexParams;
             return this;
@@ -592,6 +690,8 @@ public class CreateCollectionReq {
          * @param numPartitions the number of partitions
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder numPartitions(Integer numPartitions) {
             this.numPartitions = numPartitions;
             return this;
@@ -603,6 +703,8 @@ public class CreateCollectionReq {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -614,6 +716,8 @@ public class CreateCollectionReq {
          * @param indexParam the index parameters
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder indexParam(IndexParam indexParam) {
             if (this.indexParams == null) {
                 this.indexParams = new ArrayList<>();
@@ -634,6 +738,8 @@ public class CreateCollectionReq {
          * @return this builder
          * @throws MilvusClientException if the flag conflicts with the one set by the collection schema
          */
+
+
         public CreateCollectionReqBuilder enableDynamicField(Boolean enableDynamicField) {
             if (this.collectionSchema != null && (this.collectionSchema.isEnableDynamicField() != enableDynamicField)) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -652,6 +758,8 @@ public class CreateCollectionReq {
          * @throws MilvusClientException if the schema's dynamic-field flag conflicts with the one set
          *                               by {@link #enableDynamicField(Boolean)}
          */
+
+
         public CreateCollectionReqBuilder collectionSchema(CollectionSchema collectionSchema) {
             if (this.enableDynamicFieldSet && (collectionSchema.isEnableDynamicField() != this.enableDynamicField)) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -669,6 +777,8 @@ public class CreateCollectionReq {
          * @param properties the collection properties
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -681,6 +791,8 @@ public class CreateCollectionReq {
          * @param value the property value
          * @return this builder
          */
+
+
         public CreateCollectionReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -694,6 +806,8 @@ public class CreateCollectionReq {
          *
          * @return the request
          */
+
+
         public CreateCollectionReq build() {
             return new CreateCollectionReq(this);
         }
@@ -703,6 +817,8 @@ public class CreateCollectionReq {
      * Schema definition of a collection, holding the field schema list, struct fields,
      * functions, dynamic-field flag and optional external source configuration.
      */
+
+
     public static class CollectionSchema {
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
         private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
@@ -728,6 +844,8 @@ public class CreateCollectionReq {
          * @param addFieldReq the field to add
          * @return this schema
          */
+
+
         public CollectionSchema addField(AddFieldReq addFieldReq) {
             if (addFieldReq.getDataType() == DataType.Array && addFieldReq.getElementType() == DataType.Struct) {
                 structFields.add(SchemaUtils.convertFieldReqToStructFieldSchema(addFieldReq));
@@ -743,6 +861,8 @@ public class CreateCollectionReq {
          * @param function the function to add
          * @return this schema
          */
+
+
         public CollectionSchema addFunction(Function function) {
             functionList.add(function);
             return this;
@@ -754,6 +874,8 @@ public class CreateCollectionReq {
          * @param fieldName the field name
          * @return the field, or {@code null}
          */
+
+
         public CreateCollectionReq.FieldSchema getField(String fieldName) {
             for (CreateCollectionReq.FieldSchema field : fieldSchemaList) {
                 if (field.getName().equals(fieldName)) {
@@ -768,6 +890,8 @@ public class CreateCollectionReq {
          *
          * @return the field schema list
          */
+
+
         public List<CreateCollectionReq.FieldSchema> getFieldSchemaList() {
             return fieldSchemaList;
         }
@@ -777,6 +901,8 @@ public class CreateCollectionReq {
          *
          * @param fieldSchemaList the field schema list
          */
+
+
         public void setFieldSchemaList(List<CreateCollectionReq.FieldSchema> fieldSchemaList) {
             this.fieldSchemaList = fieldSchemaList;
         }
@@ -787,6 +913,8 @@ public class CreateCollectionReq {
          * @param fieldName the field name
          * @return the struct field, or {@code null}
          */
+
+
         public CreateCollectionReq.StructFieldSchema getStructField(String fieldName) {
             for (CreateCollectionReq.StructFieldSchema field : structFields) {
                 if (field.getName().equals(fieldName)) {
@@ -801,6 +929,8 @@ public class CreateCollectionReq {
          *
          * @return the struct fields
          */
+
+
         public List<CreateCollectionReq.StructFieldSchema> getStructFields() {
             return structFields;
         }
@@ -810,6 +940,8 @@ public class CreateCollectionReq {
          *
          * @param structFields the struct fields
          */
+
+
         public void setStructFields(List<CreateCollectionReq.StructFieldSchema> structFields) {
             this.structFields = structFields;
         }
@@ -819,6 +951,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the dynamic field is enabled
          */
+
+
         public boolean isEnableDynamicField() {
             return enableDynamicField;
         }
@@ -828,6 +962,8 @@ public class CreateCollectionReq {
          *
          * @param enableDynamicField {@code true} to enable the dynamic field
          */
+
+
         public void setEnableDynamicField(boolean enableDynamicField) {
             this.enableDynamicField = enableDynamicField;
         }
@@ -837,6 +973,8 @@ public class CreateCollectionReq {
          *
          * @return the function list
          */
+
+
         public List<CreateCollectionReq.Function> getFunctionList() {
             return functionList;
         }
@@ -846,6 +984,8 @@ public class CreateCollectionReq {
          *
          * @param functionList the function list
          */
+
+
         public void setFunctionList(List<CreateCollectionReq.Function> functionList) {
             this.functionList = functionList;
         }
@@ -855,6 +995,8 @@ public class CreateCollectionReq {
          *
          * @return the external source name
          */
+
+
         public String getExternalSource() {
             return externalSource;
         }
@@ -864,6 +1006,8 @@ public class CreateCollectionReq {
          *
          * @param externalSource the external source name
          */
+
+
         public void setExternalSource(String externalSource) {
             this.externalSource = externalSource;
         }
@@ -873,6 +1017,8 @@ public class CreateCollectionReq {
          *
          * @return the external source specification
          */
+
+
         public JsonObject getExternalSpec() {
             return externalSpec;
         }
@@ -882,6 +1028,8 @@ public class CreateCollectionReq {
          *
          * @param externalSpec the external source specification
          */
+
+
         public void setExternalSpec(JsonObject externalSpec) {
             this.externalSpec = externalSpec;
         }
@@ -903,6 +1051,8 @@ public class CreateCollectionReq {
          *
          * @return the builder
          */
+
+
         public static CollectionSchemaBuilder builder() {
             return new CollectionSchemaBuilder();
         }
@@ -918,6 +1068,8 @@ public class CreateCollectionReq {
          *
          * @throws MilvusClientException if the schema is invalid
          */
+
+
         public void verify() {
             if (StringUtils.isNotEmpty(externalSource)) {
                 return;
@@ -1005,6 +1157,11 @@ public class CreateCollectionReq {
             }
         }
 
+        /**
+         * Builder for {@link CreateCollectionReq.CollectionSchema} class.
+         */
+
+
         public static class CollectionSchemaBuilder {
             private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
             private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
@@ -1022,6 +1179,8 @@ public class CreateCollectionReq {
              * @param fieldSchemaList the field schema list
              * @return this builder
              */
+
+
             public CollectionSchemaBuilder fieldSchemaList(List<CreateCollectionReq.FieldSchema> fieldSchemaList) {
                 this.fieldSchemaList = fieldSchemaList;
                 return this;
@@ -1033,6 +1192,8 @@ public class CreateCollectionReq {
              * @param structFields the struct fields
              * @return this builder
              */
+
+
             public CollectionSchemaBuilder structFields(List<CreateCollectionReq.StructFieldSchema> structFields) {
                 this.structFields = structFields;
                 return this;
@@ -1044,6 +1205,8 @@ public class CreateCollectionReq {
              * @param enableDynamicField {@code true} to enable the dynamic field
              * @return this builder
              */
+
+
             public CollectionSchemaBuilder enableDynamicField(boolean enableDynamicField) {
                 this.enableDynamicField = enableDynamicField;
                 return this;
@@ -1055,6 +1218,8 @@ public class CreateCollectionReq {
              * @param functionList the function list
              * @return this builder
              */
+
+
             public CollectionSchemaBuilder functionList(List<CreateCollectionReq.Function> functionList) {
                 this.functionList = functionList;
                 return this;
@@ -1066,6 +1231,8 @@ public class CreateCollectionReq {
              * @param externalSource the external source name
              * @return this builder
              */
+
+
             public CollectionSchemaBuilder externalSource(String externalSource) {
                 this.externalSource = externalSource;
                 return this;
@@ -1077,6 +1244,8 @@ public class CreateCollectionReq {
              * @param externalSpec the external source specification
              * @return this builder
              */
+
+
             public CollectionSchemaBuilder externalSpec(JsonObject externalSpec) {
                 this.externalSpec = externalSpec;
                 return this;
@@ -1087,6 +1256,8 @@ public class CreateCollectionReq {
              *
              * @return the schema
              */
+
+
             public CollectionSchema build() {
                 return new CollectionSchema(this);
             }
@@ -1096,6 +1267,8 @@ public class CreateCollectionReq {
     /**
      * Definition of a single field in a collection schema.
      */
+
+
     public static class FieldSchema {
         private String name;
         private String description = "";
@@ -1151,6 +1324,7 @@ public class CreateCollectionReq {
          *
          * @return the field name
          */
+
         public String getName() {
             return name;
         }
@@ -1160,6 +1334,8 @@ public class CreateCollectionReq {
          *
          * @param name the field name
          */
+
+
         public void setName(String name) {
             this.name = name;
         }
@@ -1169,6 +1345,8 @@ public class CreateCollectionReq {
          *
          * @return the field description
          */
+
+
         public String getDescription() {
             return description;
         }
@@ -1178,6 +1356,8 @@ public class CreateCollectionReq {
          *
          * @param description the field description
          */
+
+
         public void setDescription(String description) {
             this.description = description;
         }
@@ -1187,6 +1367,8 @@ public class CreateCollectionReq {
          *
          * @return the data type
          */
+
+
         public DataType getDataType() {
             return dataType;
         }
@@ -1196,6 +1378,8 @@ public class CreateCollectionReq {
          *
          * @param dataType the data type
          */
+
+
         public void setDataType(DataType dataType) {
             this.dataType = dataType;
         }
@@ -1205,6 +1389,8 @@ public class CreateCollectionReq {
          *
          * @return the max length
          */
+
+
         public Integer getMaxLength() {
             return maxLength;
         }
@@ -1214,6 +1400,8 @@ public class CreateCollectionReq {
          *
          * @param maxLength the max length
          */
+
+
         public void setMaxLength(Integer maxLength) {
             this.maxLength = maxLength;
         }
@@ -1223,6 +1411,8 @@ public class CreateCollectionReq {
          *
          * @return the vector dimension
          */
+
+
         public Integer getDimension() {
             return dimension;
         }
@@ -1232,6 +1422,8 @@ public class CreateCollectionReq {
          *
          * @param dimension the vector dimension
          */
+
+
         public void setDimension(Integer dimension) {
             this.dimension = dimension;
         }
@@ -1241,6 +1433,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is the primary key
          */
+
+
         public Boolean getIsPrimaryKey() {
             return isPrimaryKey;
         }
@@ -1250,6 +1444,8 @@ public class CreateCollectionReq {
          *
          * @param isPrimaryKey {@code true} to make the field the primary key
          */
+
+
         public void setIsPrimaryKey(Boolean isPrimaryKey) {
             this.isPrimaryKey = isPrimaryKey;
         }
@@ -1259,6 +1455,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is a partition key
          */
+
+
         public Boolean getIsPartitionKey() {
             return isPartitionKey;
         }
@@ -1268,6 +1466,8 @@ public class CreateCollectionReq {
          *
          * @param isPartitionKey {@code true} to make the field a partition key
          */
+
+
         public void setIsPartitionKey(Boolean isPartitionKey) {
             this.isPartitionKey = isPartitionKey;
         }
@@ -1277,6 +1477,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is a clustering key
          */
+
+
         public Boolean getIsClusteringKey() {
             return isClusteringKey;
         }
@@ -1286,6 +1488,8 @@ public class CreateCollectionReq {
          *
          * @param isClusteringKey {@code true} to make the field a clustering key
          */
+
+
         public void setIsClusteringKey(Boolean isClusteringKey) {
             this.isClusteringKey = isClusteringKey;
         }
@@ -1295,6 +1499,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if auto ID is enabled
          */
+
+
         public Boolean getAutoID() {
             return autoID;
         }
@@ -1304,6 +1510,8 @@ public class CreateCollectionReq {
          *
          * @param autoID {@code true} to enable auto ID
          */
+
+
         public void setAutoID(Boolean autoID) {
             this.autoID = autoID;
         }
@@ -1313,6 +1521,8 @@ public class CreateCollectionReq {
          *
          * @return the element type
          */
+
+
         public DataType getElementType() {
             return elementType;
         }
@@ -1322,6 +1532,8 @@ public class CreateCollectionReq {
          *
          * @param elementType the element type
          */
+
+
         public void setElementType(DataType elementType) {
             this.elementType = elementType;
         }
@@ -1331,6 +1543,8 @@ public class CreateCollectionReq {
          *
          * @return the max capacity
          */
+
+
         public Integer getMaxCapacity() {
             return maxCapacity;
         }
@@ -1340,6 +1554,8 @@ public class CreateCollectionReq {
          *
          * @param maxCapacity the max capacity
          */
+
+
         public void setMaxCapacity(Integer maxCapacity) {
             this.maxCapacity = maxCapacity;
         }
@@ -1349,6 +1565,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is nullable
          */
+
+
         public Boolean getIsNullable() {
             return isNullable;
         }
@@ -1358,6 +1576,8 @@ public class CreateCollectionReq {
          *
          * @param isNullable {@code true} to make the field nullable
          */
+
+
         public void setIsNullable(Boolean isNullable) {
             this.isNullable = isNullable;
         }
@@ -1367,6 +1587,8 @@ public class CreateCollectionReq {
          *
          * @return the default value
          */
+
+
         public Object getDefaultValue() {
             return defaultValue;
         }
@@ -1376,6 +1598,8 @@ public class CreateCollectionReq {
          *
          * @param defaultValue the default value
          */
+
+
         public void setDefaultValue(Object defaultValue) {
             this.defaultValue = defaultValue;
         }
@@ -1385,6 +1609,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the analyzer is enabled
          */
+
+
         public Boolean getEnableAnalyzer() {
             return enableAnalyzer;
         }
@@ -1394,6 +1620,8 @@ public class CreateCollectionReq {
          *
          * @param enableAnalyzer {@code true} to enable the analyzer
          */
+
+
         public void setEnableAnalyzer(Boolean enableAnalyzer) {
             this.enableAnalyzer = enableAnalyzer;
         }
@@ -1403,6 +1631,8 @@ public class CreateCollectionReq {
          *
          * @return the analyzer parameters
          */
+
+
         public Map<String, Object> getAnalyzerParams() {
             return analyzerParams;
         }
@@ -1412,6 +1642,8 @@ public class CreateCollectionReq {
          *
          * @param analyzerParams the analyzer parameters
          */
+
+
         public void setAnalyzerParams(Map<String, Object> analyzerParams) {
             this.analyzerParams = analyzerParams;
         }
@@ -1421,6 +1653,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if BM25 matching is enabled
          */
+
+
         public Boolean getEnableMatch() {
             return enableMatch;
         }
@@ -1430,6 +1664,8 @@ public class CreateCollectionReq {
          *
          * @param enableMatch {@code true} to enable BM25 matching
          */
+
+
         public void setEnableMatch(Boolean enableMatch) {
             this.enableMatch = enableMatch;
         }
@@ -1439,6 +1675,8 @@ public class CreateCollectionReq {
          *
          * @return the type parameters
          */
+
+
         public Map<String, String> getTypeParams() {
             return typeParams;
         }
@@ -1448,6 +1686,8 @@ public class CreateCollectionReq {
          *
          * @param typeParams the type parameters
          */
+
+
         public void setTypeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
         }
@@ -1457,6 +1697,8 @@ public class CreateCollectionReq {
          *
          * @return the multi-analyzer parameters
          */
+
+
         public Map<String, Object> getMultiAnalyzerParams() {
             return multiAnalyzerParams;
         }
@@ -1466,6 +1708,8 @@ public class CreateCollectionReq {
          *
          * @param multiAnalyzerParams the multi-analyzer parameters
          */
+
+
         public void setMultiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
             this.multiAnalyzerParams = multiAnalyzerParams;
         }
@@ -1475,6 +1719,8 @@ public class CreateCollectionReq {
          *
          * @return the external field name
          */
+
+
         public String getExternalField() {
             return externalField;
         }
@@ -1484,6 +1730,8 @@ public class CreateCollectionReq {
          *
          * @param externalField the external field name
          */
+
+
         public void setExternalField(String externalField) {
             this.externalField = externalField;
         }
@@ -1493,6 +1741,8 @@ public class CreateCollectionReq {
          *
          * @return the field ID
          */
+
+
         public Long getFieldId() {
             return fieldId;
         }
@@ -1502,6 +1752,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is the dynamic field
          */
+
+
         public Boolean getIsDynamic() {
             return isDynamic;
         }
@@ -1511,6 +1763,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is a function output field
          */
+
+
         public Boolean getIsFunctionOutput() {
             return isFunctionOutput;
         }
@@ -1520,34 +1774,48 @@ public class CreateCollectionReq {
          *
          * @return the field indexes
          */
+
+
         public List<Map<String, Object>> getIndexes() {
             return indexes;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param fieldId the field ID
          */
+
+
         public void setFieldId(Long fieldId) {
             this.fieldId = fieldId;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param isDynamic whether the field is a dynamic field
          */
+
+
         public void setIsDynamic(Boolean isDynamic) {
             this.isDynamic = isDynamic;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param isFunctionOutput whether the field is a function output
          */
+
+
         public void setIsFunctionOutput(Boolean isFunctionOutput) {
             this.isFunctionOutput = isFunctionOutput;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param indexes the index configurations
          */
+
+
         public void setIndexes(List<Map<String, Object>> indexes) {
             this.indexes = indexes;
         }
@@ -1583,9 +1851,16 @@ public class CreateCollectionReq {
          *
          * @return the builder
          */
+
+
         public static FieldSchemaBuilder builder() {
             return new FieldSchemaBuilder();
         }
+
+        /**
+         * Builder for {@link CreateCollectionReq.FieldSchema} class.
+         */
+
 
         public static class FieldSchemaBuilder {
             private String name;
@@ -1617,6 +1892,8 @@ public class CreateCollectionReq {
              * @param name the field name
              * @return this builder
              */
+
+
             public FieldSchemaBuilder name(String name) {
                 this.name = name;
                 return this;
@@ -1628,6 +1905,8 @@ public class CreateCollectionReq {
              * @param description the field description
              * @return this builder
              */
+
+
             public FieldSchemaBuilder description(String description) {
                 this.description = description;
                 return this;
@@ -1639,6 +1918,8 @@ public class CreateCollectionReq {
              * @param dataType the data type
              * @return this builder
              */
+
+
             public FieldSchemaBuilder dataType(DataType dataType) {
                 this.dataType = dataType;
                 return this;
@@ -1650,6 +1931,8 @@ public class CreateCollectionReq {
              * @param maxLength the max length
              * @return this builder
              */
+
+
             public FieldSchemaBuilder maxLength(Integer maxLength) {
                 this.maxLength = maxLength;
                 return this;
@@ -1661,6 +1944,8 @@ public class CreateCollectionReq {
              * @param dimension the vector dimension
              * @return this builder
              */
+
+
             public FieldSchemaBuilder dimension(Integer dimension) {
                 this.dimension = dimension;
                 return this;
@@ -1672,6 +1957,8 @@ public class CreateCollectionReq {
              * @param isPrimaryKey {@code true} to make the field the primary key
              * @return this builder
              */
+
+
             public FieldSchemaBuilder isPrimaryKey(Boolean isPrimaryKey) {
                 this.isPrimaryKey = isPrimaryKey;
                 return this;
@@ -1683,6 +1970,8 @@ public class CreateCollectionReq {
              * @param isPartitionKey {@code true} to make the field a partition key
              * @return this builder
              */
+
+
             public FieldSchemaBuilder isPartitionKey(Boolean isPartitionKey) {
                 this.isPartitionKey = isPartitionKey;
                 return this;
@@ -1694,6 +1983,8 @@ public class CreateCollectionReq {
              * @param isClusteringKey {@code true} to make the field a clustering key
              * @return this builder
              */
+
+
             public FieldSchemaBuilder isClusteringKey(Boolean isClusteringKey) {
                 this.isClusteringKey = isClusteringKey;
                 return this;
@@ -1705,6 +1996,8 @@ public class CreateCollectionReq {
              * @param autoID {@code true} to enable auto ID
              * @return this builder
              */
+
+
             public FieldSchemaBuilder autoID(Boolean autoID) {
                 this.autoID = autoID;
                 return this;
@@ -1716,6 +2009,8 @@ public class CreateCollectionReq {
              * @param elementType the element type
              * @return this builder
              */
+
+
             public FieldSchemaBuilder elementType(DataType elementType) {
                 this.elementType = elementType;
                 return this;
@@ -1727,6 +2022,8 @@ public class CreateCollectionReq {
              * @param maxCapacity the max capacity
              * @return this builder
              */
+
+
             public FieldSchemaBuilder maxCapacity(Integer maxCapacity) {
                 this.maxCapacity = maxCapacity;
                 return this;
@@ -1738,6 +2035,8 @@ public class CreateCollectionReq {
              * @param isNullable {@code true} to make the field nullable
              * @return this builder
              */
+
+
             public FieldSchemaBuilder isNullable(Boolean isNullable) {
                 this.isNullable = isNullable;
                 return this;
@@ -1749,6 +2048,8 @@ public class CreateCollectionReq {
              * @param defaultValue the default value
              * @return this builder
              */
+
+
             public FieldSchemaBuilder defaultValue(Object defaultValue) {
                 this.defaultValue = defaultValue;
                 return this;
@@ -1760,6 +2061,8 @@ public class CreateCollectionReq {
              * @param enableAnalyzer {@code true} to enable the analyzer
              * @return this builder
              */
+
+
             public FieldSchemaBuilder enableAnalyzer(Boolean enableAnalyzer) {
                 this.enableAnalyzer = enableAnalyzer;
                 return this;
@@ -1771,6 +2074,8 @@ public class CreateCollectionReq {
              * @param analyzerParams the analyzer parameters
              * @return this builder
              */
+
+
             public FieldSchemaBuilder analyzerParams(Map<String, Object> analyzerParams) {
                 this.analyzerParams = analyzerParams;
                 return this;
@@ -1782,6 +2087,8 @@ public class CreateCollectionReq {
              * @param enableMatch {@code true} to enable BM25 matching
              * @return this builder
              */
+
+
             public FieldSchemaBuilder enableMatch(Boolean enableMatch) {
                 this.enableMatch = enableMatch;
                 return this;
@@ -1793,6 +2100,8 @@ public class CreateCollectionReq {
              * @param typeParams the type parameters
              * @return this builder
              */
+
+
             public FieldSchemaBuilder typeParams(Map<String, String> typeParams) {
                 this.typeParams = typeParams;
                 return this;
@@ -1804,6 +2113,8 @@ public class CreateCollectionReq {
              * @param multiAnalyzerParams the multi-analyzer parameters
              * @return this builder
              */
+
+
             public FieldSchemaBuilder multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
                 this.multiAnalyzerParams = multiAnalyzerParams;
                 return this;
@@ -1815,6 +2126,8 @@ public class CreateCollectionReq {
              * @param externalField the external field name
              * @return this builder
              */
+
+
             public FieldSchemaBuilder externalField(String externalField) {
                 this.externalField = externalField;
                 return this;
@@ -1825,6 +2138,8 @@ public class CreateCollectionReq {
              *
              * @return the field schema
              */
+
+
             public FieldSchema build() {
                 return new FieldSchema(this);
             }
@@ -1835,6 +2150,8 @@ public class CreateCollectionReq {
      * Definition of a function in a collection schema, such as an embedding
      * or BM25 function, that maps input fields to output fields.
      */
+
+
     public static class Function {
         private String name = "";
         private String description = "";
@@ -1860,6 +2177,8 @@ public class CreateCollectionReq {
          *
          * @return the function name
          */
+
+
         public String getName() {
             return name;
         }
@@ -1869,6 +2188,8 @@ public class CreateCollectionReq {
          *
          * @param name the function name
          */
+
+
         public void setName(String name) {
             this.name = name;
         }
@@ -1878,6 +2199,8 @@ public class CreateCollectionReq {
          *
          * @return the function description
          */
+
+
         public String getDescription() {
             return description;
         }
@@ -1887,6 +2210,8 @@ public class CreateCollectionReq {
          *
          * @param description the function description
          */
+
+
         public void setDescription(String description) {
             this.description = description;
         }
@@ -1896,6 +2221,8 @@ public class CreateCollectionReq {
          *
          * @return the function type
          */
+
+
         public FunctionType getFunctionType() {
             return functionType;
         }
@@ -1905,6 +2232,8 @@ public class CreateCollectionReq {
          *
          * @param functionType the function type
          */
+
+
         public void setFunctionType(FunctionType functionType) {
             this.functionType = functionType;
         }
@@ -1914,6 +2243,8 @@ public class CreateCollectionReq {
          *
          * @return the input field names
          */
+
+
         public List<String> getInputFieldNames() {
             return inputFieldNames;
         }
@@ -1923,6 +2254,8 @@ public class CreateCollectionReq {
          *
          * @param inputFieldNames the input field names
          */
+
+
         public void setInputFieldNames(List<String> inputFieldNames) {
             this.inputFieldNames = inputFieldNames;
         }
@@ -1932,6 +2265,8 @@ public class CreateCollectionReq {
          *
          * @return the output field names
          */
+
+
         public List<String> getOutputFieldNames() {
             return outputFieldNames;
         }
@@ -1941,6 +2276,8 @@ public class CreateCollectionReq {
          *
          * @param outputFieldNames the output field names
          */
+
+
         public void setOutputFieldNames(List<String> outputFieldNames) {
             this.outputFieldNames = outputFieldNames;
         }
@@ -1950,6 +2287,8 @@ public class CreateCollectionReq {
          *
          * @return the function parameters
          */
+
+
         public Map<String, String> getParams() {
             return params;
         }
@@ -1959,6 +2298,8 @@ public class CreateCollectionReq {
          *
          * @param params the function parameters
          */
+
+
         public void setParams(Map<String, String> params) {
             this.params = params;
         }
@@ -1968,6 +2309,8 @@ public class CreateCollectionReq {
          *
          * @return the function ID
          */
+
+
         public Long getId() {
             return id;
         }
@@ -1977,6 +2320,8 @@ public class CreateCollectionReq {
          *
          * @return the input field IDs
          */
+
+
         public List<Long> getInputFieldIds() {
             return inputFieldIds;
         }
@@ -1986,27 +2331,38 @@ public class CreateCollectionReq {
          *
          * @return the output field IDs
          */
+
+
         public List<Long> getOutputFieldIds() {
             return outputFieldIds;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param id the function ID
          */
+
+
         public void setId(Long id) {
             this.id = id;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param inputFieldIds the input field IDs
          */
+
+
         public void setInputFieldIds(List<Long> inputFieldIds) {
             this.inputFieldIds = inputFieldIds;
         }
 
         /**
          * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         * @param outputFieldIds the output field IDs
          */
+
+
         public void setOutputFieldIds(List<Long> outputFieldIds) {
             this.outputFieldIds = outputFieldIds;
         }
@@ -2031,9 +2387,16 @@ public class CreateCollectionReq {
          *
          * @return the builder
          */
+
+
         public static FunctionBuilder<?> builder() {
             return new FunctionBuilder<>();
         }
+
+        /**
+         * Builder for {@link CreateCollectionReq.Function} class.
+         */
+
 
         public static class FunctionBuilder<T extends FunctionBuilder<T>> {
             private String name = "";
@@ -2052,6 +2415,8 @@ public class CreateCollectionReq {
              * @param name the function name
              * @return this builder
              */
+
+
             public T name(String name) {
                 this.name = name;
                 return (T) this;
@@ -2063,6 +2428,8 @@ public class CreateCollectionReq {
              * @param description the function description
              * @return this builder
              */
+
+
             public T description(String description) {
                 this.description = description;
                 return (T) this;
@@ -2074,6 +2441,8 @@ public class CreateCollectionReq {
              * @param functionType the function type
              * @return this builder
              */
+
+
             public T functionType(FunctionType functionType) {
                 this.functionType = functionType;
                 return (T) this;
@@ -2085,6 +2454,8 @@ public class CreateCollectionReq {
              * @param inputFieldNames the input field names
              * @return this builder
              */
+
+
             public T inputFieldNames(List<String> inputFieldNames) {
                 this.inputFieldNames = inputFieldNames;
                 return (T) this;
@@ -2096,6 +2467,8 @@ public class CreateCollectionReq {
              * @param outputFieldNames the output field names
              * @return this builder
              */
+
+
             public T outputFieldNames(List<String> outputFieldNames) {
                 this.outputFieldNames = outputFieldNames;
                 return (T) this;
@@ -2107,6 +2480,8 @@ public class CreateCollectionReq {
              * @param params the function parameters
              * @return this builder
              */
+
+
             public T params(Map<String, String> params) {
                 this.params = params;
                 return (T) this;
@@ -2119,6 +2494,8 @@ public class CreateCollectionReq {
              * @param value the parameter value
              * @return this builder
              */
+
+
             public T param(String key, String value) {
                 if (this.params == null) {
                     this.params = new HashMap<>();
@@ -2132,6 +2509,8 @@ public class CreateCollectionReq {
              *
              * @return the function
              */
+
+
             public Function build() {
                 return new Function(this);
             }
@@ -2142,6 +2521,8 @@ public class CreateCollectionReq {
      * Definition of a struct field in a collection schema. A struct field is stored as
      * an Array-of-Struct field whose element type is {@link DataType#Struct}.
      */
+
+
     public static class StructFieldSchema {
         private String name;
         private String description = "";
@@ -2173,6 +2554,8 @@ public class CreateCollectionReq {
          * @return this schema
          * @throws ParamException if the sub-field data type or a forbidden attribute is not supported
          */
+
+
         public StructFieldSchema addField(AddFieldReq addFieldReq) {
             if (addFieldReq.getDataType() == DataType.Array || addFieldReq.getElementType() == DataType.Struct) {
                 throw new ParamException("Struct field schema does not support Array, ArrayOfVector or Struct");
@@ -2201,6 +2584,8 @@ public class CreateCollectionReq {
          *
          * @return {@link DataType#Array}
          */
+
+
         public DataType getDataType() {
             return DataType.Array;
         }
@@ -2210,6 +2595,8 @@ public class CreateCollectionReq {
          *
          * @return {@link DataType#Struct}
          */
+
+
         public DataType getElementType() {
             return DataType.Struct;
         }
@@ -2220,6 +2607,7 @@ public class CreateCollectionReq {
          *
          * @return the struct field name
          */
+
         public String getName() {
             return name;
         }
@@ -2229,6 +2617,8 @@ public class CreateCollectionReq {
          *
          * @param name the struct field name
          */
+
+
         public void setName(String name) {
             this.name = name;
         }
@@ -2238,6 +2628,8 @@ public class CreateCollectionReq {
          *
          * @return the struct field description
          */
+
+
         public String getDescription() {
             return description;
         }
@@ -2247,6 +2639,8 @@ public class CreateCollectionReq {
          *
          * @param description the struct field description
          */
+
+
         public void setDescription(String description) {
             this.description = description;
         }
@@ -2256,6 +2650,8 @@ public class CreateCollectionReq {
          *
          * @return the sub-fields
          */
+
+
         public List<CreateCollectionReq.FieldSchema> getFields() {
             return fields;
         }
@@ -2265,6 +2661,8 @@ public class CreateCollectionReq {
          *
          * @param fields the sub-fields
          */
+
+
         public void setFields(List<CreateCollectionReq.FieldSchema> fields) {
             this.fields = fields;
         }
@@ -2274,6 +2672,8 @@ public class CreateCollectionReq {
          *
          * @return the max capacity
          */
+
+
         public Integer getMaxCapacity() {
             return maxCapacity;
         }
@@ -2283,6 +2683,8 @@ public class CreateCollectionReq {
          *
          * @param maxCapacity the max capacity
          */
+
+
         public void setMaxCapacity(Integer maxCapacity) {
             this.maxCapacity = maxCapacity;
         }
@@ -2292,6 +2694,8 @@ public class CreateCollectionReq {
          *
          * @return {@code true} if the field is nullable
          */
+
+
         public Boolean getNullable() {
             return nullable;
         }
@@ -2301,6 +2705,8 @@ public class CreateCollectionReq {
          *
          * @param nullable {@code true} to make the field nullable
          */
+
+
         public void setNullable(Boolean nullable) {
             this.nullable = Boolean.TRUE.equals(nullable);
         }
@@ -2310,6 +2716,8 @@ public class CreateCollectionReq {
          *
          * @return the type parameters
          */
+
+
         public Map<String, String> getTypeParams() {
             return typeParams;
         }
@@ -2319,6 +2727,8 @@ public class CreateCollectionReq {
          *
          * @param typeParams the type parameters
          */
+
+
         public void setTypeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
         }
@@ -2340,9 +2750,16 @@ public class CreateCollectionReq {
          *
          * @return the builder
          */
+
+
         public static StructFieldSchemaBuilder builder() {
             return new StructFieldSchemaBuilder();
         }
+
+        /**
+         * Builder for {@link CreateCollectionReq.StructFieldSchema} class.
+         */
+
 
         public static class StructFieldSchemaBuilder {
             private String name;
@@ -2361,6 +2778,8 @@ public class CreateCollectionReq {
              * @param name the struct field name
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder name(String name) {
                 this.name = name;
                 return this;
@@ -2372,6 +2791,8 @@ public class CreateCollectionReq {
              * @param description the struct field description
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder description(String description) {
                 this.description = description;
                 return this;
@@ -2383,6 +2804,8 @@ public class CreateCollectionReq {
              * @param fields the sub-fields
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder fields(List<CreateCollectionReq.FieldSchema> fields) {
                 this.fields = fields;
                 return this;
@@ -2394,6 +2817,8 @@ public class CreateCollectionReq {
              * @param maxCapacity the max capacity
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder maxCapacity(Integer maxCapacity) {
                 this.maxCapacity = maxCapacity;
                 return this;
@@ -2405,6 +2830,8 @@ public class CreateCollectionReq {
              * @param nullable {@code true} to make the field nullable
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder nullable(Boolean nullable) {
                 this.nullable = Boolean.TRUE.equals(nullable);
                 return this;
@@ -2416,6 +2843,8 @@ public class CreateCollectionReq {
              * @param typeParams the type parameters
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder typeParams(Map<String, String> typeParams) {
                 this.typeParams = typeParams;
                 return this;
@@ -2428,6 +2857,8 @@ public class CreateCollectionReq {
              * @param value the parameter value
              * @return this builder
              */
+
+
             public StructFieldSchemaBuilder typeParam(String key, String value) {
                 if (this.typeParams == null) {
                     this.typeParams = new HashMap<>();
@@ -2441,6 +2872,8 @@ public class CreateCollectionReq {
              *
              * @return the struct field schema
              */
+
+
             public StructFieldSchema build() {
                 return new StructFieldSchema(this);
             }

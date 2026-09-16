@@ -27,6 +27,8 @@ import java.nio.ByteBuffer;
  * An int8 vector used in search and insert requests, where each byte represents one
  * dimension of the vector.
  */
+
+
 public class Int8Vec implements BaseVector {
     private final ByteBuffer data;
 
@@ -35,6 +37,8 @@ public class Int8Vec implements BaseVector {
      *
      * @param data the int8 vector data
      */
+
+
     public Int8Vec(ByteBuffer data) {
         this.data = data;
     }
@@ -44,6 +48,8 @@ public class Int8Vec implements BaseVector {
      *
      * @param data the int8 vector data
      */
+
+
     public Int8Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }

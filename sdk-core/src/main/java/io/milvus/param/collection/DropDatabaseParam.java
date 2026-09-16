@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>dropDatabase</code> interface.
  */
+
+
 public class DropDatabaseParam {
     private final String databaseName;
 
@@ -34,6 +36,13 @@ public class DropDatabaseParam {
         }
         this.databaseName = builder.databaseName;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -46,6 +55,13 @@ public class DropDatabaseParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -53,6 +69,8 @@ public class DropDatabaseParam {
     /**
      * Builder for {@link DropDatabaseParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
 
@@ -65,6 +83,8 @@ public class DropDatabaseParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             if (databaseName == null) {
                 throw new IllegalArgumentException("databaseName cannot be null");
@@ -78,6 +98,8 @@ public class DropDatabaseParam {
          *
          * @return {@link DropDatabaseParam}
          */
+
+
         public DropDatabaseParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(databaseName, "Database name");
 

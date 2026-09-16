@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 /**
  * Monitor with scheduling to check server healthy state.
  */
+
+
 public class ServerMonitor {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMonitor.class);
@@ -46,6 +48,15 @@ public class ServerMonitor {
     private final Thread monitorThread;
     private volatile boolean isRunning;
 
+    /**
+     * Creates a server monitor for the given cluster factory.
+     *
+     * @param clusterFactory           the cluster factory the monitor keeps updated
+     * @param queryNodeSingleSearch the search configuration for query node heartbeats, or {@code null}
+     *                                to skip query node checks
+     */
+
+
     public ServerMonitor(ClusterFactory clusterFactory, QueryNodeSingleSearch queryNodeSingleSearch) {
         if (null != queryNodeSingleSearch) {
             this.listeners = Arrays.asList(new ClusterListener(), new QueryNodeListener(queryNodeSingleSearch));
@@ -60,10 +71,20 @@ public class ServerMonitor {
         this.isRunning = true;
     }
 
+    /**
+     * Starts the heartbeat monitor thread.
+     */
+
+
     public void start() {
         logger.info("Milvus Server Monitor start.");
         monitorThread.start();
     }
+
+    /**
+     * Stops the heartbeat monitor thread.
+     */
+
 
     public void close() {
         isRunning = false;
@@ -72,6 +93,11 @@ public class ServerMonitor {
     }
 
     private class ServerMonitorRunnable implements Runnable {
+        /**
+         * Runs the heartbeat loop, periodically checking server health and re-electing the master
+         * when the current master is no longer available.
+         */
+
         public void run() {
             while (isRunning) {
                 long startTime = System.currentTimeMillis();

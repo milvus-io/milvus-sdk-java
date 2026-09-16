@@ -25,10 +25,13 @@ import java.util.List;
 /**
  * Response returned by the {@code getPersistentSegmentInfo} API.
  */
+
+
 public class GetPersistentSegmentInfoResp {
     /**
      * Information about a persistent segment stored on disk.
      */
+
     public static class PersistentSegmentInfo {
         private Long segmentID;
         private Long collectionID;
@@ -52,6 +55,13 @@ public class GetPersistentSegmentInfoResp {
             this.isSorted = builder.isSorted;
         }
 
+        /**
+         * Creates a new builder for {@code PersistentSegmentInfo}.
+         *
+         * @return the builder
+         */
+
+
         public static PersistentSegmentInfoBuilder builder() {
             return new PersistentSegmentInfoBuilder();
         }
@@ -61,6 +71,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the segment ID
          */
+
+
         public Long getSegmentID() {
             return segmentID;
         }
@@ -70,6 +82,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param segmentID the segment ID
          */
+
+
         public void setSegmentID(Long segmentID) {
             this.segmentID = segmentID;
         }
@@ -79,6 +93,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the collection ID
          */
+
+
         public Long getCollectionID() {
             return collectionID;
         }
@@ -88,6 +104,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param collectionID the collection ID
          */
+
+
         public void setCollectionID(Long collectionID) {
             this.collectionID = collectionID;
         }
@@ -97,6 +115,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the partition ID
          */
+
+
         public Long getPartitionID() {
             return partitionID;
         }
@@ -106,6 +126,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param partitionID the partition ID
          */
+
+
         public void setPartitionID(Long partitionID) {
             this.partitionID = partitionID;
         }
@@ -115,6 +137,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the collection name
          */
+
+
         public String getCollectionName() {
             return collectionName;
         }
@@ -124,6 +148,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param collectionName the collection name
          */
+
+
         public void setCollectionName(String collectionName) {
             this.collectionName = collectionName;
         }
@@ -133,6 +159,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the number of rows
          */
+
+
         public Long getNumOfRows() {
             return numOfRows;
         }
@@ -142,6 +170,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param numOfRows the number of rows
          */
+
+
         public void setNumOfRows(Long numOfRows) {
             this.numOfRows = numOfRows;
         }
@@ -151,6 +181,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the segment state
          */
+
+
         public String getState() {
             return state;
         }
@@ -160,6 +192,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param state the segment state
          */
+
+
         public void setState(String state) {
             this.state = state;
         }
@@ -169,6 +203,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the segment level
          */
+
+
         public String getLevel() {
             return level;
         }
@@ -178,6 +214,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param level the segment level
          */
+
+
         public void setLevel(String level) {
             this.level = level;
         }
@@ -187,6 +225,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the storage version
          */
+
+
         public Long getStorageVersion() {
             return storageVersion;
         }
@@ -196,6 +236,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param storageVersion the storage version
          */
+
+
         public void setStorageVersion(Long storageVersion) {
             this.storageVersion = storageVersion;
         }
@@ -205,6 +247,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return {@code true} if the segment is sorted, {@code false} otherwise
          */
+
+
         public Boolean getIsSorted() {
             return isSorted;
         }
@@ -214,6 +258,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @param isSorted {@code true} if the segment is sorted, {@code false} otherwise
          */
+
+
         public void setIsSorted(Boolean isSorted) {
             this.isSorted = isSorted;
         }
@@ -233,6 +279,11 @@ public class GetPersistentSegmentInfoResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link GetPersistentSegmentInfoResp.PersistentSegmentInfo} class.
+         */
+
+
         public static class PersistentSegmentInfoBuilder {
             private Long segmentID;
             private Long collectionID;
@@ -250,6 +301,8 @@ public class GetPersistentSegmentInfoResp {
              * @param segmentID the segment ID
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder segmentID(Long segmentID) {
                 this.segmentID = segmentID;
                 return this;
@@ -261,6 +314,8 @@ public class GetPersistentSegmentInfoResp {
              * @param collectionID the collection ID
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder collectionID(Long collectionID) {
                 this.collectionID = collectionID;
                 return this;
@@ -272,6 +327,8 @@ public class GetPersistentSegmentInfoResp {
              * @param partitionID the partition ID
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder partitionID(Long partitionID) {
                 this.partitionID = partitionID;
                 return this;
@@ -283,6 +340,8 @@ public class GetPersistentSegmentInfoResp {
              * @param collectionName the collection name
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder collectionName(String collectionName) {
                 this.collectionName = collectionName;
                 return this;
@@ -294,6 +353,8 @@ public class GetPersistentSegmentInfoResp {
              * @param numOfRows the number of rows
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder numOfRows(Long numOfRows) {
                 this.numOfRows = numOfRows;
                 return this;
@@ -305,6 +366,8 @@ public class GetPersistentSegmentInfoResp {
              * @param state the segment state
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder state(String state) {
                 this.state = state;
                 return this;
@@ -316,6 +379,8 @@ public class GetPersistentSegmentInfoResp {
              * @param level the segment level
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder level(String level) {
                 this.level = level;
                 return this;
@@ -327,6 +392,8 @@ public class GetPersistentSegmentInfoResp {
              * @param storageVersion the storage version
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder storageVersion(Long storageVersion) {
                 this.storageVersion = storageVersion;
                 return this;
@@ -338,6 +405,8 @@ public class GetPersistentSegmentInfoResp {
              * @param isSorted {@code true} if the segment is sorted, {@code false} otherwise
              * @return this builder
              */
+
+
             public PersistentSegmentInfoBuilder isSorted(Boolean isSorted) {
                 this.isSorted = isSorted;
                 return this;
@@ -348,6 +417,8 @@ public class GetPersistentSegmentInfoResp {
              *
              * @return the constructed {@code PersistentSegmentInfo}
              */
+
+
             public PersistentSegmentInfo build() {
                 return new PersistentSegmentInfo(this);
             }
@@ -360,6 +431,13 @@ public class GetPersistentSegmentInfoResp {
         this.segmentInfos = builder.segmentInfos;
     }
 
+    /**
+     * Creates a new builder for {@code GetPersistentSegmentInfoResp}.
+     *
+     * @return the builder
+     */
+
+
     public static GetPersistentSegmentInfoRespBuilder builder() {
         return new GetPersistentSegmentInfoRespBuilder();
     }
@@ -369,6 +447,8 @@ public class GetPersistentSegmentInfoResp {
      *
      * @return the list of persistent segment information
      */
+
+
     public List<PersistentSegmentInfo> getSegmentInfos() {
         return segmentInfos;
     }
@@ -378,6 +458,8 @@ public class GetPersistentSegmentInfoResp {
      *
      * @param segmentInfos the list of persistent segment information
      */
+
+
     public void setSegmentInfos(List<PersistentSegmentInfo> segmentInfos) {
         this.segmentInfos = segmentInfos;
     }
@@ -389,6 +471,11 @@ public class GetPersistentSegmentInfoResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetPersistentSegmentInfoResp} class.
+     */
+
+
     public static class GetPersistentSegmentInfoRespBuilder {
         private List<PersistentSegmentInfo> segmentInfos = new ArrayList<>();
 
@@ -398,6 +485,8 @@ public class GetPersistentSegmentInfoResp {
          * @param segmentInfos the list of persistent segment information
          * @return this builder
          */
+
+
         public GetPersistentSegmentInfoRespBuilder segmentInfos(List<PersistentSegmentInfo> segmentInfos) {
             this.segmentInfos = segmentInfos;
             return this;
@@ -408,6 +497,8 @@ public class GetPersistentSegmentInfoResp {
          *
          * @return the constructed {@code GetPersistentSegmentInfoResp}
          */
+
+
         public GetPersistentSegmentInfoResp build() {
             return new GetPersistentSegmentInfoResp(this);
         }

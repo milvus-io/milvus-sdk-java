@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code truncateCollection} API.
  */
+
+
 public class TruncateCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -36,6 +38,8 @@ public class TruncateCollectionReq {
      *
      * @return the builder
      */
+
+
     public static TruncateCollectionReqBuilder builder() {
         return new TruncateCollectionReqBuilder();
     }
@@ -46,6 +50,7 @@ public class TruncateCollectionReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -55,6 +60,8 @@ public class TruncateCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -65,6 +72,7 @@ public class TruncateCollectionReq {
      *
      * @param databaseName the database name
      */
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -74,6 +82,8 @@ public class TruncateCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -85,6 +95,11 @@ public class TruncateCollectionReq {
                 ", collectionName='" + collectionName + '\'' +
                 '}';
     }
+
+    /**
+     * Builder for {@link TruncateCollectionReq} class.
+     */
+
 
     public static class TruncateCollectionReqBuilder {
         private String databaseName;
@@ -99,6 +114,8 @@ public class TruncateCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public TruncateCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -110,6 +127,8 @@ public class TruncateCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public TruncateCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -120,6 +139,8 @@ public class TruncateCollectionReq {
          *
          * @return the request
          */
+
+
         public TruncateCollectionReq build() {
             return new TruncateCollectionReq(this);
         }

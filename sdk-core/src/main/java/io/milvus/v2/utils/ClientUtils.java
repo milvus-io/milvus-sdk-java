@@ -51,13 +51,38 @@ import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Helper for building and validating the gRPC channel used by {@code MilvusClientV2}. Constructs
+ * Netty channels with TLS/SSL, proxy, keep-alive, and interceptor options from a
+ * {@link io.milvus.v2.client.ConnectConfig}, and offers connection validation utilities.
+ */
+
+
 public class ClientUtils {
     Logger logger = LoggerFactory.getLogger(ClientUtils.class);
     RpcUtils rpcUtils = new RpcUtils();
 
+    /**
+     * Builds a gRPC channel to the Milvus server using the given connection configuration.
+     *
+     * @param connectConfig the connection configuration
+     * @return the built gRPC channel
+     */
+
+
     public ManagedChannel getChannel(ConnectConfig connectConfig) {
         return getChannel(connectConfig, null);
     }
+
+    /**
+     * Builds a gRPC channel to the Milvus server using the given connection configuration and
+     * an additional client interceptor.
+     *
+     * @param connectConfig the connection configuration
+     * @param additionalInterceptor an additional client interceptor, or null for none
+     * @return the built gRPC channel
+     */
+
 
     public ManagedChannel getChannel(ConnectConfig connectConfig, ClientInterceptor additionalInterceptor) {
         ManagedChannel channel = null;
@@ -185,6 +210,8 @@ public class ClientUtils {
      * @param builder      NettyChannelBuilder to configure
      * @param proxyAddress proxy address
      */
+
+
     public static void configureProxy(ManagedChannelBuilder builder, String proxyAddress) {
         String[] hostPort = proxyAddress.split(":");
         if (hostPort.length == 2) {
@@ -210,6 +237,15 @@ public class ClientUtils {
                 IdentityCipherSuiteFilter.INSTANCE, applicationProtocolConfig, ClientAuth.NONE, null, false);
     }
 
+    /**
+     * Checks that the given database exists on the server.
+     *
+     * @param blockingStub the gRPC stub to use
+     * @param dbName the name of the database to check
+     * @throws IllegalArgumentException if the database does not exist
+     */
+
+
     public void checkDatabaseExist(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName) {
         String title = String.format("Check database %s exist", dbName);
         ListDatabasesRequest listDatabasesRequest = ListDatabasesRequest.newBuilder().build();
@@ -219,6 +255,13 @@ public class ClientUtils {
             throw new IllegalArgumentException("Database " + dbName + " not exist");
         }
     }
+
+    /**
+     * Returns the host name of the local machine.
+     *
+     * @return the host name, or {@code "Unknown"} if it cannot be determined
+     */
+
 
     public String getHostName() {
         try {
@@ -230,10 +273,24 @@ public class ClientUtils {
         }
     }
 
+    /**
+     * Returns the current local time as a string.
+     *
+     * @return the current local time
+     */
+
+
     public String getLocalTimeStr() {
         LocalDateTime now = LocalDateTime.now();
         return now.toString();
     }
+
+    /**
+     * Returns the version of the Milvus SDK.
+     *
+     * @return the SDK version, or an empty string if it is unavailable
+     */
+
 
     public String getSDKVersion() {
         Package pkg = MilvusServiceClient.class.getPackage();
@@ -251,6 +308,8 @@ public class ClientUtils {
      * @param connectConfig Connection configuration containing the host to validate
      * @throws MilvusClientException if hostname cannot be resolved
      */
+
+
     public void validateHostname(ConnectConfig connectConfig) {
         String host = connectConfig.getHost();
 
@@ -279,6 +338,8 @@ public class ClientUtils {
      * @param connectConfig Connection configuration containing the port to validate
      * @throws MilvusClientException if port is invalid or unreachable
      */
+
+
     public void validatePort(ConnectConfig connectConfig) {
         int port = connectConfig.getPort();
         String host = connectConfig.getHost();
@@ -313,6 +374,8 @@ public class ClientUtils {
      * @param connectConfig Connection configuration
      * @throws MilvusClientException if SSL connection fails
      */
+
+
     public void validateCert(ConnectConfig connectConfig) {
         if (!connectConfig.isSecure()) {
             return;

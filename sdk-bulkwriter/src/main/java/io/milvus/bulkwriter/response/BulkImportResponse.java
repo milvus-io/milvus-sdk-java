@@ -27,6 +27,8 @@ import java.io.Serializable;
  * <p>It carries the unique ID of the created import job, which can later be used to
  * describe, commit, or abort the import.</p>
  */
+
+
 public class BulkImportResponse implements Serializable {
     private static final long serialVersionUID = -7162743560382861611L;
     private String jobId;
@@ -34,6 +36,8 @@ public class BulkImportResponse implements Serializable {
     /**
      * Constructs an empty {@code BulkImportResponse}.
      */
+
+
     public BulkImportResponse() {
     }
 
@@ -42,6 +46,8 @@ public class BulkImportResponse implements Serializable {
      *
      * @param jobId the ID of the created bulk import job
      */
+
+
     public BulkImportResponse(String jobId) {
         this.jobId = jobId;
     }
@@ -55,6 +61,8 @@ public class BulkImportResponse implements Serializable {
      *
      * @return the import job ID
      */
+
+
     public String getJobId() {
         return jobId;
     }
@@ -64,6 +72,8 @@ public class BulkImportResponse implements Serializable {
      *
      * @param jobId the import job ID
      */
+
+
     public void setJobId(String jobId) {
         this.jobId = jobId;
     }
@@ -80,6 +90,8 @@ public class BulkImportResponse implements Serializable {
      *
      * @return a {@code BulkImportResponse} builder
      */
+
+
     public static BulkImportResponseBuilder builder() {
         return new BulkImportResponseBuilder();
     }
@@ -87,6 +99,8 @@ public class BulkImportResponse implements Serializable {
     /**
      * Builder for {@link BulkImportResponse}.
      */
+
+
     public static class BulkImportResponseBuilder {
         private String jobId;
 
@@ -100,6 +114,8 @@ public class BulkImportResponse implements Serializable {
          * @param jobId the import job ID
          * @return this builder
          */
+
+
         public BulkImportResponseBuilder jobId(String jobId) {
             this.jobId = jobId;
             return this;
@@ -110,6 +126,8 @@ public class BulkImportResponse implements Serializable {
          *
          * @return the built {@code BulkImportResponse}
          */
+
+
         public BulkImportResponse build() {
             return new BulkImportResponse(this);
         }

@@ -22,6 +22,8 @@ package io.milvus.v2.service.database.request;
 /**
  * Request parameters for the {@code dropDatabase} API.
  */
+
+
 public class DropDatabaseReq {
     private String databaseName;
 
@@ -34,6 +36,8 @@ public class DropDatabaseReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -43,6 +47,8 @@ public class DropDatabaseReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -59,9 +65,16 @@ public class DropDatabaseReq {
      *
      * @return a new {@link DropDatabaseReqBuilder}
      */
+
+
     public static DropDatabaseReqBuilder builder() {
         return new DropDatabaseReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropDatabaseReq} class.
+     */
+
 
     public static class DropDatabaseReqBuilder {
         private String databaseName;
@@ -75,6 +88,8 @@ public class DropDatabaseReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -85,6 +100,8 @@ public class DropDatabaseReq {
          *
          * @return the built request
          */
+
+
         public DropDatabaseReq build() {
             return new DropDatabaseReq(this);
         }

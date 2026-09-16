@@ -26,6 +26,8 @@ import java.io.Serializable;
  *
  * <p>It carries a business code, a descriptive message, and the response payload data.</p>
  */
+
+
 public class RestfulResponse<T> implements Serializable {
     private static final long serialVersionUID = -7162743560382861611L;
     private int code;
@@ -35,6 +37,8 @@ public class RestfulResponse<T> implements Serializable {
     /**
      * Constructs an empty {@code RestfulResponse}.
      */
+
+
     public RestfulResponse() {
     }
 
@@ -45,6 +49,8 @@ public class RestfulResponse<T> implements Serializable {
      * @param message the descriptive message returned by the server
      * @param data    the response payload data
      */
+
+
     public RestfulResponse(int code, String message, T data) {
         this.code = code;
         this.message = message;
@@ -62,6 +68,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @return the business code
      */
+
+
     public int getCode() {
         return code;
     }
@@ -71,6 +79,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @param code the business code
      */
+
+
     public void setCode(int code) {
         this.code = code;
     }
@@ -80,6 +90,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @return the descriptive message
      */
+
+
     public String getMessage() {
         return message;
     }
@@ -89,6 +101,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @param message the descriptive message
      */
+
+
     public void setMessage(String message) {
         this.message = message;
     }
@@ -98,6 +112,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @return the response payload data
      */
+
+
     public T getData() {
         return data;
     }
@@ -107,6 +123,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @param data the response payload data
      */
+
+
     public void setData(T data) {
         this.data = data;
     }
@@ -124,6 +142,8 @@ public class RestfulResponse<T> implements Serializable {
      *
      * @return a {@code RestfulResponse} builder
      */
+
+
     public static RestfulResponseBuilder<?> builder() {
         return new RestfulResponseBuilder<>();
     }
@@ -131,6 +151,8 @@ public class RestfulResponse<T> implements Serializable {
     /**
      * Builder for {@link RestfulResponse}.
      */
+
+
     public static class RestfulResponseBuilder<T> {
         private int code;
         private String message;
@@ -148,6 +170,8 @@ public class RestfulResponse<T> implements Serializable {
          * @param code the business code
          * @return this builder
          */
+
+
         public RestfulResponseBuilder<T> code(int code) {
             this.code = code;
             return this;
@@ -159,6 +183,8 @@ public class RestfulResponse<T> implements Serializable {
          * @param message the descriptive message
          * @return this builder
          */
+
+
         public RestfulResponseBuilder<T> message(String message) {
             this.message = message;
             return this;
@@ -170,6 +196,8 @@ public class RestfulResponse<T> implements Serializable {
          * @param data the response payload data
          * @return this builder
          */
+
+
         public RestfulResponseBuilder<T> data(T data) {
             this.data = data;
             return this;
@@ -180,6 +208,8 @@ public class RestfulResponse<T> implements Serializable {
          *
          * @return the built {@code RestfulResponse}
          */
+
+
         public RestfulResponse<T> build() {
             return new RestfulResponse<>(this);
         }

@@ -26,6 +26,8 @@ import io.milvus.v2.service.utility.OptimizeTask;
 /**
  * Request parameters for the {@code compact} API.
  */
+
+
 public class CompactReq {
     private String databaseName;
     private String collectionName;
@@ -43,6 +45,13 @@ public class CompactReq {
         this.targetSizeUnit = builder.targetSizeUnit;
     }
 
+    /**
+     * Creates a new builder for {@code CompactReq}.
+     *
+     * @return the builder
+     */
+
+
     public static CompactReqBuilder builder() {
         return new CompactReqBuilder();
     }
@@ -52,6 +61,8 @@ public class CompactReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -61,6 +72,8 @@ public class CompactReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -70,6 +83,8 @@ public class CompactReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -79,6 +94,8 @@ public class CompactReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -88,6 +105,8 @@ public class CompactReq {
      *
      * @return {@code true} to trigger a clustering compaction, {@code false} otherwise
      */
+
+
     public Boolean getIsClustering() {
         return isClustering;
     }
@@ -97,6 +116,8 @@ public class CompactReq {
      *
      * @param isClustering {@code true} to trigger a clustering compaction, {@code false} otherwise
      */
+
+
     public void setIsClustering(Boolean isClustering) {
         this.isClustering = isClustering;
     }
@@ -106,6 +127,8 @@ public class CompactReq {
      *
      * @return {@code true} to compact L0 segments, {@code false} otherwise
      */
+
+
     public Boolean getIsL0() {
         return isL0;
     }
@@ -115,6 +138,8 @@ public class CompactReq {
      *
      * @param isL0 {@code true} to compact L0 segments, {@code false} otherwise
      */
+
+
     public void setIsL0(Boolean isL0) {
         this.isL0 = isL0;
     }
@@ -124,6 +149,8 @@ public class CompactReq {
      *
      * @return the target segment size, or {@code null} for the server default
      */
+
+
     public Long getTargetSize() {
         return targetSize;
     }
@@ -133,6 +160,8 @@ public class CompactReq {
      *
      * @param targetSize the target segment size, or {@code null} for the server default
      */
+
+
     public void setTargetSize(Long targetSize) {
         this.targetSize = targetSize;
     }
@@ -142,6 +171,8 @@ public class CompactReq {
      *
      * @return the target size unit, e.g. {@code "mb"}
      */
+
+
     public String getTargetSizeUnit() {
         return targetSizeUnit;
     }
@@ -151,6 +182,8 @@ public class CompactReq {
      *
      * @param targetSizeUnit the target size unit, e.g. {@code "mb"}
      */
+
+
     public void setTargetSizeUnit(String targetSizeUnit) {
         this.targetSizeUnit = targetSizeUnit;
     }
@@ -160,6 +193,8 @@ public class CompactReq {
      *
      * @return the target segment size in MB, or {@code null} when the server default applies
      */
+
+
     public Long getTargetSizeInMB() {
         return convertTargetSizeToMB(targetSize, targetSizeUnit);
     }
@@ -196,6 +231,11 @@ public class CompactReq {
         return OptimizeTask.parseTargetSize(targetSize + targetSizeUnit);
     }
 
+    /**
+     * Builder for {@link CompactReq} class.
+     */
+
+
     public static class CompactReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -210,6 +250,8 @@ public class CompactReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public CompactReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -221,6 +263,8 @@ public class CompactReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public CompactReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -232,6 +276,8 @@ public class CompactReq {
          * @param isClustering {@code true} to trigger a clustering compaction, {@code false} otherwise
          * @return this builder
          */
+
+
         public CompactReqBuilder isClustering(Boolean isClustering) {
             this.isClustering = isClustering;
             return this;
@@ -243,6 +289,8 @@ public class CompactReq {
          * @param isL0 {@code true} to compact L0 segments, {@code false} otherwise
          * @return this builder
          */
+
+
         public CompactReqBuilder isL0(Boolean isL0) {
             this.isL0 = isL0;
             return this;
@@ -254,6 +302,8 @@ public class CompactReq {
          * @param targetSize the target segment size, or {@code null} for the server default
          * @return this builder
          */
+
+
         public CompactReqBuilder targetSize(Long targetSize) {
             this.targetSize = targetSize;
             return this;
@@ -265,6 +315,8 @@ public class CompactReq {
          * @param targetSizeUnit the target size unit, e.g. {@code "mb"}
          * @return this builder
          */
+
+
         public CompactReqBuilder targetSizeUnit(String targetSizeUnit) {
             this.targetSizeUnit = targetSizeUnit;
             return this;
@@ -275,6 +327,8 @@ public class CompactReq {
          *
          * @return the constructed {@code CompactReq}
          */
+
+
         public CompactReq build() {
             return new CompactReq(this);
         }

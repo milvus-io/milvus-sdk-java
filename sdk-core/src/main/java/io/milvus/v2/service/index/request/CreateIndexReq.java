@@ -26,6 +26,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code createIndex} API.
  */
+
+
 public class CreateIndexReq {
     private String databaseName;
     private String collectionName;
@@ -49,6 +51,8 @@ public class CreateIndexReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -58,6 +62,8 @@ public class CreateIndexReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -67,6 +73,8 @@ public class CreateIndexReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -77,6 +85,8 @@ public class CreateIndexReq {
      * @param collectionName the collection name
      * @throws IllegalArgumentException if the collection name is null
      */
+
+
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -89,6 +99,8 @@ public class CreateIndexReq {
      *
      * @return the list of index parameters
      */
+
+
     public List<IndexParam> getIndexParams() {
         return indexParams;
     }
@@ -98,6 +110,8 @@ public class CreateIndexReq {
      *
      * @param indexParams the list of index parameters
      */
+
+
     public void setIndexParams(List<IndexParam> indexParams) {
         this.indexParams = indexParams;
     }
@@ -107,6 +121,8 @@ public class CreateIndexReq {
      *
      * @return {@code true} to wait for the index to complete
      */
+
+
     public Boolean getSync() {
         return sync;
     }
@@ -116,6 +132,8 @@ public class CreateIndexReq {
      *
      * @param sync {@code true} to wait for the index to complete
      */
+
+
     public void setSync(Boolean sync) {
         this.sync = sync;
     }
@@ -125,6 +143,8 @@ public class CreateIndexReq {
      *
      * @return the timeout value in milliseconds
      */
+
+
     public Long getTimeout() {
         return timeout;
     }
@@ -134,6 +154,8 @@ public class CreateIndexReq {
      *
      * @param timeout the timeout value in milliseconds
      */
+
+
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -154,9 +176,16 @@ public class CreateIndexReq {
      *
      * @return the builder
      */
+
+
     public static CreateIndexReqBuilder builder() {
         return new CreateIndexReqBuilder();
     }
+
+    /**
+     * Builder for {@link CreateIndexReq} class.
+     */
+
 
     public static class CreateIndexReqBuilder {
         private String databaseName;
@@ -174,6 +203,8 @@ public class CreateIndexReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public CreateIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -186,6 +217,8 @@ public class CreateIndexReq {
          * @return this builder
          * @throws IllegalArgumentException if the collection name is null
          */
+
+
         public CreateIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -200,6 +233,8 @@ public class CreateIndexReq {
          * @param indexParams the list of index parameters
          * @return this builder
          */
+
+
         public CreateIndexReqBuilder indexParams(List<IndexParam> indexParams) {
             this.indexParams = indexParams;
             return this;
@@ -211,6 +246,8 @@ public class CreateIndexReq {
          * @param sync {@code true} to wait for the index to complete
          * @return this builder
          */
+
+
         public CreateIndexReqBuilder sync(Boolean sync) {
             this.sync = sync;
             return this;
@@ -222,6 +259,8 @@ public class CreateIndexReq {
          * @param timeout the timeout value in milliseconds
          * @return this builder
          */
+
+
         public CreateIndexReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
@@ -232,6 +271,8 @@ public class CreateIndexReq {
          *
          * @return the built request
          */
+
+
         public CreateIndexReq build() {
             return new CreateIndexReq(this);
         }

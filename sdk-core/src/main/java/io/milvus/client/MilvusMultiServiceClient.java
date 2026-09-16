@@ -55,6 +55,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * Multi-service client. It manages connections to multiple Milvus services and
+ * automatically switches between them for primary/backup failover.
+ */
+
+
 public class MilvusMultiServiceClient implements MilvusClient {
 
     private final ClusterFactory clusterFactory;
@@ -64,6 +70,8 @@ public class MilvusMultiServiceClient implements MilvusClient {
      *
      * @param multiConnectParam multi server connect param
      */
+
+
     public MilvusMultiServiceClient(MultiConnectParam multiConnectParam) {
         if (multiConnectParam == null) {
             throw new IllegalArgumentException("multiConnectParam must not be null");
@@ -607,9 +615,23 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return this.clusterFactory.getMaster().getClient().listBulkInsertTasks(requestParam);
     }
 
+    /**
+     * Checks the health of the connected Milvus cluster.
+     *
+     * @return the health check response
+     */
+
+
     public R<CheckHealthResponse> checkHealth() {
         return this.clusterFactory.getMaster().getClient().checkHealth();
     }
+
+    /**
+     * Gets the version of the connected Milvus cluster.
+     *
+     * @return the version response
+     */
+
 
     public R<GetVersionResponse> getVersion() {
         return this.clusterFactory.getMaster().getClient().getVersion();

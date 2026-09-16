@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.request;
 /**
  * Request parameters for the {@code restoreSnapshot} API.
  */
+
+
 public class RestoreSnapshotReq {
     private String snapshotName;
     private String sourceCollectionName;
@@ -37,6 +39,13 @@ public class RestoreSnapshotReq {
         this.targetDbName = builder.targetDbName;
     }
 
+    /**
+     * Creates a new builder for {@code RestoreSnapshotReq}.
+     *
+     * @return the builder
+     */
+
+
     public static RestoreSnapshotReqBuilder builder() {
         return new RestoreSnapshotReqBuilder();
     }
@@ -46,6 +55,8 @@ public class RestoreSnapshotReq {
      *
      * @return the snapshot name
      */
+
+
     public String getSnapshotName() {
         return snapshotName;
     }
@@ -55,6 +66,8 @@ public class RestoreSnapshotReq {
      *
      * @param snapshotName the snapshot name
      */
+
+
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
@@ -64,6 +77,8 @@ public class RestoreSnapshotReq {
      *
      * @return the source collection name
      */
+
+
     public String getSourceCollectionName() {
         return sourceCollectionName;
     }
@@ -73,6 +88,8 @@ public class RestoreSnapshotReq {
      *
      * @param sourceCollectionName the source collection name
      */
+
+
     public void setSourceCollectionName(String sourceCollectionName) {
         this.sourceCollectionName = sourceCollectionName;
     }
@@ -82,6 +99,8 @@ public class RestoreSnapshotReq {
      *
      * @return the target collection name
      */
+
+
     public String getTargetCollectionName() {
         return targetCollectionName;
     }
@@ -91,6 +110,8 @@ public class RestoreSnapshotReq {
      *
      * @param targetCollectionName the target collection name
      */
+
+
     public void setTargetCollectionName(String targetCollectionName) {
         this.targetCollectionName = targetCollectionName;
     }
@@ -100,6 +121,8 @@ public class RestoreSnapshotReq {
      *
      * @return the source database name
      */
+
+
     public String getSourceDbName() {
         return sourceDbName;
     }
@@ -109,6 +132,8 @@ public class RestoreSnapshotReq {
      *
      * @param sourceDbName the source database name
      */
+
+
     public void setSourceDbName(String sourceDbName) {
         this.sourceDbName = sourceDbName;
     }
@@ -118,6 +143,8 @@ public class RestoreSnapshotReq {
      *
      * @return the target database name
      */
+
+
     public String getTargetDbName() {
         return targetDbName;
     }
@@ -127,6 +154,8 @@ public class RestoreSnapshotReq {
      *
      * @param targetDbName the target database name
      */
+
+
     public void setTargetDbName(String targetDbName) {
         this.targetDbName = targetDbName;
     }
@@ -142,6 +171,11 @@ public class RestoreSnapshotReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link RestoreSnapshotReq} class.
+     */
+
+
     public static class RestoreSnapshotReqBuilder {
         private String snapshotName;
         private String sourceCollectionName;
@@ -155,6 +189,8 @@ public class RestoreSnapshotReq {
          * @param snapshotName the snapshot name
          * @return this builder
          */
+
+
         public RestoreSnapshotReqBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
@@ -166,6 +202,8 @@ public class RestoreSnapshotReq {
          * @param sourceCollectionName the source collection name
          * @return this builder
          */
+
+
         public RestoreSnapshotReqBuilder sourceCollectionName(String sourceCollectionName) {
             this.sourceCollectionName = sourceCollectionName;
             return this;
@@ -177,6 +215,8 @@ public class RestoreSnapshotReq {
          * @param targetCollectionName the target collection name
          * @return this builder
          */
+
+
         public RestoreSnapshotReqBuilder targetCollectionName(String targetCollectionName) {
             this.targetCollectionName = targetCollectionName;
             return this;
@@ -188,6 +228,8 @@ public class RestoreSnapshotReq {
          * @param sourceDbName the source database name
          * @return this builder
          */
+
+
         public RestoreSnapshotReqBuilder sourceDbName(String sourceDbName) {
             this.sourceDbName = sourceDbName;
             return this;
@@ -199,6 +241,8 @@ public class RestoreSnapshotReq {
          * @param targetDbName the target database name
          * @return this builder
          */
+
+
         public RestoreSnapshotReqBuilder targetDbName(String targetDbName) {
             this.targetDbName = targetDbName;
             return this;
@@ -209,6 +253,8 @@ public class RestoreSnapshotReq {
          *
          * @return the built request
          */
+
+
         public RestoreSnapshotReq build() {
             return new RestoreSnapshotReq(this);
         }

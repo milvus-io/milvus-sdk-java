@@ -6,6 +6,8 @@ package io.milvus.bulkwriter.response.volume;
  * <p>It describes a volume's name, type, region, storage integration, path, status, and
  * creation time, and is returned by the volume describe and list APIs.</p>
  */
+
+
 public class VolumeInfo {
     private String volumeName;
     private String type;
@@ -18,6 +20,8 @@ public class VolumeInfo {
     /**
      * Constructs an empty {@code VolumeInfo}.
      */
+
+
     public VolumeInfo() {
     }
 
@@ -26,6 +30,8 @@ public class VolumeInfo {
      *
      * @param volumeName the name of the volume
      */
+
+
     public VolumeInfo(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -45,6 +51,8 @@ public class VolumeInfo {
      *
      * @return the volume name
      */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -54,6 +62,8 @@ public class VolumeInfo {
      *
      * @param volumeName the volume name
      */
+
+
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -63,6 +73,8 @@ public class VolumeInfo {
      *
      * @return the volume type
      */
+
+
     public String getType() {
         return type;
     }
@@ -72,6 +84,8 @@ public class VolumeInfo {
      *
      * @param type the volume type
      */
+
+
     public void setType(String type) {
         this.type = type;
     }
@@ -81,6 +95,8 @@ public class VolumeInfo {
      *
      * @return the region ID
      */
+
+
     public String getRegionId() {
         return regionId;
     }
@@ -90,6 +106,8 @@ public class VolumeInfo {
      *
      * @param regionId the region ID
      */
+
+
     public void setRegionId(String regionId) {
         this.regionId = regionId;
     }
@@ -99,6 +117,8 @@ public class VolumeInfo {
      *
      * @return the storage integration ID
      */
+
+
     public String getStorageIntegrationId() {
         return storageIntegrationId;
     }
@@ -108,6 +128,8 @@ public class VolumeInfo {
      *
      * @param storageIntegrationId the storage integration ID
      */
+
+
     public void setStorageIntegrationId(String storageIntegrationId) {
         this.storageIntegrationId = storageIntegrationId;
     }
@@ -117,6 +139,8 @@ public class VolumeInfo {
      *
      * @return the volume path
      */
+
+
     public String getPath() {
         return path;
     }
@@ -126,6 +150,8 @@ public class VolumeInfo {
      *
      * @param path the volume path
      */
+
+
     public void setPath(String path) {
         this.path = path;
     }
@@ -135,6 +161,8 @@ public class VolumeInfo {
      *
      * @return the volume status
      */
+
+
     public String getStatus() {
         return status;
     }
@@ -144,6 +172,8 @@ public class VolumeInfo {
      *
      * @param status the volume status
      */
+
+
     public void setStatus(String status) {
         this.status = status;
     }
@@ -153,6 +183,8 @@ public class VolumeInfo {
      *
      * @return the creation time
      */
+
+
     public String getCreateTime() {
         return createTime;
     }
@@ -162,6 +194,8 @@ public class VolumeInfo {
      *
      * @param createTime the creation time
      */
+
+
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
     }
@@ -184,6 +218,8 @@ public class VolumeInfo {
      *
      * @return a {@code VolumeInfo} builder
      */
+
+
     public static VolumeInfoBuilder builder() {
         return new VolumeInfoBuilder();
     }
@@ -191,6 +227,8 @@ public class VolumeInfo {
     /**
      * Builder for {@link VolumeInfo}.
      */
+
+
     public static class VolumeInfoBuilder {
         private String volumeName;
         private String type;
@@ -210,6 +248,8 @@ public class VolumeInfo {
          * @param volumeName the volume name
          * @return this builder
          */
+
+
         public VolumeInfoBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -221,6 +261,8 @@ public class VolumeInfo {
          * @param type the volume type
          * @return this builder
          */
+
+
         public VolumeInfoBuilder type(String type) {
             this.type = type;
             return this;
@@ -232,6 +274,8 @@ public class VolumeInfo {
          * @param regionId the region ID
          * @return this builder
          */
+
+
         public VolumeInfoBuilder regionId(String regionId) {
             this.regionId = regionId;
             return this;
@@ -243,6 +287,8 @@ public class VolumeInfo {
          * @param storageIntegrationId the storage integration ID
          * @return this builder
          */
+
+
         public VolumeInfoBuilder storageIntegrationId(String storageIntegrationId) {
             this.storageIntegrationId = storageIntegrationId;
             return this;
@@ -254,6 +300,8 @@ public class VolumeInfo {
          * @param path the volume path
          * @return this builder
          */
+
+
         public VolumeInfoBuilder path(String path) {
             this.path = path;
             return this;
@@ -265,6 +313,8 @@ public class VolumeInfo {
          * @param status the volume status
          * @return this builder
          */
+
+
         public VolumeInfoBuilder status(String status) {
             this.status = status;
             return this;
@@ -276,6 +326,8 @@ public class VolumeInfo {
          * @param createTime the creation time
          * @return this builder
          */
+
+
         public VolumeInfoBuilder createTime(String createTime) {
             this.createTime = createTime;
             return this;
@@ -286,6 +338,8 @@ public class VolumeInfo {
          *
          * @return the built {@code VolumeInfo}
          */
+
+
         public VolumeInfo build() {
             return new VolumeInfo(this);
         }

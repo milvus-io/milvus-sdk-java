@@ -22,12 +22,21 @@ package io.milvus.v2.service.utility.response;
 /**
  * Response returned by the {@code getFlushAllState} API.
  */
+
+
 public class GetFlushAllStateResp {
     private Boolean flushed;
 
     private GetFlushAllStateResp(GetFlushAllStateRespBuilder builder) {
         this.flushed = builder.flushed;
     }
+
+    /**
+     * Creates a new builder for {@code GetFlushAllStateResp}.
+     *
+     * @return the builder
+     */
+
 
     public static GetFlushAllStateRespBuilder builder() {
         return new GetFlushAllStateRespBuilder();
@@ -38,6 +47,8 @@ public class GetFlushAllStateResp {
      *
      * @return {@code true} if the flush is complete, {@code false} otherwise
      */
+
+
     public Boolean getFlushed() {
         return flushed;
     }
@@ -47,6 +58,8 @@ public class GetFlushAllStateResp {
      *
      * @param flushed {@code true} if the flush is complete, {@code false} otherwise
      */
+
+
     public void setFlushed(Boolean flushed) {
         this.flushed = flushed;
     }
@@ -58,6 +71,11 @@ public class GetFlushAllStateResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetFlushAllStateResp} class.
+     */
+
+
     public static class GetFlushAllStateRespBuilder {
         private Boolean flushed = Boolean.FALSE;
 
@@ -67,6 +85,8 @@ public class GetFlushAllStateResp {
          * @param flushed {@code true} if the flush is complete, {@code false} otherwise
          * @return this builder
          */
+
+
         public GetFlushAllStateRespBuilder flushed(Boolean flushed) {
             this.flushed = flushed;
             return this;
@@ -77,6 +97,8 @@ public class GetFlushAllStateResp {
          *
          * @return the constructed {@code GetFlushAllStateResp}
          */
+
+
         public GetFlushAllStateResp build() {
             return new GetFlushAllStateResp(this);
         }
