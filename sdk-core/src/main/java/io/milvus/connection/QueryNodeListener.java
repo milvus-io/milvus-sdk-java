@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Send heartbeat for query nodes healthy check.
  */
+
+
 public class QueryNodeListener implements Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryNodeListener.class);
@@ -42,6 +44,13 @@ public class QueryNodeListener implements Listener {
     private static final int HEARTBEAT_TIMEOUT_MILLS = 4000;
 
     private final SearchParam searchParam;
+
+    /**
+     * Creates a query node listener that searches the configured query node as a heartbeat.
+     *
+     * @param singleSearch the search configuration used for the heartbeat probe
+     */
+
 
     public QueryNodeListener(QueryNodeSingleSearch singleSearch) {
         searchParam = SearchParam.newBuilder()

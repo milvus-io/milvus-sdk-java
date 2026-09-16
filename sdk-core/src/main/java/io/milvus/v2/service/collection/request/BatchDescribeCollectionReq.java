@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code batchDescribeCollection} API.
  */
+
+
 public class BatchDescribeCollectionReq {
     private String databaseName;
     private List<String> collectionNames;
@@ -42,6 +44,7 @@ public class BatchDescribeCollectionReq {
      *
      * @return the builder
      */
+
     public static BatchDescribeCollectionReqBuilder builder() {
         return new BatchDescribeCollectionReqBuilder();
     }
@@ -52,6 +55,7 @@ public class BatchDescribeCollectionReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -61,6 +65,8 @@ public class BatchDescribeCollectionReq {
      *
      * @return the collection names
      */
+
+
     public List<String> getCollectionNames() {
         return collectionNames;
     }
@@ -70,6 +76,8 @@ public class BatchDescribeCollectionReq {
      *
      * @return the collection IDs
      */
+
+
     public List<Long> getCollectionIds() {
         return collectionIds;
     }
@@ -80,6 +88,7 @@ public class BatchDescribeCollectionReq {
      *
      * @param databaseName the database name
      */
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -89,6 +98,8 @@ public class BatchDescribeCollectionReq {
      *
      * @param collectionNames the collection names
      */
+
+
     public void setCollectionNames(List<String> collectionNames) {
         this.collectionNames = collectionNames;
     }
@@ -98,6 +109,8 @@ public class BatchDescribeCollectionReq {
      *
      * @param collectionIds the collection IDs
      */
+
+
     public void setCollectionIds(List<Long> collectionIds) {
         this.collectionIds = collectionIds;
     }
@@ -112,6 +125,10 @@ public class BatchDescribeCollectionReq {
     }
 
     // Builder class
+    /**
+     * Builder for {@link BatchDescribeCollectionReq} class.
+     */
+
     public static class BatchDescribeCollectionReqBuilder {
         private String databaseName;
         private List<String> collectionNames;
@@ -123,6 +140,8 @@ public class BatchDescribeCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public BatchDescribeCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -134,6 +153,8 @@ public class BatchDescribeCollectionReq {
          * @param collectionNames the collection names
          * @return this builder
          */
+
+
         public BatchDescribeCollectionReqBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
@@ -145,6 +166,8 @@ public class BatchDescribeCollectionReq {
          * @param collectionIds the collection IDs
          * @return this builder
          */
+
+
         public BatchDescribeCollectionReqBuilder collectionIds(List<Long> collectionIds) {
             this.collectionIds = collectionIds;
             return this;
@@ -155,6 +178,8 @@ public class BatchDescribeCollectionReq {
          *
          * @return the request
          */
+
+
         public BatchDescribeCollectionReq build() {
             return new BatchDescribeCollectionReq(this);
         }

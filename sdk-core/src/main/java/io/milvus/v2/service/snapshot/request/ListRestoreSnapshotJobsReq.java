@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.request;
 /**
  * Request parameters for the {@code listRestoreSnapshotJobs} API.
  */
+
+
 public class ListRestoreSnapshotJobsReq {
     private String databaseName;
     private String collectionName;
@@ -30,6 +32,13 @@ public class ListRestoreSnapshotJobsReq {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
+
+    /**
+     * Creates a new builder for {@code ListRestoreSnapshotJobsReq}.
+     *
+     * @return the builder
+     */
+
 
     public static ListRestoreSnapshotJobsReqBuilder builder() {
         return new ListRestoreSnapshotJobsReqBuilder();
@@ -40,6 +49,8 @@ public class ListRestoreSnapshotJobsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +60,8 @@ public class ListRestoreSnapshotJobsReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +71,8 @@ public class ListRestoreSnapshotJobsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -67,6 +82,8 @@ public class ListRestoreSnapshotJobsReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -79,6 +96,11 @@ public class ListRestoreSnapshotJobsReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListRestoreSnapshotJobsReq} class.
+     */
+
+
     public static class ListRestoreSnapshotJobsReqBuilder {
         private String databaseName = "";
         private String collectionName = "";
@@ -89,6 +111,8 @@ public class ListRestoreSnapshotJobsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ListRestoreSnapshotJobsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -100,6 +124,8 @@ public class ListRestoreSnapshotJobsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ListRestoreSnapshotJobsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -110,6 +136,8 @@ public class ListRestoreSnapshotJobsReq {
          *
          * @return the built request
          */
+
+
         public ListRestoreSnapshotJobsReq build() {
             return new ListRestoreSnapshotJobsReq(this);
         }

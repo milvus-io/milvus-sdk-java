@@ -32,14 +32,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * In-process cache for collection schemas keyed by endpoint, database, and collection name.
+ * Coalesces concurrent loads within an identity-based scope and supports capacity-bounded
+ * eviction plus per-collection and per-database invalidation.
+ */
+
+
 public class SchemaCache {
     public static final int DEFAULT_CAPACITY = 4096;
 
+    /**
+     * Callback used to load a collection schema on cache miss.
+     */
     @FunctionalInterface
     public interface Loader {
         DescribeCollectionResponse load();
     }
 
+    /**
+     * Async variant of {@link Loader}.
+     */
     @FunctionalInterface
     public interface AsyncLoader {
         CompletableFuture<DescribeCollectionResponse> load();
@@ -101,9 +114,22 @@ public class SchemaCache {
     private final Object loadingLock = new Object();
     private final Map<LoadKey, LoadState> loading = new HashMap<>();
 
+    /**
+     * Creates a schema cache with the default capacity.
+     */
+
+
     public SchemaCache() {
         this(DEFAULT_CAPACITY);
     }
+
+    /**
+     * Creates a schema cache with the given capacity.
+     *
+     * @param capacity the maximum number of cached schemas
+     * @throws IllegalArgumentException if {@code capacity} is not positive
+     */
+
 
     public SchemaCache(int capacity) {
         if (capacity <= 0) {
@@ -111,6 +137,13 @@ public class SchemaCache {
         }
         this.capacity = capacity;
     }
+
+    /**
+     * Returns the process-wide singleton instance of the cache.
+     *
+     * @return the shared {@link SchemaCache} instance
+     */
+
 
     public static SchemaCache getInstance() {
         return INSTANCE;
@@ -121,7 +154,17 @@ public class SchemaCache {
      * Completed schemas remain shared by endpoint, database, and collection. A client should pass
      * a stable per-client scope so another client's credentials or RPC deadline cannot control its
      * in-flight load.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     * @param forceUpdate    whether to reload even when a cached schema exists
+     * @param loadScope      the identity scope for coalescing concurrent loads, must not be {@code null}
+     * @param loader         the synchronous schema loader
+     * @return the described collection schema
      */
+
+
     public DescribeCollectionResponse getOrLoad(String endpoint, String databaseName, String collectionName,
                                                 boolean forceUpdate, Object loadScope, Loader loader) {
         CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
@@ -170,7 +213,17 @@ public class SchemaCache {
      * semantics as {@link #getOrLoad(String, String, String, boolean, Object, Loader)}.
      * Cancelling one returned future does not cancel a load shared by other callers; cancelling
      * the final waiter cancels the underlying loader.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     * @param forceUpdate    whether to reload even when a cached schema exists
+     * @param loadScope      the identity scope for coalescing concurrent loads, must not be {@code null}
+     * @param loader         the asynchronous schema loader
+     * @return a future completing with the described collection schema
      */
+
+
     public CompletableFuture<DescribeCollectionResponse> getOrLoadAsync(
             String endpoint, String databaseName, String collectionName,
             boolean forceUpdate, Object loadScope, AsyncLoader loader) {
@@ -229,9 +282,29 @@ public class SchemaCache {
         return dependent;
     }
 
+    /**
+     * Returns the cached schema of the collection, or {@code null} if it is not cached.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     * @return the cached {@code DescribeCollectionResponse}, or {@code null}
+     */
+
+
     public DescribeCollectionResponse get(String endpoint, String databaseName, String collectionName) {
         return getCached(CollectionCacheKey.create(endpoint, databaseName, collectionName));
     }
+
+    /**
+     * Stores the schema of the collection, cancelling any in-flight load for it.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     * @param response       the schema response to cache
+     */
+
 
     public void set(String endpoint, String databaseName, String collectionName,
                     DescribeCollectionResponse response) {
@@ -239,6 +312,15 @@ public class SchemaCache {
         invalidateLoad(key);
         setCached(key, response);
     }
+
+    /**
+     * Removes the cached schema of the given collection.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     */
+
 
     public void invalidate(String endpoint, String databaseName, String collectionName) {
         CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
@@ -250,6 +332,14 @@ public class SchemaCache {
             lock.writeLock().unlock();
         }
     }
+
+    /**
+     * Removes all cached schemas of the given database, invalidating in-flight loads.
+     *
+     * @param endpoint     the server endpoint
+     * @param databaseName the database name
+     */
+
 
     public void invalidateDb(String endpoint, String databaseName) {
         CollectionCacheKey prefix = CollectionCacheKey.create(endpoint, databaseName, "");
@@ -270,6 +360,11 @@ public class SchemaCache {
         }
     }
 
+    /**
+     * Removes all cached schemas and in-flight loads.
+     */
+
+
     public void clear() {
         synchronized (loadingLock) {
             loading.values().forEach(state -> state.invalidated.set(true));
@@ -282,6 +377,13 @@ public class SchemaCache {
             lock.writeLock().unlock();
         }
     }
+
+    /**
+     * Returns the number of schemas currently cached.
+     *
+     * @return the cache size
+     */
+
 
     public int size() {
         lock.readLock().lock();

@@ -22,10 +22,19 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code listFileResources} API.
  */
+
+
 public class ListFileResourcesReq {
 
     private ListFileResourcesReq(ListFileResourcesReqBuilder builder) {
     }
+
+    /**
+     * Creates a new builder for {@code ListFileResourcesReq}.
+     *
+     * @return the builder
+     */
+
 
     public static ListFileResourcesReqBuilder builder() {
         return new ListFileResourcesReqBuilder();
@@ -36,6 +45,11 @@ public class ListFileResourcesReq {
         return "ListFileResourcesReq{}";
     }
 
+    /**
+     * Builder for {@link ListFileResourcesReq} class.
+     */
+
+
     public static class ListFileResourcesReqBuilder {
 
         /**
@@ -43,6 +57,8 @@ public class ListFileResourcesReq {
          *
          * @return the constructed {@code ListFileResourcesReq}
          */
+
+
         public ListFileResourcesReq build() {
             return new ListFileResourcesReq(this);
         }

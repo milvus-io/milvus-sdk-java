@@ -38,6 +38,8 @@ import static io.milvus.param.Constant.NO_CACHE_ID;
  * not returned again. All operations are synchronized, making the cache safe to be shared across
  * threads.
  */
+
+
 public class IteratorCache {
     private final AtomicInteger cacheId = new AtomicInteger(0);
     private final Map<Integer, CacheEntry> cacheMap = new ConcurrentHashMap<>();
@@ -53,6 +55,8 @@ public class IteratorCache {
      * @return the cache ID under which the rows were stored
      * @throws io.milvus.exception.ParamException if {@code result} is {@code null}
      */
+
+
     public synchronized int cache(int cacheId, List<QueryResultsWrapper.RowRecord> result) {
         if (result == null) {
             throw new ParamException("Cannot cache a null result");
@@ -73,6 +77,8 @@ public class IteratorCache {
      * @param cacheId the cache ID to fetch
      * @return a copy of the cached rows, or {@code null} if the cache ID is not present
      */
+
+
     public synchronized List<QueryResultsWrapper.RowRecord> fetchCache(int cacheId) {
         CacheEntry cached = cacheMap.get(cacheId);
         return cached == null ? null : cached.snapshot();
@@ -84,6 +90,8 @@ public class IteratorCache {
      * @param cacheId the cache ID to check
      * @return the number of cached rows, or {@code 0} if the cache ID is not present
      */
+
+
     public synchronized int size(int cacheId) {
         CacheEntry cached = cacheMap.get(cacheId);
         return cached == null ? 0 : cached.size();
@@ -98,6 +106,8 @@ public class IteratorCache {
      * @throws io.milvus.exception.ParamException if {@code result} is {@code null} or
      *         {@code cacheId} is invalid
      */
+
+
     public synchronized int append(int cacheId, List<QueryResultsWrapper.RowRecord> result) {
         if (result == null) {
             throw new ParamException("Cannot append a null result to cache");
@@ -122,6 +132,8 @@ public class IteratorCache {
      * @throws io.milvus.exception.ParamException if {@code count} is negative, the cache ID is not
      *         present, or {@code count} exceeds the number of cached rows
      */
+
+
     public synchronized List<QueryResultsWrapper.RowRecord> drain(int cacheId, int count) {
         if (count == 0) {
             return new ArrayList<>();
@@ -146,6 +158,8 @@ public class IteratorCache {
      *
      * @param cacheId the cache ID to release
      */
+
+
     public synchronized void releaseCache(int cacheId) {
         cacheMap.remove(cacheId);
     }

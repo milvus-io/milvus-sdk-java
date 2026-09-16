@@ -27,6 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Parameters for <code>dropIndex</code> interface.
  */
+
+
 public class DropIndexParam {
     private final String databaseName;
     private final String collectionName;
@@ -45,17 +47,45 @@ public class DropIndexParam {
         this.indexName = builder.indexName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the indexName.
+     *
+     * @return the indexName
+     */
+
 
     public String getIndexName() {
         return indexName;
@@ -73,6 +103,8 @@ public class DropIndexParam {
     /**
      * Builder for {@link DropIndexParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -87,6 +119,8 @@ public class DropIndexParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -98,6 +132,8 @@ public class DropIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -113,6 +149,8 @@ public class DropIndexParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
+
+
         public Builder withIndexName(String indexName) {
             if (indexName == null) {
                 throw new IllegalArgumentException("Index name cannot be null");
@@ -126,6 +164,8 @@ public class DropIndexParam {
          *
          * @return {@link DropIndexParam}
          */
+
+
         public DropIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

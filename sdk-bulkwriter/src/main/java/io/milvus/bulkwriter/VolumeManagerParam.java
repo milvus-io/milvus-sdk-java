@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>volumeManager</code> interface.
  */
+
+
 public class VolumeManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
@@ -39,6 +41,8 @@ public class VolumeManagerParam {
     *
     * @return the cloud endpoint of the volume service
     */
+
+
     public String getCloudEndpoint() {
         return cloudEndpoint;
     }
@@ -48,6 +52,8 @@ public class VolumeManagerParam {
     *
     * @return the API key for the volume service
     */
+
+
     public String getApiKey() {
         return apiKey;
     }
@@ -58,6 +64,12 @@ public class VolumeManagerParam {
                 "cloudEndpoint='" + cloudEndpoint + '\'' +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -66,6 +78,8 @@ public class VolumeManagerParam {
     /**
      * Builder for {@link VolumeManagerParam} class.
      */
+
+
     public static final class Builder {
         private String cloudEndpoint;
 
@@ -75,16 +89,16 @@ public class VolumeManagerParam {
         }
 
         /**
+         * Sets the cloud endpoint of the volume service.
          * The value of the URL is fixed.
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
+         *
+         * @param cloudEndpoint the cloud endpoint of the volume service
+         * @return this builder
          */
-        /**
-        * Sets the cloud endpoint of the volume service.
-        *
-        * @param c the cloud endpoint of the volume service
-        * @return this builder
-        */
+
+
         public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
@@ -93,9 +107,11 @@ public class VolumeManagerParam {
         /**
         * Sets the API key for the volume service.
         *
-        * @param a the API key for the volume service
+        * @param apiKey the API key for the volume service
         * @return this builder
         */
+
+
         public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
@@ -105,7 +121,10 @@ public class VolumeManagerParam {
          * Verifies parameters and creates a new {@link VolumeManagerParam} instance.
          *
          * @return {@link VolumeManagerParam}
+         * @throws ParamException if the required parameters are invalid
          */
+
+
         public VolumeManagerParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(cloudEndpoint, "cloudEndpoint");
             ParamUtils.CheckNullEmptyString(apiKey, "apiKey");

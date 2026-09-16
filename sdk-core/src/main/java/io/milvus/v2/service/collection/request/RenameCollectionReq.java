@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code renameCollection} API.
  */
+
+
 public class RenameCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -40,6 +42,8 @@ public class RenameCollectionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +53,8 @@ public class RenameCollectionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +64,8 @@ public class RenameCollectionReq {
      *
      * @return the current collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -67,6 +75,8 @@ public class RenameCollectionReq {
      *
      * @param collectionName the current collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -76,6 +86,8 @@ public class RenameCollectionReq {
      *
      * @return the new collection name
      */
+
+
     public String getNewCollectionName() {
         return newCollectionName;
     }
@@ -85,6 +97,8 @@ public class RenameCollectionReq {
      *
      * @param newCollectionName the new collection name
      */
+
+
     public void setNewCollectionName(String newCollectionName) {
         this.newCollectionName = newCollectionName;
     }
@@ -94,6 +108,8 @@ public class RenameCollectionReq {
      *
      * @return the target database name
      */
+
+
     public String getTargetDbName() {
         return targetDbName;
     }
@@ -103,6 +119,8 @@ public class RenameCollectionReq {
      *
      * @param targetDbName the target database name
      */
+
+
     public void setTargetDbName(String targetDbName) {
         this.targetDbName = targetDbName;
     }
@@ -122,9 +140,16 @@ public class RenameCollectionReq {
      *
      * @return the builder
      */
+
+
     public static RenameCollectionReqBuilder builder() {
         return new RenameCollectionReqBuilder();
     }
+
+    /**
+     * Builder for {@link RenameCollectionReq} class.
+     */
+
 
     public static class RenameCollectionReqBuilder {
         private String databaseName;
@@ -141,6 +166,8 @@ public class RenameCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public RenameCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -152,6 +179,8 @@ public class RenameCollectionReq {
          * @param collectionName the current collection name
          * @return this builder
          */
+
+
         public RenameCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -163,6 +192,8 @@ public class RenameCollectionReq {
          * @param newCollectionName the new collection name
          * @return this builder
          */
+
+
         public RenameCollectionReqBuilder newCollectionName(String newCollectionName) {
             this.newCollectionName = newCollectionName;
             return this;
@@ -174,6 +205,8 @@ public class RenameCollectionReq {
          * @param targetDbName the target database name
          * @return this builder
          */
+
+
         public RenameCollectionReqBuilder targetDbName(String targetDbName) {
             this.targetDbName = targetDbName;
             return this;
@@ -184,6 +217,8 @@ public class RenameCollectionReq {
          *
          * @return the request
          */
+
+
         public RenameCollectionReq build() {
             return new RenameCollectionReq(this);
         }

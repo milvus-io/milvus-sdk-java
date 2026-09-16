@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * Response of the {@code describeReplicas} API, holding the replicas of a collection.
  */
+
+
 public class DescribeReplicasResp {
     private List<ReplicaInfo> replicas;
 
@@ -20,6 +22,8 @@ public class DescribeReplicasResp {
      *
      * @return the builder
      */
+
+
     public static DescribeReplicasRespBuilder builder() {
         return new DescribeReplicasRespBuilder();
     }
@@ -30,6 +34,7 @@ public class DescribeReplicasResp {
      *
      * @return the replicas
      */
+
     public List<ReplicaInfo> getReplicas() {
         return replicas;
     }
@@ -40,6 +45,7 @@ public class DescribeReplicasResp {
      *
      * @param replicas the replicas
      */
+
     public void setReplicas(List<ReplicaInfo> replicas) {
         this.replicas = replicas;
     }
@@ -51,6 +57,11 @@ public class DescribeReplicasResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeReplicasResp} class.
+     */
+
+
     public static class DescribeReplicasRespBuilder {
         private List<ReplicaInfo> replicas;
 
@@ -60,6 +71,8 @@ public class DescribeReplicasResp {
          * @param replicas the replicas
          * @return this builder
          */
+
+
         public DescribeReplicasRespBuilder replicas(List<ReplicaInfo> replicas) {
             this.replicas = replicas;
             return this;
@@ -70,6 +83,8 @@ public class DescribeReplicasResp {
          *
          * @return the response
          */
+
+
         public DescribeReplicasResp build() {
             return new DescribeReplicasResp(this);
         }

@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code revokeRole} API.
  */
+
+
 public class RevokeRoleReq {
     private String userName;
     private String roleName;
@@ -36,6 +38,8 @@ public class RevokeRoleReq {
      *
      * @return the user name
      */
+
+
     public String getUserName() {
         return userName;
     }
@@ -45,6 +49,8 @@ public class RevokeRoleReq {
      *
      * @param userName the user name
      */
+
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
@@ -54,6 +60,8 @@ public class RevokeRoleReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -63,6 +71,8 @@ public class RevokeRoleReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -80,9 +90,16 @@ public class RevokeRoleReq {
      *
      * @return a new {@link RevokeRoleReqBuilder}
      */
+
+
     public static RevokeRoleReqBuilder builder() {
         return new RevokeRoleReqBuilder();
     }
+
+    /**
+     * Builder for {@link RevokeRoleReq} class.
+     */
+
 
     public static class RevokeRoleReqBuilder {
         private String userName;
@@ -97,6 +114,8 @@ public class RevokeRoleReq {
          * @param userName the user name
          * @return this builder
          */
+
+
         public RevokeRoleReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
@@ -108,6 +127,8 @@ public class RevokeRoleReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public RevokeRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -118,6 +139,8 @@ public class RevokeRoleReq {
          *
          * @return the built request
          */
+
+
         public RevokeRoleReq build() {
             return new RevokeRoleReq(this);
         }

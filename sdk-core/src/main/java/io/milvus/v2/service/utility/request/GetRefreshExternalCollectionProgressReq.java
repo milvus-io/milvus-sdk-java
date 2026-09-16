@@ -22,12 +22,21 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code getRefreshExternalCollectionProgress} API.
  */
+
+
 public class GetRefreshExternalCollectionProgressReq {
     private final long jobId;
 
     private GetRefreshExternalCollectionProgressReq(GetRefreshExternalCollectionProgressReqBuilder builder) {
         this.jobId = builder.jobId;
     }
+
+    /**
+     * Creates a new builder for {@code GetRefreshExternalCollectionProgressReq}.
+     *
+     * @return the builder
+     */
+
 
     public static GetRefreshExternalCollectionProgressReqBuilder builder() {
         return new GetRefreshExternalCollectionProgressReqBuilder();
@@ -38,6 +47,8 @@ public class GetRefreshExternalCollectionProgressReq {
      *
      * @return the refresh job ID
      */
+
+
     public long getJobId() {
         return jobId;
     }
@@ -49,6 +60,11 @@ public class GetRefreshExternalCollectionProgressReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetRefreshExternalCollectionProgressReq} class.
+     */
+
+
     public static class GetRefreshExternalCollectionProgressReqBuilder {
         private long jobId;
 
@@ -58,6 +74,8 @@ public class GetRefreshExternalCollectionProgressReq {
          * @param jobId the refresh job ID
          * @return this builder
          */
+
+
         public GetRefreshExternalCollectionProgressReqBuilder jobId(long jobId) {
             this.jobId = jobId;
             return this;
@@ -68,6 +86,8 @@ public class GetRefreshExternalCollectionProgressReq {
          *
          * @return the constructed {@code GetRefreshExternalCollectionProgressReq}
          */
+
+
         public GetRefreshExternalCollectionProgressReq build() {
             return new GetRefreshExternalCollectionProgressReq(this);
         }

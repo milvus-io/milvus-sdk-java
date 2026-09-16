@@ -26,6 +26,8 @@ import java.util.Map;
 /**
  * Response returned by the {@code flush} API.
  */
+
+
 public class FlushResp {
     private String databaseName;
     private Map<String, List<Long>> collectionSegmentIDs;
@@ -37,6 +39,13 @@ public class FlushResp {
         this.collectionFlushTs = builder.collectionFlushTs;
     }
 
+    /**
+     * Creates a new builder for {@code FlushResp}.
+     *
+     * @return the builder
+     */
+
+
     public static FlushRespBuilder builder() {
         return new FlushRespBuilder();
     }
@@ -46,6 +55,8 @@ public class FlushResp {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -55,6 +66,8 @@ public class FlushResp {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -64,6 +77,8 @@ public class FlushResp {
      *
      * @return a map of collection name to flushed segment IDs
      */
+
+
     public Map<String, List<Long>> getCollectionSegmentIDs() {
         return collectionSegmentIDs;
     }
@@ -73,6 +88,8 @@ public class FlushResp {
      *
      * @param collectionSegmentIDs a map of collection name to flushed segment IDs
      */
+
+
     public void setCollectionSegmentIDs(Map<String, List<Long>> collectionSegmentIDs) {
         this.collectionSegmentIDs = collectionSegmentIDs;
     }
@@ -82,6 +99,8 @@ public class FlushResp {
      *
      * @return a map of collection name to flush timestamp
      */
+
+
     public Map<String, Long> getCollectionFlushTs() {
         return collectionFlushTs;
     }
@@ -91,6 +110,8 @@ public class FlushResp {
      *
      * @param collectionFlushTs a map of collection name to flush timestamp
      */
+
+
     public void setCollectionFlushTs(Map<String, Long> collectionFlushTs) {
         this.collectionFlushTs = collectionFlushTs;
     }
@@ -104,6 +125,11 @@ public class FlushResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link FlushResp} class.
+     */
+
+
     public static class FlushRespBuilder {
         private String databaseName = "";
         private Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
@@ -115,6 +141,8 @@ public class FlushResp {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public FlushRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -126,6 +154,8 @@ public class FlushResp {
          * @param collectionSegmentIDs a map of collection name to flushed segment IDs
          * @return this builder
          */
+
+
         public FlushRespBuilder collectionSegmentIDs(Map<String, List<Long>> collectionSegmentIDs) {
             this.collectionSegmentIDs = collectionSegmentIDs;
             return this;
@@ -137,6 +167,8 @@ public class FlushResp {
          * @param collectionFlushTs a map of collection name to flush timestamp
          * @return this builder
          */
+
+
         public FlushRespBuilder collectionFlushTs(Map<String, Long> collectionFlushTs) {
             this.collectionFlushTs = collectionFlushTs;
             return this;
@@ -147,6 +179,8 @@ public class FlushResp {
          *
          * @return the constructed {@code FlushResp}
          */
+
+
         public FlushResp build() {
             return new FlushResp(this);
         }

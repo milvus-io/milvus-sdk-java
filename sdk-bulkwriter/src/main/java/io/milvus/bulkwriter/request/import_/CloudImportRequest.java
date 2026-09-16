@@ -22,10 +22,14 @@ package io.milvus.bulkwriter.request.import_;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
-  If you want to import data into a Zilliz cloud instance and your data is stored in a storage bucket,
-  you can use this method to import the data from the bucket.
+/**
+ * Request for importing data from a storage bucket into a Zilliz cloud instance.
+ *
+ * <p>Supports multi-path, folder, or single-file import through object URLs. For project
+ * database deployments, use projectId and regionId instead of clusterId.</p>
  */
+
+
 public class CloudImportRequest extends BaseImportRequest {
     private static final long serialVersionUID = 6487348610099924813L;
     private String clusterId;
@@ -104,9 +108,26 @@ public class CloudImportRequest extends BaseImportRequest {
      * Specify `accessKey` and `secretKey`; for short-term credentials, also include `token`.
      */
     private String token;
+    /**
+     * Creates a new CloudImportRequest.
+     */
+
 
     public CloudImportRequest() {
     }
+    /**
+     * Creates a new CloudImportRequest.
+     *
+     * @param clusterId the clusterId
+     * @param dbName the dbName
+     * @param collectionName the collectionName
+     * @param partitionName the partitionName
+     * @param objectUrls the objectUrls
+     * @param accessKey the accessKey
+     * @param secretKey the secretKey
+     * @param token the token
+     */
+
 
     public CloudImportRequest(String clusterId, String dbName, String collectionName, String partitionName,
                               List<List<String>> objectUrls, String accessKey, String secretKey, String token) {
@@ -119,6 +140,21 @@ public class CloudImportRequest extends BaseImportRequest {
         this.secretKey = secretKey;
         this.token = token;
     }
+    /**
+     * Creates a new CloudImportRequest.
+     *
+     * @param clusterId the clusterId
+     * @param projectId the projectId
+     * @param regionId the regionId
+     * @param dbName the dbName
+     * @param collectionName the collectionName
+     * @param partitionName the partitionName
+     * @param objectUrls the objectUrls
+     * @param accessKey the accessKey
+     * @param secretKey the secretKey
+     * @param token the token
+     */
+
 
     public CloudImportRequest(String clusterId, String projectId, String regionId, String dbName, String collectionName, String partitionName,
                               List<List<String>> objectUrls, String accessKey, String secretKey, String token) {
@@ -148,90 +184,222 @@ public class CloudImportRequest extends BaseImportRequest {
         this.secretKey = builder.secretKey;
         this.token = builder.token;
     }
+    /**
+     * Returns the clusterId.
+     *
+     * @return the clusterId
+     */
+
 
     public String getClusterId() {
         return clusterId;
     }
+    /**
+     * Sets the clusterId.
+     *
+     * @param clusterId the clusterId
+     */
+
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
+    /**
+     * Returns the projectId.
+     *
+     * @return the projectId
+     */
+
 
     public String getProjectId() {
         return projectId;
     }
+    /**
+     * Sets the projectId.
+     *
+     * @param projectId the projectId
+     */
+
 
     public void setProjectId(String projectId) {
         this.projectId = projectId;
     }
+    /**
+     * Returns the regionId.
+     *
+     * @return the regionId
+     */
+
 
     public String getRegionId() {
         return regionId;
     }
+    /**
+     * Sets the regionId.
+     *
+     * @param regionId the regionId
+     */
+
 
     public void setRegionId(String regionId) {
         this.regionId = regionId;
     }
+    /**
+     * Returns the dbName.
+     *
+     * @return the dbName
+     */
+
 
     public String getDbName() {
         return dbName;
     }
+    /**
+     * Sets the dbName.
+     *
+     * @param dbName the dbName
+     */
+
 
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
 
     public String getCollectionName() {
         return collectionName;
     }
+    /**
+     * Sets the collectionName.
+     *
+     * @param collectionName the collectionName
+     */
+
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
 
     public String getPartitionName() {
         return partitionName;
     }
+    /**
+     * Sets the partitionName.
+     *
+     * @param partitionName the partitionName
+     */
+
 
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
+    /**
+     * Returns the objectUrls.
+     *
+     * @return the objectUrls
+     */
+
 
     public List<List<String>> getObjectUrls() {
         return objectUrls;
     }
+    /**
+     * Sets the objectUrls.
+     *
+     * @param objectUrls the objectUrls
+     */
+
 
     public void setObjectUrls(List<List<String>> objectUrls) {
         this.objectUrls = objectUrls;
     }
+    /**
+     * Returns the objectUrl.
+     *
+     * @return the objectUrl
+     */
+
 
     public String getObjectUrl() {
         return objectUrl;
     }
+    /**
+     * Sets the objectUrl.
+     *
+     * @param objectUrl the objectUrl
+     */
+
 
     public void setObjectUrl(String objectUrl) {
         this.objectUrl = objectUrl;
     }
+    /**
+     * Returns the accessKey.
+     *
+     * @return the accessKey
+     */
+
 
     public String getAccessKey() {
         return accessKey;
     }
+    /**
+     * Sets the accessKey.
+     *
+     * @param accessKey the accessKey
+     */
+
 
     public void setAccessKey(String accessKey) {
         this.accessKey = accessKey;
     }
+    /**
+     * Returns the secretKey.
+     *
+     * @return the secretKey
+     */
+
 
     public String getSecretKey() {
         return secretKey;
     }
+    /**
+     * Sets the secretKey.
+     *
+     * @param secretKey the secretKey
+     */
+
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
     }
+    /**
+     * Returns the token.
+     *
+     * @return the token
+     */
+
 
     public String getToken() {
         return token;
     }
+    /**
+     * Sets the token.
+     *
+     * @param token the token
+     */
+
 
     public void setToken(String token) {
         this.token = token;
@@ -253,10 +421,21 @@ public class CloudImportRequest extends BaseImportRequest {
                 ", token='" + token + '\'' +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static CloudImportRequestBuilder builder() {
         return new CloudImportRequestBuilder();
     }
+
+    /**
+     * Builder for {@link CloudImportRequest} class.
+     */
+
 
     public static class CloudImportRequestBuilder extends BaseImportRequestBuilder<CloudImportRequestBuilder> {
         private String clusterId;
@@ -284,61 +463,144 @@ public class CloudImportRequest extends BaseImportRequest {
             this.secretKey = "";
             this.token = "";
         }
+        /**
+         * Sets the clusterId.
+         *
+         * @param clusterId the clusterId
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
         }
+        /**
+         * Sets the projectId.
+         *
+         * @param projectId the projectId
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder projectId(String projectId) {
             this.projectId = projectId;
             return this;
         }
+        /**
+         * Sets the regionId.
+         *
+         * @param regionId the regionId
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder regionId(String regionId) {
             this.regionId = regionId;
             return this;
         }
+        /**
+         * Sets the dbName.
+         *
+         * @param dbName the dbName
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
+        /**
+         * Sets the collectionName.
+         *
+         * @param collectionName the collectionName
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
+        /**
+         * Sets the partitionName.
+         *
+         * @param partitionName the partitionName
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
+        /**
+         * Sets the objectUrls.
+         *
+         * @param objectUrls the objectUrls
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder objectUrls(List<List<String>> objectUrls) {
             this.objectUrls = objectUrls;
             return this;
         }
+        /**
+         * Sets the objectUrl.
+         *
+         * @param objectUrl the objectUrl
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder objectUrl(String objectUrl) {
             this.objectUrl = objectUrl;
             return this;
         }
+        /**
+         * Sets the accessKey.
+         *
+         * @param accessKey the accessKey
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder accessKey(String accessKey) {
             this.accessKey = accessKey;
             return this;
         }
+        /**
+         * Sets the secretKey.
+         *
+         * @param secretKey the secretKey
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder secretKey(String secretKey) {
             this.secretKey = secretKey;
             return this;
         }
+        /**
+         * Sets the token.
+         *
+         * @param token the token
+         * @return this builder
+         */
+
 
         public CloudImportRequestBuilder token(String token) {
             this.token = token;
             return this;
         }
+        /**
+         * Builds the CloudImportRequest.
+         *
+         * @return the built CloudImportRequest
+         */
+
 
         public CloudImportRequest build() {
             return new CloudImportRequest(this);

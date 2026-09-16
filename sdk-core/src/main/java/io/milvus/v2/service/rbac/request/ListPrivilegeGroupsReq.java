@@ -24,6 +24,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 /**
  * Request parameters for the {@code listPrivilegeGroups} API.
  */
+
+
 public class ListPrivilegeGroupsReq {
     private ListPrivilegeGroupsReq(ListPrivilegeGroupsReqBuilder builder) {
     }
@@ -39,9 +41,16 @@ public class ListPrivilegeGroupsReq {
      *
      * @return a new {@link ListPrivilegeGroupsReqBuilder}
      */
+
+
     public static ListPrivilegeGroupsReqBuilder builder() {
         return new ListPrivilegeGroupsReqBuilder();
     }
+
+    /**
+     * Builder for {@link ListPrivilegeGroupsReq} class.
+     */
+
 
     public static class ListPrivilegeGroupsReqBuilder {
 
@@ -53,6 +62,8 @@ public class ListPrivilegeGroupsReq {
          *
          * @return the built request
          */
+
+
         public ListPrivilegeGroupsReq build() {
             return new ListPrivilegeGroupsReq(this);
         }

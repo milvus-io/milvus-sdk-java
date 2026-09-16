@@ -27,6 +27,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code runAnalyzer} API.
  */
+
+
 public class RunAnalyzerReq {
     private List<String> texts;
     private Map<String, Object> analyzerParams;
@@ -53,6 +55,8 @@ public class RunAnalyzerReq {
      *
      * @return the builder
      */
+
+
     public static RunAnalyzerReqBuilder builder() {
         return new RunAnalyzerReqBuilder();
     }
@@ -62,6 +66,8 @@ public class RunAnalyzerReq {
      *
      * @return the texts
      */
+
+
     public List<String> getTexts() {
         return texts;
     }
@@ -71,6 +77,8 @@ public class RunAnalyzerReq {
      *
      * @param texts the texts
      */
+
+
     public void setTexts(List<String> texts) {
         this.texts = texts;
     }
@@ -80,6 +88,8 @@ public class RunAnalyzerReq {
      *
      * @return the analyzer parameters
      */
+
+
     public Map<String, Object> getAnalyzerParams() {
         return analyzerParams;
     }
@@ -89,6 +99,8 @@ public class RunAnalyzerReq {
      *
      * @param analyzerParams the analyzer parameters
      */
+
+
     public void setAnalyzerParams(Map<String, Object> analyzerParams) {
         this.analyzerParams = analyzerParams;
     }
@@ -98,6 +110,8 @@ public class RunAnalyzerReq {
      *
      * @return {@code true} if detailed token information is requested
      */
+
+
     public Boolean getWithDetail() {
         return withDetail;
     }
@@ -107,6 +121,8 @@ public class RunAnalyzerReq {
      *
      * @param withDetail {@code true} if detailed token information is requested
      */
+
+
     public void setWithDetail(Boolean withDetail) {
         this.withDetail = withDetail;
     }
@@ -116,6 +132,8 @@ public class RunAnalyzerReq {
      *
      * @return {@code true} if token hash values are requested
      */
+
+
     public Boolean getWithHash() {
         return withHash;
     }
@@ -125,6 +143,8 @@ public class RunAnalyzerReq {
      *
      * @param withHash {@code true} if token hash values are requested
      */
+
+
     public void setWithHash(Boolean withHash) {
         this.withHash = withHash;
     }
@@ -134,6 +154,8 @@ public class RunAnalyzerReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -143,6 +165,8 @@ public class RunAnalyzerReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -152,6 +176,8 @@ public class RunAnalyzerReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -161,6 +187,8 @@ public class RunAnalyzerReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -170,6 +198,8 @@ public class RunAnalyzerReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -179,6 +209,8 @@ public class RunAnalyzerReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -188,6 +220,8 @@ public class RunAnalyzerReq {
      *
      * @return the analyzer names
      */
+
+
     public List<String> getAnalyzerNames() {
         return analyzerNames;
     }
@@ -197,6 +231,8 @@ public class RunAnalyzerReq {
      *
      * @param analyzerNames the analyzer names
      */
+
+
     public void setAnalyzerNames(List<String> analyzerNames) {
         this.analyzerNames = analyzerNames;
     }
@@ -215,6 +251,11 @@ public class RunAnalyzerReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link RunAnalyzerReq} class.
+     */
+
+
     public static class RunAnalyzerReqBuilder {
         private List<String> texts = new ArrayList<>();
         private Map<String, Object> analyzerParams = new HashMap<>();
@@ -231,6 +272,8 @@ public class RunAnalyzerReq {
          * @param texts the texts
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder texts(List<String> texts) {
             this.texts = texts;
             return this;
@@ -242,6 +285,8 @@ public class RunAnalyzerReq {
          * @param analyzerParams the analyzer parameters
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder analyzerParams(Map<String, Object> analyzerParams) {
             this.analyzerParams = analyzerParams;
             return this;
@@ -253,6 +298,8 @@ public class RunAnalyzerReq {
          * @param withDetail {@code true} if detailed token information is requested
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder withDetail(Boolean withDetail) {
             this.withDetail = withDetail;
             return this;
@@ -264,6 +311,8 @@ public class RunAnalyzerReq {
          * @param withHash {@code true} if token hash values are requested
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder withHash(Boolean withHash) {
             this.withHash = withHash;
             return this;
@@ -275,6 +324,8 @@ public class RunAnalyzerReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -286,6 +337,8 @@ public class RunAnalyzerReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -297,6 +350,8 @@ public class RunAnalyzerReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -308,6 +363,8 @@ public class RunAnalyzerReq {
          * @param analyzerNames the analyzer names
          * @return this builder
          */
+
+
         public RunAnalyzerReqBuilder analyzerNames(List<String> analyzerNames) {
             this.analyzerNames = analyzerNames;
             return this;
@@ -318,6 +375,8 @@ public class RunAnalyzerReq {
          *
          * @return the request
          */
+
+
         public RunAnalyzerReq build() {
             return new RunAnalyzerReq(this);
         }

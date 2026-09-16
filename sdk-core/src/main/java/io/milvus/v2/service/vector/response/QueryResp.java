@@ -27,6 +27,8 @@ import java.util.Map;
 /**
  * Response returned by the {@code query} API.
  */
+
+
 public class QueryResp {
     private List<QueryResult> queryResults;
     private long sessionTs; // default eventually ts
@@ -49,6 +51,8 @@ public class QueryResp {
      *
      * @return the builder
      */
+
+
     public static QueryRespBuilder builder() {
         return new QueryRespBuilder();
     }
@@ -58,6 +62,8 @@ public class QueryResp {
      *
      * @return the query results
      */
+
+
     public List<QueryResult> getQueryResults() {
         return queryResults;
     }
@@ -67,6 +73,8 @@ public class QueryResp {
      *
      * @param queryResults the query results
      */
+
+
     public void setQueryResults(List<QueryResult> queryResults) {
         this.queryResults = queryResults;
     }
@@ -76,6 +84,8 @@ public class QueryResp {
      *
      * @return the session timestamp
      */
+
+
     public long getSessionTs() {
         return sessionTs;
     }
@@ -85,6 +95,8 @@ public class QueryResp {
      *
      * @param sessionTs the session timestamp
      */
+
+
     public void setSessionTs(long sessionTs) {
         this.sessionTs = sessionTs;
     }
@@ -94,6 +106,8 @@ public class QueryResp {
      *
      * @return the cost
      */
+
+
     public Long getCost() {
         return cost;
     }
@@ -103,6 +117,8 @@ public class QueryResp {
      *
      * @param cost the cost
      */
+
+
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -112,6 +128,8 @@ public class QueryResp {
      *
      * @return the scanned remote bytes, or {@code null} if not reported by the server
      */
+
+
     public Long getScannedRemoteBytes() {
         return scannedRemoteBytes;
     }
@@ -121,6 +139,8 @@ public class QueryResp {
      *
      * @param scannedRemoteBytes the scanned remote bytes
      */
+
+
     public void setScannedRemoteBytes(Long scannedRemoteBytes) {
         this.scannedRemoteBytes = scannedRemoteBytes;
     }
@@ -130,6 +150,8 @@ public class QueryResp {
      *
      * @return the scanned total bytes, or {@code null} if not reported by the server
      */
+
+
     public Long getScannedTotalBytes() {
         return scannedTotalBytes;
     }
@@ -139,6 +161,8 @@ public class QueryResp {
      *
      * @param scannedTotalBytes the scanned total bytes
      */
+
+
     public void setScannedTotalBytes(Long scannedTotalBytes) {
         this.scannedTotalBytes = scannedTotalBytes;
     }
@@ -148,6 +172,8 @@ public class QueryResp {
      *
      * @return the cache hit ratio, or {@code null} if not reported by the server
      */
+
+
     public Float getCacheHitRatio() {
         return cacheHitRatio;
     }
@@ -157,6 +183,8 @@ public class QueryResp {
      *
      * @param cacheHitRatio the cache hit ratio
      */
+
+
     public void setCacheHitRatio(Float cacheHitRatio) {
         this.cacheHitRatio = cacheHitRatio;
     }
@@ -173,6 +201,11 @@ public class QueryResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link QueryResp} class.
+     */
+
+
     public static class QueryRespBuilder {
         private List<QueryResult> queryResults = new ArrayList<>();
         private long sessionTs = 1L; // default eventually ts
@@ -187,6 +220,8 @@ public class QueryResp {
          * @param queryResults the query results
          * @return this builder
          */
+
+
         public QueryRespBuilder queryResults(List<QueryResult> queryResults) {
             this.queryResults = queryResults;
             return this;
@@ -198,6 +233,8 @@ public class QueryResp {
          * @param sessionTs the session timestamp
          * @return this builder
          */
+
+
         public QueryRespBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
             return this;
@@ -209,6 +246,8 @@ public class QueryResp {
          * @param cost the cost
          * @return this builder
          */
+
+
         public QueryRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
@@ -220,6 +259,8 @@ public class QueryResp {
          * @param scannedRemoteBytes the scanned remote bytes
          * @return this builder
          */
+
+
         public QueryRespBuilder scannedRemoteBytes(Long scannedRemoteBytes) {
             this.scannedRemoteBytes = scannedRemoteBytes;
             return this;
@@ -231,6 +272,8 @@ public class QueryResp {
          * @param scannedTotalBytes the scanned total bytes
          * @return this builder
          */
+
+
         public QueryRespBuilder scannedTotalBytes(Long scannedTotalBytes) {
             this.scannedTotalBytes = scannedTotalBytes;
             return this;
@@ -242,6 +285,8 @@ public class QueryResp {
          * @param cacheHitRatio the cache hit ratio
          * @return this builder
          */
+
+
         public QueryRespBuilder cacheHitRatio(Float cacheHitRatio) {
             this.cacheHitRatio = cacheHitRatio;
             return this;
@@ -252,6 +297,8 @@ public class QueryResp {
          *
          * @return the response
          */
+
+
         public QueryResp build() {
             return new QueryResp(this);
         }
@@ -260,6 +307,8 @@ public class QueryResp {
     /**
      * A single entity returned by the {@code query} API.
      */
+
+
     public static class QueryResult {
         private Map<String, Object> entity;
 
@@ -288,6 +337,8 @@ public class QueryResp {
          *
          * @return the builder
          */
+
+
         public static QueryResultBuilder builder() {
             return new QueryResultBuilder();
         }
@@ -297,6 +348,8 @@ public class QueryResp {
          *
          * @return the entity map
          */
+
+
         public Map<String, Object> getEntity() {
             return entity;
         }
@@ -306,6 +359,8 @@ public class QueryResp {
          *
          * @param entity the entity map
          */
+
+
         public void setEntity(Map<String, Object> entity) {
             this.entity = entity;
         }
@@ -315,6 +370,8 @@ public class QueryResp {
          *
          * @return the element offset, or {@code null} for ordinary queries
          */
+
+
         public Long getElementOffset() {
             return elementOffset;
         }
@@ -324,6 +381,8 @@ public class QueryResp {
          *
          * @param elementOffset the element offset
          */
+
+
         public void setElementOffset(Long elementOffset) {
             this.elementOffset = elementOffset;
         }
@@ -336,6 +395,11 @@ public class QueryResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link QueryResp.QueryResult} class.
+         */
+
+
         public static class QueryResultBuilder {
             private Map<String, Object> entity = new HashMap<>();
             private Long elementOffset;
@@ -346,6 +410,8 @@ public class QueryResp {
              * @param entity the entity map
              * @return this builder
              */
+
+
             public QueryResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
                 return this;
@@ -357,6 +423,8 @@ public class QueryResp {
              * @param elementOffset the element offset
              * @return this builder
              */
+
+
             public QueryResultBuilder elementOffset(Long elementOffset) {
                 this.elementOffset = elementOffset;
                 return this;
@@ -367,6 +435,8 @@ public class QueryResp {
              *
              * @return the query result
              */
+
+
             public QueryResult build() {
                 return new QueryResult(this);
             }

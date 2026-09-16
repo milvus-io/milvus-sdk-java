@@ -21,6 +21,11 @@ package io.milvus.param.credential;
 
 import io.milvus.exception.ParamException;
 
+/**
+ * Request parameters for the listCredUsers API.
+ */
+
+
 public class ListCredUsersParam {
 
     private ListCredUsersParam(ListCredUsersParam.Builder builder) {
@@ -28,6 +33,13 @@ public class ListCredUsersParam {
             throw new IllegalArgumentException("builder cannot be null");
         }
     }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static ListCredUsersParam.Builder newBuilder() {
         return new ListCredUsersParam.Builder();
@@ -42,6 +54,8 @@ public class ListCredUsersParam {
     /**
      * Builder for {@link ListCredUsersParam} class.
      */
+
+
     public static final class Builder {
 
         private Builder() {
@@ -52,6 +66,8 @@ public class ListCredUsersParam {
          *
          * @return {@link ListCredUsersParam}
          */
+
+
         public ListCredUsersParam build() throws ParamException {
             return new ListCredUsersParam(this);
         }

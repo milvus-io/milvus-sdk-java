@@ -26,6 +26,8 @@ import java.util.List;
  * A compaction plan describing which segments are compacted into a target segment, as returned by
  * the {@code getCompactionPlans} API.
  */
+
+
 public class CompactionPlan {
     private Long target;
     private List<Long> sources;
@@ -40,6 +42,8 @@ public class CompactionPlan {
      *
      * @return the builder
      */
+
+
     public static CompactionPlanBuilder builder() {
         return new CompactionPlanBuilder();
     }
@@ -49,6 +53,8 @@ public class CompactionPlan {
      *
      * @return the target segment ID
      */
+
+
     public Long getTarget() {
         return this.target;
     }
@@ -58,6 +64,8 @@ public class CompactionPlan {
      *
      * @return the source segment IDs
      */
+
+
     public List<Long> getSources() {
         return this.sources;
     }
@@ -73,6 +81,8 @@ public class CompactionPlan {
     /**
      * Builder for {@link CompactionPlan}.
      */
+
+
     public static class CompactionPlanBuilder {
         private Long target = 0L;
         private List<Long> sources = new ArrayList<>();
@@ -83,6 +93,8 @@ public class CompactionPlan {
          * @param target the target segment ID
          * @return this builder
          */
+
+
         public CompactionPlanBuilder target(long target) {
             this.target = target;
             return this;
@@ -94,6 +106,8 @@ public class CompactionPlan {
          * @param sources the source segment IDs
          * @return this builder
          */
+
+
         public CompactionPlanBuilder sources(List<Long> sources) {
             this.sources = sources;
             return this;
@@ -104,6 +118,8 @@ public class CompactionPlan {
          *
          * @return the compaction plan
          */
+
+
         public CompactionPlan build() {
             return new CompactionPlan(this);
         }

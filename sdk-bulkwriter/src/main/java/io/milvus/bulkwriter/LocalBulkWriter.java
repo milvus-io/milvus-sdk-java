@@ -44,12 +44,21 @@ import java.util.concurrent.locks.ReentrantLock;
  * Rows are appended into chunked data files under a local directory. When a file reaches
  * the configured chunk size, it is committed and handed to {@link #callBack(List)}.
  */
+
+
 public class LocalBulkWriter extends BulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(LocalBulkWriter.class);
 
     private final Map<String, Thread> workingThread;
     private final ReentrantLock workingThreadLock;
     private final List<List<String>> localFiles;
+    /**
+     * Creates a bulk writer that writes chunked bulk data files to the local filesystem.
+     *
+     * @param bulkWriterParam the bulk writer parameters
+     * @throws IOException if the data directory cannot be created
+     */
+
 
     public LocalBulkWriter(LocalBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(), bulkWriterParam.getChunkSize(), bulkWriterParam.getFileType(), bulkWriterParam.getLocalPath(), bulkWriterParam.getConfig());
@@ -77,6 +86,7 @@ public class LocalBulkWriter extends BulkWriter {
     * @throws IOException if writing the row fails
     * @throws InterruptedException if the calling thread is interrupted while committing
     */
+
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
@@ -104,6 +114,8 @@ public class LocalBulkWriter extends BulkWriter {
     * @param async if true, the flush runs in a background thread; otherwise it blocks until done
     * @throws InterruptedException if the calling thread is interrupted while waiting
     */
+
+
     public void commit(boolean async) throws InterruptedException {
         List<String> filePath = commitIfFileReady(false);
         callBack(async, filePath);
@@ -204,6 +216,8 @@ public class LocalBulkWriter extends BulkWriter {
     *
     * @return the list of file path batches
     */
+
+
     public List<List<String>> getBatchFiles() {
         return localFiles;
     }
@@ -268,6 +282,7 @@ public class LocalBulkWriter extends BulkWriter {
     *
     * @throws Exception if an error occurs while closing
     */
+
     public void close() throws Exception {
         logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
         exit();

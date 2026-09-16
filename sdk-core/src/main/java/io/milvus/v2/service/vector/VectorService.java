@@ -62,6 +62,8 @@ import java.util.function.Supplier;
  * Service for vector operations, such as insert, upsert, search, hybrid search, query, get,
  * delete, and iterators.
  */
+
+
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
     private DescribeCollectionResponse describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
@@ -128,6 +130,8 @@ public class VectorService extends BaseService {
      * @param request the insert request
      * @return the insert response
      */
+
+
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
         // A null data list is a programming error: reject it before issuing any RPC.
         if (request.getData() == null) {
@@ -210,6 +214,8 @@ public class VectorService extends BaseService {
      * @param request the upsert request
      * @return the upsert response
      */
+
+
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
         // A null data list is a programming error: reject it before issuing any RPC.
         if (request.getData() == null) {
@@ -302,6 +308,8 @@ public class VectorService extends BaseService {
      * @param request the query request
      * @return the query response
      */
+
+
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
         return query(blockingStub, request, null);
     }
@@ -314,6 +322,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the query response
      */
+
+
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                            QueryReq request, String clusterId) {
         QueryRequest queryRequest = withQueryClusterId(buildQueryRequest(blockingStub, request), clusterId);
@@ -332,6 +342,8 @@ public class VectorService extends BaseService {
      * @param retryUtils the retry utility used to retry failed queries
      * @return a future resolving to the query response
      */
+
+
     public CompletableFuture<QueryResp> queryAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             QueryReq request, String clusterId, RpcUtils retryUtils) {
@@ -491,6 +503,8 @@ public class VectorService extends BaseService {
      * @param request the search request
      * @return the search response
      */
+
+
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
         return search(blockingStub, request, null);
     }
@@ -503,6 +517,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the search response
      */
+
+
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                              SearchReq request, String clusterId) {
         String dbName = request.getDatabaseName();
@@ -528,6 +544,8 @@ public class VectorService extends BaseService {
      * @param retryUtils the retry utility used to retry failed searches
      * @return a future resolving to the search response
      */
+
+
     public CompletableFuture<SearchResp> searchAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             SearchReq request, String clusterId, RpcUtils retryUtils) {
@@ -569,6 +587,8 @@ public class VectorService extends BaseService {
      * @param request the hybrid search request
      * @return the hybrid search response
      */
+
+
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HybridSearchReq request) {
         return hybridSearch(blockingStub, request, null);
     }
@@ -581,6 +601,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the hybrid search response
      */
+
+
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                    HybridSearchReq request, String clusterId) {
         String dbName = request.getDatabaseName();
@@ -606,6 +628,8 @@ public class VectorService extends BaseService {
      * @param retryUtils the retry utility used to retry failed searches
      * @return a future resolving to the hybrid search response
      */
+
+
     public CompletableFuture<SearchResp> hybridSearchAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             HybridSearchReq request, String clusterId, RpcUtils retryUtils) {
@@ -798,6 +822,8 @@ public class VectorService extends BaseService {
      * @param request the query iterator request
      * @return the query iterator
      */
+
+
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request) {
         return queryIterator(blockingStub, request, null);
@@ -812,6 +838,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the query iterator
      */
+
+
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request, String clusterId) {
         if (request.getBatchSize() < 1 || request.getBatchSize() > MAX_BATCH_SIZE) {
@@ -832,6 +860,8 @@ public class VectorService extends BaseService {
      * @param request the search iterator request
      * @return the search iterator
      */
+
+
     public SearchIterator searchIterator(RpcStubWrapper blockingStub,
                                          SearchIteratorReq request) {
         return searchIterator(blockingStub, request, null);
@@ -846,6 +876,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the search iterator
      */
+
+
     public SearchIterator searchIterator(RpcStubWrapper blockingStub,
                                          SearchIteratorReq request, String clusterId) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
@@ -862,6 +894,8 @@ public class VectorService extends BaseService {
      * @param request the search iterator V2 request
      * @return the search iterator V2
      */
+
+
     public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
                                              SearchIteratorReqV2 request) {
         return searchIteratorV2(blockingStub, request, null);
@@ -876,6 +910,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the search iterator V2
      */
+
+
     public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
                                              SearchIteratorReqV2 request, String clusterId) {
         return new SearchIteratorV2(request, blockingStub, clusterId);
@@ -888,6 +924,8 @@ public class VectorService extends BaseService {
      * @param request the delete request
      * @return the delete response
      */
+
+
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DeleteReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -966,6 +1004,8 @@ public class VectorService extends BaseService {
      * @param request the get request
      * @return the get response
      */
+
+
     public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReq request) {
         return get(blockingStub, request, null);
     }
@@ -979,6 +1019,8 @@ public class VectorService extends BaseService {
      * @param clusterId the target cluster ID, or {@code null} to use the default routing
      * @return the get response
      */
+
+
     public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                        GetReq request, String clusterId) {
         String dbName = request.getDatabaseName();
@@ -1012,6 +1054,8 @@ public class VectorService extends BaseService {
      * @param retryUtils the retry utility used to retry failed queries
      * @return a future resolving to the get response
      */
+
+
     public CompletableFuture<GetResp> getAsync(
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             GetReq request, String clusterId, RpcUtils retryUtils) {
@@ -1073,6 +1117,8 @@ public class VectorService extends BaseService {
      * @param request the run analyzer request
      * @return the run analyzer response
      */
+
+
     public RunAnalyzerResp runAnalyzer(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RunAnalyzerReq request) {
         String title = "RunAnalyzer";
         if (request.getTexts().isEmpty()) {

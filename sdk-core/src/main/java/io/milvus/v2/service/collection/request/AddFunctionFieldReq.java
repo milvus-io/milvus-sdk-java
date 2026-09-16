@@ -25,6 +25,8 @@ import io.milvus.v2.common.IndexParam;
  * Request parameters for the {@code addFunctionField} API, which adds a function
  * and its output field together with an optional index on the output field.
  */
+
+
 public class AddFunctionFieldReq extends AddFieldReq {
     private String collectionName;
     private String databaseName;
@@ -44,6 +46,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -53,6 +57,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -62,6 +68,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -71,6 +79,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -80,6 +90,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @return the function
      */
+
+
     public CreateCollectionReq.Function getFunction() {
         return function;
     }
@@ -89,6 +101,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @param function the function
      */
+
+
     public void setFunction(CreateCollectionReq.Function function) {
         this.function = function;
     }
@@ -98,6 +112,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @return the index parameters
      */
+
+
     public IndexParam getIndexParam() {
         return indexParam;
     }
@@ -107,6 +123,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @param indexParam the index parameters
      */
+
+
     public void setIndexParam(IndexParam indexParam) {
         this.indexParam = indexParam;
     }
@@ -127,9 +145,16 @@ public class AddFunctionFieldReq extends AddFieldReq {
      *
      * @return the builder
      */
+
+
     public static AddFunctionFieldReqBuilder builder() {
         return new AddFunctionFieldReqBuilder();
     }
+
+    /**
+     * Builder for {@link AddFunctionFieldReq} class.
+     */
+
 
     public static class AddFunctionFieldReqBuilder extends AddFieldReq.AddFieldReqBuilder<AddFunctionFieldReqBuilder> {
         private String collectionName = "";
@@ -146,6 +171,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AddFunctionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -157,6 +184,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AddFunctionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -168,6 +197,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
          * @param function the function
          * @return this builder
          */
+
+
         public AddFunctionFieldReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
             return this;
@@ -179,6 +210,8 @@ public class AddFunctionFieldReq extends AddFieldReq {
          * @param indexParam the index parameters
          * @return this builder
          */
+
+
         public AddFunctionFieldReqBuilder indexParam(IndexParam indexParam) {
             this.indexParam = indexParam;
             return this;

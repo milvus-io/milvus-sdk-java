@@ -22,6 +22,8 @@ package io.milvus.v2.common;
 /**
  * Consistency level for search and query operations on a collection.
  */
+
+
 public enum ConsistencyLevel {
     /**
      * Reads always see the latest data after a write completes.
@@ -53,6 +55,8 @@ public enum ConsistencyLevel {
      *
      * @return the display name
      */
+
+
     public String getName() {
         return name;
     }
@@ -62,6 +66,8 @@ public enum ConsistencyLevel {
      *
      * @return the numeric code
      */
+
+
     public int getCode() {
         return code;
     }
@@ -72,6 +78,8 @@ public enum ConsistencyLevel {
      * @param name the display name of the consistency level
      * @return the matching consistency level, or {@code null} if none matches
      */
+
+
     public static ConsistencyLevel fromName(String name) {
         for (ConsistencyLevel level : ConsistencyLevel.values()) {
             if (level.getName().equals(name)) {

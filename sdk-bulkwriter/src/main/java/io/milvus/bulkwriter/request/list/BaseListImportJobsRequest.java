@@ -21,6 +21,13 @@ package io.milvus.bulkwriter.request.list;
 
 import java.io.Serializable;
 
+/**
+ * Base request class for listing import jobs.
+ *
+ * <p>Holds the API key required to query the list of import jobs.</p>
+ */
+
+
 public class BaseListImportJobsRequest implements Serializable {
     private static final long serialVersionUID = -1890380396466908530L;
     /**
@@ -39,10 +46,22 @@ public class BaseListImportJobsRequest implements Serializable {
     protected BaseListImportJobsRequest(BaseListImportJobsRequestBuilder<?> builder) {
         this.apiKey = builder.apiKey;
     }
+    /**
+     * Returns the apiKey.
+     *
+     * @return the apiKey
+     */
+
 
     public String getApiKey() {
         return apiKey;
     }
+    /**
+     * Sets the apiKey.
+     *
+     * @param apiKey the apiKey
+     */
+
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
@@ -54,10 +73,21 @@ public class BaseListImportJobsRequest implements Serializable {
                 "apiKey='" + apiKey + '\'' +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static BaseListImportJobsRequestBuilder<?> builder() {
         return new BaseListImportJobsRequestBuilder<>();
     }
+
+    /**
+     * Builder for {@link BaseListImportJobsRequest} class.
+     */
+
 
     public static class BaseListImportJobsRequestBuilder<T extends BaseListImportJobsRequestBuilder<T>> {
         private String apiKey = "";
@@ -65,11 +95,24 @@ public class BaseListImportJobsRequest implements Serializable {
         protected BaseListImportJobsRequestBuilder() {
             this.apiKey = "";
         }
+        /**
+         * Sets the apiKey.
+         *
+         * @param apiKey the apiKey
+         * @return this builder
+         */
+
 
         public T apiKey(String apiKey) {
             this.apiKey = apiKey;
             return (T) this;
         }
+        /**
+         * Builds the BaseListImportJobsRequest.
+         *
+         * @return the built BaseListImportJobsRequest
+         */
+
 
         public BaseListImportJobsRequest build() {
             return new BaseListImportJobsRequest(this);

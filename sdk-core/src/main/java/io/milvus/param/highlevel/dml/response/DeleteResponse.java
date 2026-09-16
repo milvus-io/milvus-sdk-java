@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Parameters for <code>delete</code> interface.
  */
+
+
 public class DeleteResponse {
     /**
      * In the new version(greater or equal than 2.3.2), this method only returns an empty list and does not return specific values
@@ -36,11 +38,21 @@ public class DeleteResponse {
         this.deleteIds = builder.deleteIds;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder builder() {
         return new Builder();
     }
 
     /**
+     * Returns the deleted primary key values.
+     *
+     * @return the deleted primary key values
      * @deprecated In the new version(greater or equal than 2.3.2), this method only returns an empty list and does not return specific values
      */
     @Deprecated
@@ -55,10 +67,19 @@ public class DeleteResponse {
                 '}';
     }
 
+    /**
+     * Builder for {@link DeleteResponse} class.
+     */
+
+
     public static class Builder {
         private List<?> deleteIds;
 
         /**
+         * Sets the deleted primary key values.
+         *
+         * @param deleteIds the deleted primary key values
+         * @return this builder
          * @deprecated In the new version(greater or equal than 2.3.2), this method only returns an empty list and does not return specific values
          */
         @Deprecated
@@ -66,6 +87,13 @@ public class DeleteResponse {
             this.deleteIds = deleteIds;
             return this;
         }
+
+        /**
+         * Builds the DeleteResponse.
+         *
+         * @return the built DeleteResponse
+         */
+
 
         public DeleteResponse build() {
             return new DeleteResponse(this);

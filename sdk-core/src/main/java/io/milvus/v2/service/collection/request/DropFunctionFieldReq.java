@@ -23,6 +23,8 @@ package io.milvus.v2.service.collection.request;
  * Request to drop a function and its output field(s) from a collection.
  * Unlike DropCollectionFunctionReq, this also removes the function output fields.
  */
+
+
 public class DropFunctionFieldReq {
     private String collectionName;
     private String databaseName;
@@ -39,6 +41,8 @@ public class DropFunctionFieldReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -48,6 +52,8 @@ public class DropFunctionFieldReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -57,6 +63,8 @@ public class DropFunctionFieldReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -66,6 +74,8 @@ public class DropFunctionFieldReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -75,6 +85,8 @@ public class DropFunctionFieldReq {
      *
      * @return the function name
      */
+
+
     public String getFunctionName() {
         return functionName;
     }
@@ -84,6 +96,8 @@ public class DropFunctionFieldReq {
      *
      * @param functionName the function name
      */
+
+
     public void setFunctionName(String functionName) {
         this.functionName = functionName;
     }
@@ -102,9 +116,16 @@ public class DropFunctionFieldReq {
      *
      * @return the builder
      */
+
+
     public static DropFunctionFieldReqBuilder builder() {
         return new DropFunctionFieldReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropFunctionFieldReq} class.
+     */
+
 
     public static class DropFunctionFieldReqBuilder {
         private String collectionName = "";
@@ -120,6 +141,8 @@ public class DropFunctionFieldReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DropFunctionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -131,6 +154,8 @@ public class DropFunctionFieldReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropFunctionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -142,6 +167,8 @@ public class DropFunctionFieldReq {
          * @param functionName the function name
          * @return this builder
          */
+
+
         public DropFunctionFieldReqBuilder functionName(String functionName) {
             this.functionName = functionName;
             return this;
@@ -152,6 +179,8 @@ public class DropFunctionFieldReq {
          *
          * @return the request
          */
+
+
         public DropFunctionFieldReq build() {
             return new DropFunctionFieldReq(this);
         }

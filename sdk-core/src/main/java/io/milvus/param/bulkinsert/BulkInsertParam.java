@@ -31,6 +31,8 @@ import java.util.Map;
 /**
  * Parameters for <code>bulkInsert</code> interface.
  */
+
+
 public class BulkInsertParam {
     private final String databaseName;
     private final String collectionName;
@@ -49,22 +51,55 @@ public class BulkInsertParam {
         this.options = builder.options;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
 
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Returns the files.
+     *
+     * @return the files
+     */
+
+
     public List<String> getFiles() {
         return files;
     }
+
+    /**
+     * Returns the options.
+     *
+     * @return the options
+     */
+
 
     public Map<String, String> getOptions() {
         return options;
@@ -82,6 +117,13 @@ public class BulkInsertParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -89,6 +131,8 @@ public class BulkInsertParam {
     /**
      * Builder for {@link BulkInsertParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -105,6 +149,8 @@ public class BulkInsertParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -116,6 +162,8 @@ public class BulkInsertParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -130,6 +178,8 @@ public class BulkInsertParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
@@ -142,6 +192,8 @@ public class BulkInsertParam {
          * @param files a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
+
+
         public Builder withFiles(List<String> files) {
             if (files == null) {
                 throw new IllegalArgumentException("files cannot be null");
@@ -157,6 +209,8 @@ public class BulkInsertParam {
          * @param file a {@link String}
          * @return <code>Builder</code>
          */
+
+
         public Builder addFile(String file) {
             if (file == null) {
                 throw new IllegalArgumentException("file cannot be null");
@@ -172,6 +226,8 @@ public class BulkInsertParam {
          * @param value a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
+
+
         public Builder withOption(String key, String value) {
             this.options.put(key, value);
             return this;
@@ -182,6 +238,8 @@ public class BulkInsertParam {
          *
          * @return {@link BulkInsertParam}
          */
+
+
         public BulkInsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

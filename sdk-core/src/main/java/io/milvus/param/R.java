@@ -29,34 +29,85 @@ import java.util.Optional;
 /**
  * Utility class to wrap gpc response and exceptions.
  */
+
+
 public class R<T> {
     private Exception exception;
     private Integer status;
     private T data;
 
+    /**
+     * Returns the exception.
+     *
+     * @return the exception
+     */
+
+
     public Exception getException() {
         return exception;
     }
+
+    /**
+     * Sets the exception.
+     *
+     * @param exception the exception
+     */
+
 
     public void setException(Exception exception) {
         this.exception = exception;
     }
 
+    /**
+     * Returns the message.
+     *
+     * @return the message
+     */
+
+
     public String getMessage() {
         return exception.getMessage();
     }
+
+    /**
+     * Returns the status.
+     *
+     * @return the status
+     */
+
 
     public Integer getStatus() {
         return status;
     }
 
+    /**
+     * Sets the status.
+     *
+     * @param status the status
+     */
+
+
     public void setStatus(Integer status) {
         this.status = status;
     }
 
+    /**
+     * Returns the data.
+     *
+     * @return the data
+     */
+
+
     public T getData() {
         return data;
     }
+
+    /**
+     * Sets the data.
+     *
+     * @param data the data
+     */
+
 
     public void setData(T data) {
         this.data = data;
@@ -68,6 +119,8 @@ public class R<T> {
      * @param exception exception object
      * @return <code>R</code>
      */
+
+
     public static <T> R<T> failed(Exception exception) {
         R<T> r = new R<>();
         if (exception instanceof MilvusException) {
@@ -87,6 +140,8 @@ public class R<T> {
      * @param msg       error message
      * @return <code>R</code>
      */
+
+
     public static <T> R<T> failed(ErrorCode errorCode, String msg) {
         R<T> r = new R<>();
         r.setStatus(errorCode.getNumber());
@@ -101,6 +156,8 @@ public class R<T> {
      * @param msg        error message
      * @return <code>R</code>
      */
+
+
     public static <T> R<T> failed(Status statusCode, String msg) {
         R<T> r = new R<>();
         r.setStatus(statusCode.getCode());
@@ -113,6 +170,8 @@ public class R<T> {
      *
      * @return <code>R</code>
      */
+
+
     public static <T> R<T> success() {
         R<T> r = new R<>();
         r.setStatus(Status.Success.getCode());
@@ -125,6 +184,8 @@ public class R<T> {
      * @param data rpc response object
      * @return <code>R</code>
      */
+
+
     public static <T> R<T> success(T data) {
         R<T> r = new R<>();
         r.setStatus(Status.Success.getCode());
@@ -135,6 +196,8 @@ public class R<T> {
     /**
      * Represents server and client side status code
      */
+
+
     public enum Status {
         // Server side error
         Success(0),
@@ -181,11 +244,27 @@ public class R<T> {
             this.code = code;
         }
 
+        /**
+         * Returns the Status for the given status code.
+         *
+         * @param val the val
+         *
+         * @return the Status for the given code
+         */
+
+
         public static Status valueOf(int val) {
             Optional<Status> search =
                     Arrays.stream(values()).filter(status -> status.code == val).findFirst();
             return search.orElse(Unknown);
         }
+
+        /**
+         * Returns the status code.
+         *
+         * @return the status code
+         */
+
 
         public int getCode() {
             return code;

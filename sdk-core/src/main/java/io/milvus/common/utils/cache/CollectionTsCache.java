@@ -23,15 +23,38 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * In-process cache storing the latest session timestamp per endpoint, database, and collection.
+ * Timestamps are updated monotonically and can be invalidated or transferred on rename/alias.
+ */
+
+
 public class CollectionTsCache {
     private static final CollectionTsCache INSTANCE = new CollectionTsCache();
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Map<CollectionCacheKey, Long> cache = new HashMap<>();
 
+    /**
+     * Returns the process-wide singleton instance of the cache.
+     *
+     * @return the shared {@link CollectionTsCache} instance
+     */
+
+
     public static CollectionTsCache getInstance() {
         return INSTANCE;
     }
+
+    /**
+     * Returns the latest session timestamp cached for the collection, or {@code 0} if none.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     * @return the cached timestamp, or {@code 0L} when not present
+     */
+
 
     public long get(String endpoint, String databaseName, String collectionName) {
         CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
@@ -42,6 +65,16 @@ public class CollectionTsCache {
             lock.readLock().unlock();
         }
     }
+
+    /**
+     * Stores the timestamp for the collection, keeping the latest value seen.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     * @param timestamp      the session timestamp to cache; values of {@code 0} are ignored
+     */
+
 
     public void set(String endpoint, String databaseName, String collectionName, long timestamp) {
         if (timestamp == 0L) {
@@ -57,6 +90,15 @@ public class CollectionTsCache {
         }
     }
 
+    /**
+     * Removes the cached timestamp of the given collection.
+     *
+     * @param endpoint       the server endpoint
+     * @param databaseName   the database name
+     * @param collectionName the collection name
+     */
+
+
     public void invalidate(String endpoint, String databaseName, String collectionName) {
         CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
         lock.writeLock().lock();
@@ -66,6 +108,14 @@ public class CollectionTsCache {
             lock.writeLock().unlock();
         }
     }
+
+    /**
+     * Removes all cached timestamps of the given database.
+     *
+     * @param endpoint     the server endpoint
+     * @param databaseName the database name
+     */
+
 
     public void invalidateDb(String endpoint, String databaseName) {
         CollectionCacheKey prefix = CollectionCacheKey.create(endpoint, databaseName, "");
@@ -80,7 +130,15 @@ public class CollectionTsCache {
 
     /**
      * Moves the latest timestamp to a renamed collection and removes the source key.
+     *
+     * @param endpoint               the server endpoint
+     * @param sourceDatabaseName     the database of the source collection
+     * @param sourceCollectionName   the source collection name
+     * @param targetDatabaseName     the database of the target collection
+     * @param targetCollectionName   the target collection name
      */
+
+
     public void move(String endpoint, String sourceDatabaseName, String sourceCollectionName,
                      String targetDatabaseName, String targetCollectionName) {
         transfer(CollectionCacheKey.create(endpoint, sourceDatabaseName, sourceCollectionName),
@@ -90,7 +148,15 @@ public class CollectionTsCache {
     /**
      * Copies the latest timestamp to an alias while retaining the collection key. The alias is
      * updated monotonically so a newer timestamp recorded through the alias is not overwritten.
+     *
+     * @param endpoint               the server endpoint
+     * @param sourceDatabaseName     the database of the source collection
+     * @param sourceCollectionName   the source collection name
+     * @param targetDatabaseName     the database of the target collection
+     * @param targetCollectionName   the target collection name
      */
+
+
     public void copy(String endpoint, String sourceDatabaseName, String sourceCollectionName,
                      String targetDatabaseName, String targetCollectionName) {
         transfer(CollectionCacheKey.create(endpoint, sourceDatabaseName, sourceCollectionName),
@@ -118,6 +184,11 @@ public class CollectionTsCache {
         }
     }
 
+    /**
+     * Removes all cached timestamps.
+     */
+
+
     public void clear() {
         lock.writeLock().lock();
         try {
@@ -126,6 +197,13 @@ public class CollectionTsCache {
             lock.writeLock().unlock();
         }
     }
+
+    /**
+     * Returns the number of entries currently cached.
+     *
+     * @return the cache size
+     */
+
 
     public int size() {
         lock.readLock().lock();

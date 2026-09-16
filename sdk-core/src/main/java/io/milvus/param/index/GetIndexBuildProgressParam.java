@@ -27,6 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Parameters for <code>getIndexBuildProgress</code> interface.
  */
+
+
 public class GetIndexBuildProgressParam {
     private final String databaseName;
     private final String collectionName;
@@ -42,18 +44,44 @@ public class GetIndexBuildProgressParam {
         this.indexName = builder.indexName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the indexName.
+     *
+     * @return the indexName
+     */
+
 
     public String getIndexName() {
         return indexName;
@@ -72,6 +100,8 @@ public class GetIndexBuildProgressParam {
     /**
      * Builder for {@link GetIndexBuildProgressParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -86,6 +116,8 @@ public class GetIndexBuildProgressParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -97,6 +129,8 @@ public class GetIndexBuildProgressParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -113,6 +147,8 @@ public class GetIndexBuildProgressParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
+
+
         public Builder withIndexName(String indexName) {
             // Replace @NonNull logic with explicit null check
             if (indexName == null) {
@@ -127,6 +163,8 @@ public class GetIndexBuildProgressParam {
          *
          * @return {@link GetIndexBuildProgressParam}
          */
+
+
         public GetIndexBuildProgressParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

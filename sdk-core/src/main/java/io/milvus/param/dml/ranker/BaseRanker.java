@@ -24,11 +24,14 @@ import java.util.Map;
 /**
  * Base class for rankers used to combine multiple search results in a hybrid search.
  */
+
+
 public abstract class BaseRanker {
     /**
      * Returns the ranker properties as a key-value map.
      *
      * @return the ranker properties
      */
+
     public abstract Map<String, String> getProperties();
 }

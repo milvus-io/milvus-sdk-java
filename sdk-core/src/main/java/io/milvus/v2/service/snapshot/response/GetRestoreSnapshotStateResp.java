@@ -22,12 +22,21 @@ package io.milvus.v2.service.snapshot.response;
 /**
  * Response returned by the {@code getRestoreSnapshotState} API.
  */
+
+
 public class GetRestoreSnapshotStateResp {
     private RestoreSnapshotJobInfo jobInfo;
 
     private GetRestoreSnapshotStateResp(GetRestoreSnapshotStateRespBuilder builder) {
         this.jobInfo = builder.jobInfo;
     }
+
+    /**
+     * Creates a new builder for {@code GetRestoreSnapshotStateResp}.
+     *
+     * @return the builder
+     */
+
 
     public static GetRestoreSnapshotStateRespBuilder builder() {
         return new GetRestoreSnapshotStateRespBuilder();
@@ -38,6 +47,8 @@ public class GetRestoreSnapshotStateResp {
      *
      * @return the restore snapshot job information
      */
+
+
     public RestoreSnapshotJobInfo getJobInfo() {
         return jobInfo;
     }
@@ -47,6 +58,8 @@ public class GetRestoreSnapshotStateResp {
      *
      * @param jobInfo the restore snapshot job information
      */
+
+
     public void setJobInfo(RestoreSnapshotJobInfo jobInfo) {
         this.jobInfo = jobInfo;
     }
@@ -58,6 +71,11 @@ public class GetRestoreSnapshotStateResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetRestoreSnapshotStateResp} class.
+     */
+
+
     public static class GetRestoreSnapshotStateRespBuilder {
         private RestoreSnapshotJobInfo jobInfo;
 
@@ -67,6 +85,8 @@ public class GetRestoreSnapshotStateResp {
          * @param jobInfo the restore snapshot job information
          * @return this builder
          */
+
+
         public GetRestoreSnapshotStateRespBuilder jobInfo(RestoreSnapshotJobInfo jobInfo) {
             this.jobInfo = jobInfo;
             return this;
@@ -77,6 +97,8 @@ public class GetRestoreSnapshotStateResp {
          *
          * @return the built response
          */
+
+
         public GetRestoreSnapshotStateResp build() {
             return new GetRestoreSnapshotStateResp(this);
         }

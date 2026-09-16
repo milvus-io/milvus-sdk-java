@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>describeIndex</code> interface.
  */
+
+
 public class DescribeIndexParam {
     private final String databaseName;
     private final String collectionName;
@@ -42,22 +44,55 @@ public class DescribeIndexParam {
         this.fieldName = builder.fieldName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the indexName.
+     *
+     * @return the indexName
+     */
+
+
     public String getIndexName() {
         return indexName;
     }
+
+    /**
+     * Returns the fieldName.
+     *
+     * @return the fieldName
+     */
+
 
     public String getFieldName() {
         return fieldName;
@@ -77,6 +112,8 @@ public class DescribeIndexParam {
     /**
      * Builder for {@link DescribeIndexParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -92,6 +129,8 @@ public class DescribeIndexParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -103,6 +142,8 @@ public class DescribeIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -132,6 +173,8 @@ public class DescribeIndexParam {
          * @param fieldName field name
          * @return <code>Builder</code>
          */
+
+
         public Builder withFieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -142,6 +185,8 @@ public class DescribeIndexParam {
          *
          * @return {@link DescribeIndexParam}
          */
+
+
         public DescribeIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

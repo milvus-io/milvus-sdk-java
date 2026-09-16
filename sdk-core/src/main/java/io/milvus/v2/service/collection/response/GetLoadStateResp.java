@@ -25,6 +25,8 @@ import io.milvus.grpc.LoadState;
  * Response of the {@code getLoadState} API, holding the load state of a collection
  * or partition together with the load progress.
  */
+
+
 public class GetLoadStateResp {
     private LoadState state;
     private Long progress;
@@ -39,6 +41,8 @@ public class GetLoadStateResp {
      *
      * @return the load state
      */
+
+
     public LoadState getState() {
         return state;
     }
@@ -48,6 +52,8 @@ public class GetLoadStateResp {
      *
      * @param state the load state
      */
+
+
     public void setState(LoadState state) {
         this.state = state;
     }
@@ -57,6 +63,8 @@ public class GetLoadStateResp {
      *
      * @return the load state name
      */
+
+
     public String getStateName() {
         return state == null ? null : state.name();
     }
@@ -66,6 +74,8 @@ public class GetLoadStateResp {
      *
      * @return the load progress
      */
+
+
     public Long getProgress() {
         return progress;
     }
@@ -75,6 +85,8 @@ public class GetLoadStateResp {
      *
      * @param progress the load progress
      */
+
+
     public void setProgress(Long progress) {
         this.progress = progress;
     }
@@ -93,9 +105,16 @@ public class GetLoadStateResp {
      *
      * @return the builder
      */
+
+
     public static GetLoadStateRespBuilder builder() {
         return new GetLoadStateRespBuilder();
     }
+
+    /**
+     * Builder for {@link GetLoadStateResp} class.
+     */
+
 
     public static class GetLoadStateRespBuilder {
         private LoadState state;
@@ -110,6 +129,8 @@ public class GetLoadStateResp {
          * @param state the load state
          * @return this builder
          */
+
+
         public GetLoadStateRespBuilder state(LoadState state) {
             this.state = state;
             return this;
@@ -121,6 +142,8 @@ public class GetLoadStateResp {
          * @param progress the load progress
          * @return this builder
          */
+
+
         public GetLoadStateRespBuilder progress(Long progress) {
             this.progress = progress;
             return this;
@@ -131,6 +154,8 @@ public class GetLoadStateResp {
          *
          * @return the response
          */
+
+
         public GetLoadStateResp build() {
             return new GetLoadStateResp(this);
         }

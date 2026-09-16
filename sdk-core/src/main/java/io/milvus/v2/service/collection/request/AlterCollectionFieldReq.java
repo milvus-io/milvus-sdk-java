@@ -25,6 +25,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code alterCollectionField} API.
  */
+
+
 public class AlterCollectionFieldReq {
     private String collectionName;
     private String fieldName;
@@ -45,6 +47,8 @@ public class AlterCollectionFieldReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -54,6 +58,8 @@ public class AlterCollectionFieldReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -63,6 +69,8 @@ public class AlterCollectionFieldReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -72,6 +80,8 @@ public class AlterCollectionFieldReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -81,6 +91,8 @@ public class AlterCollectionFieldReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -90,6 +102,8 @@ public class AlterCollectionFieldReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -99,6 +113,8 @@ public class AlterCollectionFieldReq {
      *
      * @return the field properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -118,9 +134,16 @@ public class AlterCollectionFieldReq {
      *
      * @return the builder
      */
+
+
     public static AlterCollectionFieldReqBuilder builder() {
         return new AlterCollectionFieldReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterCollectionFieldReq} class.
+     */
+
 
     public static class AlterCollectionFieldReqBuilder {
         private String collectionName;
@@ -137,6 +160,8 @@ public class AlterCollectionFieldReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AlterCollectionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -148,6 +173,8 @@ public class AlterCollectionFieldReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public AlterCollectionFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -159,6 +186,8 @@ public class AlterCollectionFieldReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AlterCollectionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -170,6 +199,8 @@ public class AlterCollectionFieldReq {
          * @param properties the field properties
          * @return this builder
          */
+
+
         public AlterCollectionFieldReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -182,6 +213,8 @@ public class AlterCollectionFieldReq {
          * @param value the property value
          * @return this builder
          */
+
+
         public AlterCollectionFieldReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -195,6 +228,8 @@ public class AlterCollectionFieldReq {
          *
          * @return the request
          */
+
+
         public AlterCollectionFieldReq build() {
             return new AlterCollectionFieldReq(this);
         }

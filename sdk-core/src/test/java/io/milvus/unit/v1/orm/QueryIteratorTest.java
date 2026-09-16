@@ -214,27 +214,50 @@ class QueryIteratorTest {
     }
 
     @Test
-    void queryIteratorGetCursorVarcharPk() {
-        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+    void queryIteratorGetCursorVarcharPkAndElementOffset() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub varcharStub =
                 mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
-        when(stub.query(any(QueryRequest.class))).thenReturn(
+        when(varcharStub.query(any(QueryRequest.class))).thenReturn(
                 varcharQueryResults(Collections.emptyList(), 100L),
                 varcharQueryResults(Arrays.asList("a", "b", "c"), 100L));
 
-        QueryIterator iterator = new QueryIterator(
+        QueryIterator varcharIterator = new QueryIterator(
                 QueryIteratorReq.builder()
                         .collectionName("test")
                         .outputFields(Collections.singletonList("pk"))
                         .batchSize(10)
                         .build(),
-                testStubWrapper(stub),
+                testStubWrapper(varcharStub),
                 varcharPrimaryField(),
                 TEST_COLLECTION_ID);
-        iterator.next();
+        varcharIterator.next();
 
-        QueryIteratorCursor cursor = iterator.getCursor();
-        assertEquals("c", cursor.getStrPk());
-        assertNull(cursor.getIntPk());
+        QueryIteratorCursor varcharCursor = varcharIterator.getCursor();
+        assertEquals("c", varcharCursor.getStrPk());
+        assertNull(varcharCursor.getIntPk());
+
+        String filter = "element_filter(structA, $[int_val] >= 20000)";
+        MilvusServiceGrpc.MilvusServiceBlockingStub elementStub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(elementStub.query(any(QueryRequest.class))).thenReturn(
+                queryResults(Collections.emptyList(), 100L),
+                elementQueryResults(7L, 0L, 1L));
+
+        QueryIterator elementIterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("id"))
+                        .expr(filter)
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(elementStub),
+                primaryField(),
+                TEST_COLLECTION_ID);
+        elementIterator.next();
+
+        QueryIteratorCursor elementCursor = elementIterator.getCursor();
+        assertEquals(Long.valueOf(7L), elementCursor.getIntPk());
+        assertEquals(Long.valueOf(1L), elementCursor.getLastElementOffset());
     }
 
     @Test
@@ -279,29 +302,25 @@ class QueryIteratorTest {
     }
 
     @Test
-    void queryIteratorGetCursorElementFilterCapturesOffset() {
-        String filter = "element_filter(structA, $[int_val] >= 20000)";
+    void queryIteratorCloseReleasesCache() throws ReflectiveOperationException {
         MilvusServiceGrpc.MilvusServiceBlockingStub stub =
                 mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
         when(stub.query(any(QueryRequest.class))).thenReturn(
                 queryResults(Collections.emptyList(), 100L),
-                elementQueryResults(7L, 0L, 1L));
+                queryResults(Collections.singletonList(1L), 100L));
 
         QueryIterator iterator = new QueryIterator(
                 QueryIteratorReq.builder()
                         .collectionName("test")
                         .outputFields(Collections.singletonList("id"))
-                        .expr(filter)
                         .batchSize(10)
                         .build(),
                 testStubWrapper(stub),
                 primaryField(),
                 TEST_COLLECTION_ID);
         iterator.next();
-
-        QueryIteratorCursor cursor = iterator.getCursor();
-        assertEquals(Long.valueOf(7L), cursor.getIntPk());
-        assertEquals(Long.valueOf(1L), cursor.getLastElementOffset());
+        iterator.close();
+        assertEquals(0, cacheSize(iterator, "cacheIdInUse"));
     }
 
     @Test

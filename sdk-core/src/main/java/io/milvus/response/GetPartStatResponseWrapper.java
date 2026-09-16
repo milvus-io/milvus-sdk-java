@@ -28,8 +28,17 @@ import java.util.List;
 /**
  * Utility class to wrap response of <code>getPartitionStatistics</code> interface.
  */
+
+
 public class GetPartStatResponseWrapper {
     private final GetPartitionStatisticsResponse stat;
+
+    /**
+     * Wraps the given partition statistics response.
+     *
+     * @param stat the gRPC {@code GetPartitionStatisticsResponse}, must not be {@code null}
+     */
+
 
     public GetPartStatResponseWrapper(GetPartitionStatisticsResponse stat) {
         if (stat == null) {
@@ -44,6 +53,8 @@ public class GetPartStatResponseWrapper {
      *
      * @return <code>int</code> dimension of the vector field
      */
+
+
     public long getRowCount() throws NumberFormatException {
         List<KeyValuePair> stats = stat.getStatsList();
         for (KeyValuePair kv : stats) {

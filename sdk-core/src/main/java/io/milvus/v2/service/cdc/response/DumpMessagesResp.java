@@ -26,6 +26,8 @@ import java.util.Iterator;
  * Response returned by the {@code dumpMessages} CDC API, exposing the dumped messages as an
  * iterable stream.
  */
+
+
 public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
     private final Iterable<DumpMessageInfo> messages;
 
@@ -38,6 +40,8 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
      *
      * @return the builder
      */
+
+
     public static DumpMessagesRespBuilder builder() {
         return new DumpMessagesRespBuilder();
     }
@@ -47,6 +51,8 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
      *
      * @return the dumped messages
      */
+
+
     public Iterable<DumpMessageInfo> getMessages() {
         return messages;
     }
@@ -66,6 +72,11 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
         return "DumpMessagesResp{messages=<stream>}";
     }
 
+    /**
+     * Builder for {@link DumpMessagesResp} class.
+     */
+
+
     public static class DumpMessagesRespBuilder {
         private Iterable<DumpMessageInfo> messages;
 
@@ -75,6 +86,8 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
          * @param messages the dumped messages
          * @return this builder
          */
+
+
         public DumpMessagesRespBuilder messages(Iterable<DumpMessageInfo> messages) {
             this.messages = messages;
             return this;
@@ -85,6 +98,8 @@ public class DumpMessagesResp implements Iterable<DumpMessageInfo> {
          *
          * @return the response
          */
+
+
         public DumpMessagesResp build() {
             return new DumpMessagesResp(this);
         }

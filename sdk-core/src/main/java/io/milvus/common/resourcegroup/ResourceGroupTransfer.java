@@ -19,6 +19,12 @@
 
 package io.milvus.common.resourcegroup;
 
+/**
+ * Represents a transfer of redundant or missing nodes between resource groups, identified by
+ * the target resource group name. Supports conversion to and from the gRPC representation.
+ */
+
+
 public class ResourceGroupTransfer {
     private final String resourceGroupName;
 
@@ -27,6 +33,8 @@ public class ResourceGroupTransfer {
      *
      * @param resourceGroupName resource group name
      */
+
+
     public ResourceGroupTransfer(String resourceGroupName) {
         if (resourceGroupName == null) {
             throw new IllegalArgumentException("resourceGroupName cannot be null");
@@ -39,6 +47,8 @@ public class ResourceGroupTransfer {
      *
      * @param grpcTransfer grpc transfer object
      */
+
+
     public ResourceGroupTransfer(io.milvus.grpc.ResourceGroupTransfer grpcTransfer) {
         if (grpcTransfer == null) {
             throw new IllegalArgumentException("grpcTransfer cannot be null");
@@ -51,6 +61,8 @@ public class ResourceGroupTransfer {
      *
      * @return resource group name
      */
+
+
     public String getResourceGroupName() {
         return resourceGroupName;
     }
@@ -60,6 +72,8 @@ public class ResourceGroupTransfer {
      *
      * @return io.milvus.grpc.ResourceGroupTransfer
      */
+
+
     public io.milvus.grpc.ResourceGroupTransfer toGRPC() {
         io.milvus.grpc.ResourceGroupTransfer result = io.milvus.grpc.ResourceGroupTransfer.newBuilder()
                 .setResourceGroup(resourceGroupName)

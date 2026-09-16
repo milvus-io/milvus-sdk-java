@@ -40,8 +40,24 @@ import java.util.stream.Collectors;
 import static io.milvus.param.Constant.*;
 import static io.milvus.param.ParamUtils.AssembleKvPair;
 
+/**
+ * Helper for converting between V2 schema request/response DTOs and the gRPC schema
+ * representations, and for validating field and schema inputs.
+ */
+
+
 public class SchemaUtils {
     protected static final Logger logger = LoggerFactory.getLogger(SchemaUtils.class);
+
+
+    /**
+     * Throws an invalid-parameter exception if the target string is null or blank.
+     *
+     * @param target the string to check
+     * @param title the field name used in the error message
+     * @throws MilvusClientException if the target string is null or blank
+     */
+
 
 
     public static void checkNullEmptyString(String target, String title) {
@@ -50,9 +66,26 @@ public class SchemaUtils {
         }
     }
 
+    /**
+     * Converts a V2 field schema into a gRPC field schema.
+     *
+     * @param fieldSchema the V2 field schema
+     * @return the built gRPC field schema
+     */
+
+
     public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
         return convertToGrpcFieldSchema(fieldSchema, false);
     }
+
+    /**
+     * Converts a V2 field schema into a gRPC field schema.
+     *
+     * @param fieldSchema the V2 field schema
+     * @param forAddField whether the conversion is for adding a field to an existing collection
+     * @return the built gRPC field schema
+     */
+
 
     public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema, boolean forAddField) {
         checkNullEmptyString(fieldSchema.getName(), "Field name");
@@ -131,6 +164,14 @@ public class SchemaUtils {
         return builder.build();
     }
 
+    /**
+     * Converts a V2 function into a gRPC function schema.
+     *
+     * @param function the V2 function
+     * @return the built gRPC function schema
+     */
+
+
     public static FunctionSchema convertToGrpcFunction(CreateCollectionReq.Function function) {
         checkNullEmptyString(function.getName(), "Function name");
 
@@ -153,6 +194,14 @@ public class SchemaUtils {
 
         return builder.build();
     }
+
+    /**
+     * Converts a V2 struct field schema into a gRPC struct array field schema.
+     *
+     * @param structSchema the V2 struct field schema
+     * @return the built gRPC struct array field schema
+     */
+
 
     public static StructArrayFieldSchema convertToGrpcStructFieldSchema(CreateCollectionReq.StructFieldSchema structSchema) {
         checkNullEmptyString(structSchema.getName(), "Field name");
@@ -189,6 +238,14 @@ public class SchemaUtils {
         }
         return builder.build();
     }
+
+    /**
+     * Converts a gRPC collection schema into a V2 collection schema.
+     *
+     * @param schema the gRPC collection schema
+     * @return the converted V2 collection schema
+     */
+
 
     public static CreateCollectionReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
         JsonObject externalSpec;
@@ -227,6 +284,14 @@ public class SchemaUtils {
 
         return collectionSchema;
     }
+
+    /**
+     * Converts a gRPC field schema into a V2 field schema.
+     *
+     * @param fieldSchema the gRPC field schema
+     * @return the converted V2 field schema
+     */
+
 
     public static CreateCollectionReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
         // if the fieldSchema belongs to a struct field, its type could be ArrayOfVector/ArrayOfStruct
@@ -319,6 +384,14 @@ public class SchemaUtils {
         return schema;
     }
 
+    /**
+     * Converts a gRPC struct array field schema into a V2 struct field schema.
+     *
+     * @param structSchema the gRPC struct array field schema
+     * @return the converted V2 struct field schema
+     */
+
+
     public static CreateCollectionReq.StructFieldSchema convertFromGrpcStructFieldSchema(StructArrayFieldSchema structSchema) {
         CreateCollectionReq.StructFieldSchema.StructFieldSchemaBuilder builder =
                 CreateCollectionReq.StructFieldSchema.builder()
@@ -348,6 +421,14 @@ public class SchemaUtils {
         return builder.build();
     }
 
+    /**
+     * Converts a gRPC function schema into a V2 function.
+     *
+     * @param functionSchema the gRPC function schema
+     * @return the converted V2 function
+     */
+
+
     public static CreateCollectionReq.Function convertFromGrpcFunction(FunctionSchema functionSchema) {
         io.milvus.common.clientenum.FunctionType functionType =
                 io.milvus.common.clientenum.FunctionType.fromCode(functionSchema.getTypeValue());
@@ -367,6 +448,14 @@ public class SchemaUtils {
         function.setOutputFieldIds(functionSchema.getOutputFieldIdsList().stream().collect(Collectors.toList()));
         return function;
     }
+
+    /**
+     * Converts an {@link AddFieldReq} into a V2 field schema, validating the field inputs.
+     *
+     * @param addFieldReq the add-field request
+     * @return the built V2 field schema
+     */
+
 
     public static CreateCollectionReq.FieldSchema convertFieldReqToFieldSchema(AddFieldReq addFieldReq) {
         // check the input here to pop error messages earlier
@@ -413,6 +502,14 @@ public class SchemaUtils {
 
         return fieldSchema;
     }
+
+    /**
+     * Converts an {@link AddFieldReq} into a V2 struct field schema, validating the struct fields.
+     *
+     * @param addFieldReq the add-field request
+     * @return the built V2 struct field schema
+     */
+
 
     public static CreateCollectionReq.StructFieldSchema convertFieldReqToStructFieldSchema(AddFieldReq addFieldReq) {
         List<CreateCollectionReq.FieldSchema> fields = addFieldReq.getStructFields();

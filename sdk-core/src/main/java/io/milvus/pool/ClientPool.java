@@ -15,6 +15,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
+/**
+ * A generic client connection pool built on Apache Commons Pool 2. Clients are grouped by key,
+ * each group maintaining its own cache that balances callers across clients by reference count
+ * and provides idle/active metrics per key.
+ */
+
+
+
 public class ClientPool<C, T> {
     protected static final Logger logger = LoggerFactory.getLogger(ClientPool.class);
     protected GenericKeyedObjectPool<String, T> clientPool;
@@ -49,17 +57,47 @@ public class ClientPool<C, T> {
         this.clientPool = new GenericKeyedObjectPool<String, T>(clientFactory, poolConfig);
     }
 
+    /**
+     * Registers a config for the given key group.
+     *
+     * @param key    the key of a client group
+     * @param config the config to associate with the key
+     */
+
+
     public void configForKey(String key, C config) {
         this.clientFactory.configForKey(key, config);
     }
+
+    /**
+     * Removes the config of the given key group.
+     *
+     * @param key the key of a client group
+     */
+
 
     public void removeConfig(String key) {
         this.clientFactory.removeConfig(key);
     }
 
+    /**
+     * Returns the keys that have a dedicated config registered.
+     *
+     * @return the configured keys
+     */
+
+
     public Set<String> configKeys() {
         return this.clientFactory.configKeys();
     }
+
+    /**
+     * Returns the config of the given key group.
+     *
+     * @param key the key of a client group
+     * @return the config of the key, or {@code null} if none is registered
+     */
+
 
     public C getConfig(String key) {
         return this.clientFactory.getConfig(key);
@@ -68,7 +106,11 @@ public class ClientPool<C, T> {
     /**
      * Create minIdlePerKey clients for the pool of the key.
      * Call this method before business can reduce the latency of the first time to getClient().
+     *
+     * @param key the key of a group
      */
+
+
     public void preparePool(String key) {
         ClientCache<T> cache = getCache(key);
         if (cache != null) {
@@ -90,6 +132,8 @@ public class ClientPool<C, T> {
      * @param key the key of a group where the client belong
      * @return MilvusClient or MilvusClientV2
      */
+
+
     public T getClient(String key) {
         if (closed) {
             throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "Client pool is closed");
@@ -134,6 +178,8 @@ public class ClientPool<C, T> {
      * @param key        the key of a group where the client belong
      * @param grpcClient the client object to return
      */
+
+
     public void returnClient(String key, T grpcClient) {
         ClientCache<T> cache = clientsCache.get(key);
         if (cache != null) {
@@ -147,6 +193,8 @@ public class ClientPool<C, T> {
      * Release/disconnect all clients of all key groups, close the pool.
      *
      */
+
+
     public void close() {
         closed = true;
         if (clientPool != null && !clientPool.isClosed()) {
@@ -162,6 +210,8 @@ public class ClientPool<C, T> {
     /**
      * Release/disconnect idle clients of all key groups.
      */
+
+
     public void clear() {
         if (clientPool != null && !clientPool.isClosed()) {
             // how about if clientPool and clientsCache are cleared but some clients are not returned?
@@ -180,6 +230,8 @@ public class ClientPool<C, T> {
      *
      * @param key the key of a group
      */
+
+
     public void clear(String key) {
         if (clientPool != null && !clientPool.isClosed()) {
             // how about if clientPool and clientsCache are cleared but some clients are not returned?
@@ -199,7 +251,10 @@ public class ClientPool<C, T> {
      * Threadsafe method.
      *
      * @param key the key of a group
+     * @return the number of idle clients of the key group
      */
+
+
     public int getIdleClientNumber(String key) {
         return clientPool.getNumIdle(key);
     }
@@ -209,7 +264,10 @@ public class ClientPool<C, T> {
      * Threadsafe method.
      *
      * @param key the key of a group
+     * @return the number of active clients of the key group
      */
+
+
     public int getActiveClientNumber(String key) {
         return clientPool.getNumActive(key);
     }
@@ -217,7 +275,11 @@ public class ClientPool<C, T> {
     /**
      * Return the number of idle clients of all key group
      * Threadsafe method.
+     *
+     * @return the number of idle clients of all key groups
      */
+
+
     public int getTotalIdleClientNumber() {
         return clientPool.getNumIdle();
     }
@@ -225,10 +287,22 @@ public class ClientPool<C, T> {
     /**
      * Return the number of active clients of all key group
      * Threadsafe method.
+     *
+     * @return the number of active clients of all key groups
      */
+
+
     public int getTotalActiveClientNumber() {
         return clientPool.getNumActive();
     }
+
+    /**
+     * Returns the client fetch rate per second of the given key group, measured by its cache.
+     *
+     * @param key the key of a client group
+     * @return the fetch rate per second, or {@code 0.0} if the key has no cache
+     */
+
 
     public float fetchClientPerSecond(String key) {
         ClientCache<T> cache = clientsCache.get(key);

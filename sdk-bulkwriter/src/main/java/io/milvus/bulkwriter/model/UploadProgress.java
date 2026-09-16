@@ -25,6 +25,8 @@ package io.milvus.bulkwriter.model;
  * <p>It reports the uploaded and total bytes, the number of completed files, the file
  * currently being uploaded, and the overall upload percentage.</p>
  */
+
+
 public class UploadProgress {
     private final long uploadedBytes;
     private final long totalBytes;
@@ -47,6 +49,8 @@ public class UploadProgress {
      * @param currentFileTotalBytes    the total size of the current file in bytes
      * @param percent                  the overall upload percentage
      */
+
+
     public UploadProgress(long uploadedBytes, long totalBytes, int completedFiles, long totalFiles,
                           String currentFile, long currentFileUploadedBytes,
                           long currentFileTotalBytes, double percent) {
@@ -65,6 +69,8 @@ public class UploadProgress {
      *
      * @return the number of uploaded bytes
      */
+
+
     public long getUploadedBytes() {
         return uploadedBytes;
     }
@@ -74,6 +80,8 @@ public class UploadProgress {
      *
      * @return the total number of bytes to upload
      */
+
+
     public long getTotalBytes() {
         return totalBytes;
     }
@@ -83,6 +91,8 @@ public class UploadProgress {
      *
      * @return the number of completed files
      */
+
+
     public int getCompletedFiles() {
         return completedFiles;
     }
@@ -92,6 +102,8 @@ public class UploadProgress {
      *
      * @return the total number of files to upload
      */
+
+
     public long getTotalFiles() {
         return totalFiles;
     }
@@ -101,6 +113,8 @@ public class UploadProgress {
      *
      * @return the current file name
      */
+
+
     public String getCurrentFile() {
         return currentFile;
     }
@@ -110,6 +124,8 @@ public class UploadProgress {
      *
      * @return the number of uploaded bytes of the current file
      */
+
+
     public long getCurrentFileUploadedBytes() {
         return currentFileUploadedBytes;
     }
@@ -119,6 +135,8 @@ public class UploadProgress {
      *
      * @return the total size of the current file
      */
+
+
     public long getCurrentFileTotalBytes() {
         return currentFileTotalBytes;
     }
@@ -128,6 +146,8 @@ public class UploadProgress {
      *
      * @return the upload percentage
      */
+
+
     public double getPercent() {
         return percent;
     }

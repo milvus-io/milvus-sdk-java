@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code flush} API.
  */
+
+
 public class FlushReq {
     private String databaseName;
     private List<String> collectionNames;
@@ -36,6 +38,13 @@ public class FlushReq {
         this.waitFlushedTimeoutMs = builder.waitFlushedTimeoutMs;
     }
 
+    /**
+     * Creates a new builder for {@code FlushReq}.
+     *
+     * @return the builder
+     */
+
+
     public static FlushReqBuilder builder() {
         return new FlushReqBuilder();
     }
@@ -45,6 +54,8 @@ public class FlushReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -54,6 +65,8 @@ public class FlushReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -63,6 +76,8 @@ public class FlushReq {
      *
      * @return the collection names
      */
+
+
     public List<String> getCollectionNames() {
         return collectionNames;
     }
@@ -72,6 +87,8 @@ public class FlushReq {
      *
      * @param collectionNames the collection names
      */
+
+
     public void setCollectionNames(List<String> collectionNames) {
         this.collectionNames = collectionNames;
     }
@@ -81,6 +98,8 @@ public class FlushReq {
      *
      * @return the timeout in milliseconds, {@code 0} waits until the flush task is done
      */
+
+
     public Long getWaitFlushedTimeoutMs() {
         return waitFlushedTimeoutMs;
     }
@@ -90,6 +109,8 @@ public class FlushReq {
      *
      * @param waitFlushedTimeoutMs the timeout in milliseconds, {@code 0} waits until the flush task is done
      */
+
+
     public void setWaitFlushedTimeoutMs(Long waitFlushedTimeoutMs) {
         this.waitFlushedTimeoutMs = waitFlushedTimeoutMs;
     }
@@ -103,6 +124,11 @@ public class FlushReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link FlushReq} class.
+     */
+
+
     public static class FlushReqBuilder {
         private String databaseName;
         private List<String> collectionNames = new ArrayList<>();
@@ -114,6 +140,8 @@ public class FlushReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public FlushReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -125,6 +153,8 @@ public class FlushReq {
          * @param collectionNames the collection names
          * @return this builder
          */
+
+
         public FlushReqBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
@@ -136,6 +166,8 @@ public class FlushReq {
          * @param waitFlushedTimeoutMs the timeout in milliseconds, {@code 0} waits until the flush task is done
          * @return this builder
          */
+
+
         public FlushReqBuilder waitFlushedTimeoutMs(Long waitFlushedTimeoutMs) {
             this.waitFlushedTimeoutMs = waitFlushedTimeoutMs;
             return this;
@@ -146,6 +178,8 @@ public class FlushReq {
          *
          * @return the constructed {@code FlushReq}
          */
+
+
         public FlushReq build() {
             return new FlushReq(this);
         }

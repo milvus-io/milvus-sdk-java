@@ -10,8 +10,24 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility methods for processing local file paths.
+ *
+ * <p>Resolves a local file or directory path into the list of files it contains and their
+ * total size, recursing into subdirectories.</p>
+ */
+
+
 public class FileUtils {
     // Get all filePath with the inputFileSuffix in the localPath
+    /**
+     * Processes the given local file or directory path and returns the files it contains
+     * together with their total size.
+     *
+     * @param localPath the local file or directory path
+     * @return a pair containing the list of file paths and their total size
+     */
+
     public static Pair<List<String>, Long> processLocalPath(String localPath) {
         Path path = Paths.get(localPath);
         if (Files.notExists(path)) {
@@ -27,7 +43,12 @@ public class FileUtils {
 
     /**
      * Finds files with the given suffix in the first level subdirectories of the folder.
+     *
+     * @param folder the folder to search recursively
+     * @return a pair containing the list of file paths and their total size
      */
+
+
     public static Pair<List<String>, Long> findFilesRecursively(File folder) {
         List<String> result = new ArrayList<>();
         long totalSize = 0L;

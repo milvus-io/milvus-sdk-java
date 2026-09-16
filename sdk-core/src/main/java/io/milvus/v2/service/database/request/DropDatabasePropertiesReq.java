@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code dropDatabaseProperties} API.
  */
+
+
 public class DropDatabasePropertiesReq {
     private String databaseName;
     private List<String> propertyKeys;
@@ -39,6 +41,8 @@ public class DropDatabasePropertiesReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -48,6 +52,8 @@ public class DropDatabasePropertiesReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -57,6 +63,8 @@ public class DropDatabasePropertiesReq {
      *
      * @return the property keys to drop
      */
+
+
     public List<String> getPropertyKeys() {
         return propertyKeys;
     }
@@ -66,6 +74,8 @@ public class DropDatabasePropertiesReq {
      *
      * @param propertyKeys the property keys to drop
      */
+
+
     public void setPropertyKeys(List<String> propertyKeys) {
         this.propertyKeys = propertyKeys;
     }
@@ -83,9 +93,16 @@ public class DropDatabasePropertiesReq {
      *
      * @return a new {@link DropDatabasePropertiesReqBuilder}
      */
+
+
     public static DropDatabasePropertiesReqBuilder builder() {
         return new DropDatabasePropertiesReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropDatabasePropertiesReq} class.
+     */
+
 
     public static class DropDatabasePropertiesReqBuilder {
         private String databaseName;
@@ -100,6 +117,8 @@ public class DropDatabasePropertiesReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropDatabasePropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -111,6 +130,8 @@ public class DropDatabasePropertiesReq {
          * @param propertyKeys the property keys to drop
          * @return this builder
          */
+
+
         public DropDatabasePropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
@@ -121,6 +142,8 @@ public class DropDatabasePropertiesReq {
          *
          * @return the built request
          */
+
+
         public DropDatabasePropertiesReq build() {
             return new DropDatabasePropertiesReq(this);
         }

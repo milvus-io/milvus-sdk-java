@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 /**
  * Utility functions for param classes
  */
+
+
 public class ParamUtils {
 
     private static HashMap<DataType, String> getTypeErrorMsgForColumnInsert() {
@@ -71,6 +73,13 @@ public class ParamUtils {
         return typeErrMsg;
     }
 
+    /**
+     * Gets a map of data types to the error messages used when validating row inserts.
+     *
+     * @return the map of data types to error messages
+     */
+
+
     public static HashMap<DataType, String> getTypeErrorMsgForRowInsert() {
         final HashMap<DataType, String> typeErrMsg = new HashMap<>();
         typeErrMsg.put(DataType.None, "Type mismatch for field '%s': the field type is illegal.");
@@ -94,10 +103,28 @@ public class ParamUtils {
         return typeErrMsg;
     }
 
+    /**
+     * Checks the field data against the field schema.
+     *
+     * @param fieldSchema the fieldSchema
+     * @param fieldData the fieldData
+     */
+
+
     public static void checkFieldData(FieldType fieldSchema, InsertParam.Field fieldData) {
         List<?> values = fieldData.getValues();
         checkFieldData(fieldSchema, values, false);
     }
+
+    /**
+     * Calculates the vector dimension from the byte count for binary vector types.
+     *
+     * @param dataType the dataType
+     * @param byteCount the byteCount
+     *
+     * @return the calculated vector dimension
+     */
+
 
     public static int calculateBinVectorDim(DataType dataType, int byteCount) {
         if (dataType == DataType.BinaryVector) {
@@ -143,6 +170,15 @@ public class ParamUtils {
 
         return false; // go to 1.2 and 2.3
     }
+
+    /**
+     * Checks the field data against the field schema.
+     *
+     * @param fieldSchema the fieldSchema
+     * @param values the values
+     * @param verifyElementType the verifyElementType
+     */
+
 
     public static void checkFieldData(FieldType fieldSchema, List<?> values, boolean verifyElementType) {
         HashMap<DataType, String> errMsgs = getTypeErrorMsgForColumnInsert();
@@ -325,6 +361,23 @@ public class ParamUtils {
         }
     }
 
+    /**
+     * Checks and converts a single field value according to the field type and constraints.
+     *
+     * @param fieldName the fieldName
+     * @param dataType the dataType
+     * @param elementType the elementType
+     * @param dim the dim
+     * @param maxLength the maxLength
+     * @param maxCapacity the maxCapacity
+     * @param isNullable the isNullable
+     * @param defaultVal the defaultVal
+     * @param value the value
+     *
+     * @return the converted field value
+     */
+
+
     public static Object checkFieldValue(String fieldName, DataType dataType, DataType elementType, int dim, int maxLength,
                                          int maxCapacity, boolean isNullable, Object defaultVal, JsonElement value) {
         // nullable and default value check
@@ -470,6 +523,17 @@ public class ParamUtils {
         }
     }
 
+    /**
+     * Converts a JSON array into a list of objects according to the element type.
+     *
+     * @param jsonArray the jsonArray
+     * @param elementType the elementType
+     * @param fieldName the fieldName
+     *
+     * @return the list of converted objects
+     */
+
+
     public static List<Object> convertJsonArray(JsonArray jsonArray, DataType elementType, String fieldName) {
         try {
             switch (elementType) {
@@ -521,6 +585,8 @@ public class ParamUtils {
      * @param target target string
      * @param name   a name to describe this string
      */
+
+
     public static void CheckNullEmptyString(String target, String name) throws ParamException {
         if (target == null || StringUtils.isBlank(target)) {
             throw new ParamException(name + " cannot be null or empty");
@@ -534,15 +600,30 @@ public class ParamUtils {
      * @param target target string
      * @param name   a name to describe this string
      */
+
+
     public static void CheckNullString(String target, String name) throws ParamException {
         if (target == null) {
             throw new ParamException(name + " cannot be null");
         }
     }
 
+    /**
+     * Wraps an insert or upsert request builder and populates it with field data from the request parameters.
+     */
+
+
     public static class InsertBuilderWrapper {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
+
+        /**
+         * Constructs a new InsertBuilderWrapper.
+         *
+         * @param requestParam the requestParam
+         * @param wrapper the wrapper
+         */
+
 
         public InsertBuilderWrapper(InsertParam requestParam,
                                     DescCollResponseWrapper wrapper) {
@@ -562,6 +643,14 @@ public class ParamUtils {
             }
             fillFieldsData(requestParam, wrapper);
         }
+
+        /**
+         * Constructs a new InsertBuilderWrapper.
+         *
+         * @param requestParam the requestParam
+         * @param wrapper the wrapper
+         */
+
 
         public InsertBuilderWrapper(UpsertParam requestParam,
                                     DescCollResponseWrapper wrapper) {
@@ -740,12 +829,26 @@ public class ParamUtils {
             }
         }
 
+        /**
+         * Builds the gRPC insert request from the wrapped insert parameters.
+         *
+         * @return the gRPC insert request
+         */
+
+
         public InsertRequest buildInsertRequest() {
             if (insertBuilder != null) {
                 return insertBuilder.build();
             }
             throw new ParamException("Unable to build insert request since no input");
         }
+
+        /**
+         * Builds the gRPC upsert request from the wrapped upsert parameters.
+         *
+         * @return the gRPC upsert request
+         */
+
 
         public UpsertRequest buildUpsertRequest() {
             if (upsertBuilder != null) {
@@ -755,10 +858,29 @@ public class ParamUtils {
         }
     }
 
+    /**
+     * Converts the target vectors into a placeholder ByteString for the gRPC request.
+     *
+     * @param vectors the vectors
+     * @param placeType the placeType
+     *
+     * @return the placeholder ByteString
+     */
     @SuppressWarnings("unchecked")
     public static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType) throws ParamException {
         return convertPlaceholder(vectors, placeType, false);
     }
+
+    /**
+     * Converts the target vectors into a placeholder ByteString for the gRPC request.
+     *
+     * @param vectors the vectors
+     * @param placeType the placeType
+     * @param elementLevel the elementLevel
+     *
+     * @return the placeholder ByteString
+     */
+
 
     public static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType, boolean elementLevel) throws ParamException {
         PlaceholderType plType = PlaceholderType.None;
@@ -817,6 +939,12 @@ public class ParamUtils {
         return placeholderGroup.toByteString();
     }
 
+    /**
+     * Fills the search request builder with the search parameters, keeping backward compatibility.
+     *
+     * @param searchParams the searchParams
+     * @param builder the builder
+     */
     // in versions older than milvus v2.5.1, the search parameters are organized as:
     //    search_params
     //    {
@@ -872,6 +1000,16 @@ public class ParamUtils {
     //        }
     //    }
     // the following logic tries to fit the compatibility between v2.5.1 and older versions
+
+    /**
+     * Converts a search parameter map into gRPC {@link SearchRequest.Builder} search params,
+     * handling compatibility between Milvus v2.5.1 and older versions.
+     *
+     * @param searchParams the search parameter map
+     * @param builder      the gRPC search request builder to update
+     */
+
+
     public static void compatibleSearchParams(Map<String, Object> searchParams, SearchRequest.Builder builder) {
         searchParams.forEach((key, value) -> {
             // for new versions, all keys are in the top level
@@ -892,6 +1030,17 @@ public class ParamUtils {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage() + e.getCause().getMessage());
         }
     }
+
+    /**
+     * Converts the search parameters into a gRPC search request.
+     *
+     * @param requestParam the requestParam
+     * @param endpoint the endpoint
+     * @param cacheDatabaseName the cacheDatabaseName
+     *
+     * @return the gRPC search request
+     */
+
 
     public static SearchRequest convertSearchParam(SearchParam requestParam, String endpoint,
                                                    String cacheDatabaseName) throws ParamException {
@@ -1018,6 +1167,16 @@ public class ParamUtils {
         return builder.build();
     }
 
+    /**
+     * Converts the ANN search parameters into a gRPC search request.
+     *
+     * @param annSearchParam the annSearchParam
+     * @param consistencyLevel the consistencyLevel
+     *
+     * @return the gRPC search request
+     */
+
+
     public static SearchRequest convertAnnSearchParam(AnnSearchParam annSearchParam,
                                                       ConsistencyLevelEnum consistencyLevel) {
         if (annSearchParam == null) {
@@ -1070,6 +1229,17 @@ public class ParamUtils {
 
         return builder.build();
     }
+
+    /**
+     * Converts the hybrid search parameters into a gRPC hybrid search request.
+     *
+     * @param requestParam the requestParam
+     * @param endpoint the endpoint
+     * @param cacheDatabaseName the cacheDatabaseName
+     *
+     * @return the gRPC hybrid search request
+     */
+
 
     public static HybridSearchRequest convertHybridSearchParam(HybridSearchParam requestParam, String endpoint,
                                                                String cacheDatabaseName) throws ParamException {
@@ -1143,6 +1313,17 @@ public class ParamUtils {
 
         return builder.build();
     }
+
+    /**
+     * Converts the query parameters into a gRPC query request.
+     *
+     * @param requestParam the requestParam
+     * @param endpoint the endpoint
+     * @param cacheDatabaseName the cacheDatabaseName
+     *
+     * @return the gRPC query request
+     */
+
 
     public static QueryRequest convertQueryParam(QueryParam requestParam, String endpoint, String cacheDatabaseName) {
         if (requestParam == null) {
@@ -1219,6 +1400,15 @@ public class ParamUtils {
         }
     }
 
+    /**
+     * Checks whether the data type is a dense vector type.
+     *
+     * @param dataType the dataType
+     *
+     * @return true if the data type is a dense vector type
+     */
+
+
     public static boolean isDenseVectorDataType(DataType dataType) {
         Set<DataType> vectorDataType = new HashSet<DataType>() {{
             add(DataType.FloatVector);
@@ -1230,6 +1420,15 @@ public class ParamUtils {
         return vectorDataType.contains(dataType);
     }
 
+    /**
+     * Checks whether the data type is a vector type.
+     *
+     * @param dataType the dataType
+     *
+     * @return true if the data type is a vector type
+     */
+
+
     public static boolean isVectorDataType(DataType dataType) {
         return isDenseVectorDataType(dataType) || dataType == DataType.SparseFloatVector;
     }
@@ -1239,10 +1438,41 @@ public class ParamUtils {
                 fieldType.isNullable(), fieldType.getDefaultValue(), objects, isDynamic, fieldType.getDimension());
     }
 
+    /**
+     * Generates the gRPC field data for the given values.
+     *
+     * @param fieldName the fieldName
+     * @param dataType the dataType
+     * @param elementType the elementType
+     * @param isNullable the isNullable
+     * @param defaultVal the defaultVal
+     * @param objects the objects
+     * @param isDynamic the isDynamic
+     *
+     * @return the generated gRPC field data
+     */
+
+
     public static FieldData genFieldData(String fieldName, DataType dataType, DataType elementType, boolean isNullable,
                                          Object defaultVal, List<?> objects, boolean isDynamic) {
         return genFieldData(fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, 0);
     }
+
+    /**
+     * Generates the gRPC field data for the given values.
+     *
+     * @param fieldName the fieldName
+     * @param dataType the dataType
+     * @param elementType the elementType
+     * @param isNullable the isNullable
+     * @param defaultVal the defaultVal
+     * @param objects the objects
+     * @param isDynamic the isDynamic
+     * @param dimension the dimension
+     *
+     * @return the generated gRPC field data
+     */
+
 
     public static FieldData genFieldData(String fieldName, DataType dataType, DataType elementType, boolean isNullable,
                                          Object defaultVal, List<?> objects, boolean isDynamic, int dimension) {
@@ -1290,6 +1520,14 @@ public class ParamUtils {
         }
     }
 
+    /**
+     * Generates the gRPC vector field data for the given vectors.
+     *
+     * @param dataType the dataType
+     * @param objects the objects
+     *
+     * @return the generated gRPC vector field data
+     */
     @SuppressWarnings("unchecked")
     public static VectorField genVectorField(DataType dataType, List<?> objects) {
         if (objects.isEmpty()) {
@@ -1362,6 +1600,15 @@ public class ParamUtils {
         throw new ParamException("Illegal vector dataType:" + dataType);
     }
 
+    /**
+     * Encodes a sparse float vector into a ByteBuffer.
+     *
+     * @param sparse the sparse
+     *
+     * @return the encoded ByteBuffer
+     */
+
+
     public static ByteBuffer encodeSparseFloatVector(SortedMap<Long, Float> sparse) {
         // milvus server requires sparse vector to be transfered in little endian
         ByteBuffer buf = ByteBuffer.allocate((Integer.BYTES + Float.BYTES) * sparse.size());
@@ -1388,6 +1635,15 @@ public class ParamUtils {
 
         return buf;
     }
+
+    /**
+     * Decodes a ByteBuffer into a sparse float vector.
+     *
+     * @param buf the buf
+     *
+     * @return the decoded sparse float vector
+     */
+
 
     public static SortedMap<Long, Float> decodeSparseFloatVector(ByteBuffer buf) {
         buf.order(ByteOrder.LITTLE_ENDIAN);
@@ -1432,6 +1688,17 @@ public class ParamUtils {
 
         return builder.setDim(dim).build();
     }
+
+    /**
+     * Generates the gRPC scalar field data for the given values.
+     *
+     * @param dataType the dataType
+     * @param elementType the elementType
+     * @param objects the objects
+     *
+     * @return the generated gRPC scalar field data
+     */
+
 
     public static ScalarField genScalarField(DataType dataType, DataType elementType, List<?> objects) {
         if (dataType == DataType.Array) {
@@ -1506,6 +1773,8 @@ public class ParamUtils {
      * @param field FieldSchema object
      * @return {@link FieldType} schema of the field
      */
+
+
     public static FieldType ConvertField(FieldSchema field) {
         if (field == null) {
             throw new IllegalArgumentException("field cannot be null");
@@ -1543,6 +1812,8 @@ public class ParamUtils {
      * @param field {@link FieldType} object
      * @return {@link FieldSchema} schema of the field
      */
+
+
     public static FieldSchema ConvertField(FieldType field) {
         if (field == null) {
             throw new IllegalArgumentException("field cannot be null");
@@ -1579,6 +1850,16 @@ public class ParamUtils {
 
         return builder.build();
     }
+
+    /**
+     * Converts an object into a gRPC value field according to the data type.
+     *
+     * @param obj the obj
+     * @param dataType the dataType
+     *
+     * @return the gRPC value field
+     */
+
 
     public static ValueField objectToValueField(Object obj, DataType dataType) {
         if (obj == null) {
@@ -1646,6 +1927,16 @@ public class ParamUtils {
         return null;
     }
 
+    /**
+     * Converts a gRPC value field into an object according to the data type.
+     *
+     * @param value the value
+     * @param dataType the dataType
+     *
+     * @return the converted object
+     */
+
+
     public static Object valueFieldToObject(ValueField value, DataType dataType) {
         if (value == null || value.getDataCase() == ValueField.DataCase.DATA_NOT_SET) {
             return null;
@@ -1679,6 +1970,15 @@ public class ParamUtils {
         return null;
     }
 
+    /**
+     * Converts a map of string pairs into a list of gRPC key-value pairs.
+     *
+     * @param sourceMap the sourceMap
+     *
+     * @return the list of gRPC key-value pairs
+     */
+
+
     public static List<KeyValuePair> AssembleKvPair(Map<String, String> sourceMap) {
         List<KeyValuePair> result = new ArrayList<>();
 
@@ -1693,6 +1993,11 @@ public class ParamUtils {
         return result;
     }
 
+    /**
+     * Holds a field type together with its column-based data for an insert operation.
+     */
+
+
     public static class InsertDataInfo {
         private final FieldType fieldType;
         private final LinkedList<Object> data;
@@ -1702,13 +2007,34 @@ public class ParamUtils {
             this.data = builder.data;
         }
 
+        /**
+         * Creates a new builder.
+         *
+         * @return the builder
+         */
+
+
         public static Builder builder() {
             return new Builder();
         }
 
+        /**
+         * Returns the fieldType.
+         *
+         * @return the fieldType
+         */
+
+
         public FieldType getFieldType() {
             return fieldType;
         }
+
+        /**
+         * Returns the data.
+         *
+         * @return the data
+         */
+
 
         public LinkedList<Object> getData() {
             return data;
@@ -1727,19 +2053,47 @@ public class ParamUtils {
                     Objects.equals(data, that.data);
         }
 
+        /**
+         * Builder for {@link InsertDataInfo} class.
+         */
+
+
         public static class Builder {
             private FieldType fieldType;
             private LinkedList<Object> data;
+
+            /**
+             * Sets the fieldType.
+             *
+             * @param fieldType the fieldType
+             * @return this builder
+             */
+
 
             public Builder fieldType(FieldType fieldType) {
                 this.fieldType = fieldType;
                 return this;
             }
 
+            /**
+             * Sets the data.
+             *
+             * @param data the data
+             * @return this builder
+             */
+
+
             public Builder data(LinkedList<Object> data) {
                 this.data = data;
                 return this;
             }
+
+            /**
+             * Builds the InsertDataInfo.
+             *
+             * @return the built InsertDataInfo
+             */
+
 
             public InsertDataInfo build() {
                 if (fieldType == null) {

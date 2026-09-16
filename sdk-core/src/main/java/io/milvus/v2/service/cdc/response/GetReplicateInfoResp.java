@@ -22,6 +22,8 @@ package io.milvus.v2.service.cdc.response;
 /**
  * Response returned by the {@code getReplicateInfo} CDC API.
  */
+
+
 public class GetReplicateInfoResp {
     private ReplicateCheckpoint checkpoint;
     private ReplicateCheckpoint salvageCheckpoint;
@@ -36,6 +38,8 @@ public class GetReplicateInfoResp {
      *
      * @return the builder
      */
+
+
     public static GetReplicateInfoRespBuilder builder() {
         return new GetReplicateInfoRespBuilder();
     }
@@ -45,6 +49,8 @@ public class GetReplicateInfoResp {
      *
      * @return the checkpoint
      */
+
+
     public ReplicateCheckpoint getCheckpoint() {
         return checkpoint;
     }
@@ -54,6 +60,8 @@ public class GetReplicateInfoResp {
      *
      * @param checkpoint the checkpoint
      */
+
+
     public void setCheckpoint(ReplicateCheckpoint checkpoint) {
         this.checkpoint = checkpoint;
     }
@@ -63,6 +71,8 @@ public class GetReplicateInfoResp {
      *
      * @return the salvage checkpoint
      */
+
+
     public ReplicateCheckpoint getSalvageCheckpoint() {
         return salvageCheckpoint;
     }
@@ -72,6 +82,8 @@ public class GetReplicateInfoResp {
      *
      * @param salvageCheckpoint the salvage checkpoint
      */
+
+
     public void setSalvageCheckpoint(ReplicateCheckpoint salvageCheckpoint) {
         this.salvageCheckpoint = salvageCheckpoint;
     }
@@ -84,6 +96,11 @@ public class GetReplicateInfoResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetReplicateInfoResp} class.
+     */
+
+
     public static class GetReplicateInfoRespBuilder {
         private ReplicateCheckpoint checkpoint;
         private ReplicateCheckpoint salvageCheckpoint;
@@ -94,6 +111,8 @@ public class GetReplicateInfoResp {
          * @param checkpoint the checkpoint
          * @return this builder
          */
+
+
         public GetReplicateInfoRespBuilder checkpoint(ReplicateCheckpoint checkpoint) {
             this.checkpoint = checkpoint;
             return this;
@@ -105,6 +124,8 @@ public class GetReplicateInfoResp {
          * @param salvageCheckpoint the salvage checkpoint
          * @return this builder
          */
+
+
         public GetReplicateInfoRespBuilder salvageCheckpoint(ReplicateCheckpoint salvageCheckpoint) {
             this.salvageCheckpoint = salvageCheckpoint;
             return this;
@@ -115,6 +136,8 @@ public class GetReplicateInfoResp {
          *
          * @return the response
          */
+
+
         public GetReplicateInfoResp build() {
             return new GetReplicateInfoResp(this);
         }
@@ -123,6 +146,8 @@ public class GetReplicateInfoResp {
     /**
      * A replication checkpoint identifying the position of replicated data.
      */
+
+
     public static class ReplicateCheckpoint {
         private String clusterId;
         private String pchannel;
@@ -135,6 +160,8 @@ public class GetReplicateInfoResp {
          * @param checkpoint the gRPC checkpoint
          * @return the converted checkpoint
          */
+
+
         public static ReplicateCheckpoint fromGRPC(io.milvus.grpc.ReplicateCheckpoint checkpoint) {
             return ReplicateCheckpoint.builder()
                     .clusterId(checkpoint.getClusterId())
@@ -156,6 +183,8 @@ public class GetReplicateInfoResp {
          *
          * @return the builder
          */
+
+
         public static ReplicateCheckpointBuilder builder() {
             return new ReplicateCheckpointBuilder();
         }
@@ -165,6 +194,8 @@ public class GetReplicateInfoResp {
          *
          * @return the cluster ID
          */
+
+
         public String getClusterId() {
             return clusterId;
         }
@@ -174,6 +205,8 @@ public class GetReplicateInfoResp {
          *
          * @param clusterId the cluster ID
          */
+
+
         public void setClusterId(String clusterId) {
             this.clusterId = clusterId;
         }
@@ -183,6 +216,8 @@ public class GetReplicateInfoResp {
          *
          * @return the physical channel
          */
+
+
         public String getPchannel() {
             return pchannel;
         }
@@ -192,6 +227,8 @@ public class GetReplicateInfoResp {
          *
          * @param pchannel the physical channel
          */
+
+
         public void setPchannel(String pchannel) {
             this.pchannel = pchannel;
         }
@@ -201,6 +238,8 @@ public class GetReplicateInfoResp {
          *
          * @return the message ID
          */
+
+
         public MessageID getMessageID() {
             return messageID;
         }
@@ -210,6 +249,8 @@ public class GetReplicateInfoResp {
          *
          * @param messageID the message ID
          */
+
+
         public void setMessageID(MessageID messageID) {
             this.messageID = messageID;
         }
@@ -219,6 +260,8 @@ public class GetReplicateInfoResp {
          *
          * @return the timetick
          */
+
+
         public Long getTimeTick() {
             return timeTick;
         }
@@ -228,6 +271,8 @@ public class GetReplicateInfoResp {
          *
          * @param timeTick the timetick
          */
+
+
         public void setTimeTick(Long timeTick) {
             this.timeTick = timeTick;
         }
@@ -242,6 +287,11 @@ public class GetReplicateInfoResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link GetReplicateInfoResp.ReplicateCheckpoint} class.
+         */
+
+
         public static class ReplicateCheckpointBuilder {
             private String clusterId;
             private String pchannel;
@@ -254,6 +304,8 @@ public class GetReplicateInfoResp {
              * @param clusterId the cluster ID
              * @return this builder
              */
+
+
             public ReplicateCheckpointBuilder clusterId(String clusterId) {
                 this.clusterId = clusterId;
                 return this;
@@ -265,6 +317,8 @@ public class GetReplicateInfoResp {
              * @param pchannel the physical channel
              * @return this builder
              */
+
+
             public ReplicateCheckpointBuilder pchannel(String pchannel) {
                 this.pchannel = pchannel;
                 return this;
@@ -276,6 +330,8 @@ public class GetReplicateInfoResp {
              * @param messageID the message ID
              * @return this builder
              */
+
+
             public ReplicateCheckpointBuilder messageID(MessageID messageID) {
                 this.messageID = messageID;
                 return this;
@@ -287,6 +343,8 @@ public class GetReplicateInfoResp {
              * @param timeTick the timetick
              * @return this builder
              */
+
+
             public ReplicateCheckpointBuilder timeTick(Long timeTick) {
                 this.timeTick = timeTick;
                 return this;
@@ -297,6 +355,8 @@ public class GetReplicateInfoResp {
              *
              * @return the checkpoint
              */
+
+
             public ReplicateCheckpoint build() {
                 return new ReplicateCheckpoint(this);
             }
@@ -306,6 +366,8 @@ public class GetReplicateInfoResp {
     /**
      * A message ID in the WAL.
      */
+
+
     public static class MessageID {
         private String id;
         /**
@@ -319,6 +381,8 @@ public class GetReplicateInfoResp {
          * @param messageID the gRPC message ID
          * @return the converted message ID
          */
+
+
         public static MessageID fromGRPC(io.milvus.grpc.MessageID messageID) {
             return MessageID.builder()
                     .id(messageID.getId())
@@ -336,6 +400,8 @@ public class GetReplicateInfoResp {
          *
          * @return the builder
          */
+
+
         public static MessageIDBuilder builder() {
             return new MessageIDBuilder();
         }
@@ -345,6 +411,8 @@ public class GetReplicateInfoResp {
          *
          * @return the message ID value
          */
+
+
         public String getId() {
             return id;
         }
@@ -354,6 +422,8 @@ public class GetReplicateInfoResp {
          *
          * @param id the message ID value
          */
+
+
         public void setId(String id) {
             this.id = id;
         }
@@ -363,6 +433,8 @@ public class GetReplicateInfoResp {
          *
          * @return the WAL implementation name
          */
+
+
         public String getWalName() {
             return walName;
         }
@@ -372,6 +444,8 @@ public class GetReplicateInfoResp {
          *
          * @param walName the WAL implementation name
          */
+
+
         public void setWalName(String walName) {
             this.walName = walName;
         }
@@ -384,6 +458,11 @@ public class GetReplicateInfoResp {
                     '}';
         }
 
+        /**
+         * Builder for {@link GetReplicateInfoResp.MessageID} class.
+         */
+
+
         public static class MessageIDBuilder {
             private String id;
             private String walName;
@@ -394,6 +473,8 @@ public class GetReplicateInfoResp {
              * @param id the message ID value
              * @return this builder
              */
+
+
             public MessageIDBuilder id(String id) {
                 this.id = id;
                 return this;
@@ -405,6 +486,8 @@ public class GetReplicateInfoResp {
              * @param walName the WAL implementation name
              * @return this builder
              */
+
+
             public MessageIDBuilder walName(String walName) {
                 this.walName = walName;
                 return this;
@@ -415,6 +498,8 @@ public class GetReplicateInfoResp {
              *
              * @return the message ID
              */
+
+
             public MessageID build() {
                 return new MessageID(this);
             }

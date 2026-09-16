@@ -22,6 +22,8 @@ package io.milvus.v2.service.index.request;
 /**
  * Request parameters for the {@code listIndexes} API.
  */
+
+
 public class ListIndexesReq {
     private String databaseName;
     private String collectionName;
@@ -41,6 +43,8 @@ public class ListIndexesReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -50,6 +54,8 @@ public class ListIndexesReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -59,6 +65,8 @@ public class ListIndexesReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -69,6 +77,8 @@ public class ListIndexesReq {
      * @param collectionName the collection name
      * @throws IllegalArgumentException if the collection name is null
      */
+
+
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -81,6 +91,8 @@ public class ListIndexesReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -90,6 +102,8 @@ public class ListIndexesReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -108,9 +122,16 @@ public class ListIndexesReq {
      *
      * @return the builder
      */
+
+
     public static ListIndexesReqBuilder builder() {
         return new ListIndexesReqBuilder();
     }
+
+    /**
+     * Builder for {@link ListIndexesReq} class.
+     */
+
 
     public static class ListIndexesReqBuilder {
         private String databaseName;
@@ -126,6 +147,8 @@ public class ListIndexesReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ListIndexesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -138,6 +161,8 @@ public class ListIndexesReq {
          * @return this builder
          * @throws IllegalArgumentException if the collection name is null
          */
+
+
         public ListIndexesReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -152,6 +177,8 @@ public class ListIndexesReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public ListIndexesReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -162,6 +189,8 @@ public class ListIndexesReq {
          *
          * @return the built request
          */
+
+
         public ListIndexesReq build() {
             return new ListIndexesReq(this);
         }

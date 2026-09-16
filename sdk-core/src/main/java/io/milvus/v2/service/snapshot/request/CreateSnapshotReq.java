@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.request;
 /**
  * Request parameters for the {@code createSnapshot} API.
  */
+
+
 public class CreateSnapshotReq {
     private String databaseName;
     private String collectionName;
@@ -42,6 +44,8 @@ public class CreateSnapshotReq {
      *
      * @return the builder
      */
+
+
     public static CreateSnapshotReqBuilder builder() {
         return new CreateSnapshotReqBuilder();
     }
@@ -51,6 +55,8 @@ public class CreateSnapshotReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -60,6 +66,8 @@ public class CreateSnapshotReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -69,6 +77,8 @@ public class CreateSnapshotReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -78,6 +88,8 @@ public class CreateSnapshotReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -87,6 +99,8 @@ public class CreateSnapshotReq {
      *
      * @return the snapshot name
      */
+
+
     public String getSnapshotName() {
         return snapshotName;
     }
@@ -96,6 +110,8 @@ public class CreateSnapshotReq {
      *
      * @param snapshotName the snapshot name
      */
+
+
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
@@ -105,6 +121,8 @@ public class CreateSnapshotReq {
      *
      * @return the snapshot description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -114,6 +132,8 @@ public class CreateSnapshotReq {
      *
      * @param description the snapshot description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -123,6 +143,8 @@ public class CreateSnapshotReq {
      *
      * @return the compaction protection duration in seconds
      */
+
+
     public Long getCompactionProtectionSeconds() {
         return compactionProtectionSeconds;
     }
@@ -132,6 +154,8 @@ public class CreateSnapshotReq {
      *
      * @param compactionProtectionSeconds the compaction protection duration in seconds
      */
+
+
     public void setCompactionProtectionSeconds(Long compactionProtectionSeconds) {
         this.compactionProtectionSeconds = compactionProtectionSeconds;
     }
@@ -147,6 +171,11 @@ public class CreateSnapshotReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link CreateSnapshotReq} class.
+     */
+
+
     public static class CreateSnapshotReqBuilder {
         private String databaseName = "";
         private String collectionName;
@@ -160,6 +189,8 @@ public class CreateSnapshotReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public CreateSnapshotReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -171,6 +202,8 @@ public class CreateSnapshotReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public CreateSnapshotReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -182,6 +215,8 @@ public class CreateSnapshotReq {
          * @param snapshotName the snapshot name
          * @return this builder
          */
+
+
         public CreateSnapshotReqBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
@@ -193,6 +228,8 @@ public class CreateSnapshotReq {
          * @param description the snapshot description
          * @return this builder
          */
+
+
         public CreateSnapshotReqBuilder description(String description) {
             this.description = description;
             return this;
@@ -204,6 +241,8 @@ public class CreateSnapshotReq {
          * @param compactionProtectionSeconds the compaction protection duration in seconds
          * @return this builder
          */
+
+
         public CreateSnapshotReqBuilder compactionProtectionSeconds(Long compactionProtectionSeconds) {
             this.compactionProtectionSeconds = compactionProtectionSeconds;
             return this;
@@ -214,6 +253,8 @@ public class CreateSnapshotReq {
          *
          * @return the built request
          */
+
+
         public CreateSnapshotReq build() {
             return new CreateSnapshotReq(this);
         }

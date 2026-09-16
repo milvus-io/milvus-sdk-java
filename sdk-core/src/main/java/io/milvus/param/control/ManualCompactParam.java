@@ -27,6 +27,8 @@ import io.milvus.param.ParamUtils;
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
+
+
 public class ManualCompactParam {
     private final String collectionName;
 
@@ -34,9 +36,23 @@ public class ManualCompactParam {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
 
     public String getCollectionName() {
         return collectionName;
@@ -52,6 +68,8 @@ public class ManualCompactParam {
     /**
      * Builder for {@link ManualCompactParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
 
@@ -64,6 +82,8 @@ public class ManualCompactParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -77,6 +97,8 @@ public class ManualCompactParam {
          *
          * @return {@link ManualCompactParam}
          */
+
+
         public ManualCompactParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

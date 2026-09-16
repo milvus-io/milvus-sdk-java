@@ -27,6 +27,8 @@ public class AlterIndexReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -36,6 +38,8 @@ public class AlterIndexReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -45,6 +49,8 @@ public class AlterIndexReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -54,6 +60,8 @@ public class AlterIndexReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -63,6 +71,8 @@ public class AlterIndexReq {
      *
      * @return the index name
      */
+
+
     public String getIndexName() {
         return indexName;
     }
@@ -72,6 +82,8 @@ public class AlterIndexReq {
      *
      * @param indexName the index name
      */
+
+
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
@@ -81,6 +93,8 @@ public class AlterIndexReq {
      *
      * @return the index properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -90,6 +104,8 @@ public class AlterIndexReq {
      *
      * @param properties the index properties
      */
+
+
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -109,9 +125,16 @@ public class AlterIndexReq {
      *
      * @return the builder
      */
+
+
     public static AlterIndexReqBuilder builder() {
         return new AlterIndexReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterIndexReq} class.
+     */
+
 
     public static class AlterIndexReqBuilder {
         private String collectionName;
@@ -128,6 +151,8 @@ public class AlterIndexReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AlterIndexReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -139,6 +164,8 @@ public class AlterIndexReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AlterIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -150,6 +177,8 @@ public class AlterIndexReq {
          * @param indexName the index name
          * @return this builder
          */
+
+
         public AlterIndexReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
@@ -161,6 +190,8 @@ public class AlterIndexReq {
          * @param properties the index properties
          * @return this builder
          */
+
+
         public AlterIndexReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -171,6 +202,8 @@ public class AlterIndexReq {
          *
          * @return the built request
          */
+
+
         public AlterIndexReq build() {
             return new AlterIndexReq(this);
         }

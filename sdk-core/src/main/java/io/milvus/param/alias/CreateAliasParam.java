@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>createAlias</code> interface.
  */
+
+
 public class CreateAliasParam {
     private final String collectionName;
     private final String databaseName;
@@ -39,14 +41,33 @@ public class CreateAliasParam {
         this.alias = builder.alias;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter methods to replace @Getter annotation
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the alias.
+     *
+     * @return the alias
+     */
+
 
     public String getAlias() {
         return alias;
@@ -62,6 +83,13 @@ public class CreateAliasParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -69,6 +97,8 @@ public class CreateAliasParam {
     /**
      * Builder for {@link CreateAliasParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
         private String databaseName;
@@ -83,6 +113,8 @@ public class CreateAliasParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -97,6 +129,8 @@ public class CreateAliasParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -108,6 +142,8 @@ public class CreateAliasParam {
          * @param alias alias of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withAlias(String alias) {
             if (alias == null) {
                 throw new IllegalArgumentException("alias cannot be null");
@@ -121,6 +157,8 @@ public class CreateAliasParam {
          *
          * @return {@link CreateAliasParam}
          */
+
+
         public CreateAliasParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(alias, "Alias");

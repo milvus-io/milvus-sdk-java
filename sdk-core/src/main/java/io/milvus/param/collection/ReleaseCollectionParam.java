@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>releaseCollection</code> interface.
  */
+
+
 public class ReleaseCollectionParam {
     private final String databaseName;
     private final String collectionName;
@@ -34,9 +36,23 @@ public class ReleaseCollectionParam {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -50,6 +66,13 @@ public class ReleaseCollectionParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -57,6 +80,8 @@ public class ReleaseCollectionParam {
     /**
      * Builder for {@link ReleaseCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -70,6 +95,8 @@ public class ReleaseCollectionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -81,6 +108,8 @@ public class ReleaseCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -94,6 +123,8 @@ public class ReleaseCollectionParam {
          *
          * @return {@link ReleaseCollectionParam}
          */
+
+
         public ReleaseCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

@@ -28,9 +28,18 @@ import io.milvus.param.ServerAddress;
 /**
  * Defined address and Milvus clients for each server.
  */
+
+
 public class ServerSetting {
     private final ServerAddress serverAddress;
     private final MilvusClient client;
+
+    /**
+     * Creates a server setting from the given builder.
+     *
+     * @param builder the builder carrying the address and client
+     */
+
 
     public ServerSetting(Builder builder) {
         if (builder == null) {
@@ -40,17 +49,43 @@ public class ServerSetting {
         this.client = builder.milvusClient;
     }
 
+    /**
+     * Returns the server address of this setting.
+     *
+     * @return the server address
+     */
+
+
     public ServerAddress getServerAddress() {
         return serverAddress;
     }
+
+    /**
+     * Returns the Milvus client bound to this server.
+     *
+     * @return the Milvus client
+     */
+
 
     public MilvusClient getClient() {
         return client;
     }
 
+    /**
+     * Creates a new {@link ServerSetting} builder.
+     *
+     * @return a new builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Builder for {@link ServerSetting} class.
+     */
+
 
     public static class Builder {
         private ServerAddress serverAddress;
@@ -66,6 +101,9 @@ public class ServerSetting {
          * @param serverAddress ServerAddress host,port/server
          * @return <code>Builder</code>
          */
+
+
+
         public Builder withHost(ServerAddress serverAddress) {
             if (serverAddress == null) {
                 throw new IllegalArgumentException("serverAddress cannot be null");
@@ -80,6 +118,8 @@ public class ServerSetting {
          * @param milvusClient MilvusClient
          * @return <code>Builder</code>
          */
+
+
         public Builder withMilvusClient(MilvusClient milvusClient) {
             this.milvusClient = milvusClient;
             return this;
@@ -90,6 +130,8 @@ public class ServerSetting {
          *
          * @return {@link ConnectParam}
          */
+
+
         public ServerSetting build() throws ParamException {
             ParamUtils.CheckNullEmptyString(serverAddress.getHost(), "Host name");
 

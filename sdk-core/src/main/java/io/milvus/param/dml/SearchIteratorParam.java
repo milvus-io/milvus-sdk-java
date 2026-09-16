@@ -35,6 +35,8 @@ import java.util.SortedMap;
 /**
  * Parameters for <code>searchIterator</code> interface.
  */
+
+
 public class SearchIteratorParam {
     private final String databaseName;
     private final String collectionName;
@@ -86,86 +88,231 @@ public class SearchIteratorParam {
         this.batchSize = builder.batchSize;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
 
     public List<String> getPartitionNames() {
         return partitionNames;
     }
 
+    /**
+     * Returns the metricType.
+     *
+     * @return the metricType
+     */
+
+
     public String getMetricType() {
         return metricType;
     }
+
+    /**
+     * Returns the vectorFieldName.
+     *
+     * @return the vectorFieldName
+     */
+
 
     public String getVectorFieldName() {
         return vectorFieldName;
     }
 
+    /**
+     * Returns the topK.
+     *
+     * @return the topK
+     */
+
+
     public Long getTopK() {
         return topK;
     }
+
+    /**
+     * Returns the expr.
+     *
+     * @return the expr
+     */
+
 
     public String getExpr() {
         return expr;
     }
 
+    /**
+     * Returns the outFields.
+     *
+     * @return the outFields
+     */
+
+
     public List<String> getOutFields() {
         return outFields;
     }
+
+    /**
+     * Returns the vectors.
+     *
+     * @return the vectors
+     */
+
 
     public List<?> getVectors() {
         return vectors;
     }
 
+    /**
+     * Returns the NQ.
+     *
+     * @return the NQ
+     */
+
+
     public Long getNQ() {
         return NQ;
     }
+
+    /**
+     * Returns the roundDecimal.
+     *
+     * @return the roundDecimal
+     */
+
 
     public int getRoundDecimal() {
         return roundDecimal;
     }
 
+    /**
+     * Returns the params.
+     *
+     * @return the params
+     */
+
+
     public String getParams() {
         return params;
     }
+
+    /**
+     * Returns the travelTimestamp.
+     *
+     * @return the travelTimestamp
+     */
+
 
     public long getTravelTimestamp() {
         return travelTimestamp;
     }
 
+    /**
+     * Returns the guaranteeTimestamp.
+     *
+     * @return the guaranteeTimestamp
+     */
+
+
     public long getGuaranteeTimestamp() {
         return guaranteeTimestamp;
     }
+
+    /**
+     * Returns the gracefulTime.
+     *
+     * @return the gracefulTime
+     */
+
 
     public Long getGracefulTime() {
         return gracefulTime;
     }
 
+    /**
+     * Returns the consistencyLevel.
+     *
+     * @return the consistencyLevel
+     */
+
+
     public ConsistencyLevelEnum getConsistencyLevel() {
         return consistencyLevel;
     }
+
+    /**
+     * Returns the ignoreGrowing.
+     *
+     * @return the ignoreGrowing
+     */
+
 
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
 
+    /**
+     * Returns the groupByFieldName.
+     *
+     * @return the groupByFieldName
+     */
+
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
 
+    /**
+     * Returns the plType.
+     *
+     * @return the plType
+     */
+
+
     public PlaceholderType getPlType() {
         return plType;
     }
+
+    /**
+     * Returns the batchSize.
+     *
+     * @return the batchSize
+     */
+
 
     public long getBatchSize() {
         return batchSize;
@@ -200,6 +347,8 @@ public class SearchIteratorParam {
     /**
      * Builder for {@link SearchIteratorParam} class.
      */
+
+
     public static class Builder {
         private String databaseName;
         private String collectionName;
@@ -236,6 +385,8 @@ public class SearchIteratorParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -247,6 +398,8 @@ public class SearchIteratorParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -262,6 +415,8 @@ public class SearchIteratorParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             // Replace @NonNull logic with explicit null check
             if (partitionNames == null) {
@@ -277,6 +432,8 @@ public class SearchIteratorParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -288,6 +445,8 @@ public class SearchIteratorParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -305,6 +464,8 @@ public class SearchIteratorParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
+
+
         public Builder withMetricType(MetricType metricType) {
             // Replace @NonNull logic with explicit null check
             if (metricType == null) {
@@ -320,6 +481,8 @@ public class SearchIteratorParam {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
+
+
         public Builder withVectorFieldName(String vectorFieldName) {
             // Replace @NonNull logic with explicit null check
             if (vectorFieldName == null) {
@@ -346,6 +509,14 @@ public class SearchIteratorParam {
             return this;
         }
 
+        /**
+         * Sets the limit.
+         *
+         * @param limit the limit
+         * @return this builder
+         */
+
+
         public Builder withLimit(Long limit) {
             // Replace @NonNull logic with explicit null check
             if (limit == null) {
@@ -362,6 +533,8 @@ public class SearchIteratorParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
+
+
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
             if (expr == null) {
@@ -377,6 +550,8 @@ public class SearchIteratorParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
+
+
         public Builder withOutFields(List<String> outFields) {
             // Replace @NonNull logic with explicit null check
             if (outFields == null) {
@@ -392,6 +567,8 @@ public class SearchIteratorParam {
          * @param fieldName filed name
          * @return <code>Builder</code>
          */
+
+
         public Builder addOutField(String fieldName) {
             // Replace @NonNull logic with explicit null check
             if (fieldName == null) {
@@ -433,6 +610,8 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withFloatVectors(List<List<Float>> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -450,6 +629,8 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withBinaryVectors(List<ByteBuffer> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -467,6 +648,8 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withFloat16Vectors(List<ByteBuffer> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -484,6 +667,8 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withBFloat16Vectors(List<ByteBuffer> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -501,6 +686,8 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withSparseFloatVectors(List<SortedMap<Long, Float>> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -518,6 +705,8 @@ public class SearchIteratorParam {
          * @param decimal how many digits after the decimal point
          * @return <code>Builder</code>
          */
+
+
         public Builder withRoundDecimal(Integer decimal) {
             // Replace @NonNull logic with explicit null check
             if (decimal == null) {
@@ -536,6 +725,8 @@ public class SearchIteratorParam {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
+
+
         public Builder withParams(String params) {
             // Replace @NonNull logic with explicit null check
             if (params == null) {
@@ -552,6 +743,8 @@ public class SearchIteratorParam {
          * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withIgnoreGrowing(Boolean ignoreGrowing) {
             // Replace @NonNull logic with explicit null check
             if (ignoreGrowing == null) {
@@ -567,6 +760,8 @@ public class SearchIteratorParam {
          * @param groupByFieldName field name to do grouping
          * @return <code>Builder</code>
          */
+
+
         public Builder withGroupByFieldName(String groupByFieldName) {
             // Replace @NonNull logic with explicit null check
             if (groupByFieldName == null) {
@@ -583,6 +778,8 @@ public class SearchIteratorParam {
          * @param batchSize a value to define the number of entities returned per batch
          * @return <code>Builder</code>
          */
+
+
         public Builder withBatchSize(@NotNull Long batchSize) {
             this.batchSize = batchSize;
             return this;
@@ -593,6 +790,8 @@ public class SearchIteratorParam {
          *
          * @return {@link SearchIteratorParam}
          */
+
+
         public SearchIteratorParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
@@ -617,6 +816,13 @@ public class SearchIteratorParam {
             return new SearchIteratorParam(this);
         }
     }
+
+    /**
+     * Verifies the target vectors to ensure they are valid for search.
+     *
+     * @param vectors the target vectors to verify
+     */
+
 
     public static void verifyVectors(List<?> vectors) {
         if (vectors == null || vectors.isEmpty()) {

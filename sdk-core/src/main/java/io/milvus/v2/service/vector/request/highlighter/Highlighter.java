@@ -26,6 +26,8 @@ import java.util.Map;
  * text fields. Implementations include the {@link LexicalHighlighter} and the
  * {@link SemanticHighlighter}.
  */
+
+
 public interface Highlighter {
     /**
      * Returns the highlight type name, for example {@code Lexical} or {@code Semantic}.

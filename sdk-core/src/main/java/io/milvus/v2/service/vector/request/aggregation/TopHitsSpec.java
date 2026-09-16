@@ -31,6 +31,8 @@ import java.util.List;
  * returns a fixed number of the most relevant hits of each group together with an
  * optional sort rule.
  */
+
+
 public class TopHitsSpec {
     private final long size;
     private final List<SortSpec> sort;
@@ -49,6 +51,8 @@ public class TopHitsSpec {
      *
      * @return a new builder
      */
+
+
     public static TopHitsSpecBuilder builder() {
         return new TopHitsSpecBuilder();
     }
@@ -58,6 +62,8 @@ public class TopHitsSpec {
      *
      * @return the number of hits
      */
+
+
     public long getSize() {
         return size;
     }
@@ -67,9 +73,18 @@ public class TopHitsSpec {
      *
      * @return the sort rules
      */
+
+
     public List<SortSpec> getSort() {
         return sort;
     }
+
+    /**
+     * Converts this spec into its gRPC representation.
+     *
+     * @return the gRPC {@code TopHitsSpec}
+     */
+
 
     public io.milvus.grpc.TopHitsSpec toProto() {
         io.milvus.grpc.TopHitsSpec.Builder builder = io.milvus.grpc.TopHitsSpec.newBuilder().setSize(size);
@@ -90,6 +105,8 @@ public class TopHitsSpec {
     /**
      * Builder for {@link TopHitsSpec}.
      */
+
+
     public static class TopHitsSpecBuilder {
         private long size;
         private final List<SortSpec> sort = new ArrayList<>();
@@ -103,6 +120,8 @@ public class TopHitsSpec {
          * @param size the number of hits
          * @return this builder
          */
+
+
         public TopHitsSpecBuilder size(long size) {
             this.size = size;
             return this;
@@ -114,6 +133,8 @@ public class TopHitsSpec {
          * @param sort the sort rules
          * @return this builder
          */
+
+
         public TopHitsSpecBuilder sort(List<SortSpec> sort) {
             this.sort.clear();
             if (sort != null) {
@@ -129,6 +150,8 @@ public class TopHitsSpec {
          * @return this builder
          * @throws MilvusClientException if the sort rule is {@code null}
          */
+
+
         public TopHitsSpecBuilder addSort(SortSpec sort) {
             if (sort == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -143,6 +166,8 @@ public class TopHitsSpec {
          *
          * @return the built top-hits spec
          */
+
+
         public TopHitsSpec build() {
             return new TopHitsSpec(this);
         }

@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code addCollectionField} API.
  */
+
+
 public class AddCollectionFieldReq extends AddFieldReq {
     private String collectionName;
     private String databaseName;
@@ -37,6 +39,8 @@ public class AddCollectionFieldReq extends AddFieldReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -46,6 +50,8 @@ public class AddCollectionFieldReq extends AddFieldReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -55,6 +61,8 @@ public class AddCollectionFieldReq extends AddFieldReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -64,6 +72,8 @@ public class AddCollectionFieldReq extends AddFieldReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -82,9 +92,16 @@ public class AddCollectionFieldReq extends AddFieldReq {
      *
      * @return the builder
      */
+
+
     public static AddCollectionFieldReqBuilder builder() {
         return new AddCollectionFieldReqBuilder();
     }
+
+    /**
+     * Builder for {@link AddCollectionFieldReq} class.
+     */
+
 
     public static class AddCollectionFieldReqBuilder extends AddFieldReq.AddFieldReqBuilder<AddCollectionFieldReqBuilder> {
         private String collectionName;
@@ -99,6 +116,8 @@ public class AddCollectionFieldReq extends AddFieldReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public AddCollectionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -110,6 +129,8 @@ public class AddCollectionFieldReq extends AddFieldReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AddCollectionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;

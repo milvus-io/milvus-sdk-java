@@ -36,6 +36,8 @@ import java.util.Map;
 /**
  * Service for database-related operations, such as creating, dropping, and describing databases.
  */
+
+
 public class DatabaseService extends BaseService {
     /**
      * Creates a database with the given name and optional properties.
@@ -44,6 +46,7 @@ public class DatabaseService extends BaseService {
      * @param request the create database request
      * @return {@code null}
      */
+
     public Void createDatabase(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateDatabaseReq request) {
         String title = String.format("Create database: '%s'", request.getDatabaseName());
         CreateDatabaseRequest.Builder builder = CreateDatabaseRequest.newBuilder()
@@ -65,6 +68,8 @@ public class DatabaseService extends BaseService {
      * @param request the drop database request
      * @return {@code null}
      */
+
+
     public Void dropDatabase(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropDatabaseReq request) {
         String title = String.format("Drop database: '%s'", request.getDatabaseName());
         DropDatabaseRequest rpcRequest = DropDatabaseRequest.newBuilder()
@@ -84,6 +89,8 @@ public class DatabaseService extends BaseService {
      * @param blockingStub the gRPC blocking stub
      * @return the list databases response
      */
+
+
     public ListDatabasesResp listDatabases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         ListDatabasesResponse response = blockingStub.listDatabases(ListDatabasesRequest.newBuilder().build());
         rpcUtils.handleResponse("List databases", response.getStatus());
@@ -101,6 +108,8 @@ public class DatabaseService extends BaseService {
      * @param request the alter database properties request
      * @return {@code null}
      */
+
+
     public Void alterDatabaseProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterDatabasePropertiesReq request) {
         String title = String.format("Alter properties of database: '%s'", request.getDatabaseName());
         AlterDatabaseRequest.Builder builder = AlterDatabaseRequest.newBuilder()
@@ -122,6 +131,8 @@ public class DatabaseService extends BaseService {
      * @param request the drop database properties request
      * @return {@code null}
      */
+
+
     public Void dropDatabaseProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropDatabasePropertiesReq request) {
         String title = String.format("Drop properties of database: '%s'", request.getDatabaseName());
         AlterDatabaseRequest.Builder builder = AlterDatabaseRequest.newBuilder()
@@ -140,6 +151,8 @@ public class DatabaseService extends BaseService {
      * @param request the describe database request
      * @return the describe database response
      */
+
+
     public DescribeDatabaseResp describeDatabase(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeDatabaseReq request) {
         String title = String.format("Describe database: '%s'", request.getDatabaseName());
         DescribeDatabaseRequest rpcRequest = DescribeDatabaseRequest.newBuilder()

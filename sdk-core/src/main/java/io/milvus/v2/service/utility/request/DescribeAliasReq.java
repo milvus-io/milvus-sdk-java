@@ -22,6 +22,8 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code describeAlias} API.
  */
+
+
 public class DescribeAliasReq {
     private String databaseName;
     private String alias;
@@ -30,6 +32,13 @@ public class DescribeAliasReq {
         this.databaseName = builder.databaseName;
         this.alias = builder.alias;
     }
+
+    /**
+     * Creates a new builder for {@code DescribeAliasReq}.
+     *
+     * @return the builder
+     */
+
 
     public static DescribeAliasReqBuilder builder() {
         return new DescribeAliasReqBuilder();
@@ -40,6 +49,8 @@ public class DescribeAliasReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +60,8 @@ public class DescribeAliasReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +71,8 @@ public class DescribeAliasReq {
      *
      * @return the alias
      */
+
+
     public String getAlias() {
         return alias;
     }
@@ -67,6 +82,8 @@ public class DescribeAliasReq {
      *
      * @param alias the alias
      */
+
+
     public void setAlias(String alias) {
         this.alias = alias;
     }
@@ -79,6 +96,11 @@ public class DescribeAliasReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeAliasReq} class.
+     */
+
+
     public static class DescribeAliasReqBuilder {
         private String databaseName;
         private String alias;
@@ -89,6 +111,8 @@ public class DescribeAliasReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DescribeAliasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -100,6 +124,8 @@ public class DescribeAliasReq {
          * @param alias the alias
          * @return this builder
          */
+
+
         public DescribeAliasReqBuilder alias(String alias) {
             this.alias = alias;
             return this;
@@ -110,6 +136,8 @@ public class DescribeAliasReq {
          *
          * @return the constructed {@code DescribeAliasReq}
          */
+
+
         public DescribeAliasReq build() {
             return new DescribeAliasReq(this);
         }

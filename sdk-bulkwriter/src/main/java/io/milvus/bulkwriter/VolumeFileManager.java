@@ -52,6 +52,14 @@ import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Manages uploading local files or directories to a Zilliz cloud Volume.
+ *
+ * <p>Handles applying for the volume, refreshing temporary credentials and the storage
+ * client, uploading files concurrently with retry, and reporting upload progress.</p>
+ */
+
+
 public class VolumeFileManager {
     private static final Logger logger = LoggerFactory.getLogger(VolumeFileManager.class);
     private static final long DEFAULT_CREDENTIAL_REFRESH_MARGIN_SECONDS = 300L;
@@ -61,6 +69,12 @@ public class VolumeFileManager {
     private final ConnectType connectType;
 
     private volatile VolumeSession lastVolumeSession;
+    /**
+     * Creates a volume file manager that uploads local files or directories to a Zilliz cloud Volume.
+     *
+     * @param volumeFileManagerParam the volume file manager parameters
+     */
+
 
     public VolumeFileManager(VolumeFileManagerParam volumeFileManagerParam) {
         this.cloudEndpoint = volumeFileManagerParam.getCloudEndpoint();
@@ -78,6 +92,8 @@ public class VolumeFileManager {
      * once all files have been uploaded successfully
      * @throws CompletionException if an error occurs during the upload process
      */
+
+
     public CompletableFuture<UploadFilesResult> uploadFilesAsync(UploadFilesRequest request) {
         String localDirOrFilePath = request.getSourceFilePath();
         Pair<List<String>, Long> localPathPair = FileUtils.processLocalPath(localDirOrFilePath);
@@ -165,6 +181,8 @@ public class VolumeFileManager {
      * @throws ExecutionException if an error occurs during the upload process
      * @throws InterruptedException if the calling thread is interrupted while waiting
      */
+
+
     public UploadFilesResult uploadFiles(UploadFilesRequest request) throws ExecutionException, InterruptedException {
         return uploadFilesAsync(request).get();
     }
@@ -172,6 +190,8 @@ public class VolumeFileManager {
     /**
     * Shuts down the volume file manager gracefully, waiting for pending uploads.
     */
+
+
     public void shutdownGracefully() {
         VolumeSession session = lastVolumeSession;
         lastVolumeSession = null;
@@ -679,6 +699,7 @@ public class VolumeFileManager {
         *
         * @param bytes the number of bytes transferred
         */
+
         public void onProgress(long bytes) {
             progressTracker.updateFile(filePath, fileSize, bytes);
         }

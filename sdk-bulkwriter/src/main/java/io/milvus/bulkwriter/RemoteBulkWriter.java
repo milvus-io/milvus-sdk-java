@@ -50,6 +50,8 @@ import java.util.concurrent.ExecutionException;
  * Rows are buffered locally into chunked data files, then uploaded to an S3-compatible
  * bucket or an Azure container. The local copies are removed after a successful upload.
  */
+
+
 public class RemoteBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(RemoteBulkWriter.class);
 
@@ -58,6 +60,13 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     private StorageClient storageClient;
 
     private final List<List<String>> remoteFiles;
+    /**
+     * Creates a bulk writer that writes chunked bulk data files and uploads them to remote cloud storage.
+     *
+     * @param bulkWriterParam the bulk writer parameters
+     * @throws IOException if the data directory cannot be created
+     */
+
 
     public RemoteBulkWriter(RemoteBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(),
@@ -84,6 +93,7 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     * @throws IOException if writing the row fails
     * @throws InterruptedException if the calling thread is interrupted while committing
     */
+
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
@@ -95,6 +105,7 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     * @param async if true, the flush runs in a background thread; otherwise it blocks until done
     * @throws InterruptedException if the calling thread is interrupted while waiting
     */
+
     public void commit(boolean async) throws InterruptedException {
         super.commit(async);
     }
@@ -115,6 +126,7 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     *
     * @return the list of remote file path batches
     */
+
     public List<List<String>> getBatchFiles() {
         return remoteFiles;
     }
@@ -225,6 +237,7 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     *
     * @throws Exception if an error occurs while closing
     */
+
     public void close() throws Exception {
         logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
         try {

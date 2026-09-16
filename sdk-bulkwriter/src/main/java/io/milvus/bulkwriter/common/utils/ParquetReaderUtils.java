@@ -29,6 +29,8 @@ import java.io.IOException;
  * Abstract base class that reads a local Parquet file with an Avro-based reader and delegates each
  * decoded record to {@link #readRecord(GenericData.Record)}.
  */
+
+
 public abstract class ParquetReaderUtils {
     /**
      * Reads the Parquet file at the given local path and invokes {@link #readRecord(GenericData.Record)}
@@ -37,6 +39,7 @@ public abstract class ParquetReaderUtils {
      * @param localFilePath the local file path of the Parquet file to read
      * @throws IOException if the file cannot be opened or read
      */
+
     public void readParquet(String localFilePath) throws IOException {
         Path path = new Path(localFilePath);
         try (org.apache.parquet.hadoop.ParquetReader<GenericData.Record> reader = AvroParquetReader
@@ -55,5 +58,7 @@ public abstract class ParquetReaderUtils {
      *
      * @param record the record decoded from the Parquet file
      */
+
+
     public abstract void readRecord(GenericData.Record record);
 }

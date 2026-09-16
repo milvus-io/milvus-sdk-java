@@ -25,6 +25,8 @@ package io.milvus.bulkwriter.request.describe;
  * <p>It identifies the import job to describe through its job ID, and inherits the API key
  * handling from {@link BaseDescribeImportRequest}.</p>
  */
+
+
 public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
     private static final long serialVersionUID = 6123645882882199210L;
     private String jobId;
@@ -32,6 +34,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
     /**
      * Constructs an empty {@code MilvusDescribeImportRequest}.
      */
+
+
     public MilvusDescribeImportRequest() {
     }
 
@@ -40,6 +44,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
      *
      * @param jobId the ID of the import job to describe
      */
+
+
     public MilvusDescribeImportRequest(String jobId) {
         this.jobId = jobId;
     }
@@ -54,6 +60,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
      *
      * @return the import job ID
      */
+
+
     public String getJobId() {
         return jobId;
     }
@@ -63,6 +71,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
      *
      * @param jobId the import job ID
      */
+
+
     public void setJobId(String jobId) {
         this.jobId = jobId;
     }
@@ -79,6 +89,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
      *
      * @return a {@code MilvusDescribeImportRequest} builder
      */
+
+
     public static MilvusDescribeImportRequestBuilder builder() {
         return new MilvusDescribeImportRequestBuilder();
     }
@@ -86,6 +98,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
     /**
      * Builder for {@link MilvusDescribeImportRequest}.
      */
+
+
     public static class MilvusDescribeImportRequestBuilder extends BaseDescribeImportRequestBuilder<MilvusDescribeImportRequestBuilder> {
         private String jobId;
 
@@ -99,6 +113,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
          * @param jobId the import job ID
          * @return this builder
          */
+
+
         public MilvusDescribeImportRequestBuilder jobId(String jobId) {
             this.jobId = jobId;
             return this;
@@ -109,6 +125,8 @@ public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
          *
          * @return the built {@code MilvusDescribeImportRequest}
          */
+
+
         public MilvusDescribeImportRequest build() {
             return new MilvusDescribeImportRequest(this);
         }

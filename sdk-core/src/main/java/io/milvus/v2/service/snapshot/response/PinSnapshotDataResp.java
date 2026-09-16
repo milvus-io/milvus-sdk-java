@@ -22,12 +22,21 @@ package io.milvus.v2.service.snapshot.response;
 /**
  * Response returned by the {@code pinSnapshotData} API.
  */
+
+
 public class PinSnapshotDataResp {
     private Long pinId;
 
     private PinSnapshotDataResp(PinSnapshotDataRespBuilder builder) {
         this.pinId = builder.pinId;
     }
+
+    /**
+     * Creates a new builder for {@code PinSnapshotDataResp}.
+     *
+     * @return the builder
+     */
+
 
     public static PinSnapshotDataRespBuilder builder() {
         return new PinSnapshotDataRespBuilder();
@@ -38,6 +47,8 @@ public class PinSnapshotDataResp {
      *
      * @return the pin ID
      */
+
+
     public Long getPinId() {
         return pinId;
     }
@@ -47,6 +58,8 @@ public class PinSnapshotDataResp {
      *
      * @param pinId the pin ID
      */
+
+
     public void setPinId(Long pinId) {
         this.pinId = pinId;
     }
@@ -58,6 +71,11 @@ public class PinSnapshotDataResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link PinSnapshotDataResp} class.
+     */
+
+
     public static class PinSnapshotDataRespBuilder {
         private Long pinId;
 
@@ -67,6 +85,8 @@ public class PinSnapshotDataResp {
          * @param pinId the pin ID
          * @return this builder
          */
+
+
         public PinSnapshotDataRespBuilder pinId(Long pinId) {
             this.pinId = pinId;
             return this;
@@ -77,6 +97,8 @@ public class PinSnapshotDataResp {
          *
          * @return the built response
          */
+
+
         public PinSnapshotDataResp build() {
             return new PinSnapshotDataResp(this);
         }

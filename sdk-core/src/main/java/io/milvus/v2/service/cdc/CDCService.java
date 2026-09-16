@@ -58,6 +58,8 @@ import java.util.NoSuchElementException;
  * Service for CDC (change data capture) operations, such as querying replication information
  * and dumping messages.
  */
+
+
 public class CDCService extends BaseService {
     /**
      * Returns the replication information for the given source cluster and target physical channel.
@@ -66,6 +68,7 @@ public class CDCService extends BaseService {
      * @param requestParam the get replicate info request
      * @return the get replicate info response
      */
+
     public GetReplicateInfoResp getReplicateInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReplicateInfoReq requestParam) {
         if (StringUtils.isEmpty(requestParam.getSourceClusterId())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "sourceClusterId cannot be null or empty");
@@ -92,6 +95,8 @@ public class CDCService extends BaseService {
      * @param blockingStub the gRPC blocking stub
      * @return the get replicate configuration response
      */
+
+
     public GetReplicateConfigurationResp getReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         GetReplicateConfigurationRequest request = GetReplicateConfigurationRequest.newBuilder().build();
 
@@ -111,6 +116,8 @@ public class CDCService extends BaseService {
      * @param requestParam the update replicate configuration request
      * @return the update replicate configuration response
      */
+
+
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateReplicateConfigurationReq requestParam) {
         ReplicateConfiguration configuration = requestParam.getReplicateConfiguration();
         if (configuration == null || CollectionUtils.isEmpty(configuration.getClusters())) {
@@ -153,6 +160,8 @@ public class CDCService extends BaseService {
      * @param request the dump messages request
      * @return the dump messages response containing the message stream
      */
+
+
     public DumpMessagesResp dumpMessages(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                          DumpMessagesReq request) {
         if (StringUtils.isEmpty(request.getPchannel())) {

@@ -45,6 +45,8 @@ import java.util.SortedMap;
  * {@code SearchIteratorReq}) and the legacy v1 iterator parameters used internally by the iterator
  * implementations.
  */
+
+
 public class IteratorAdapterV2 {
     /**
      * Converts a v2 query iterator request into a v1 query iterator parameter.
@@ -52,6 +54,7 @@ public class IteratorAdapterV2 {
      * @param queryIteratorReq the v2 query iterator request
      * @return the equivalent v1 query iterator parameter
      */
+
     public static QueryIteratorParam convertV2Req(QueryIteratorReq queryIteratorReq) {
         QueryIteratorParam.Builder builder = QueryIteratorParam.newBuilder()
                 .withDatabaseName(queryIteratorReq.getDatabaseName())
@@ -78,6 +81,8 @@ public class IteratorAdapterV2 {
      * @param param the v1 query iterator parameter
      * @return the equivalent v2 query iterator request
      */
+
+
     public static QueryIteratorReq convertV1Param(QueryIteratorParam param) {
         ConsistencyLevel level = null;
         if (param.getConsistencyLevel() != null) {
@@ -109,6 +114,8 @@ public class IteratorAdapterV2 {
      * @throws io.milvus.exception.ParamException if the target vectors are of different types or of
      *         an unsupported type
      */
+
+
     public static SearchIteratorParam convertV2Req(SearchIteratorReq searchIteratorReq) {
         MetricType metricType = MetricType.None;
         if (searchIteratorReq.getMetricType() != IndexParam.MetricType.INVALID) {
@@ -191,6 +198,8 @@ public class IteratorAdapterV2 {
      * @throws io.milvus.exception.ParamException if the placeholder type of the parameter is
      *         unsupported
      */
+
+
     public static SearchIteratorReq convertV1Param(SearchIteratorParam param) {
         ConsistencyLevel level = null;
         if (param.getConsistencyLevel() != null) {
@@ -258,6 +267,8 @@ public class IteratorAdapterV2 {
      * @param schema the v2 field schema, typically the primary key field of the collection
      * @return the equivalent v1 field type
      */
+
+
     public static FieldType convertV2Field(CreateCollectionReq.FieldSchema schema) {
         FieldType.Builder builder = FieldType.newBuilder()
                 .withName(schema.getName())

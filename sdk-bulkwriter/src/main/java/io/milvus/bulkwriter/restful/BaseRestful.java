@@ -34,6 +34,8 @@ import java.util.Map;
  * identification options when an API key is present (cloud calls), and raise exceptions for
  * non-successful HTTP responses.
  */
+
+
 public class BaseRestful {
     /**
      * Sends a POST request with a JSON body and returns the response body.

@@ -81,7 +81,7 @@ class CDCServiceTest {
     }
 
     @Test
-    void getReplicateInfoReturnsCheckpoint() {
+    void getReplicateInfoReturnsCheckpointAndValidatesRequest() {
         GetReplicateInfoResponse response = GetReplicateInfoResponse.newBuilder()
                 .setCheckpoint(ReplicateCheckpoint.newBuilder()
                         .setClusterId("c1")
@@ -101,26 +101,11 @@ class CDCServiceTest {
         assertEquals("by-dev-rootcoord-dml_0", result.getCheckpoint().getPchannel());
         assertEquals(100L, result.getCheckpoint().getTimeTick());
         verify(stub).getReplicateInfo(any());
-    }
 
-    @Test
-    void getReplicateInfoRejectsEmptySourceClusterId() {
-        GetReplicateInfoReq request = GetReplicateInfoReq.builder()
-                .sourceClusterId("")
-                .targetPchannel("p")
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.getReplicateInfo(stub, request));
-    }
-
-    @Test
-    void getReplicateInfoRejectsEmptyTargetPchannel() {
-        GetReplicateInfoReq request = GetReplicateInfoReq.builder()
-                .sourceClusterId("c1")
-                .targetPchannel(null)
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.getReplicateInfo(stub, request));
+        assertThrows(MilvusClientException.class, () -> service.getReplicateInfo(stub,
+                GetReplicateInfoReq.builder().sourceClusterId("").targetPchannel("p").build()));
+        assertThrows(MilvusClientException.class, () -> service.getReplicateInfo(stub,
+                GetReplicateInfoReq.builder().sourceClusterId("c1").targetPchannel(null).build()));
     }
 
     @Test
@@ -143,7 +128,7 @@ class CDCServiceTest {
     }
 
     @Test
-    void updateReplicateConfigurationReturnsEmptyResp() {
+    void updateReplicateConfigurationReturnsEmptyRespAndValidatesRequest() {
         when(stub.updateReplicateConfiguration(any())).thenReturn(success());
         ReplicateConfiguration configuration = ReplicateConfiguration.builder()
                 .clusters(Collections.singletonList(cluster("c1", "http://c1:19530")))
@@ -155,57 +140,31 @@ class CDCServiceTest {
 
         assertNotNull(service.updateReplicateConfiguration(stub, request));
         verify(stub).updateReplicateConfiguration(any());
+
+        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub,
+                UpdateReplicateConfigurationReq.builder().replicateConfiguration(null).build()));
+        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub,
+                UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder().clusters(Collections.emptyList()).build())
+                        .build()));
+        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub,
+                UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder()
+                                .clusters(Collections.singletonList(cluster("c1", "")))
+                                .build())
+                        .build()));
+        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub,
+                UpdateReplicateConfigurationReq.builder()
+                        .replicateConfiguration(ReplicateConfiguration.builder()
+                                .clusters(Collections.singletonList(cluster("c1", "http://c1:19530")))
+                                .crossClusterTopologies(Collections.singletonList(
+                                        CrossClusterTopology.builder().sourceClusterId("c1").build()))
+                                .build())
+                        .build()));
     }
 
     @Test
-    void updateReplicateConfigurationRejectsNullConfiguration() {
-        UpdateReplicateConfigurationReq request = UpdateReplicateConfigurationReq.builder()
-                .replicateConfiguration(null)
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub, request));
-    }
-
-    @Test
-    void updateReplicateConfigurationRejectsEmptyClusters() {
-        ReplicateConfiguration configuration = ReplicateConfiguration.builder()
-                .clusters(Collections.emptyList())
-                .build();
-        UpdateReplicateConfigurationReq request = UpdateReplicateConfigurationReq.builder()
-                .replicateConfiguration(configuration)
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub, request));
-    }
-
-    @Test
-    void updateReplicateConfigurationRejectsEmptyClusterUri() {
-        ReplicateConfiguration configuration = ReplicateConfiguration.builder()
-                .clusters(Collections.singletonList(cluster("c1", "")))
-                .build();
-        UpdateReplicateConfigurationReq request = UpdateReplicateConfigurationReq.builder()
-                .replicateConfiguration(configuration)
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub, request));
-    }
-
-    @Test
-    void updateReplicateConfigurationRejectsIncompleteTopology() {
-        ReplicateConfiguration configuration = ReplicateConfiguration.builder()
-                .clusters(Collections.singletonList(cluster("c1", "http://c1:19530")))
-                .crossClusterTopologies(Collections.singletonList(
-                        CrossClusterTopology.builder().sourceClusterId("c1").build()))
-                .build();
-        UpdateReplicateConfigurationReq request = UpdateReplicateConfigurationReq.builder()
-                .replicateConfiguration(configuration)
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.updateReplicateConfiguration(stub, request));
-    }
-
-    @Test
-    void dumpMessagesStreamsMessagesAndSkipsStatus() {
+    void dumpMessagesStreamsMessagesSkipsStatusAndValidatesRequest() {
         DumpMessagesResponse statusResponse = DumpMessagesResponse.newBuilder()
                 .setStatus(success())
                 .build();
@@ -241,35 +200,14 @@ class CDCServiceTest {
         }
         assertEquals(1, count);
         verify(stub).dumpMessages(any());
-    }
 
-    @Test
-    void dumpMessagesRejectsEmptyPchannel() {
-        DumpMessagesReq request = DumpMessagesReq.builder()
-                .pchannel("")
-                .startMessageID(GetReplicateInfoResp.MessageID.builder().id("m1").walName("Kafka").build())
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.dumpMessages(stub, request));
-    }
-
-    @Test
-    void dumpMessagesRejectsNullStartMessageId() {
-        DumpMessagesReq request = DumpMessagesReq.builder()
-                .pchannel("p")
-                .startMessageID(null)
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.dumpMessages(stub, request));
-    }
-
-    @Test
-    void dumpMessagesRejectsInvalidWalName() {
-        DumpMessagesReq request = DumpMessagesReq.builder()
-                .pchannel("p")
-                .startMessageID(GetReplicateInfoResp.MessageID.builder().id("m1").walName("FooBar").build())
-                .build();
-
-        assertThrows(MilvusClientException.class, () -> service.dumpMessages(stub, request));
+        assertThrows(MilvusClientException.class, () -> service.dumpMessages(stub,
+                DumpMessagesReq.builder().pchannel("").build()));
+        assertThrows(MilvusClientException.class, () -> service.dumpMessages(stub,
+                DumpMessagesReq.builder().pchannel("p").startMessageID(null).build()));
+        assertThrows(MilvusClientException.class, () -> service.dumpMessages(stub,
+                DumpMessagesReq.builder().pchannel("p")
+                        .startMessageID(GetReplicateInfoResp.MessageID.builder().id("m1").walName("FooBar").build())
+                        .build()));
     }
 }

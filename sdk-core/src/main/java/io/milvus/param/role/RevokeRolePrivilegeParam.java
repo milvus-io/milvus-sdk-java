@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the revokeRolePrivilege API.
+ */
+
+
 public class RevokeRolePrivilegeParam {
 
     private final String roleName;
@@ -45,25 +50,67 @@ public class RevokeRolePrivilegeParam {
         this.databaseName = builder.databaseName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static RevokeRolePrivilegeParam.Builder newBuilder() {
         return new RevokeRolePrivilegeParam.Builder();
     }
+
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
 
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Returns the object.
+     *
+     * @return the object
+     */
+
+
     public String getObject() {
         return object;
     }
+
+    /**
+     * Returns the objectName.
+     *
+     * @return the objectName
+     */
+
 
     public String getObjectName() {
         return objectName;
     }
 
+    /**
+     * Returns the privilege.
+     *
+     * @return the privilege
+     */
+
+
     public String getPrivilege() {
         return privilege;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -83,6 +130,8 @@ public class RevokeRolePrivilegeParam {
     /**
      * Builder for {@link RevokeRolePrivilegeParam} class.
      */
+
+
     public static final class Builder {
         private String roleName;
         private String object;
@@ -99,6 +148,8 @@ public class RevokeRolePrivilegeParam {
          * @param databaseName databaseName
          * @return <code>Builder</code>
          */
+
+
         public RevokeRolePrivilegeParam.Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -110,6 +161,8 @@ public class RevokeRolePrivilegeParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public RevokeRolePrivilegeParam.Builder withRoleName(String roleName) {
             if (roleName == null || roleName.isEmpty()) {
                 throw new IllegalArgumentException("Role name cannot be null or empty");
@@ -124,6 +177,8 @@ public class RevokeRolePrivilegeParam {
          * @param object object
          * @return <code>Builder</code>
          */
+
+
         public RevokeRolePrivilegeParam.Builder withObject(String object) {
             if (object == null || object.isEmpty()) {
                 throw new IllegalArgumentException("Object cannot be null or empty");
@@ -138,6 +193,8 @@ public class RevokeRolePrivilegeParam {
          * @param objectName objectName
          * @return <code>Builder</code>
          */
+
+
         public RevokeRolePrivilegeParam.Builder withObjectName(String objectName) {
             if (objectName == null || objectName.isEmpty()) {
                 throw new IllegalArgumentException("Object name cannot be null or empty");
@@ -152,6 +209,8 @@ public class RevokeRolePrivilegeParam {
          * @param privilege privilege
          * @return <code>Builder</code>
          */
+
+
         public RevokeRolePrivilegeParam.Builder withPrivilege(String privilege) {
             if (privilege == null || privilege.isEmpty()) {
                 throw new IllegalArgumentException("Privilege cannot be null or empty");
@@ -165,6 +224,8 @@ public class RevokeRolePrivilegeParam {
          *
          * @return {@link RevokeRolePrivilegeParam}
          */
+
+
         public RevokeRolePrivilegeParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");
             ParamUtils.CheckNullEmptyString(object, "Object");

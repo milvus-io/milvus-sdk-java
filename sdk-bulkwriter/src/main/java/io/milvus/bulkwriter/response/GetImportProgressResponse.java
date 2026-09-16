@@ -30,6 +30,8 @@ import java.util.List;
  * state, progress percentage, completion time, reason for failure, total imported rows,
  * and per-file {@link Detail} entries.</p>
  */
+
+
 public class GetImportProgressResponse implements Serializable {
     private static final long serialVersionUID = -2302203037749197132L;
     private String jobId;
@@ -46,6 +48,8 @@ public class GetImportProgressResponse implements Serializable {
     /**
      * Constructs an empty {@code GetImportProgressResponse}.
      */
+
+
     public GetImportProgressResponse() {
     }
 
@@ -63,6 +67,8 @@ public class GetImportProgressResponse implements Serializable {
      * @param totalRows      the total number of rows imported
      * @param details        the per-file import details
      */
+
+
     public GetImportProgressResponse(String jobId, String collectionName, String fileName, Integer fileSize,
                                      String state, Integer progress, String completeTime, String reason,
                                      Integer totalRows, List<Detail> details) {
@@ -96,6 +102,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the import job ID
      */
+
+
     public String getJobId() {
         return jobId;
     }
@@ -105,6 +113,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param jobId the import job ID
      */
+
+
     public void setJobId(String jobId) {
         this.jobId = jobId;
     }
@@ -114,6 +124,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -123,6 +135,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -132,6 +146,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the file name
      */
+
+
     public String getFileName() {
         return fileName;
     }
@@ -141,6 +157,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param fileName the file name
      */
+
+
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -150,6 +168,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the file size in bytes
      */
+
+
     public Integer getFileSize() {
         return fileSize;
     }
@@ -159,6 +179,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param fileSize the file size in bytes
      */
+
+
     public void setFileSize(Integer fileSize) {
         this.fileSize = fileSize;
     }
@@ -168,6 +190,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the import job state
      */
+
+
     public String getState() {
         return state;
     }
@@ -177,6 +201,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param state the import job state
      */
+
+
     public void setState(String state) {
         this.state = state;
     }
@@ -186,6 +212,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the progress percentage
      */
+
+
     public Integer getProgress() {
         return progress;
     }
@@ -195,6 +223,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param progress the progress percentage
      */
+
+
     public void setProgress(Integer progress) {
         this.progress = progress;
     }
@@ -204,6 +234,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the completion time
      */
+
+
     public String getCompleteTime() {
         return completeTime;
     }
@@ -213,6 +245,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param completeTime the completion time
      */
+
+
     public void setCompleteTime(String completeTime) {
         this.completeTime = completeTime;
     }
@@ -222,6 +256,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the failure reason
      */
+
+
     public String getReason() {
         return reason;
     }
@@ -231,6 +267,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param reason the failure reason
      */
+
+
     public void setReason(String reason) {
         this.reason = reason;
     }
@@ -240,6 +278,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the total number of imported rows
      */
+
+
     public Integer getTotalRows() {
         return totalRows;
     }
@@ -249,6 +289,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param totalRows the total number of imported rows
      */
+
+
     public void setTotalRows(Integer totalRows) {
         this.totalRows = totalRows;
     }
@@ -258,6 +300,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return the list of per-file import details
      */
+
+
     public List<Detail> getDetails() {
         return details;
     }
@@ -267,6 +311,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @param details the list of per-file import details
      */
+
+
     public void setDetails(List<Detail> details) {
         this.details = details;
     }
@@ -292,6 +338,8 @@ public class GetImportProgressResponse implements Serializable {
      *
      * @return a {@code Detail} builder
      */
+
+
     public static Detail.DetailBuilder builder() {
         return new Detail.DetailBuilder();
     }
@@ -299,6 +347,8 @@ public class GetImportProgressResponse implements Serializable {
     /**
      * Builder for {@link GetImportProgressResponse}.
      */
+
+
     public static class GetImportProgressResponseBuilder {
         private String jobId;
         private String collectionName;
@@ -330,6 +380,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param jobId the import job ID
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder jobId(String jobId) {
             this.jobId = jobId;
             return this;
@@ -341,6 +393,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -352,6 +406,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param fileName the file name
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder fileName(String fileName) {
             this.fileName = fileName;
             return this;
@@ -363,6 +419,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param fileSize the file size in bytes
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder fileSize(Integer fileSize) {
             this.fileSize = fileSize;
             return this;
@@ -374,6 +432,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param state the import job state
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder state(String state) {
             this.state = state;
             return this;
@@ -385,6 +445,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param progress the progress percentage
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder progress(Integer progress) {
             this.progress = progress;
             return this;
@@ -396,6 +458,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param completeTime the completion time
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder completeTime(String completeTime) {
             this.completeTime = completeTime;
             return this;
@@ -407,6 +471,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param reason the failure reason
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder reason(String reason) {
             this.reason = reason;
             return this;
@@ -418,6 +484,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param totalRows the total number of imported rows
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder totalRows(Integer totalRows) {
             this.totalRows = totalRows;
             return this;
@@ -429,6 +497,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param details the list of per-file import details
          * @return this builder
          */
+
+
         public GetImportProgressResponseBuilder details(List<Detail> details) {
             this.details = details;
             return this;
@@ -439,6 +509,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the built {@code GetImportProgressResponse}
          */
+
+
         public GetImportProgressResponse build() {
             return new GetImportProgressResponse(this);
         }
@@ -447,6 +519,8 @@ public class GetImportProgressResponse implements Serializable {
     /**
      * Per-file progress information of a bulk import job.
      */
+
+
     public static class Detail {
         private String fileName;
         private Integer fileSize;
@@ -458,6 +532,8 @@ public class GetImportProgressResponse implements Serializable {
         /**
          * Constructs an empty {@code Detail}.
          */
+
+
         public Detail() {
         }
 
@@ -471,6 +547,8 @@ public class GetImportProgressResponse implements Serializable {
          * @param completeTime the time when the file import completed
          * @param reason       the reason for failure, if the file import failed
          */
+
+
         public Detail(String fileName, Integer fileSize, String state, Integer progress, String completeTime, String reason) {
             this.fileName = fileName;
             this.fileSize = fileSize;
@@ -494,6 +572,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the file name
          */
+
+
         public String getFileName() {
             return fileName;
         }
@@ -503,6 +583,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @param fileName the file name
          */
+
+
         public void setFileName(String fileName) {
             this.fileName = fileName;
         }
@@ -512,6 +594,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the file size in bytes
          */
+
+
         public Integer getFileSize() {
             return fileSize;
         }
@@ -521,6 +605,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @param fileSize the file size in bytes
          */
+
+
         public void setFileSize(Integer fileSize) {
             this.fileSize = fileSize;
         }
@@ -530,6 +616,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the file import state
          */
+
+
         public String getState() {
             return state;
         }
@@ -539,6 +627,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @param state the file import state
          */
+
+
         public void setState(String state) {
             this.state = state;
         }
@@ -548,6 +638,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the file import progress percentage
          */
+
+
         public Integer getProgress() {
             return progress;
         }
@@ -557,6 +649,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @param progress the file import progress percentage
          */
+
+
         public void setProgress(Integer progress) {
             this.progress = progress;
         }
@@ -566,6 +660,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the completion time
          */
+
+
         public String getCompleteTime() {
             return completeTime;
         }
@@ -575,6 +671,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @param completeTime the completion time
          */
+
+
         public void setCompleteTime(String completeTime) {
             this.completeTime = completeTime;
         }
@@ -584,6 +682,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return the failure reason
          */
+
+
         public String getReason() {
             return reason;
         }
@@ -593,6 +693,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @param reason the failure reason
          */
+
+
         public void setReason(String reason) {
             this.reason = reason;
         }
@@ -614,6 +716,8 @@ public class GetImportProgressResponse implements Serializable {
          *
          * @return a {@code Detail} builder
          */
+
+
         public static DetailBuilder builder() {
             return new DetailBuilder();
         }
@@ -621,6 +725,8 @@ public class GetImportProgressResponse implements Serializable {
         /**
          * Builder for {@link Detail}.
          */
+
+
         public static class DetailBuilder {
             private String fileName;
             private Integer fileSize;
@@ -644,6 +750,8 @@ public class GetImportProgressResponse implements Serializable {
              * @param fileName the file name
              * @return this builder
              */
+
+
             public DetailBuilder fileName(String fileName) {
                 this.fileName = fileName;
                 return this;
@@ -655,6 +763,8 @@ public class GetImportProgressResponse implements Serializable {
              * @param fileSize the file size in bytes
              * @return this builder
              */
+
+
             public DetailBuilder fileSize(Integer fileSize) {
                 this.fileSize = fileSize;
                 return this;
@@ -666,6 +776,8 @@ public class GetImportProgressResponse implements Serializable {
              * @param state the file import state
              * @return this builder
              */
+
+
             public DetailBuilder state(String state) {
                 this.state = state;
                 return this;
@@ -677,6 +789,8 @@ public class GetImportProgressResponse implements Serializable {
              * @param progress the file import progress percentage
              * @return this builder
              */
+
+
             public DetailBuilder progress(Integer progress) {
                 this.progress = progress;
                 return this;
@@ -688,6 +802,8 @@ public class GetImportProgressResponse implements Serializable {
              * @param completeTime the completion time
              * @return this builder
              */
+
+
             public DetailBuilder completeTime(String completeTime) {
                 this.completeTime = completeTime;
                 return this;
@@ -699,6 +815,8 @@ public class GetImportProgressResponse implements Serializable {
              * @param reason the failure reason
              * @return this builder
              */
+
+
             public DetailBuilder reason(String reason) {
                 this.reason = reason;
                 return this;
@@ -709,6 +827,8 @@ public class GetImportProgressResponse implements Serializable {
              *
              * @return the built {@code Detail}
              */
+
+
             public Detail build() {
                 return new Detail(this);
             }

@@ -30,6 +30,8 @@ import java.io.File;
  * MinIO, or Azure Blob Storage), mapping data files to objects in a bucket and reporting object
  * sizes, bucket existence, and upload progress.
  */
+
+
 public interface StorageClient {
     /**
      * Returns the size in bytes of the object stored in the bucket.

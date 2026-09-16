@@ -22,6 +22,8 @@ package io.milvus.v2.service.partition.request;
 /**
  * Request parameters for the {@code hasPartition} API.
  */
+
+
 public class HasPartitionReq {
     private String databaseName;
     private String collectionName;
@@ -38,6 +40,8 @@ public class HasPartitionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -47,6 +51,8 @@ public class HasPartitionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -56,6 +62,8 @@ public class HasPartitionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -65,6 +73,8 @@ public class HasPartitionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -74,6 +84,8 @@ public class HasPartitionReq {
      *
      * @return the partition name
      */
+
+
     public String getPartitionName() {
         return partitionName;
     }
@@ -83,6 +95,8 @@ public class HasPartitionReq {
      *
      * @param partitionName the partition name
      */
+
+
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -101,9 +115,16 @@ public class HasPartitionReq {
      *
      * @return the builder
      */
+
+
     public static HasPartitionReqBuilder builder() {
         return new HasPartitionReqBuilder();
     }
+
+    /**
+     * Builder for {@link HasPartitionReq} class.
+     */
+
 
     public static class HasPartitionReqBuilder {
         private String databaseName;
@@ -119,6 +140,8 @@ public class HasPartitionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public HasPartitionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -130,6 +153,8 @@ public class HasPartitionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public HasPartitionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -141,6 +166,8 @@ public class HasPartitionReq {
          * @param partitionName the partition name
          * @return this builder
          */
+
+
         public HasPartitionReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
@@ -151,6 +178,8 @@ public class HasPartitionReq {
          *
          * @return the built request
          */
+
+
         public HasPartitionReq build() {
             return new HasPartitionReq(this);
         }

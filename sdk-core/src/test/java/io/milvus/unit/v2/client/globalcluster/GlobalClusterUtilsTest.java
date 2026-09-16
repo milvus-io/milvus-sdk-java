@@ -43,46 +43,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GlobalClusterUtilsTest {
 
     @Test
-    void isGlobalEndpointMatchesMarkerCaseInsensitively() {
+    void isGlobalEndpointMatchesMarkerAndRejectsOthers() {
         assertTrue(GlobalClusterUtils.isGlobalEndpoint("https://xxx.global-cluster.yyy.com:443"));
         assertTrue(GlobalClusterUtils.isGlobalEndpoint("https://xxx.GLOBAL-CLUSTER.yyy.com"));
         assertTrue(GlobalClusterUtils.isGlobalEndpoint("http://global-cluster.invalid:19530"));
-    }
 
-    @Test
-    void isGlobalEndpointRejectsNonGlobalUris() {
         assertFalse(GlobalClusterUtils.isGlobalEndpoint("https://xxx.milvus.yyy.com:19530"));
         assertFalse(GlobalClusterUtils.isGlobalEndpoint(""));
         assertFalse(GlobalClusterUtils.isGlobalEndpoint(null));
     }
 
     @Test
-    void buildTopologyUrlPreservesHostAndPort() throws Exception {
-        String url = invokeBuildTopologyUrl("https://xxx.global-cluster.yyy.com:443");
-
-        assertEquals("https://xxx.global-cluster.yyy.com:443/global-cluster/topology", url);
-    }
-
-    @Test
-    void buildTopologyUrlAddsHttpsSchemeWhenMissing() throws Exception {
+    void buildTopologyUrlPreservesAndNormalizesEndpoint() throws Exception {
+        assertEquals("https://xxx.global-cluster.yyy.com:443/global-cluster/topology",
+                invokeBuildTopologyUrl("https://xxx.global-cluster.yyy.com:443"));
         assertEquals("https://host.global-cluster.example:19530/global-cluster/topology",
                 invokeBuildTopologyUrl("host.global-cluster.example:19530"));
-    }
-
-    @Test
-    void buildTopologyUrlUpgradesHttpToHttps() throws Exception {
         assertEquals("https://host.global-cluster.example:19530/global-cluster/topology",
                 invokeBuildTopologyUrl("http://host.global-cluster.example:19530"));
-    }
-
-    @Test
-    void buildTopologyUrlRemovesTrailingSlash() throws Exception {
         assertEquals("https://host.global-cluster.example/global-cluster/topology",
                 invokeBuildTopologyUrl("https://host.global-cluster.example/"));
     }
 
     @Test
-    void parseTopologyResponseParsesClusters() throws Exception {
+    void parseTopologyResponseParsesClustersAndRejectsErrorCode() throws Exception {
         String json = "{"
                 + "\"code\":0,"
                 + "\"data\":{"
@@ -102,54 +86,34 @@ class GlobalClusterUtilsTest {
         assertEquals(ClusterCapability.READABLE, topology.getClusters().get(0).getCapability());
         assertEquals("c2", topology.getClusters().get(1).getClusterId());
         assertTrue(topology.getClusters().get(1).isPrimary());
-    }
 
-    @Test
-    void parseTopologyResponseRejectsErrorCode() throws Exception {
-        String json = "{\"code\":1,\"message\":\"boom\"}";
-
+        String errorJson = "{\"code\":1,\"message\":\"boom\"}";
         InvocationTargetException exception = assertThrows(InvocationTargetException.class,
-                () -> invokeParseTopologyResponse(json));
+                () -> invokeParseTopologyResponse(errorJson));
         assertTrue(exception.getCause().getMessage().contains("boom"));
     }
 
     @Test
-    void doHttpGetReturnsBodyOnSuccess() throws Exception {
-        HttpServer server = startServer(200, "{\"code\":0,\"data\":{\"version\":1,\"clusters\":[]}}",
-                new AtomicReference<>());
+    void doHttpGetReturnsBodySendsTokenAndThrowsOnNon200() throws Exception {
+        AtomicReference<String> authorization = new AtomicReference<>();
+        HttpServer okServer = startServer(200, "{\"code\":0,\"data\":{\"version\":1,\"clusters\":[]}}", authorization);
         try {
             String body = invokeDoHttpGet(
-                    "http://127.0.0.1:" + server.getAddress().getPort() + "/global-cluster/topology", null);
-
+                    "http://127.0.0.1:" + okServer.getAddress().getPort() + "/topology", "secret");
             assertEquals("{\"code\":0,\"data\":{\"version\":1,\"clusters\":[]}}", body);
-        } finally {
-            server.stop(0);
-        }
-    }
-
-    @Test
-    void doHttpGetSendsBearerToken() throws Exception {
-        AtomicReference<String> authorization = new AtomicReference<>();
-        HttpServer server = startServer(200, "ok", authorization);
-        try {
-            invokeDoHttpGet("http://127.0.0.1:" + server.getAddress().getPort() + "/topology", "secret");
-
             assertEquals("Bearer secret", authorization.get());
         } finally {
-            server.stop(0);
+            okServer.stop(0);
         }
-    }
 
-    @Test
-    void doHttpGetThrowsOnNon200() throws Exception {
-        HttpServer server = startServer(500, "error", new AtomicReference<>());
+        HttpServer errorServer = startServer(500, "error", new AtomicReference<>());
         try {
             InvocationTargetException exception = assertThrows(InvocationTargetException.class,
                     () -> invokeDoHttpGet(
-                            "http://127.0.0.1:" + server.getAddress().getPort() + "/topology", null));
+                            "http://127.0.0.1:" + errorServer.getAddress().getPort() + "/topology", null));
             assertTrue(exception.getCause() instanceof IOException);
         } finally {
-            server.stop(0);
+            errorServer.stop(0);
         }
     }
 

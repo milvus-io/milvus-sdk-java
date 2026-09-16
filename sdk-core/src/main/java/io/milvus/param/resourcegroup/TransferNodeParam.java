@@ -23,6 +23,11 @@ package io.milvus.param.resourcegroup;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the transferNode API.
+ */
+
+
 public class TransferNodeParam {
     private final String sourceGroupName;
     private final String targetGroupName;
@@ -37,17 +42,45 @@ public class TransferNodeParam {
         this.nodeNumber = builder.nodeNumber;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the sourceGroupName.
+     *
+     * @return the sourceGroupName
+     */
+
 
     public String getSourceGroupName() {
         return sourceGroupName;
     }
 
+    /**
+     * Returns the targetGroupName.
+     *
+     * @return the targetGroupName
+     */
+
+
     public String getTargetGroupName() {
         return targetGroupName;
     }
+
+    /**
+     * Returns the nodeNumber.
+     *
+     * @return the nodeNumber
+     */
+
 
     public int getNodeNumber() {
         return nodeNumber;
@@ -65,6 +98,8 @@ public class TransferNodeParam {
     /**
      * Builder for {@link TransferNodeParam} class.
      */
+
+
     public static final class Builder {
         private String sourceGroupName;
         private String targetGroupName;
@@ -79,6 +114,8 @@ public class TransferNodeParam {
          * @param groupName source group name
          * @return <code>Builder</code>
          */
+
+
         public Builder withSourceGroupName(String groupName) {
             if (groupName == null) {
                 throw new IllegalArgumentException("Source group name cannot be null");
@@ -93,6 +130,8 @@ public class TransferNodeParam {
          * @param groupName target group name
          * @return <code>Builder</code>
          */
+
+
         public Builder withTargetGroupName(String groupName) {
             if (groupName == null) {
                 throw new IllegalArgumentException("Target group name cannot be null");
@@ -107,6 +146,8 @@ public class TransferNodeParam {
          * @param nodeNumber number of query nodes
          * @return <code>Builder</code>
          */
+
+
         public Builder withNodeNumber(Integer nodeNumber) {
             if (nodeNumber == null) {
                 throw new IllegalArgumentException("Node number cannot be null");
@@ -120,6 +161,8 @@ public class TransferNodeParam {
          *
          * @return {@link TransferNodeParam}
          */
+
+
         public TransferNodeParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(sourceGroupName, "Source group name");
             ParamUtils.CheckNullEmptyString(targetGroupName, "Target group name");

@@ -34,6 +34,8 @@ import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
  * Utility class that builds Parquet {@link MessageType} schemas from a Milvus collection schema and
  * provides the Hadoop configuration used when reading Parquet bulk files.
  */
+
+
 public class ParquetUtils {
     private static void setMessageType(Types.BaseGroupBuilder<?, ?> builder,
                                        PrimitiveType.PrimitiveTypeName primitiveName,
@@ -75,6 +77,8 @@ public class ParquetUtils {
      * @param collectionSchema the Milvus collection schema to convert
      * @return the resulting Parquet message type
      */
+
+
     public static MessageType parseCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
         List<CreateCollectionReq.FieldSchema> fields = collectionSchema.getFieldSchemaList();
         List<String> outputFieldNames = V2AdapterUtils.getOutputFieldNames(collectionSchema);
@@ -236,6 +240,8 @@ public class ParquetUtils {
      *
      * @return the Hadoop configuration
      */
+
+
     public static Configuration getParquetConfiguration() {
         // set fs.file.impl.disable.cache to true for this issue: https://github.com/milvus-io/milvus-sdk-java/issues/1381
         Configuration configuration = new Configuration();

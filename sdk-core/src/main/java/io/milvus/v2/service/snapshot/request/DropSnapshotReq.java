@@ -22,6 +22,8 @@ package io.milvus.v2.service.snapshot.request;
 /**
  * Request parameters for the {@code dropSnapshot} API.
  */
+
+
 public class DropSnapshotReq {
     private String databaseName;
     private String collectionName;
@@ -38,6 +40,8 @@ public class DropSnapshotReq {
      *
      * @return the builder
      */
+
+
     public static DropSnapshotReqBuilder builder() {
         return new DropSnapshotReqBuilder();
     }
@@ -47,6 +51,8 @@ public class DropSnapshotReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -56,6 +62,8 @@ public class DropSnapshotReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -65,6 +73,8 @@ public class DropSnapshotReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -74,6 +84,8 @@ public class DropSnapshotReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -83,6 +95,8 @@ public class DropSnapshotReq {
      *
      * @return the snapshot name
      */
+
+
     public String getSnapshotName() {
         return snapshotName;
     }
@@ -92,6 +106,8 @@ public class DropSnapshotReq {
      *
      * @param snapshotName the snapshot name
      */
+
+
     public void setSnapshotName(String snapshotName) {
         this.snapshotName = snapshotName;
     }
@@ -105,6 +121,11 @@ public class DropSnapshotReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DropSnapshotReq} class.
+     */
+
+
     public static class DropSnapshotReqBuilder {
         private String databaseName = "";
         private String collectionName;
@@ -116,6 +137,8 @@ public class DropSnapshotReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropSnapshotReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -127,6 +150,8 @@ public class DropSnapshotReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DropSnapshotReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -138,6 +163,8 @@ public class DropSnapshotReq {
          * @param snapshotName the snapshot name
          * @return this builder
          */
+
+
         public DropSnapshotReqBuilder snapshotName(String snapshotName) {
             this.snapshotName = snapshotName;
             return this;
@@ -148,6 +175,8 @@ public class DropSnapshotReq {
          *
          * @return the built request
          */
+
+
         public DropSnapshotReq build() {
             return new DropSnapshotReq(this);
         }

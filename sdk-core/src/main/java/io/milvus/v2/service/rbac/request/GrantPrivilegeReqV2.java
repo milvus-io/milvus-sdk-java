@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code grantPrivilegeV2} API.
  */
+
+
 public class GrantPrivilegeReqV2 {
     private String roleName;
     private String privilege;
@@ -40,6 +42,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -49,6 +53,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -58,6 +64,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @return the privilege to grant
      */
+
+
     public String getPrivilege() {
         return privilege;
     }
@@ -67,6 +75,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @param privilege the privilege to grant
      */
+
+
     public void setPrivilege(String privilege) {
         this.privilege = privilege;
     }
@@ -76,6 +86,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @return the database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -85,6 +97,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @param dbName the database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -94,6 +108,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -103,6 +119,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -122,6 +140,8 @@ public class GrantPrivilegeReqV2 {
      *
      * @return the builder
      */
+
+
     public static GrantPrivilegeReqV2Builder builder() {
         return new GrantPrivilegeReqV2Builder();
     }
@@ -129,6 +149,8 @@ public class GrantPrivilegeReqV2 {
     /**
      * Builder for {@link GrantPrivilegeReqV2}.
      */
+
+
     public static class GrantPrivilegeReqV2Builder {
         private String roleName;
         private String privilege;
@@ -144,6 +166,8 @@ public class GrantPrivilegeReqV2 {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public GrantPrivilegeReqV2Builder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -155,6 +179,8 @@ public class GrantPrivilegeReqV2 {
          * @param privilege the privilege to grant
          * @return this builder
          */
+
+
         public GrantPrivilegeReqV2Builder privilege(String privilege) {
             this.privilege = privilege;
             return this;
@@ -166,6 +192,8 @@ public class GrantPrivilegeReqV2 {
          * @param dbName the database name
          * @return this builder
          */
+
+
         public GrantPrivilegeReqV2Builder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -177,6 +205,8 @@ public class GrantPrivilegeReqV2 {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public GrantPrivilegeReqV2Builder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -187,6 +217,8 @@ public class GrantPrivilegeReqV2 {
          *
          * @return the request
          */
+
+
         public GrantPrivilegeReqV2 build() {
             return new GrantPrivilegeReqV2(this);
         }

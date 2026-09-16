@@ -24,12 +24,16 @@ package io.milvus.bulkwriter.request.volume;
  *
  * <p>It identifies the volume to describe through its volume name.</p>
  */
+
+
 public class DescribeVolumeRequest {
     private String volumeName;
 
     /**
      * Constructs an empty {@code DescribeVolumeRequest}.
      */
+
+
     public DescribeVolumeRequest() {
     }
 
@@ -38,6 +42,8 @@ public class DescribeVolumeRequest {
      *
      * @param volumeName the name of the volume to describe
      */
+
+
     public DescribeVolumeRequest(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -51,6 +57,8 @@ public class DescribeVolumeRequest {
      *
      * @return the volume name
      */
+
+
     public String getVolumeName() {
         return volumeName;
     }
@@ -60,6 +68,8 @@ public class DescribeVolumeRequest {
      *
      * @param volumeName the volume name
      */
+
+
     public void setVolumeName(String volumeName) {
         this.volumeName = volumeName;
     }
@@ -76,6 +86,8 @@ public class DescribeVolumeRequest {
      *
      * @return a {@code DescribeVolumeRequest} builder
      */
+
+
     public static DescribeVolumeRequestBuilder builder() {
         return new DescribeVolumeRequestBuilder();
     }
@@ -83,6 +95,8 @@ public class DescribeVolumeRequest {
     /**
      * Builder for {@link DescribeVolumeRequest}.
      */
+
+
     public static class DescribeVolumeRequestBuilder {
         private String volumeName;
 
@@ -96,6 +110,8 @@ public class DescribeVolumeRequest {
          * @param volumeName the volume name
          * @return this builder
          */
+
+
         public DescribeVolumeRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
             return this;
@@ -106,6 +122,8 @@ public class DescribeVolumeRequest {
          *
          * @return the built {@code DescribeVolumeRequest}
          */
+
+
         public DescribeVolumeRequest build() {
             return new DescribeVolumeRequest(this);
         }

@@ -55,6 +55,8 @@ import java.util.Map;
  * .param("decay", "0.5")
  * .build();
  */
+
+
 public class DecayRanker extends CreateCollectionReq.Function {
     private String function;
     private Number origin;
@@ -76,6 +78,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @return the decay function
      */
+
+
     public String getFunction() {
         return function;
     }
@@ -85,6 +89,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @param function the decay function
      */
+
+
     public void setFunction(String function) {
         this.function = function;
     }
@@ -94,6 +100,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @return the decay origin
      */
+
+
     public Number getOrigin() {
         return origin;
     }
@@ -103,6 +111,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @param origin the decay origin
      */
+
+
     public void setOrigin(Number origin) {
         this.origin = origin;
     }
@@ -112,6 +122,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @return the decay offset
      */
+
+
     public Number getOffset() {
         return offset;
     }
@@ -121,6 +133,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @param offset the decay offset
      */
+
+
     public void setOffset(Number offset) {
         this.offset = offset;
     }
@@ -130,6 +144,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @return the decay scale
      */
+
+
     public Number getScale() {
         return scale;
     }
@@ -139,6 +155,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @param scale the decay scale
      */
+
+
     public void setScale(Number scale) {
         this.scale = scale;
     }
@@ -148,6 +166,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @return the decay rate
      */
+
+
     public Number getDecay() {
         return decay;
     }
@@ -157,6 +177,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @param decay the decay rate
      */
+
+
     public void setDecay(Number decay) {
         this.decay = decay;
     }
@@ -220,6 +242,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
      *
      * @return a new builder
      */
+
+
     public static DecayRankerBuilder builder() {
         return new DecayRankerBuilder();
     }
@@ -227,6 +251,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
     /**
      * Builder for {@link DecayRanker}.
      */
+
+
     public static class DecayRankerBuilder extends Function.FunctionBuilder<DecayRankerBuilder> {
         private String function = "gauss";
         private Number origin;
@@ -244,6 +270,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
          * @param function the decay function
          * @return this builder
          */
+
+
         public DecayRankerBuilder function(String function) {
             this.function = function;
             return this;
@@ -255,6 +283,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
          * @param origin the decay origin
          * @return this builder
          */
+
+
         public DecayRankerBuilder origin(Number origin) {
             this.origin = origin;
             return this;
@@ -266,6 +296,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
          * @param offset the decay offset
          * @return this builder
          */
+
+
         public DecayRankerBuilder offset(Number offset) {
             this.offset = offset;
             return this;
@@ -277,6 +309,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
          * @param scale the decay scale
          * @return this builder
          */
+
+
         public DecayRankerBuilder scale(Number scale) {
             this.scale = scale;
             return this;
@@ -288,6 +322,8 @@ public class DecayRanker extends CreateCollectionReq.Function {
          * @param decay the decay rate
          * @return this builder
          */
+
+
         public DecayRankerBuilder decay(Number decay) {
             this.decay = decay;
             return this;

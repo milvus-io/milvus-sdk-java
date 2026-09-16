@@ -22,6 +22,8 @@ package io.milvus.v2.service.utility.response;
 /**
  * Response returned by the {@code getServerVersion} API.
  */
+
+
 public class GetServerVersionResp {
     private String version;
     private String buildTime;
@@ -37,6 +39,13 @@ public class GetServerVersionResp {
         this.deployMode = builder.deployMode;
     }
 
+    /**
+     * Creates a new builder for {@code GetServerVersionResp}.
+     *
+     * @return the builder
+     */
+
+
     public static GetServerVersionRespBuilder builder() {
         return new GetServerVersionRespBuilder();
     }
@@ -46,6 +55,8 @@ public class GetServerVersionResp {
      *
      * @return the server version
      */
+
+
     public String getVersion() {
         return version;
     }
@@ -55,6 +66,8 @@ public class GetServerVersionResp {
      *
      * @param version the server version
      */
+
+
     public void setVersion(String version) {
         this.version = version;
     }
@@ -64,6 +77,8 @@ public class GetServerVersionResp {
      *
      * @return the build time
      */
+
+
     public String getBuildTime() {
         return buildTime;
     }
@@ -73,6 +88,8 @@ public class GetServerVersionResp {
      *
      * @param buildTime the build time
      */
+
+
     public void setBuildTime(String buildTime) {
         this.buildTime = buildTime;
     }
@@ -82,6 +99,8 @@ public class GetServerVersionResp {
      *
      * @return the git commit
      */
+
+
     public String getGitCommit() {
         return gitCommit;
     }
@@ -91,6 +110,8 @@ public class GetServerVersionResp {
      *
      * @param gitCommit the git commit
      */
+
+
     public void setGitCommit(String gitCommit) {
         this.gitCommit = gitCommit;
     }
@@ -100,6 +121,8 @@ public class GetServerVersionResp {
      *
      * @return the Go version
      */
+
+
     public String getGoVersion() {
         return goVersion;
     }
@@ -109,6 +132,8 @@ public class GetServerVersionResp {
      *
      * @param goVersion the Go version
      */
+
+
     public void setGoVersion(String goVersion) {
         this.goVersion = goVersion;
     }
@@ -118,6 +143,8 @@ public class GetServerVersionResp {
      *
      * @return the deployment mode
      */
+
+
     public String getDeployMode() {
         return deployMode;
     }
@@ -127,6 +154,8 @@ public class GetServerVersionResp {
      *
      * @param deployMode the deployment mode
      */
+
+
     public void setDeployMode(String deployMode) {
         this.deployMode = deployMode;
     }
@@ -142,6 +171,11 @@ public class GetServerVersionResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetServerVersionResp} class.
+     */
+
+
     public static class GetServerVersionRespBuilder {
         private String version;
         private String buildTime;
@@ -155,6 +189,8 @@ public class GetServerVersionResp {
          * @param version the server version
          * @return this builder
          */
+
+
         public GetServerVersionRespBuilder version(String version) {
             this.version = version;
             return this;
@@ -166,6 +202,8 @@ public class GetServerVersionResp {
          * @param buildTime the build time
          * @return this builder
          */
+
+
         public GetServerVersionRespBuilder buildTime(String buildTime) {
             this.buildTime = buildTime;
             return this;
@@ -177,6 +215,8 @@ public class GetServerVersionResp {
          * @param gitCommit the git commit
          * @return this builder
          */
+
+
         public GetServerVersionRespBuilder gitCommit(String gitCommit) {
             this.gitCommit = gitCommit;
             return this;
@@ -188,6 +228,8 @@ public class GetServerVersionResp {
          * @param goVersion the Go version
          * @return this builder
          */
+
+
         public GetServerVersionRespBuilder goVersion(String goVersion) {
             this.goVersion = goVersion;
             return this;
@@ -199,6 +241,8 @@ public class GetServerVersionResp {
          * @param deployMode the deployment mode
          * @return this builder
          */
+
+
         public GetServerVersionRespBuilder deployMode(String deployMode) {
             this.deployMode = deployMode;
             return this;
@@ -209,6 +253,8 @@ public class GetServerVersionResp {
          *
          * @return the constructed {@code GetServerVersionResp}
          */
+
+
         public GetServerVersionResp build() {
             return new GetServerVersionResp(this);
         }

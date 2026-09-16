@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
  * Base service for the Milvus v2 clients. Provides shared utilities and cache management
  * for the domain-specific service classes.
  */
+
+
 public class BaseService {
     protected static final Logger logger = LoggerFactory.getLogger(BaseService.class);
     public RpcUtils rpcUtils = new RpcUtils();
@@ -53,6 +55,8 @@ public class BaseService {
      *
      * @param dbName the database name
      */
+
+
     public void setCurrentDbName(String dbName) {
         currentDbName = dbName;
         this.vectorUtils.setCurrentDbName(dbName);
@@ -63,6 +67,8 @@ public class BaseService {
      *
      * @param endpoint the server endpoint
      */
+
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint == null ? "" : endpoint;
         this.vectorUtils.setEndpoint(this.endpoint);

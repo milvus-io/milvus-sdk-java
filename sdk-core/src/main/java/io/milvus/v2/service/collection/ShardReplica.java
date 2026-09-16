@@ -6,6 +6,8 @@ import java.util.List;
 /**
  * A shard replica containing the query nodes that serve a shard channel of a collection.
  */
+
+
 public class ShardReplica {
     private Long leaderID;
     private String leaderAddress; // IP:port
@@ -24,6 +26,8 @@ public class ShardReplica {
      *
      * @return the builder
      */
+
+
     public static ShardReplicaBuilder builder() {
         return new ShardReplicaBuilder();
     }
@@ -34,6 +38,7 @@ public class ShardReplica {
      *
      * @return the leader query node ID
      */
+
     public Long getLeaderID() {
         return leaderID;
     }
@@ -43,6 +48,8 @@ public class ShardReplica {
      *
      * @return the leader address
      */
+
+
     public String getLeaderAddress() {
         return leaderAddress;
     }
@@ -52,6 +59,8 @@ public class ShardReplica {
      *
      * @return the channel name
      */
+
+
     public String getChannelName() {
         return channelName;
     }
@@ -61,6 +70,8 @@ public class ShardReplica {
      *
      * @return the query node IDs
      */
+
+
     public List<Long> getNodeIDs() {
         return nodeIDs;
     }
@@ -71,6 +82,7 @@ public class ShardReplica {
      *
      * @param leaderID the leader query node ID
      */
+
     public void setLeaderID(Long leaderID) {
         this.leaderID = leaderID;
     }
@@ -80,6 +92,8 @@ public class ShardReplica {
      *
      * @param leaderAddress the leader address
      */
+
+
     public void setLeaderAddress(String leaderAddress) {
         this.leaderAddress = leaderAddress;
     }
@@ -89,6 +103,8 @@ public class ShardReplica {
      *
      * @param channelName the channel name
      */
+
+
     public void setChannelName(String channelName) {
         this.channelName = channelName;
     }
@@ -98,6 +114,8 @@ public class ShardReplica {
      *
      * @param nodeIDs the query node IDs
      */
+
+
     public void setNodeIDs(List<Long> nodeIDs) {
         this.nodeIDs = nodeIDs;
     }
@@ -115,6 +133,8 @@ public class ShardReplica {
     /**
      * Builder for {@link ShardReplica}.
      */
+
+
     public static class ShardReplicaBuilder {
         private Long leaderID;
         private String leaderAddress;
@@ -127,6 +147,8 @@ public class ShardReplica {
          * @param leaderID the leader query node ID
          * @return this builder
          */
+
+
         public ShardReplicaBuilder leaderID(Long leaderID) {
             this.leaderID = leaderID;
             return this;
@@ -138,6 +160,8 @@ public class ShardReplica {
          * @param leaderAddress the leader address
          * @return this builder
          */
+
+
         public ShardReplicaBuilder leaderAddress(String leaderAddress) {
             this.leaderAddress = leaderAddress;
             return this;
@@ -149,6 +173,8 @@ public class ShardReplica {
          * @param channelName the channel name
          * @return this builder
          */
+
+
         public ShardReplicaBuilder channelName(String channelName) {
             this.channelName = channelName;
             return this;
@@ -160,6 +186,8 @@ public class ShardReplica {
          * @param nodeIDs the query node IDs
          * @return this builder
          */
+
+
         public ShardReplicaBuilder nodeIDs(List<Long> nodeIDs) {
             this.nodeIDs = nodeIDs;
             return this;
@@ -170,6 +198,8 @@ public class ShardReplica {
          *
          * @return the shard replica
          */
+
+
         public ShardReplica build() {
             return new ShardReplica(this);
         }

@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>dropPartition</code> interface.
  */
+
+
 public class DropPartitionParam {
     private final String databaseName;
     private final String collectionName;
@@ -40,18 +42,44 @@ public class DropPartitionParam {
         this.partitionName = builder.partitionName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
 
     public String getPartitionName() {
         return partitionName;
@@ -70,6 +98,8 @@ public class DropPartitionParam {
     /**
      * Builder for {@link DropPartitionParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -84,6 +114,8 @@ public class DropPartitionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -95,6 +127,8 @@ public class DropPartitionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -110,6 +144,8 @@ public class DropPartitionParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -124,6 +160,8 @@ public class DropPartitionParam {
          *
          * @return {@link DropPartitionParam}
          */
+
+
         public DropPartitionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(partitionName, "Partition name");

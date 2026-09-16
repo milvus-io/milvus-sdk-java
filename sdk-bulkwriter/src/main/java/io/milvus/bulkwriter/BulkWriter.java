@@ -54,6 +54,8 @@ import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
  * Writes rows as CSV, JSON or Parquet data files and chunks them when the target size
  * is reached. Concrete subclasses commit finished files locally or to remote storage.
  */
+
+
 public abstract class BulkWriter implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(BulkWriter.class);
     protected CreateCollectionReq.CollectionSchema collectionSchema;
@@ -112,6 +114,8 @@ public abstract class BulkWriter implements AutoCloseable {
     *
     * @return the total row count
     */
+
+
     public Long getTotalRowCount() {
         return totalRowCount;
     }
@@ -195,6 +199,8 @@ public abstract class BulkWriter implements AutoCloseable {
     * @throws IOException if writing the row fails
     * @throws InterruptedException if the calling thread is interrupted while committing
     */
+
+
     public void appendRow(JsonObject row) throws IOException, InterruptedException {
         Map<String, Object> rowValues = verifyRow(row);
         List<String> filePaths = Lists.newArrayList();

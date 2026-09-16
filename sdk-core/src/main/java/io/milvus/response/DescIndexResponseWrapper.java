@@ -36,8 +36,17 @@ import java.util.Map;
 /**
  * Util class to wrap response of <code>describeIndex</code> interface.
  */
+
+
 public class DescIndexResponseWrapper {
     private final DescribeIndexResponse response;
+
+    /**
+     * Wraps the given describe index response.
+     *
+     * @param response the gRPC {@code DescribeIndexResponse}, must not be {@code null}
+     */
+
 
     public DescIndexResponseWrapper(DescribeIndexResponse response) {
         if (response == null) {
@@ -51,6 +60,8 @@ public class DescIndexResponseWrapper {
      *
      * @return List of IndexDesc, index description of fields
      */
+
+
     public List<IndexDesc> getIndexDescriptions() {
         List<IndexDesc> results = new ArrayList<>();
         List<IndexDescription> descriptions = response.getIndexDescriptionsList();
@@ -69,6 +80,8 @@ public class DescIndexResponseWrapper {
      * @param fieldName field name to get index description
      * @return {@link IndexDesc} description of the index
      */
+
+
     public IndexDesc getIndexDescByFieldName(String fieldName) {
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name cannot be null");
@@ -89,6 +102,8 @@ public class DescIndexResponseWrapper {
      * @param indexName index name to get index description
      * @return {@link IndexDesc} description of the index
      */
+
+
     public IndexDesc getIndexDescByIndexName(String indexName) {
         if (indexName == null) {
             throw new IllegalArgumentException("Index name cannot be null");
@@ -116,6 +131,8 @@ public class DescIndexResponseWrapper {
     /**
      * Internal-use class to wrap response of <code>describeIndex</code> interface.
      */
+
+
     public static final class IndexDesc {
         private final String fieldName;
         private final String indexName;
@@ -127,6 +144,15 @@ public class DescIndexResponseWrapper {
         long pendingIndexRows = 0;
         private IndexBuildState indexState = IndexBuildState.IndexStateNone;
         String indexFailedReason = "";
+
+        /**
+         * Creates an index description for the given field and index names.
+         *
+         * @param fieldName the name of the indexed field
+         * @param indexName the name of the index
+         * @param id        the index ID
+         */
+
 
         public IndexDesc(String fieldName, String indexName, long id) {
             if (fieldName == null) {
@@ -140,6 +166,14 @@ public class DescIndexResponseWrapper {
             this.id = id;
         }
 
+        /**
+         * Adds a parameter to the index description.
+         *
+         * @param key   the parameter key
+         * @param value the parameter value
+         */
+
+
         public void addParam(String key, String value) {
             if (key == null) {
                 throw new IllegalArgumentException("Key cannot be null");
@@ -150,42 +184,111 @@ public class DescIndexResponseWrapper {
             this.params.put(key, value);
         }
 
-        // Getter methods
+        /**
+         * Returns the name of the indexed field.
+         *
+         * @return the field name
+         */
+
+
         public String getFieldName() {
             return fieldName;
         }
+
+        /**
+         * Returns the name of the index.
+         *
+         * @return the index name
+         */
+
 
         public String getIndexName() {
             return indexName;
         }
 
+        /**
+         * Returns the ID of the index.
+         *
+         * @return the index ID
+         */
+
+
         public long getId() {
             return id;
         }
+
+        /**
+         * Returns the parameters of the index as a key-value map.
+         *
+         * @return the index parameters
+         */
+
 
         public Map<String, String> getParams() {
             return params;
         }
 
+        /**
+         * Returns the number of indexed rows.
+         *
+         * @return the indexed row count
+         */
+
+
         public long getIndexedRows() {
             return indexedRows;
         }
+
+        /**
+         * Returns the total number of rows of the collection.
+         *
+         * @return the total row count
+         */
+
 
         public long getTotalRows() {
             return totalRows;
         }
 
+        /**
+         * Returns the number of rows pending to be indexed.
+         *
+         * @return the pending index row count
+         */
+
+
         public long getPendingIndexRows() {
             return pendingIndexRows;
         }
+
+        /**
+         * Returns the build state of the index.
+         *
+         * @return the index build state
+         */
+
 
         public IndexBuildState getIndexState() {
             return indexState;
         }
 
+        /**
+         * Returns the reason the index build failed, if any.
+         *
+         * @return the failure reason, or an empty string if not failed
+         */
+
+
         public String getIndexFailedReason() {
             return indexFailedReason;
         }
+
+        /**
+         * Returns the index type parsed from the index parameters.
+         *
+         * @return the index type, or {@code IndexType.None} if not present
+         */
+
 
         public IndexType getIndexType() {
             if (this.params.containsKey(Constant.INDEX_TYPE)) {
@@ -196,6 +299,13 @@ public class DescIndexResponseWrapper {
             return IndexType.None;
         }
 
+        /**
+         * Returns the metric type parsed from the index parameters.
+         *
+         * @return the metric type, or {@code MetricType.None} if not present
+         */
+
+
         public MetricType getMetricType() {
             if (this.params.containsKey(Constant.METRIC_TYPE)) {
                 // may throw IllegalArgumentException
@@ -204,6 +314,13 @@ public class DescIndexResponseWrapper {
 
             return MetricType.None;
         }
+
+        /**
+         * Returns the extra parameters of the index, excluding the index type and metric type.
+         *
+         * @return the extra parameters as a JSON string
+         */
+
 
         public String getExtraParam() {
             Map<String, String> extraParams = new HashMap<>();

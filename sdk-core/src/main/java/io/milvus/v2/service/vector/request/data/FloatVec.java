@@ -29,6 +29,8 @@ import java.util.List;
  * A float vector used in search and insert requests, where each element represents one
  * dimension of the vector.
  */
+
+
 public class FloatVec implements BaseVector {
     private final List<Float> data;
 
@@ -37,6 +39,8 @@ public class FloatVec implements BaseVector {
      *
      * @param data the vector values
      */
+
+
     public FloatVec(List<Float> data) {
         this.data = data;
     }
@@ -46,6 +50,8 @@ public class FloatVec implements BaseVector {
      *
      * @param data the vector values
      */
+
+
     public FloatVec(float[] data) {
         this.data = new ArrayList<>();
         for (float f : data) {

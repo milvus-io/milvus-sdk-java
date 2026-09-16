@@ -28,9 +28,19 @@ import java.util.*;
 /**
  * Util class to wrap response of <code>describeCollection</code> interface.
  */
+
+
+
 public class DescDBResponseWrapper {
     private final DescribeDatabaseResponse response;
     Map<String, String> pairs = new HashMap<>();
+
+    /**
+     * Wraps the given describe database response.
+     *
+     * @param response the gRPC {@code DescribeDatabaseResponse}, must not be {@code null}
+     */
+
 
     public DescDBResponseWrapper(DescribeDatabaseResponse response) {
         if (response == null) {
@@ -46,6 +56,9 @@ public class DescDBResponseWrapper {
      *
      * @return database name
      */
+
+
+
     public String getDatabaseName() {
         return response.getDbName();
     }
@@ -55,6 +68,8 @@ public class DescDBResponseWrapper {
      *
      * @return map of key value pair
      */
+
+
     public Map<String, String> getProperties() {
         return pairs;
     }
@@ -64,6 +79,8 @@ public class DescDBResponseWrapper {
      *
      * @return resource group names
      */
+
+
     public List<String> getResourceGroups() {
         String value = pairs.get(Constant.DATABASE_RESOURCE_GROUPS);
         if (value == null) {
@@ -77,6 +94,8 @@ public class DescDBResponseWrapper {
      *
      * @return database replica number
      */
+
+
     public int getReplicaNumber() {
         String value = pairs.get(Constant.DATABASE_REPLICA_NUMBER);
         if (value == null) {

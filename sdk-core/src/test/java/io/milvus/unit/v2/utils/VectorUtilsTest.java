@@ -24,19 +24,28 @@ import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.grpc.QueryRequest;
 import io.milvus.grpc.SearchRequest;
+import io.milvus.grpc.TemplateValue;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.vector.request.AnnSearchReq;
 import io.milvus.v2.service.vector.request.FunctionScore;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.FloatVec;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("unit")
 class VectorUtilsTest {
@@ -46,6 +55,61 @@ class VectorUtilsTest {
     @AfterEach
     void clearTimestampCache() {
         timestampCache.clear();
+    }
+
+    @Test
+    void deduceAndCreateTemplateValueHandlesAllSupportedTypes() {
+        Assertions.assertTrue(VectorUtils.deduceAndCreateTemplateValue(Boolean.TRUE).getBoolVal());
+        assertEquals(5L, VectorUtils.deduceAndCreateTemplateValue(5).getInt64Val());
+        assertEquals(5L, VectorUtils.deduceAndCreateTemplateValue(5L).getInt64Val());
+        assertEquals(1.5d, VectorUtils.deduceAndCreateTemplateValue(1.5d).getFloatVal());
+        assertEquals("str", VectorUtils.deduceAndCreateTemplateValue("str").getStringVal());
+        assertEquals(2, VectorUtils.deduceAndCreateTemplateValue(new byte[]{1, 2}).getBytesVal().size());
+        assertEquals(2, VectorUtils.deduceAndCreateTemplateValue(Arrays.asList(1L, 2L))
+                .getArrayVal().getLongData().getDataCount());
+    }
+
+    @Test
+    void deduceAndCreateTemplateValueRejectsUnsupportedType() {
+        assertThrows(MilvusClientException.class, () -> VectorUtils.deduceAndCreateTemplateValue(1.5f));
+        assertThrows(MilvusClientException.class, () -> VectorUtils.deduceAndCreateTemplateValue(new Object()));
+    }
+
+    @Test
+    void getExprByIdBuildsFilterExpression() {
+        VectorUtils vectorUtils = new VectorUtils();
+        assertEquals("id in [1,2]", vectorUtils.getExprById("id", Arrays.asList(1L, 2L)));
+        assertEquals("id in [\"a\",\"b\"]", vectorUtils.getExprById("id", Arrays.asList("a", "b")));
+    }
+
+    @Test
+    void convertAnnSearchParamBuildsSearchRequestAndRejectsInvalidInput() {
+        BaseVector vector = new FloatVec(Collections.singletonList(1.0f));
+        AnnSearchReq request = AnnSearchReq.builder()
+                .vectorFieldName("vec")
+                .vectors(Collections.singletonList(vector))
+                .topK(10)
+                .metricType(io.milvus.v2.common.IndexParam.MetricType.COSINE)
+                .filter("id > 0")
+                .build();
+
+        SearchRequest grpcRequest = VectorUtils.convertAnnSearchParam(request, ConsistencyLevel.STRONG);
+        assertEquals(1, grpcRequest.getNq());
+        assertEquals("id > 0", grpcRequest.getDsl());
+        assertEquals(io.milvus.grpc.DslType.BoolExprV1, grpcRequest.getDslType());
+        assertTrue(grpcRequest.getPlaceholderGroup().size() > 0);
+
+        assertThrows(MilvusClientException.class,
+                () -> VectorUtils.convertAnnSearchParam(AnnSearchReq.builder()
+                        .vectorFieldName("vec")
+                        .vectors(Collections.emptyList())
+                        .build(), ConsistencyLevel.STRONG));
+    }
+
+    @Test
+    void convertAnnSearchParamRejectsNull() {
+        assertThrows(NullPointerException.class,
+                () -> VectorUtils.convertAnnSearchParam(null, ConsistencyLevel.STRONG));
     }
 
     @Test

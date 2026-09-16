@@ -30,6 +30,8 @@ import java.util.Map;
 /**
  * Response returned by the {@code describeIndex} API.
  */
+
+
 public class DescribeIndexResp {
     private List<IndexDesc> indexDescriptions;
 
@@ -42,6 +44,8 @@ public class DescribeIndexResp {
      *
      * @return the list of index descriptions
      */
+
+
     public List<IndexDesc> getIndexDescriptions() {
         return indexDescriptions;
     }
@@ -51,6 +55,8 @@ public class DescribeIndexResp {
      *
      * @param indexDescriptions the list of index descriptions
      */
+
+
     public void setIndexDescriptions(List<IndexDesc> indexDescriptions) {
         this.indexDescriptions = indexDescriptions;
     }
@@ -62,6 +68,8 @@ public class DescribeIndexResp {
      * @return the index description of the field, or {@code null} if not found
      * @throws IllegalArgumentException if the field name is null
      */
+
+
     public IndexDesc getIndexDescByFieldName(String fieldName) {
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name cannot be null");
@@ -81,6 +89,8 @@ public class DescribeIndexResp {
      * @return the index description of the index, or {@code null} if not found
      * @throws IllegalArgumentException if the index name is null
      */
+
+
     public IndexDesc getIndexDescByIndexName(String indexName) {
         if (indexName == null) {
             throw new IllegalArgumentException("Index name cannot be null");
@@ -105,9 +115,16 @@ public class DescribeIndexResp {
      *
      * @return the builder
      */
+
+
     public static DescribeIndexRespBuilder builder() {
         return new DescribeIndexRespBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeIndexResp} class.
+     */
+
 
     public static class DescribeIndexRespBuilder {
         private List<IndexDesc> indexDescriptions = new ArrayList<>();
@@ -121,6 +138,8 @@ public class DescribeIndexResp {
          * @param indexDescriptions the list of index descriptions
          * @return this builder
          */
+
+
         public DescribeIndexRespBuilder indexDescriptions(List<IndexDesc> indexDescriptions) {
             this.indexDescriptions = indexDescriptions;
             return this;
@@ -131,6 +150,8 @@ public class DescribeIndexResp {
          *
          * @return the built response
          */
+
+
         public DescribeIndexResp build() {
             return new DescribeIndexResp(this);
         }
@@ -139,6 +160,8 @@ public class DescribeIndexResp {
     /**
      * Describes a single index of a collection.
      */
+
+
     public static final class IndexDesc {
         private String fieldName;
         private String indexName;
@@ -183,6 +206,8 @@ public class DescribeIndexResp {
          *
          * @return the field name
          */
+
+
         public String getFieldName() {
             return fieldName;
         }
@@ -192,6 +217,8 @@ public class DescribeIndexResp {
          *
          * @param fieldName the field name
          */
+
+
         public void setFieldName(String fieldName) {
             this.fieldName = fieldName;
         }
@@ -201,6 +228,8 @@ public class DescribeIndexResp {
          *
          * @return the index name
          */
+
+
         public String getIndexName() {
             return indexName;
         }
@@ -210,6 +239,8 @@ public class DescribeIndexResp {
          *
          * @param indexName the index name
          */
+
+
         public void setIndexName(String indexName) {
             this.indexName = indexName;
         }
@@ -219,6 +250,8 @@ public class DescribeIndexResp {
          *
          * @return the index ID
          */
+
+
         public long getId() {
             return id;
         }
@@ -228,6 +261,8 @@ public class DescribeIndexResp {
          *
          * @param id the index ID
          */
+
+
         public void setId(long id) {
             this.id = id;
         }
@@ -237,6 +272,8 @@ public class DescribeIndexResp {
          *
          * @return the index type
          */
+
+
         public IndexParam.IndexType getIndexType() {
             return indexType;
         }
@@ -246,6 +283,8 @@ public class DescribeIndexResp {
          *
          * @param indexType the index type
          */
+
+
         public void setIndexType(IndexParam.IndexType indexType) {
             this.indexType = indexType;
         }
@@ -255,6 +294,8 @@ public class DescribeIndexResp {
          *
          * @return the metric type
          */
+
+
         public IndexParam.MetricType getMetricType() {
             return metricType;
         }
@@ -264,6 +305,8 @@ public class DescribeIndexResp {
          *
          * @param metricType the metric type
          */
+
+
         public void setMetricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
         }
@@ -273,6 +316,8 @@ public class DescribeIndexResp {
          *
          * @return the extra parameters
          */
+
+
         public Map<String, String> getExtraParams() {
             return extraParams;
         }
@@ -282,6 +327,8 @@ public class DescribeIndexResp {
          *
          * @param extraParams the extra parameters
          */
+
+
         public void setExtraParams(Map<String, String> extraParams) {
             this.extraParams = extraParams;
         }
@@ -291,6 +338,8 @@ public class DescribeIndexResp {
          *
          * @return the number of indexed rows
          */
+
+
         public long getIndexedRows() {
             return indexedRows;
         }
@@ -300,6 +349,8 @@ public class DescribeIndexResp {
          *
          * @param indexedRows the number of indexed rows
          */
+
+
         public void setIndexedRows(long indexedRows) {
             this.indexedRows = indexedRows;
         }
@@ -309,6 +360,8 @@ public class DescribeIndexResp {
          *
          * @return the total number of rows
          */
+
+
         public long getTotalRows() {
             return totalRows;
         }
@@ -318,6 +371,8 @@ public class DescribeIndexResp {
          *
          * @param totalRows the total number of rows
          */
+
+
         public void setTotalRows(long totalRows) {
             this.totalRows = totalRows;
         }
@@ -327,6 +382,8 @@ public class DescribeIndexResp {
          *
          * @return the number of pending index rows
          */
+
+
         public long getPendingIndexRows() {
             return pendingIndexRows;
         }
@@ -336,6 +393,8 @@ public class DescribeIndexResp {
          *
          * @param pendingIndexRows the number of pending index rows
          */
+
+
         public void setPendingIndexRows(long pendingIndexRows) {
             this.pendingIndexRows = pendingIndexRows;
         }
@@ -345,6 +404,8 @@ public class DescribeIndexResp {
          *
          * @return the index build state
          */
+
+
         public IndexBuildState getIndexState() {
             return indexState;
         }
@@ -354,6 +415,8 @@ public class DescribeIndexResp {
          *
          * @param indexState the index build state
          */
+
+
         public void setIndexState(IndexBuildState indexState) {
             this.indexState = indexState;
         }
@@ -363,6 +426,8 @@ public class DescribeIndexResp {
          *
          * @return the index failed reason
          */
+
+
         public String getIndexFailedReason() {
             return indexFailedReason;
         }
@@ -372,6 +437,8 @@ public class DescribeIndexResp {
          *
          * @param indexFailedReason the index failed reason
          */
+
+
         public void setIndexFailedReason(String indexFailedReason) {
             this.indexFailedReason = indexFailedReason;
         }
@@ -381,6 +448,8 @@ public class DescribeIndexResp {
          *
          * @return the index properties
          */
+
+
         public Map<String, String> getProperties() {
             return properties;
         }
@@ -390,6 +459,8 @@ public class DescribeIndexResp {
          *
          * @param properties the index properties
          */
+
+
         public void setProperties(Map<String, String> properties) {
             this.properties = properties;
         }
@@ -417,9 +488,16 @@ public class DescribeIndexResp {
          *
          * @return the builder
          */
+
+
         public static IndexDescBuilder builder() {
             return new IndexDescBuilder();
         }
+
+        /**
+         * Builder for {@link DescribeIndexResp.IndexDesc} class.
+         */
+
 
         public static class IndexDescBuilder {
             private String fieldName;
@@ -444,6 +522,8 @@ public class DescribeIndexResp {
              * @param fieldName the field name
              * @return this builder
              */
+
+
             public IndexDescBuilder fieldName(String fieldName) {
                 this.fieldName = fieldName;
                 return this;
@@ -455,6 +535,8 @@ public class DescribeIndexResp {
              * @param indexName the index name
              * @return this builder
              */
+
+
             public IndexDescBuilder indexName(String indexName) {
                 this.indexName = indexName;
                 return this;
@@ -466,6 +548,8 @@ public class DescribeIndexResp {
              * @param id the index ID
              * @return this builder
              */
+
+
             public IndexDescBuilder id(long id) {
                 this.id = id;
                 return this;
@@ -477,6 +561,8 @@ public class DescribeIndexResp {
              * @param indexType the index type
              * @return this builder
              */
+
+
             public IndexDescBuilder indexType(IndexParam.IndexType indexType) {
                 this.indexType = indexType;
                 return this;
@@ -488,6 +574,8 @@ public class DescribeIndexResp {
              * @param metricType the metric type
              * @return this builder
              */
+
+
             public IndexDescBuilder metricType(IndexParam.MetricType metricType) {
                 this.metricType = metricType;
                 return this;
@@ -499,6 +587,8 @@ public class DescribeIndexResp {
              * @param extraParams the extra parameters
              * @return this builder
              */
+
+
             public IndexDescBuilder extraParams(Map<String, String> extraParams) {
                 this.extraParams = extraParams;
                 return this;
@@ -510,6 +600,8 @@ public class DescribeIndexResp {
              * @param indexedRows the number of indexed rows
              * @return this builder
              */
+
+
             public IndexDescBuilder indexedRows(long indexedRows) {
                 this.indexedRows = indexedRows;
                 return this;
@@ -521,6 +613,8 @@ public class DescribeIndexResp {
              * @param totalRows the total number of rows
              * @return this builder
              */
+
+
             public IndexDescBuilder totalRows(long totalRows) {
                 this.totalRows = totalRows;
                 return this;
@@ -532,6 +626,8 @@ public class DescribeIndexResp {
              * @param pendingIndexRows the number of pending index rows
              * @return this builder
              */
+
+
             public IndexDescBuilder pendingIndexRows(long pendingIndexRows) {
                 this.pendingIndexRows = pendingIndexRows;
                 return this;
@@ -543,6 +639,8 @@ public class DescribeIndexResp {
              * @param indexState the index build state
              * @return this builder
              */
+
+
             public IndexDescBuilder indexState(IndexBuildState indexState) {
                 this.indexState = indexState;
                 return this;
@@ -554,6 +652,8 @@ public class DescribeIndexResp {
              * @param indexFailedReason the index failed reason
              * @return this builder
              */
+
+
             public IndexDescBuilder indexFailedReason(String indexFailedReason) {
                 this.indexFailedReason = indexFailedReason;
                 return this;
@@ -565,6 +665,8 @@ public class DescribeIndexResp {
              * @param properties the index properties
              * @return this builder
              */
+
+
             public IndexDescBuilder properties(Map<String, String> properties) {
                 this.properties = properties;
                 return this;
@@ -575,6 +677,8 @@ public class DescribeIndexResp {
              *
              * @return the built index description
              */
+
+
             public IndexDesc build() {
                 return new IndexDesc(this);
             }

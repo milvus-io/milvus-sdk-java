@@ -24,6 +24,8 @@ import io.milvus.exception.ParamException;
 /**
  * Parameters for <code>getFlushAllState</code> interface.
  */
+
+
 public class GetFlushAllStateParam {
     private final String databaseName;
     private final long flushAllTs;
@@ -36,14 +38,33 @@ public class GetFlushAllStateParam {
         this.flushAllTs = builder.flushAllTs;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the flushAllTs.
+     *
+     * @return the flushAllTs
+     */
+
 
     public long getFlushAllTs() {
         return flushAllTs;
@@ -61,6 +82,8 @@ public class GetFlushAllStateParam {
     /**
      * Builder for {@link GetFlushAllStateParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private Long flushAllTs;
@@ -74,10 +97,20 @@ public class GetFlushAllStateParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
+
+        /**
+         * Sets the flushAllTs.
+         *
+         * @param flushAllTs the flushAllTs
+         * @return this builder
+         */
+
 
         public Builder withFlushAllTs(Long flushAllTs) {
             // Replace @NonNull logic with explicit null check
@@ -93,6 +126,8 @@ public class GetFlushAllStateParam {
          *
          * @return {@link GetFlushAllStateParam}
          */
+
+
         public GetFlushAllStateParam build() throws ParamException {
             return new GetFlushAllStateParam(this);
         }

@@ -22,12 +22,21 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code removeFileResource} API.
  */
+
+
 public class RemoveFileResourceReq {
     private final String name;
 
     private RemoveFileResourceReq(RemoveFileResourceReqBuilder builder) {
         this.name = builder.name;
     }
+
+    /**
+     * Creates a new builder for {@code RemoveFileResourceReq}.
+     *
+     * @return the builder
+     */
+
 
     public static RemoveFileResourceReqBuilder builder() {
         return new RemoveFileResourceReqBuilder();
@@ -38,6 +47,8 @@ public class RemoveFileResourceReq {
      *
      * @return the name of the file resource
      */
+
+
     public String getName() {
         return name;
     }
@@ -49,6 +60,11 @@ public class RemoveFileResourceReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link RemoveFileResourceReq} class.
+     */
+
+
     public static class RemoveFileResourceReqBuilder {
         private String name;
 
@@ -58,6 +74,8 @@ public class RemoveFileResourceReq {
          * @param name the name of the file resource
          * @return this builder
          */
+
+
         public RemoveFileResourceReqBuilder name(String name) {
             this.name = name;
             return this;
@@ -68,6 +86,8 @@ public class RemoveFileResourceReq {
          *
          * @return the constructed {@code RemoveFileResourceReq}
          */
+
+
         public RemoveFileResourceReq build() {
             return new RemoveFileResourceReq(this);
         }

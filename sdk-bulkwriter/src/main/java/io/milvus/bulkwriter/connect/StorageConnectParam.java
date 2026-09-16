@@ -25,6 +25,8 @@ package io.milvus.bulkwriter.connect;
  * <p>This type is reserved for carrying the settings required to connect to the remote/cloud
  * storage that holds bulk-import data files (for example, endpoint, credentials, and region).
  */
+
+
 public class StorageConnectParam {
 
 }

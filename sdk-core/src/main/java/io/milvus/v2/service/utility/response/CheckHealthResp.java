@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code checkHealth} API.
  */
+
+
 public class CheckHealthResp {
     private Boolean isHealthy;
     private List<String> reasons;
@@ -36,6 +38,13 @@ public class CheckHealthResp {
         this.quotaStates = builder.quotaStates;
     }
 
+    /**
+     * Creates a new builder for {@code CheckHealthResp}.
+     *
+     * @return the builder
+     */
+
+
     public static CheckHealthRespBuilder builder() {
         return new CheckHealthRespBuilder();
     }
@@ -45,6 +54,8 @@ public class CheckHealthResp {
      *
      * @return {@code true} if the instance is healthy, {@code false} otherwise
      */
+
+
     public Boolean getIsHealthy() {
         return isHealthy;
     }
@@ -54,6 +65,8 @@ public class CheckHealthResp {
      *
      * @param isHealthy {@code true} if the instance is healthy, {@code false} otherwise
      */
+
+
     public void setIsHealthy(Boolean isHealthy) {
         this.isHealthy = isHealthy;
     }
@@ -63,6 +76,8 @@ public class CheckHealthResp {
      *
      * @return the list of health-check failure reasons
      */
+
+
     public List<String> getReasons() {
         return reasons;
     }
@@ -72,6 +87,8 @@ public class CheckHealthResp {
      *
      * @param reasons the list of health-check failure reasons
      */
+
+
     public void setReasons(List<String> reasons) {
         this.reasons = reasons;
     }
@@ -81,6 +98,8 @@ public class CheckHealthResp {
      *
      * @return the list of quota states
      */
+
+
     public List<String> getQuotaStates() {
         return quotaStates;
     }
@@ -90,6 +109,8 @@ public class CheckHealthResp {
      *
      * @param quotaStates the list of quota states
      */
+
+
     public void setQuotaStates(List<String> quotaStates) {
         this.quotaStates = quotaStates;
     }
@@ -103,6 +124,11 @@ public class CheckHealthResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link CheckHealthResp} class.
+     */
+
+
     public static class CheckHealthRespBuilder {
         private Boolean isHealthy = false;
         private List<String> reasons = new ArrayList<>();
@@ -114,6 +140,8 @@ public class CheckHealthResp {
          * @param isHealthy {@code true} if the instance is healthy, {@code false} otherwise
          * @return this builder
          */
+
+
         public CheckHealthRespBuilder isHealthy(Boolean isHealthy) {
             this.isHealthy = isHealthy;
             return this;
@@ -125,6 +153,8 @@ public class CheckHealthResp {
          * @param reasons the list of health-check failure reasons
          * @return this builder
          */
+
+
         public CheckHealthRespBuilder reasons(List<String> reasons) {
             this.reasons = reasons;
             return this;
@@ -136,6 +166,8 @@ public class CheckHealthResp {
          * @param quotaStates the list of quota states
          * @return this builder
          */
+
+
         public CheckHealthRespBuilder quotaStates(List<String> quotaStates) {
             this.quotaStates = quotaStates;
             return this;
@@ -146,6 +178,8 @@ public class CheckHealthResp {
          *
          * @return the constructed {@code CheckHealthResp}
          */
+
+
         public CheckHealthResp build() {
             return new CheckHealthResp(this);
         }

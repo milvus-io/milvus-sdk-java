@@ -25,6 +25,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code alterDatabaseProperties} API.
  */
+
+
 public class AlterDatabasePropertiesReq {
     private String databaseName;
     private Map<String, String> properties;
@@ -39,6 +41,8 @@ public class AlterDatabasePropertiesReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -48,6 +52,8 @@ public class AlterDatabasePropertiesReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -57,6 +63,8 @@ public class AlterDatabasePropertiesReq {
      *
      * @return the database properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -66,6 +74,8 @@ public class AlterDatabasePropertiesReq {
      *
      * @param properties the database properties
      */
+
+
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -83,9 +93,16 @@ public class AlterDatabasePropertiesReq {
      *
      * @return a new {@link AlterDatabasePropertiesReqBuilder}
      */
+
+
     public static AlterDatabasePropertiesReqBuilder builder() {
         return new AlterDatabasePropertiesReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterDatabasePropertiesReq} class.
+     */
+
 
     public static class AlterDatabasePropertiesReqBuilder {
         private String databaseName;
@@ -100,6 +117,8 @@ public class AlterDatabasePropertiesReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AlterDatabasePropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -111,6 +130,8 @@ public class AlterDatabasePropertiesReq {
          * @param properties the database properties
          * @return this builder
          */
+
+
         public AlterDatabasePropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -123,6 +144,8 @@ public class AlterDatabasePropertiesReq {
          * @param value the property value
          * @return this builder
          */
+
+
         public AlterDatabasePropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
@@ -136,6 +159,8 @@ public class AlterDatabasePropertiesReq {
          *
          * @return the built request
          */
+
+
         public AlterDatabasePropertiesReq build() {
             return new AlterDatabasePropertiesReq(this);
         }

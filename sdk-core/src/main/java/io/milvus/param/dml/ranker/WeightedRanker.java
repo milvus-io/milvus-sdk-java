@@ -32,6 +32,8 @@ import java.util.Map;
  * The Average Weighted Scoring reranking strategy, which prioritizes vectors based on relevance,
  * averaging their significance.
  */
+
+
 public class WeightedRanker extends BaseRanker {
     private final List<Float> weights;
 
@@ -43,6 +45,11 @@ public class WeightedRanker extends BaseRanker {
         this.weights = builder.weights;
     }
 
+    /**
+     * Returns the weights.
+     *
+     * @return the weights
+     */
     // Getter method to replace @Getter annotation
     public List<Float> getWeights() {
         return weights;
@@ -67,6 +74,13 @@ public class WeightedRanker extends BaseRanker {
         return props;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -74,6 +88,8 @@ public class WeightedRanker extends BaseRanker {
     /**
      * Builder for {@link WeightedRanker} class.
      */
+
+
     public static class Builder {
         private List<Float> weights = new ArrayList<>();
 
@@ -89,6 +105,8 @@ public class WeightedRanker extends BaseRanker {
          * @param weights weight values
          * @return <code>Builder</code>
          */
+
+
         public Builder withWeights(List<Float> weights) {
             // Replace @NonNull logic with explicit null check
             if (weights == null) {
@@ -103,6 +121,8 @@ public class WeightedRanker extends BaseRanker {
          *
          * @return {@link WeightedRanker}
          */
+
+
         public WeightedRanker build() throws ParamException {
             return new WeightedRanker(this);
         }

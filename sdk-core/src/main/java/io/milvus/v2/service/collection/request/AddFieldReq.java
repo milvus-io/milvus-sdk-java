@@ -31,6 +31,8 @@ import java.util.Map;
  * Request parameters for adding a field to a collection schema, used by the
  * {@code addField} schema builder and by the {@code addCollectionField} API.
  */
+
+
 public class AddFieldReq {
     private String fieldName;
     private String description;
@@ -87,6 +89,8 @@ public class AddFieldReq {
      *
      * @return the builder
      */
+
+
     public static AddFieldReqBuilder<?> builder() {
         return new AddFieldReqBuilder<>();
     }
@@ -97,6 +101,7 @@ public class AddFieldReq {
      *
      * @return the field name
      */
+
     public String getFieldName() {
         return fieldName;
     }
@@ -106,6 +111,8 @@ public class AddFieldReq {
      *
      * @return the field description
      */
+
+
     public String getDescription() {
         return description;
     }
@@ -115,6 +122,8 @@ public class AddFieldReq {
      *
      * @return the data type
      */
+
+
     public DataType getDataType() {
         return dataType;
     }
@@ -124,6 +133,8 @@ public class AddFieldReq {
      *
      * @return the max length
      */
+
+
     public Integer getMaxLength() {
         return maxLength;
     }
@@ -133,6 +144,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if the field is the primary key
      */
+
+
     public Boolean getIsPrimaryKey() {
         return isPrimaryKey;
     }
@@ -142,6 +155,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if the field is a partition key
      */
+
+
     public Boolean getIsPartitionKey() {
         return isPartitionKey;
     }
@@ -151,6 +166,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if the field is a clustering key
      */
+
+
     public Boolean getIsClusteringKey() {
         return isClusteringKey;
     }
@@ -160,6 +177,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if auto ID is enabled
      */
+
+
     public Boolean getAutoID() {
         return autoID;
     }
@@ -169,6 +188,8 @@ public class AddFieldReq {
      *
      * @return the vector dimension
      */
+
+
     public Integer getDimension() {
         return dimension;
     }
@@ -178,6 +199,8 @@ public class AddFieldReq {
      *
      * @return the element type
      */
+
+
     public DataType getElementType() {
         return elementType;
     }
@@ -187,6 +210,8 @@ public class AddFieldReq {
      *
      * @return the max capacity
      */
+
+
     public Integer getMaxCapacity() {
         return maxCapacity;
     }
@@ -196,6 +221,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if the field is nullable
      */
+
+
     public Boolean getIsNullable() {
         return isNullable;
     }
@@ -205,6 +232,8 @@ public class AddFieldReq {
      *
      * @return the default value
      */
+
+
     public Object getDefaultValue() {
         return defaultValue;
     }
@@ -214,6 +243,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if the default value is enabled
      */
+
+
     public boolean isEnableDefaultValue() {
         return enableDefaultValue;
     }
@@ -223,6 +254,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if the analyzer is enabled
      */
+
+
     public Boolean getEnableAnalyzer() {
         return enableAnalyzer;
     }
@@ -232,6 +265,8 @@ public class AddFieldReq {
      *
      * @return the analyzer parameters
      */
+
+
     public Map<String, Object> getAnalyzerParams() {
         return analyzerParams;
     }
@@ -241,6 +276,8 @@ public class AddFieldReq {
      *
      * @return {@code true} if BM25 matching is enabled
      */
+
+
     public Boolean getEnableMatch() {
         return enableMatch;
     }
@@ -250,6 +287,8 @@ public class AddFieldReq {
      *
      * @return the type parameters
      */
+
+
     public Map<String, String> getTypeParams() {
         return typeParams;
     }
@@ -259,6 +298,8 @@ public class AddFieldReq {
      *
      * @return the multi-analyzer parameters
      */
+
+
     public Map<String, Object> getMultiAnalyzerParams() {
         return multiAnalyzerParams;
     }
@@ -268,6 +309,8 @@ public class AddFieldReq {
      *
      * @return the external field name
      */
+
+
     public String getExternalField() {
         return externalField;
     }
@@ -277,6 +320,8 @@ public class AddFieldReq {
      *
      * @return the struct sub-fields
      */
+
+
     public List<FieldSchema> getStructFields() {
         return structFields;
     }
@@ -287,6 +332,7 @@ public class AddFieldReq {
      *
      * @param fieldName the field name
      */
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -296,6 +342,8 @@ public class AddFieldReq {
      *
      * @param description the field description
      */
+
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -305,6 +353,8 @@ public class AddFieldReq {
      *
      * @param dataType the data type
      */
+
+
     public void setDataType(DataType dataType) {
         this.dataType = dataType;
     }
@@ -314,6 +364,8 @@ public class AddFieldReq {
      *
      * @param maxLength the max length
      */
+
+
     public void setMaxLength(Integer maxLength) {
         this.maxLength = maxLength;
     }
@@ -323,6 +375,8 @@ public class AddFieldReq {
      *
      * @param isPrimaryKey {@code true} to make the field the primary key
      */
+
+
     public void setIsPrimaryKey(Boolean isPrimaryKey) {
         this.isPrimaryKey = isPrimaryKey;
     }
@@ -332,6 +386,8 @@ public class AddFieldReq {
      *
      * @param isPartitionKey {@code true} to make the field a partition key
      */
+
+
     public void setIsPartitionKey(Boolean isPartitionKey) {
         this.isPartitionKey = isPartitionKey;
     }
@@ -341,6 +397,8 @@ public class AddFieldReq {
      *
      * @param isClusteringKey {@code true} to make the field a clustering key
      */
+
+
     public void setIsClusteringKey(Boolean isClusteringKey) {
         this.isClusteringKey = isClusteringKey;
     }
@@ -350,6 +408,8 @@ public class AddFieldReq {
      *
      * @param autoID {@code true} to enable auto ID
      */
+
+
     public void setAutoID(Boolean autoID) {
         this.autoID = autoID;
     }
@@ -359,6 +419,8 @@ public class AddFieldReq {
      *
      * @param dimension the vector dimension
      */
+
+
     public void setDimension(Integer dimension) {
         this.dimension = dimension;
     }
@@ -368,6 +430,8 @@ public class AddFieldReq {
      *
      * @param elementType the element type
      */
+
+
     public void setElementType(DataType elementType) {
         this.elementType = elementType;
     }
@@ -377,6 +441,8 @@ public class AddFieldReq {
      *
      * @param maxCapacity the max capacity
      */
+
+
     public void setMaxCapacity(Integer maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
@@ -386,6 +452,8 @@ public class AddFieldReq {
      *
      * @param isNullable {@code true} to make the field nullable
      */
+
+
     public void setIsNullable(Boolean isNullable) {
         this.isNullable = isNullable;
     }
@@ -395,6 +463,8 @@ public class AddFieldReq {
      *
      * @param defaultValue the default value
      */
+
+
     public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
     }
@@ -404,6 +474,8 @@ public class AddFieldReq {
      *
      * @param enableDefaultValue {@code true} to enable the default value
      */
+
+
     public void setEnableDefaultValue(boolean enableDefaultValue) {
         this.enableDefaultValue = enableDefaultValue;
     }
@@ -413,6 +485,8 @@ public class AddFieldReq {
      *
      * @param enableAnalyzer {@code true} to enable the analyzer
      */
+
+
     public void setEnableAnalyzer(Boolean enableAnalyzer) {
         this.enableAnalyzer = enableAnalyzer;
     }
@@ -422,6 +496,8 @@ public class AddFieldReq {
      *
      * @param analyzerParams the analyzer parameters
      */
+
+
     public void setAnalyzerParams(Map<String, Object> analyzerParams) {
         this.analyzerParams = analyzerParams;
     }
@@ -431,6 +507,8 @@ public class AddFieldReq {
      *
      * @param enableMatch {@code true} to enable BM25 matching
      */
+
+
     public void setEnableMatch(Boolean enableMatch) {
         this.enableMatch = enableMatch;
     }
@@ -440,6 +518,8 @@ public class AddFieldReq {
      *
      * @param typeParams the type parameters
      */
+
+
     public void setTypeParams(Map<String, String> typeParams) {
         this.typeParams = typeParams;
     }
@@ -449,6 +529,8 @@ public class AddFieldReq {
      *
      * @param multiAnalyzerParams the multi-analyzer parameters
      */
+
+
     public void setMultiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
         this.multiAnalyzerParams = multiAnalyzerParams;
     }
@@ -458,6 +540,8 @@ public class AddFieldReq {
      *
      * @param externalField the external field name
      */
+
+
     public void setExternalField(String externalField) {
         this.externalField = externalField;
     }
@@ -467,6 +551,8 @@ public class AddFieldReq {
      *
      * @param structFields the struct sub-fields
      */
+
+
     public void setStructFields(List<FieldSchema> structFields) {
         this.structFields = structFields;
     }
@@ -498,6 +584,11 @@ public class AddFieldReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link AddFieldReq} class.
+     */
+
+
     public static class AddFieldReqBuilder<T extends AddFieldReqBuilder<T>> {
         private String fieldName;
         private String description;
@@ -527,6 +618,8 @@ public class AddFieldReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public T fieldName(String fieldName) {
             this.fieldName = fieldName;
             return (T) this;
@@ -538,6 +631,8 @@ public class AddFieldReq {
          * @param description the field description
          * @return this builder
          */
+
+
         public T description(String description) {
             this.description = description;
             return (T) this;
@@ -549,6 +644,8 @@ public class AddFieldReq {
          * @param dataType the data type
          * @return this builder
          */
+
+
         public T dataType(DataType dataType) {
             this.dataType = dataType;
             return (T) this;
@@ -560,6 +657,8 @@ public class AddFieldReq {
          * @param maxLength the max length
          * @return this builder
          */
+
+
         public T maxLength(Integer maxLength) {
             this.maxLength = maxLength;
             return (T) this;
@@ -571,6 +670,8 @@ public class AddFieldReq {
          * @param isPrimaryKey {@code true} to make the field the primary key
          * @return this builder
          */
+
+
         public T isPrimaryKey(Boolean isPrimaryKey) {
             this.isPrimaryKey = isPrimaryKey;
             return (T) this;
@@ -582,6 +683,8 @@ public class AddFieldReq {
          * @param isPartitionKey {@code true} to make the field a partition key
          * @return this builder
          */
+
+
         public T isPartitionKey(Boolean isPartitionKey) {
             this.isPartitionKey = isPartitionKey;
             return (T) this;
@@ -593,6 +696,8 @@ public class AddFieldReq {
          * @param isClusteringKey {@code true} to make the field a clustering key
          * @return this builder
          */
+
+
         public T isClusteringKey(Boolean isClusteringKey) {
             this.isClusteringKey = isClusteringKey;
             return (T) this;
@@ -604,6 +709,8 @@ public class AddFieldReq {
          * @param autoID {@code true} to enable auto ID
          * @return this builder
          */
+
+
         public T autoID(Boolean autoID) {
             this.autoID = autoID;
             return (T) this;
@@ -615,6 +722,8 @@ public class AddFieldReq {
          * @param dimension the vector dimension
          * @return this builder
          */
+
+
         public T dimension(Integer dimension) {
             this.dimension = dimension;
             return (T) this;
@@ -626,6 +735,8 @@ public class AddFieldReq {
          * @param elementType the element type
          * @return this builder
          */
+
+
         public T elementType(DataType elementType) {
             this.elementType = elementType;
             return (T) this;
@@ -637,6 +748,8 @@ public class AddFieldReq {
          * @param maxCapacity the max capacity
          * @return this builder
          */
+
+
         public T maxCapacity(Integer maxCapacity) {
             this.maxCapacity = maxCapacity;
             return (T) this;
@@ -648,6 +761,8 @@ public class AddFieldReq {
          * @param isNullable {@code true} to make the field nullable
          * @return this builder
          */
+
+
         public T isNullable(Boolean isNullable) {
             this.isNullable = isNullable;
             return (T) this;
@@ -659,6 +774,8 @@ public class AddFieldReq {
          * @param defaultValue the default value
          * @return this builder
          */
+
+
         public T defaultValue(Object defaultValue) {
             this.defaultValue = defaultValue;
             this.enableDefaultValue = true;
@@ -671,6 +788,8 @@ public class AddFieldReq {
          * @param enableDefaultValue {@code true} to enable the default value
          * @return this builder
          */
+
+
         public T enableDefaultValue(boolean enableDefaultValue) {
             this.enableDefaultValue = enableDefaultValue;
             return (T) this;
@@ -682,6 +801,8 @@ public class AddFieldReq {
          * @param enableAnalyzer {@code true} to enable the analyzer
          * @return this builder
          */
+
+
         public T enableAnalyzer(Boolean enableAnalyzer) {
             this.enableAnalyzer = enableAnalyzer;
             return (T) this;
@@ -693,6 +814,8 @@ public class AddFieldReq {
          * @param analyzerParams the analyzer parameters
          * @return this builder
          */
+
+
         public T analyzerParams(Map<String, Object> analyzerParams) {
             this.analyzerParams = analyzerParams;
             return (T) this;
@@ -704,6 +827,8 @@ public class AddFieldReq {
          * @param enableMatch {@code true} to enable BM25 matching
          * @return this builder
          */
+
+
         public T enableMatch(Boolean enableMatch) {
             this.enableMatch = enableMatch;
             return (T) this;
@@ -715,6 +840,8 @@ public class AddFieldReq {
          * @param typeParams the type parameters
          * @return this builder
          */
+
+
         public T typeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
             return (T) this;
@@ -726,6 +853,8 @@ public class AddFieldReq {
          * @param multiAnalyzerParams the multi-analyzer parameters
          * @return this builder
          */
+
+
         public T multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
             this.multiAnalyzerParams = multiAnalyzerParams;
             return (T) this;
@@ -737,6 +866,8 @@ public class AddFieldReq {
          * @param externalField the external field name
          * @return this builder
          */
+
+
         public T externalField(String externalField) {
             this.externalField = externalField;
             return (T) this;
@@ -748,6 +879,8 @@ public class AddFieldReq {
          * @param structFields the struct sub-fields
          * @return this builder
          */
+
+
         public T structFields(List<CreateCollectionReq.FieldSchema> structFields) {
             this.structFields = structFields;
             return (T) this;
@@ -760,6 +893,8 @@ public class AddFieldReq {
          * @param addFieldReq the field request
          * @return this builder
          */
+
+
         public T addStructField(AddFieldReq addFieldReq) {
             if (this.structFields == null) {
                 this.structFields = new ArrayList<>();
@@ -774,6 +909,8 @@ public class AddFieldReq {
          *
          * @return the request
          */
+
+
         public AddFieldReq build() {
             return new AddFieldReq(this);
         }
