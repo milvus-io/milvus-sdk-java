@@ -1,4 +1,40 @@
 pull_request_rules:
+  # This rule must come before any other rule that could carry a merge-type action
+  # (close/delete_head_branch/merge/queue/rebase/squash/update): Mergify runs the actions of
+  # EVERY rule whose conditions match, and when two matching rules both carry such an action
+  # the one listed first wins. The label-management rules below are not merge-type actions,
+  # so they do not block or get blocked by this rule. The check-state guards are
+  # defense-in-depth: they keep this rule from matching in the same evaluation where a CI
+  # check is pending or failing, before the "Remove ci-passed" rule below can drop the label.
+  - name: Auto-merge cherry-pick PRs to 3.0 when CI passes
+    conditions:
+      - base=3.0
+      # the backport workflow pushes the cherry-pick branch into this repository, so a PR
+      # whose head lives on a fork can never satisfy this rule
+      - head-repo-full-name = milvus-io/milvus-sdk-java
+      - head~=^cherry-pick-
+      - title~=^\[cherry-pick\]
+      # backport-3.0 is added by the backport workflow with the CHERRY_PICK_PAT, so a fork
+      # spoofing the naming pattern cannot trigger the auto-merge.
+      - label=backport-3.0
+      - label=ci-passed
+      # even once ci-passed is present, never auto-merge while any CI check on the PR is
+      # pending or failing. ci-passed only tracks the two maven jobs; the deploy/build check
+      # (java_sdk_ci_test.yaml) runs on every pull_request with no paths-ignore, so it has to
+      # be guarded here explicitly too.
+      - -check-pending=Build and test on ubuntu
+      - -check-failure=Build and test on ubuntu
+      - -check-pending=Build and test on windows
+      - -check-failure=Build and test on windows
+      - -check-pending=Deploy milvus server,build and test
+      - -check-failure=Deploy milvus server,build and test
+      # escape hatch: a maintainer can halt a specific backport with the do-not-merge label
+      - -label=do-not-merge
+      - status-success=DCO
+    actions:
+      merge:
+        method: squash
+
   - name: Add needs-dco label when DCO check failed
     conditions:
       - or:
