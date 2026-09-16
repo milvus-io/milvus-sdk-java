@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 3.0.10 (2026-09-16)
+### Improvement
+- Trim redundant content from the published jar and make tests JDK 8 compatible
+- Fix a potential performance risk of telemetry
+- Add beginner tutorials consuming the published SDK from Maven Central
+
 ## milvus-sdk-java 3.0.9 (2026-09-03)
 ### Feature
 - Support nullable struct field
