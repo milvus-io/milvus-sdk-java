@@ -27,7 +27,7 @@
         <!-- Single source of the milvus-sdk-java version used by all tutorials.
              Keep in sync with the latest published release; do not duplicate it
              in the child pom.xml files. -->
-        <milvus.sdk.version>3.0.9</milvus.sdk.version>
+        <milvus.sdk.version>3.0.10</milvus.sdk.version>
         <slf4j.version>1.7.36</slf4j.version>
     </properties>
 

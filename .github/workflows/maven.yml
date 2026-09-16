@@ -32,6 +32,11 @@ jobs:
           cache: maven
       - name: Update submodule
         run: git submodule update --init
+      # sdk-bulkwriter depends on milvus-sdk-java:${revision}. The version under development is
+      # not on Maven Central yet, so build and install sdk-core into the local repository first
+      # to let the module-only build below resolve it.
+      - name: Install sdk-core
+        run: mvn -pl sdk-core install "-Dmaven.test.skip=true" --batch-mode
       # BulkWriter must be tested on linux: several unit tests write Parquet files locally and
       # require Hadoop's native WinUtils, which is only bundled for linux. On windows these tests
       # fail with "HADOOP_HOME and hadoop.home.dir are unset" (see PR #2075), so keep this step on
@@ -62,7 +67,12 @@ jobs:
           cache: maven
       - name: Update submodule
         run: git submodule update --init
-      - name: Tutorials compile (published SDK)
+      # The tutorials consume milvus-sdk-java:${milvus.sdk.version} from the local repository when
+      # it is present (falling back to Maven Central). Install sdk-core first so the tutorials can
+      # compile against the version under development before it is published.
+      - name: Install sdk-core
+        run: mvn -pl sdk-core install "-Dmaven.test.skip=true" --batch-mode
+      - name: Tutorials compile
         run: mvn -f tutorial/pom.xml compile --batch-mode
       - name: Unit tests (ut)
         run: mvn -pl sdk-core -Pcoverage "-Djacoco.destFile=target/jacoco-ut.exec" "-Djacoco.reportDir=target/site/jacoco-ut" --batch-mode --update-snapshots verify
