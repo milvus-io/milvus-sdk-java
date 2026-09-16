@@ -24,6 +24,8 @@ import io.milvus.exception.ParamException;
 /**
  * Parameters for <code>listBulkInsertTasks</code> interface.
  */
+
+
 public class ListBulkInsertTasksParam {
     private final String databaseName;
     private final String collectionName;
@@ -38,14 +40,33 @@ public class ListBulkInsertTasksParam {
         this.limit = builder.limit;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the limit.
+     *
+     * @return the limit
+     */
+
 
     public int getLimit() {
         return limit;
@@ -61,6 +82,13 @@ public class ListBulkInsertTasksParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -68,6 +96,8 @@ public class ListBulkInsertTasksParam {
     /**
      * Builder for {@link ListBulkInsertTasksParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName = ""; // empty string will list all tasks in the server side
@@ -85,6 +115,8 @@ public class ListBulkInsertTasksParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -97,6 +129,8 @@ public class ListBulkInsertTasksParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -112,6 +146,8 @@ public class ListBulkInsertTasksParam {
          * @param limit limit number
          * @return <code>Builder</code>
          */
+
+
         public Builder withLimit(Integer limit) {
             if (limit == null) {
                 throw new IllegalArgumentException("limit cannot be null");
@@ -128,6 +164,8 @@ public class ListBulkInsertTasksParam {
          *
          * @return {@link ListBulkInsertTasksParam}
          */
+
+
         public ListBulkInsertTasksParam build() throws ParamException {
             return new ListBulkInsertTasksParam(this);
         }

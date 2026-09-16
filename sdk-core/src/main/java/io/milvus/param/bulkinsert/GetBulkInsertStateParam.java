@@ -24,6 +24,8 @@ import io.milvus.exception.ParamException;
 /**
  * Parameters for <code>getBulkInsertState</code> interface.
  */
+
+
 public class GetBulkInsertStateParam {
     private final Long task;
 
@@ -37,6 +39,11 @@ public class GetBulkInsertStateParam {
         this.task = builder.task;
     }
 
+    /**
+     * Returns the task.
+     *
+     * @return the task
+     */
     // Getter method to replace @Getter annotation
     public Long getTask() {
         return task;
@@ -50,6 +57,13 @@ public class GetBulkInsertStateParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -57,6 +71,8 @@ public class GetBulkInsertStateParam {
     /**
      * Builder for {@link GetBulkInsertStateParam} class.
      */
+
+
     public static final class Builder {
         private Long task;
 
@@ -69,6 +85,8 @@ public class GetBulkInsertStateParam {
          * @param task task id
          * @return <code>Builder</code>
          */
+
+
         public Builder withTask(Long task) {
             if (task == null) {
                 throw new IllegalArgumentException("task cannot be null");
@@ -83,6 +101,9 @@ public class GetBulkInsertStateParam {
          *
          * @return {@link GetBulkInsertStateParam}
          */
+
+
+
         public GetBulkInsertStateParam build() throws ParamException {
             return new GetBulkInsertStateParam(this);
         }

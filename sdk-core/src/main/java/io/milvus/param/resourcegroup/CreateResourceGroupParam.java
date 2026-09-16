@@ -24,6 +24,11 @@ import io.milvus.common.resourcegroup.ResourceGroupConfig;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the createResourceGroup API.
+ */
+
+
 public class CreateResourceGroupParam {
     private final String groupName;
     private final ResourceGroupConfig config;
@@ -36,13 +41,34 @@ public class CreateResourceGroupParam {
         this.config = builder.config;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the groupName.
+     *
+     * @return the groupName
+     */
+
+
     public String getGroupName() {
         return groupName;
     }
+
+    /**
+     * Returns the config.
+     *
+     * @return the config
+     */
+
 
     public ResourceGroupConfig getConfig() {
         return config;
@@ -59,6 +85,8 @@ public class CreateResourceGroupParam {
     /**
      * Builder for {@link CreateResourceGroupParam} class.
      */
+
+
     public static final class Builder {
         private String groupName;
         private ResourceGroupConfig config;
@@ -72,6 +100,8 @@ public class CreateResourceGroupParam {
          * @param groupName group name
          * @return <code>Builder</code>
          */
+
+
         public Builder withGroupName(String groupName) {
             if (groupName == null) {
                 throw new IllegalArgumentException("Group name cannot be null");
@@ -86,6 +116,8 @@ public class CreateResourceGroupParam {
          * @param config configuration of resource group
          * @return <code>Builder</code>
          */
+
+
         public Builder withConfig(ResourceGroupConfig config) {
             if (config == null) {
                 throw new IllegalArgumentException("Config cannot be null");
@@ -99,6 +131,8 @@ public class CreateResourceGroupParam {
          *
          * @return {@link CreateResourceGroupParam}
          */
+
+
         public CreateResourceGroupParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(groupName, "Group name");
 

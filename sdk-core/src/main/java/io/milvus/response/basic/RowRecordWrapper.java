@@ -30,11 +30,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Base wrapper for converting gRPC field data of query/search results into row records,
+ * including dynamic field expansion. Subclasses supply the raw field data and output fields.
+ */
+
+
 public abstract class RowRecordWrapper {
     // a cache for output fields
     private ConcurrentHashMap<String, FieldDataWrapper> outputFieldsData = new ConcurrentHashMap<>();
     // a cache for output dynamic field names
     private List<String> dynamicFieldNames = null;
+
+    /**
+     * Returns the row records converted from the query/search result.
+     *
+     * @return a list of {@link QueryResultsWrapper.RowRecord}
+     */
+
 
     public abstract List<QueryResultsWrapper.RowRecord> getRowRecords();
 
@@ -54,6 +67,8 @@ public abstract class RowRecordWrapper {
      *
      * @return {@link FieldDataWrapper}
      */
+
+
     public FieldDataWrapper getDynamicWrapper() throws ParamException {
         List<FieldData> fields = getFieldDataList();
         for (FieldData field : fields) {
@@ -70,6 +85,7 @@ public abstract class RowRecordWrapper {
      * Throws {@link ParamException} if the index is illegal.
      *
      * @return <code>RowRecord</code> a row record of the result
+     * @param record the row record to build
      */
     protected QueryResultsWrapper.RowRecord buildRowRecord(QueryResultsWrapper.RowRecord record, long index) {
         List<String> dynamicFields = getDynamicFieldNames();

@@ -24,6 +24,11 @@ import io.milvus.param.ParamUtils;
 
 import static io.milvus.common.utils.RedactCredential.redactCredential;
 
+/**
+ * Request parameters for the updateCredential API.
+ */
+
+
 public class UpdateCredentialParam {
     private final String username;
     private final String oldPassword;
@@ -38,18 +43,44 @@ public class UpdateCredentialParam {
         this.newPassword = builder.newPassword;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static UpdateCredentialParam.Builder newBuilder() {
         return new UpdateCredentialParam.Builder();
     }
 
+    /**
+     * Returns the username.
+     *
+     * @return the username
+     */
     // Getter methods to replace @Getter annotation
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Returns the oldPassword.
+     *
+     * @return the oldPassword
+     */
+
+
     public String getOldPassword() {
         return oldPassword;
     }
+
+    /**
+     * Returns the newPassword.
+     *
+     * @return the newPassword
+     */
+
 
     public String getNewPassword() {
         return newPassword;
@@ -68,6 +99,8 @@ public class UpdateCredentialParam {
     /**
      * Builder for {@link UpdateCredentialParam} class.
      */
+
+
     public static final class Builder {
         private String username;
         private String oldPassword;
@@ -82,6 +115,8 @@ public class UpdateCredentialParam {
          * @param username username
          * @return <code>Builder</code>
          */
+
+
         public UpdateCredentialParam.Builder withUsername(String username) {
             // Replace @NonNull logic with explicit null check
             if (username == null) {
@@ -97,6 +132,8 @@ public class UpdateCredentialParam {
          * @param password old password
          * @return <code>Builder</code>
          */
+
+
         public UpdateCredentialParam.Builder withOldPassword(String password) {
             // Replace @NonNull logic with explicit null check
             if (password == null) {
@@ -112,6 +149,8 @@ public class UpdateCredentialParam {
          * @param password password
          * @return <code>Builder</code>
          */
+
+
         public UpdateCredentialParam.Builder withNewPassword(String password) {
             // Replace @NonNull logic with explicit null check
             if (password == null) {
@@ -126,6 +165,8 @@ public class UpdateCredentialParam {
          *
          * @return {@link UpdateCredentialParam}
          */
+
+
         public UpdateCredentialParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(username, "Username");
             ParamUtils.CheckNullString(oldPassword, "OldPassword");

@@ -23,6 +23,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Base request class for volume operations.
+ *
+ * <p>Holds the API key and additional options shared by volume requests. The API key needs
+ * to be filled in when calling the cloud API.</p>
+ */
+
+
 public class BaseVolumeRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
@@ -43,18 +51,42 @@ public class BaseVolumeRequest implements Serializable {
         this.apiKey = builder.apiKey;
         this.options = builder.options;
     }
+    /**
+     * Returns the apiKey.
+     *
+     * @return the apiKey
+     */
+
 
     public String getApiKey() {
         return apiKey;
     }
+    /**
+     * Sets the apiKey.
+     *
+     * @param apiKey the apiKey
+     */
+
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
+    /**
+     * Returns the options.
+     *
+     * @return the options
+     */
+
 
     public Map<String, Object> getOptions() {
         return options;
     }
+    /**
+     * Sets the options.
+     *
+     * @param options the options
+     */
+
 
     public void setOptions(Map<String, Object> options) {
         this.options = options;
@@ -67,10 +99,21 @@ public class BaseVolumeRequest implements Serializable {
                 "options=" + options +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static BaseVolumeRequestBuilder<?> builder() {
         return new BaseVolumeRequestBuilder<>();
     }
+
+    /**
+     * Builder for {@link BaseVolumeRequest} class.
+     */
+
 
     public static class BaseVolumeRequestBuilder<T extends BaseVolumeRequestBuilder<T>> {
         private String apiKey;
@@ -80,16 +123,36 @@ public class BaseVolumeRequest implements Serializable {
             this.apiKey = "";
             this.options = new HashMap<>();
         }
+        /**
+         * Sets the apiKey.
+         *
+         * @param apiKey the apiKey
+         * @return this builder
+         */
+
 
         public T apiKey(String apiKey) {
             this.apiKey = apiKey;
             return (T) this;
         }
+        /**
+         * Sets the options.
+         *
+         * @param options the options
+         * @return this builder
+         */
+
 
         public T options(Map<String, Object> options) {
             this.options = options;
             return (T) this;
         }
+        /**
+         * Builds the BaseVolumeRequest.
+         *
+         * @return the built BaseVolumeRequest
+         */
+
 
         public BaseVolumeRequest build() {
             return new BaseVolumeRequest(this);

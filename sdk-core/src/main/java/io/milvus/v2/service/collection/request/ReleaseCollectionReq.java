@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code releaseCollection} API.
  */
+
+
 public class ReleaseCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -41,6 +43,8 @@ public class ReleaseCollectionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -50,6 +54,8 @@ public class ReleaseCollectionReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -59,6 +65,8 @@ public class ReleaseCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -68,6 +76,8 @@ public class ReleaseCollectionReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -99,6 +109,8 @@ public class ReleaseCollectionReq {
      *
      * @return the timeout in milliseconds
      */
+
+
     public Long getTimeout() {
         return timeout;
     }
@@ -108,6 +120,8 @@ public class ReleaseCollectionReq {
      *
      * @param timeout the timeout in milliseconds
      */
+
+
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
     }
@@ -127,9 +141,16 @@ public class ReleaseCollectionReq {
      *
      * @return the builder
      */
+
+
     public static ReleaseCollectionReqBuilder builder() {
         return new ReleaseCollectionReqBuilder();
     }
+
+    /**
+     * Builder for {@link ReleaseCollectionReq} class.
+     */
+
 
     public static class ReleaseCollectionReqBuilder {
         private String databaseName;
@@ -146,6 +167,8 @@ public class ReleaseCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ReleaseCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -157,6 +180,8 @@ public class ReleaseCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ReleaseCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -181,6 +206,8 @@ public class ReleaseCollectionReq {
          * @param timeout the timeout in milliseconds
          * @return this builder
          */
+
+
         public ReleaseCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
@@ -191,6 +218,8 @@ public class ReleaseCollectionReq {
          *
          * @return the request
          */
+
+
         public ReleaseCollectionReq build() {
             return new ReleaseCollectionReq(this);
         }

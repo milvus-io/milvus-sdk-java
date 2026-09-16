@@ -35,10 +35,19 @@ import java.util.Map;
 /**
  * Utility class to wrap response of <code>search</code> interface.
  */
+
+
 public class SearchResultsWrapper extends RowRecordWrapper {
     private final SearchResultData results;
 
     private String primaryKey = "id";
+
+    /**
+     * Wraps the given search result data.
+     *
+     * @param results the gRPC {@code SearchResultData}, must not be {@code null}
+     */
+
 
     public SearchResultsWrapper(SearchResultData results) {
         if (results == null) {
@@ -55,6 +64,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * @param fieldName field name to get output data
      * @return {@link FieldDataWrapper}
      */
+
+
     public FieldDataWrapper getFieldWrapper(String fieldName) throws ParamException {
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name cannot be null");
@@ -85,6 +96,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * @param indexOfTarget index of a row
      * @return List of <code>QueryResultsWrapper.RowRecord</code>
      */
+
+
     public List<QueryResultsWrapper.RowRecord> getRowRecords(int indexOfTarget) {
         List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
         List<IDScore> idScore = getIDScore(indexOfTarget);
@@ -123,6 +136,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * @param indexOfTarget which target vector the field data belongs to
      * @return {@link FieldDataWrapper}
      */
+
+
     public List<?> getFieldData(String fieldName, int indexOfTarget) {
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name cannot be null");
@@ -159,6 +174,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * @param indexOfTarget which target vector the result belongs to
      * @return List of IDScore, ID-score pairs returned by search interface
      */
+
+
     public List<IDScore> getIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
         Position position = getOffsetByIndex(indexOfTarget);
 
@@ -249,27 +266,65 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      *
      * @return how many nq are searched
      */
+
+
     public long getNumQueries() {
         return results.getNumQueries();
     }
 
+    /**
+     * Holds the offset and k for a query index position in search results.
+     */
+
+
     public static final class Position {
         private final long offset;
         private final long k;
+
+        /**
+         * Creates a position for the given offset and k.
+         *
+         * @param offset the starting offset of the target query in the result list
+         * @param k      the number of hits of the target query
+         */
+
 
         public Position(long offset, long k) {
             this.offset = offset;
             this.k = k;
         }
 
+        /**
+         * Returns the starting offset of the target query.
+         *
+         * @return the offset
+         */
+
+
         public long getOffset() {
             return offset;
         }
+
+        /**
+         * Returns the number of hits of the target query.
+         *
+         * @return the k value
+         */
+
 
         public long getK() {
             return k;
         }
     }
+
+    /**
+     * Returns the position (offset and k) of the given target query index in the results.
+     *
+     * @param indexOfTarget the index of the target query
+     * @return the {@link Position} of the target query
+     * @throws ParamException if the index is illegal
+     */
+
 
     public Position getOffsetByIndex(int indexOfTarget) {
         List<Long> kList = results.getTopksList();
@@ -299,12 +354,24 @@ public class SearchResultsWrapper extends RowRecordWrapper {
     /**
      * Internal-use class to wrap response of <code>search</code> interface.
      */
+
+
     public static final class IDScore {
         private final String primaryKey;
         private final String strID;
         private final long longID;
         private final float score;
         Map<String, Object> fieldValues = new HashMap<>();
+
+        /**
+         * Creates a score entry for a matched entity.
+         *
+         * @param primaryKey the primary key field name
+         * @param strID      the string primary key, empty when the key is an int64
+         * @param longID     the int64 primary key
+         * @param score      the similarity score
+         */
+
 
         public IDScore(String primaryKey, String strID, long longID, float score) {
             this.primaryKey = primaryKey;
@@ -313,17 +380,45 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             this.score = score;
         }
 
+        /**
+         * Returns the primary key field name.
+         *
+         * @return the primary key field name
+         */
+
+
         public String getPrimaryKey() {
             return primaryKey;
         }
+
+        /**
+         * Returns the string primary key of the matched entity.
+         *
+         * @return the string primary key
+         */
+
 
         public String getStrID() {
             return strID;
         }
 
+        /**
+         * Returns the int64 primary key of the matched entity.
+         *
+         * @return the int64 primary key
+         */
+
+
         public long getLongID() {
             return longID;
         }
+
+        /**
+         * Returns the similarity score of the matched entity.
+         *
+         * @return the score
+         */
+
 
         public float getScore() {
             return score;
@@ -334,6 +429,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
          *
          * @return Map containing all field values
          */
+
+
         public Map<String, Object> getFieldValues() {
             return new HashMap<>(fieldValues);
         }
@@ -345,6 +442,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
          * @param obj     field value
          * @return true if the value was added, false if the key already exists
          */
+
+
         public boolean put(String keyName, Object obj) {
             if (fieldValues.containsKey(keyName)) {
                 return false;
@@ -362,6 +461,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
          * @param keyName a field name or a dynamic field name
          * @return <code>Object</code>
          */
+
+
         public Object get(String keyName) throws ParamException {
             if (fieldValues.isEmpty()) {
                 throw new ParamException("This record is empty");
@@ -389,6 +490,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
          * @param keyName a field name or a dynamic field name
          * @return boolean
          */
+
+
         public boolean contains(String keyName) {
             return fieldValues.containsKey(keyName);
         }

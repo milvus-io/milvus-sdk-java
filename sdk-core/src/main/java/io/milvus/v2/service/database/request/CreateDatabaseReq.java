@@ -25,6 +25,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code createDatabase} API.
  */
+
+
 public class CreateDatabaseReq {
     private String databaseName;
     private Map<String, String> properties;
@@ -39,6 +41,8 @@ public class CreateDatabaseReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -48,6 +52,8 @@ public class CreateDatabaseReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -57,6 +63,8 @@ public class CreateDatabaseReq {
      *
      * @return the database properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -66,6 +74,8 @@ public class CreateDatabaseReq {
      *
      * @param properties the database properties
      */
+
+
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -83,9 +93,16 @@ public class CreateDatabaseReq {
      *
      * @return a new {@link CreateDatabaseReqBuilder}
      */
+
+
     public static CreateDatabaseReqBuilder builder() {
         return new CreateDatabaseReqBuilder();
     }
+
+    /**
+     * Builder for {@link CreateDatabaseReq} class.
+     */
+
 
     public static class CreateDatabaseReqBuilder {
         private String databaseName;
@@ -100,6 +117,8 @@ public class CreateDatabaseReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public CreateDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -111,6 +130,8 @@ public class CreateDatabaseReq {
          * @param properties the database properties
          * @return this builder
          */
+
+
         public CreateDatabaseReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -121,6 +142,8 @@ public class CreateDatabaseReq {
          *
          * @return the built request
          */
+
+
         public CreateDatabaseReq build() {
             return new CreateDatabaseReq(this);
         }

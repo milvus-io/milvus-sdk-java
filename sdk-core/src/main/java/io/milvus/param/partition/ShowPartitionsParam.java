@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Parameters for <code>showPartition</code> interface.
  */
+
+
 public class ShowPartitionsParam {
     private final String databaseName;
     private final String collectionName;
@@ -46,22 +48,55 @@ public class ShowPartitionsParam {
         this.showType = builder.showType;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
+
+    /**
+     * Returns the showType.
+     *
+     * @return the showType
+     */
+
 
     public ShowType getShowType() {
         return showType;
@@ -81,6 +116,8 @@ public class ShowPartitionsParam {
     /**
      * Builder for {@link ShowPartitionsParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -100,6 +137,8 @@ public class ShowPartitionsParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -111,6 +150,8 @@ public class ShowPartitionsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -126,6 +167,8 @@ public class ShowPartitionsParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             // Replace @NonNull logic with explicit null check
             if (partitionNames == null) {
@@ -141,6 +184,8 @@ public class ShowPartitionsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -157,6 +202,8 @@ public class ShowPartitionsParam {
          *
          * @return {@link ShowPartitionsParam}
          */
+
+
         public ShowPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

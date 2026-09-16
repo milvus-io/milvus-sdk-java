@@ -32,6 +32,8 @@ import java.util.Map;
  *
  * @see CreateCollectionParam
  */
+
+
 public class FieldType {
     private final String name;
     private final boolean primaryKey;
@@ -64,54 +66,143 @@ public class FieldType {
         this.defaultValue = builder.defaultValue;
     }
 
+    /**
+     * Returns the name.
+     *
+     * @return the name
+     */
     // Getter methods to replace @Getter annotation
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the primaryKey.
+     *
+     * @return the primaryKey
+     */
+
+
     public boolean isPrimaryKey() {
         return primaryKey;
     }
+
+    /**
+     * Returns the description.
+     *
+     * @return the description
+     */
+
 
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Returns the dataType.
+     *
+     * @return the dataType
+     */
+
+
     public DataType getDataType() {
         return dataType;
     }
+
+    /**
+     * Returns the typeParams.
+     *
+     * @return the typeParams
+     */
+
 
     public Map<String, String> getTypeParams() {
         return typeParams;
     }
 
+    /**
+     * Returns the autoID.
+     *
+     * @return the autoID
+     */
+
+
     public boolean isAutoID() {
         return autoID;
     }
+
+    /**
+     * Returns the partitionKey.
+     *
+     * @return the partitionKey
+     */
+
 
     public boolean isPartitionKey() {
         return partitionKey;
     }
 
+    /**
+     * Returns the clusteringKey.
+     *
+     * @return the clusteringKey
+     */
+
+
     public boolean isClusteringKey() {
         return clusteringKey;
     }
+
+    /**
+     * Returns the dynamic.
+     *
+     * @return the dynamic
+     */
+
 
     public boolean isDynamic() {
         return isDynamic;
     }
 
+    /**
+     * Returns the elementType.
+     *
+     * @return the elementType
+     */
+
+
     public DataType getElementType() {
         return elementType;
     }
+
+    /**
+     * Returns the nullable.
+     *
+     * @return the nullable
+     */
+
 
     public boolean isNullable() {
         return nullable;
     }
 
+    /**
+     * Returns the defaultValue.
+     *
+     * @return the defaultValue
+     */
+
+
     public Object getDefaultValue() {
         return defaultValue;
     }
+
+    /**
+     * Returns the dimension.
+     *
+     * @return the dimension
+     */
+
 
     public int getDimension() {
         if (typeParams.containsKey(Constant.VECTOR_DIM)) {
@@ -121,6 +212,13 @@ public class FieldType {
         return 0;
     }
 
+    /**
+     * Returns the maxLength.
+     *
+     * @return the maxLength
+     */
+
+
     public int getMaxLength() {
         if (typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
             return Integer.parseInt(typeParams.get(Constant.VARCHAR_MAX_LENGTH));
@@ -128,6 +226,13 @@ public class FieldType {
 
         return 0;
     }
+
+    /**
+     * Returns the maxCapacity.
+     *
+     * @return the maxCapacity
+     */
+
 
     public int getMaxCapacity() {
         if (typeParams.containsKey(Constant.ARRAY_MAX_CAPACITY)) {
@@ -156,6 +261,13 @@ public class FieldType {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -163,6 +275,8 @@ public class FieldType {
     /**
      * Builder for {@link FieldType} class.
      */
+
+
     public static final class Builder {
         private String name;
         private boolean primaryKey = false;
@@ -181,6 +295,14 @@ public class FieldType {
         private Builder() {
         }
 
+        /**
+         * Sets the name.
+         *
+         * @param name the name
+         * @return this builder
+         */
+
+
         public Builder withName(String name) {
             if (name == null) {
                 throw new IllegalArgumentException("name cannot be null");
@@ -195,6 +317,8 @@ public class FieldType {
          * @param isDynamic of a field
          * @return <code>Builder</code>
          */
+
+
         public Builder withIsDynamic(boolean isDynamic) {
             this.isDynamic = isDynamic;
             return this;
@@ -207,6 +331,8 @@ public class FieldType {
          * @param primaryKey true is primary key, false is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withPrimaryKey(boolean primaryKey) {
             this.primaryKey = primaryKey;
             return this;
@@ -218,6 +344,8 @@ public class FieldType {
          * @param description description of the field
          * @return <code>Builder</code>
          */
+
+
         public Builder withDescription(String description) {
             if (description == null) {
                 throw new IllegalArgumentException("description cannot be null");
@@ -232,6 +360,8 @@ public class FieldType {
          * @param dataType data type of the field
          * @return <code>Builder</code>
          */
+
+
         public Builder withDataType(DataType dataType) {
             if (dataType == null) {
                 throw new IllegalArgumentException("dataType cannot be null");
@@ -246,6 +376,8 @@ public class FieldType {
          * @param elementType element type of the Array type field
          * @return <code>Builder</code>
          */
+
+
         public Builder withElementType(DataType elementType) {
             if (elementType == null) {
                 throw new IllegalArgumentException("elementType cannot be null");
@@ -261,6 +393,8 @@ public class FieldType {
          * @param value parameter value
          * @return <code>Builder</code>
          */
+
+
         public Builder addTypeParam(String key, String value) {
             if (key == null) {
                 throw new IllegalArgumentException("key cannot be null");
@@ -278,6 +412,8 @@ public class FieldType {
          * @param typeParams parameters of the field
          * @return <code>Builder</code>
          */
+
+
         public Builder withTypeParams(Map<String, String> typeParams) {
             if (typeParams == null) {
                 throw new IllegalArgumentException("typeParams cannot be null");
@@ -292,6 +428,8 @@ public class FieldType {
          * @param dimension dimension of the field
          * @return <code>Builder</code>
          */
+
+
         public Builder withDimension(Integer dimension) {
             if (dimension == null) {
                 throw new IllegalArgumentException("dimension cannot be null");
@@ -306,6 +444,8 @@ public class FieldType {
          * @param maxLength max length of a varchar field
          * @return <code>Builder</code>
          */
+
+
         public Builder withMaxLength(Integer maxLength) {
             if (maxLength == null) {
                 throw new IllegalArgumentException("maxLength cannot be null");
@@ -321,6 +461,8 @@ public class FieldType {
          * @param maxCapacity max capacity of an array field
          * @return <code>Builder</code>
          */
+
+
         public Builder withMaxCapacity(Integer maxCapacity) {
             if (maxCapacity == null) {
                 throw new IllegalArgumentException("maxCapacity cannot be null");
@@ -342,6 +484,8 @@ public class FieldType {
          * @param autoID true enable auto-id, false disable auto-id
          * @return <code>Builder</code>
          */
+
+
         public Builder withAutoID(boolean autoID) {
             this.autoID = autoID;
             return this;
@@ -356,6 +500,8 @@ public class FieldType {
          * @param partitionKey true is partition key, false is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionKey(boolean partitionKey) {
             this.partitionKey = partitionKey;
             return this;
@@ -376,6 +522,8 @@ public class FieldType {
          * @param nullable true is nullable, false is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withNullable(boolean nullable) {
             this.nullable = nullable;
             return this;
@@ -400,6 +548,8 @@ public class FieldType {
          * @param obj the default value
          * @return <code>Builder</code>
          */
+
+
         public Builder withDefaultValue(Object obj) {
             this.defaultValue = obj;
             this.enableDefaultValue = true;
@@ -419,6 +569,8 @@ public class FieldType {
          * @param clusteringKey true is clustering key, false is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withClusteringKey(boolean clusteringKey) {
             this.clusteringKey = clusteringKey;
             return this;
@@ -429,6 +581,8 @@ public class FieldType {
          *
          * @return {@link FieldType}
          */
+
+
         public FieldType build() throws ParamException {
             ParamUtils.CheckNullEmptyString(name, "Field name");
 

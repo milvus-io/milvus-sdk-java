@@ -30,6 +30,8 @@ import java.util.Objects;
 /**
  * Parameters for <code>loadCollection</code> interface.
  */
+
+
 public class LoadCollectionParam {
     private final String databaseName;
     private final String collectionName;
@@ -41,6 +43,13 @@ public class LoadCollectionParam {
     private final List<String> resourceGroups;
     private final List<String> loadFields;
     private final boolean skipLoadDynamicField;
+
+    /**
+     * Constructs a new LoadCollectionParam.
+     *
+     * @param builder the builder
+     */
+
 
     public LoadCollectionParam(Builder builder) {
         if (builder.collectionName == null) {
@@ -58,41 +67,111 @@ public class LoadCollectionParam {
         this.skipLoadDynamicField = builder.skipLoadDynamicField;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the syncLoad.
+     *
+     * @return the syncLoad
+     */
+
+
     public boolean isSyncLoad() {
         return syncLoad;
     }
+
+    /**
+     * Returns the syncLoadWaitingInterval.
+     *
+     * @return the syncLoadWaitingInterval
+     */
+
 
     public long getSyncLoadWaitingInterval() {
         return syncLoadWaitingInterval;
     }
 
+    /**
+     * Returns the syncLoadWaitingTimeout.
+     *
+     * @return the syncLoadWaitingTimeout
+     */
+
+
     public long getSyncLoadWaitingTimeout() {
         return syncLoadWaitingTimeout;
     }
+
+    /**
+     * Returns the replicaNumber.
+     *
+     * @return the replicaNumber
+     */
+
 
     public int getReplicaNumber() {
         return replicaNumber;
     }
 
+    /**
+     * Returns the refresh.
+     *
+     * @return the refresh
+     */
+
+
     public boolean isRefresh() {
         return refresh;
     }
+
+    /**
+     * Returns the resourceGroups.
+     *
+     * @return the resourceGroups
+     */
+
 
     public List<String> getResourceGroups() {
         return resourceGroups;
     }
 
+    /**
+     * Returns the loadFields.
+     *
+     * @return the loadFields
+     */
+
+
     public List<String> getLoadFields() {
         return loadFields;
     }
+
+    /**
+     * Returns the skipLoadDynamicField.
+     *
+     * @return the skipLoadDynamicField
+     */
+
 
     public boolean isSkipLoadDynamicField() {
         return skipLoadDynamicField;
@@ -114,6 +193,13 @@ public class LoadCollectionParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -121,6 +207,8 @@ public class LoadCollectionParam {
     /**
      * Builder for {@link LoadCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -172,6 +260,8 @@ public class LoadCollectionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -183,6 +273,8 @@ public class LoadCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -200,6 +292,8 @@ public class LoadCollectionParam {
          * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withSyncLoad(Boolean syncLoad) {
             if (syncLoad == null) {
                 throw new IllegalArgumentException("syncLoad cannot be null");
@@ -216,6 +310,8 @@ public class LoadCollectionParam {
          * @return <code>Builder</code>
          * @see Constant
          */
+
+
         public Builder withSyncLoadWaitingInterval(Long milliseconds) {
             if (milliseconds == null) {
                 throw new IllegalArgumentException("milliseconds cannot be null");
@@ -232,6 +328,8 @@ public class LoadCollectionParam {
          * @return <code>Builder</code>
          * @see Constant
          */
+
+
         public Builder withSyncLoadWaitingTimeout(Long seconds) {
             if (seconds == null) {
                 throw new IllegalArgumentException("seconds cannot be null");
@@ -246,6 +344,8 @@ public class LoadCollectionParam {
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
+
+
         public Builder withReplicaNumber(Integer replicaNumber) {
             if (replicaNumber == null) {
                 throw new IllegalArgumentException("replicaNumber cannot be null");
@@ -264,6 +364,8 @@ public class LoadCollectionParam {
          * @param refresh <code>Boolean.TRUE</code> is refresh mode, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withRefresh(Boolean refresh) {
             if (refresh == null) {
                 throw new IllegalArgumentException("refresh cannot be null");
@@ -279,6 +381,8 @@ public class LoadCollectionParam {
          * @param resourceGroups a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
+
+
         public Builder withResourceGroups(List<String> resourceGroups) {
             if (resourceGroups == null) {
                 throw new IllegalArgumentException("resourceGroups cannot be null");
@@ -294,6 +398,8 @@ public class LoadCollectionParam {
          * @param loadFields a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
+
+
         public Builder withLoadFields(List<String> loadFields) {
             if (loadFields == null) {
                 throw new IllegalArgumentException("loadFields cannot be null");
@@ -313,6 +419,8 @@ public class LoadCollectionParam {
          * @param skip <code>Boolean.TRUE</code> skip dynamic field, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withSkipLoadDynamicField(Boolean skip) {
             if (skip == null) {
                 throw new IllegalArgumentException("skip cannot be null");
@@ -326,6 +434,8 @@ public class LoadCollectionParam {
          *
          * @return {@link LoadCollectionParam}
          */
+
+
         public LoadCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

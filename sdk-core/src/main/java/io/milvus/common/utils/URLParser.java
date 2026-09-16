@@ -24,14 +24,27 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 
 /**
- * @author: wei.hu@zilliz.com
+ * Parses a Milvus connection URI into its hostname, port, database, and TLS settings.
+ *
+ * <p>Supports {@code scheme://[userinfo@]host[:port][/database]} URIs. The port defaults to
+ * {@code 19530}, and the connection is marked secure when the scheme is {@code https}.</p>
  */
+
+
 public class URLParser {
 
     private String hostname;
     private int port;
     private String database;
     private boolean secure;
+
+    /**
+     * Parses the given Milvus connection URI.
+     *
+     * @param url the connection URI, such as {@code "http://localhost:19530"}
+     * @throws IllegalArgumentException if the URI is malformed or contains no hostname
+     */
+
 
     public URLParser(String url) {
         try {
@@ -65,18 +78,45 @@ public class URLParser {
         }
     }
 
-    // Getter methods to replace @Getter annotation
+    /**
+     * Returns the hostname parsed from the URI.
+     *
+     * @return the hostname
+     */
+
+
     public String getHostname() {
         return hostname;
     }
+
+    /**
+     * Returns the port parsed from the URI, defaulting to {@code 19530} when absent.
+     *
+     * @return the port
+     */
+
 
     public int getPort() {
         return port;
     }
 
+    /**
+     * Returns the database parsed from the URI path, or {@code null} if none is present.
+     *
+     * @return the database name, or {@code null}
+     */
+
+
     public String getDatabase() {
         return database;
     }
+
+    /**
+     * Returns whether the connection is secured with TLS.
+     *
+     * @return {@code true} when the scheme is {@code https}
+     */
+
 
     public boolean isSecure() {
         return secure;

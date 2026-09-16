@@ -30,6 +30,8 @@ import java.util.List;
 /**
  * Parameters for <code>get</code> interface.
  */
+
+
 public class GetIdsParam {
     private final String collectionName;
     private final List<?> primaryIds;
@@ -47,22 +49,55 @@ public class GetIdsParam {
         this.consistencyLevel = builder.consistencyLevel;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter methods to replace @Getter annotation
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the primaryIds.
+     *
+     * @return the primaryIds
+     */
+
+
     public List<?> getPrimaryIds() {
         return primaryIds;
     }
 
+    /**
+     * Returns the outputFields.
+     *
+     * @return the outputFields
+     */
+
+
     public List<String> getOutputFields() {
         return outputFields;
     }
+
+    /**
+     * Returns the consistencyLevel.
+     *
+     * @return the consistencyLevel
+     */
+
 
     public ConsistencyLevelEnum getConsistencyLevel() {
         return consistencyLevel;
@@ -82,6 +117,8 @@ public class GetIdsParam {
     /**
      * Builder for {@link GetIdsParam} class.
      */
+
+
     public static class Builder<T> {
         private String collectionName;
         private final List<T> primaryIds = new ArrayList<>();
@@ -98,6 +135,8 @@ public class GetIdsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -113,6 +152,8 @@ public class GetIdsParam {
          * @param outputFields output fields
          * @return <code>Builder</code>
          */
+
+
         public Builder withOutputFields(List<String> outputFields) {
             // Replace @NonNull logic with explicit null check
             if (outputFields == null) {
@@ -128,6 +169,8 @@ public class GetIdsParam {
          * @param primaryIds input primary key list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPrimaryIds(List<T> primaryIds) {
             // Replace @NonNull logic with explicit null check
             if (primaryIds == null) {
@@ -143,6 +186,8 @@ public class GetIdsParam {
          * @param primaryId input primary key id
          * @return <code>Builder</code>
          */
+
+
         public Builder addPrimaryId(T primaryId) {
             // Replace @NonNull logic with explicit null check
             if (primaryId == null) {
@@ -158,6 +203,8 @@ public class GetIdsParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -168,6 +215,8 @@ public class GetIdsParam {
          *
          * @return {@link GetIdsParam}
          */
+
+
         public GetIdsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             if (CollectionUtils.isEmpty(primaryIds)) {

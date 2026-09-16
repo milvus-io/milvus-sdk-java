@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the addUserToRole API.
+ */
+
+
 public class AddUserToRoleParam {
     private final String userName;
 
@@ -35,13 +40,34 @@ public class AddUserToRoleParam {
         this.roleName = builder.roleName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static AddUserToRoleParam.Builder newBuilder() {
         return new AddUserToRoleParam.Builder();
     }
 
+    /**
+     * Returns the userName.
+     *
+     * @return the userName
+     */
+
+
     public String getUserName() {
         return userName;
     }
+
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
 
     public String getRoleName() {
         return roleName;
@@ -58,6 +84,8 @@ public class AddUserToRoleParam {
     /**
      * Builder for {@link AddUserToRoleParam} class.
      */
+
+
     public static final class Builder {
         private String userName;
         private String roleName;
@@ -71,6 +99,8 @@ public class AddUserToRoleParam {
          * @param userName userName
          * @return <code>Builder</code>
          */
+
+
         public AddUserToRoleParam.Builder withUserName(String userName) {
             if (userName == null) {
                 throw new IllegalArgumentException("User name cannot be null");
@@ -85,6 +115,8 @@ public class AddUserToRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public AddUserToRoleParam.Builder withRoleName(String roleName) {
             if (roleName == null) {
                 throw new IllegalArgumentException("Role name cannot be null");
@@ -98,6 +130,8 @@ public class AddUserToRoleParam {
          *
          * @return {@link AddUserToRoleParam}
          */
+
+
         public AddUserToRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(userName, "UserName");
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");

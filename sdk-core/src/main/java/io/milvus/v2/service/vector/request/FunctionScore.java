@@ -31,6 +31,8 @@ import java.util.Map;
  * scores of search results, combining one or more collection functions with a set of
  * parameters.
  */
+
+
 public class FunctionScore {
     private List<CreateCollectionReq.Function> functions;
     private Map<String, String> params;
@@ -47,6 +49,7 @@ public class FunctionScore {
      *
      * @return a new builder
      */
+
     public static FunctionScoreBuilder builder() {
         return new FunctionScoreBuilder();
     }
@@ -57,6 +60,7 @@ public class FunctionScore {
      *
      * @return the functions
      */
+
     public List<CreateCollectionReq.Function> getFunctions() {
         return functions;
     }
@@ -66,6 +70,8 @@ public class FunctionScore {
      *
      * @return the parameters
      */
+
+
     public Map<String, String> getParams() {
         return params;
     }
@@ -76,6 +82,7 @@ public class FunctionScore {
      *
      * @param functions the functions
      */
+
     public void setFunctions(List<CreateCollectionReq.Function> functions) {
         this.functions = functions;
     }
@@ -85,6 +92,8 @@ public class FunctionScore {
      *
      * @param params the parameters
      */
+
+
     public void setParams(Map<String, String> params) {
         this.params = params;
     }
@@ -101,9 +110,15 @@ public class FunctionScore {
     /**
      * Builder for {@link FunctionScore}.
      */
+
     public static class FunctionScoreBuilder {
         private List<CreateCollectionReq.Function> functions;
         private Map<String, String> params;
+
+        /**
+         * Constructs a new {@code FunctionScoreBuilder}.
+         */
+
 
         public FunctionScoreBuilder() {
             this.functions = new ArrayList<>();
@@ -116,6 +131,8 @@ public class FunctionScore {
          * @param functions the functions
          * @return this builder
          */
+
+
         public FunctionScoreBuilder functions(List<CreateCollectionReq.Function> functions) {
             this.functions = functions;
             return this;
@@ -127,6 +144,8 @@ public class FunctionScore {
          * @param params the parameters
          * @return this builder
          */
+
+
         public FunctionScoreBuilder params(Map<String, String> params) {
             this.params = params;
             return this;
@@ -138,6 +157,8 @@ public class FunctionScore {
          * @param func the function to add
          * @return this builder
          */
+
+
         public FunctionScoreBuilder addFunction(CreateCollectionReq.Function func) {
             if (this.functions == null) {
                 this.functions = new ArrayList<>();
@@ -151,6 +172,8 @@ public class FunctionScore {
          *
          * @return the built function score
          */
+
+
         public FunctionScore build() {
             return new FunctionScore(this);
         }

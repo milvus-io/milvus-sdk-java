@@ -11,6 +11,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code queryIterator} API.
  */
+
+
 public class QueryIteratorReq {
     private String databaseName;
     private String collectionName;
@@ -69,6 +71,8 @@ public class QueryIteratorReq {
      *
      * @return the builder
      */
+
+
     public static QueryIteratorReqBuilder builder() {
         return new QueryIteratorReqBuilder();
     }
@@ -78,6 +82,8 @@ public class QueryIteratorReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -87,6 +93,8 @@ public class QueryIteratorReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -96,6 +104,8 @@ public class QueryIteratorReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -105,6 +115,8 @@ public class QueryIteratorReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -112,6 +124,7 @@ public class QueryIteratorReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @return the cluster ID
      */
     @Deprecated
     public String getClusterId() {
@@ -121,6 +134,7 @@ public class QueryIteratorReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @param clusterId the cluster ID
      */
     @Deprecated
     public void setClusterId(String clusterId) {
@@ -132,6 +146,8 @@ public class QueryIteratorReq {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -141,6 +157,8 @@ public class QueryIteratorReq {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -150,6 +168,8 @@ public class QueryIteratorReq {
      *
      * @return the output fields
      */
+
+
     public List<String> getOutputFields() {
         return outputFields;
     }
@@ -159,6 +179,8 @@ public class QueryIteratorReq {
      *
      * @param outputFields the output fields
      */
+
+
     public void setOutputFields(List<String> outputFields) {
         this.outputFields = outputFields;
     }
@@ -168,6 +190,8 @@ public class QueryIteratorReq {
      *
      * @return the query expression
      */
+
+
     public String getExpr() {
         return expr;
     }
@@ -177,6 +201,8 @@ public class QueryIteratorReq {
      *
      * @param expr the query expression
      */
+
+
     public void setExpr(String expr) {
         this.expr = expr;
     }
@@ -186,6 +212,8 @@ public class QueryIteratorReq {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -195,6 +223,8 @@ public class QueryIteratorReq {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -204,6 +234,8 @@ public class QueryIteratorReq {
      *
      * @return the offset
      */
+
+
     public long getOffset() {
         return offset;
     }
@@ -213,6 +245,8 @@ public class QueryIteratorReq {
      *
      * @param offset the offset
      */
+
+
     public void setOffset(long offset) {
         this.offset = offset;
     }
@@ -222,6 +256,8 @@ public class QueryIteratorReq {
      *
      * @return the limit value
      */
+
+
     public long getLimit() {
         return limit;
     }
@@ -231,6 +267,8 @@ public class QueryIteratorReq {
      *
      * @param limit the limit value
      */
+
+
     public void setLimit(long limit) {
         this.limit = limit;
     }
@@ -240,6 +278,8 @@ public class QueryIteratorReq {
      *
      * @return {@code true} if growing segments are ignored
      */
+
+
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
@@ -249,6 +289,8 @@ public class QueryIteratorReq {
      *
      * @param ignoreGrowing {@code true} if growing segments are ignored
      */
+
+
     public void setIgnoreGrowing(boolean ignoreGrowing) {
         this.ignoreGrowing = ignoreGrowing;
     }
@@ -258,6 +300,8 @@ public class QueryIteratorReq {
      *
      * @return the timezone
      */
+
+
     public String getTimezone() {
         return timezone;
     }
@@ -267,6 +311,8 @@ public class QueryIteratorReq {
      *
      * @return the batch size
      */
+
+
     public long getBatchSize() {
         return batchSize;
     }
@@ -276,6 +322,8 @@ public class QueryIteratorReq {
      *
      * @param batchSize the batch size
      */
+
+
     public void setBatchSize(long batchSize) {
         this.batchSize = batchSize;
     }
@@ -285,6 +333,8 @@ public class QueryIteratorReq {
      *
      * @return {@code true} if stop-for-best is enabled
      */
+
+
     public boolean isReduceStopForBest() {
         return reduceStopForBest;
     }
@@ -294,6 +344,8 @@ public class QueryIteratorReq {
      *
      * @param reduceStopForBest {@code true} if stop-for-best is enabled
      */
+
+
     public void setReduceStopForBest(boolean reduceStopForBest) {
         this.reduceStopForBest = reduceStopForBest;
     }
@@ -303,6 +355,8 @@ public class QueryIteratorReq {
      *
      * @return the filter template values
      */
+
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -312,6 +366,8 @@ public class QueryIteratorReq {
      *
      * @return the query iterator cursor
      */
+
+
     public QueryIteratorCursor getCursor() {
         return cursor;
     }
@@ -321,6 +377,8 @@ public class QueryIteratorReq {
      *
      * @param cursor the query iterator cursor
      */
+
+
     public void setCursor(QueryIteratorCursor cursor) {
         this.cursor = cursor;
     }
@@ -345,6 +403,11 @@ public class QueryIteratorReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link QueryIteratorReq} class.
+     */
+
+
     public static class QueryIteratorReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -368,6 +431,8 @@ public class QueryIteratorReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -379,6 +444,8 @@ public class QueryIteratorReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -387,6 +454,8 @@ public class QueryIteratorReq {
         /**
          * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
          * {@code MilvusClientV2Session}.
+         * @param clusterId the cluster ID
+         * @return this builder
          */
         @Deprecated
         public QueryIteratorReqBuilder clusterId(String clusterId) {
@@ -400,6 +469,8 @@ public class QueryIteratorReq {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -411,6 +482,8 @@ public class QueryIteratorReq {
          * @param outputFields the output fields
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
@@ -422,6 +495,8 @@ public class QueryIteratorReq {
          * @param expr the query expression
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder expr(String expr) {
             this.expr = expr;
             return this;
@@ -433,6 +508,8 @@ public class QueryIteratorReq {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -444,6 +521,8 @@ public class QueryIteratorReq {
          * @param offset the offset
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
@@ -455,6 +534,8 @@ public class QueryIteratorReq {
          * @param limit the limit value
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder limit(long limit) {
             this.limit = limit;
             return this;
@@ -466,6 +547,8 @@ public class QueryIteratorReq {
          * @param ignoreGrowing {@code true} if growing segments are ignored
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
@@ -477,6 +560,8 @@ public class QueryIteratorReq {
          * @param timezone the timezone
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder timezone(String timezone) {
             this.timezone = timezone;
             return this;
@@ -488,6 +573,8 @@ public class QueryIteratorReq {
          * @param batchSize the batch size
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder batchSize(long batchSize) {
             this.batchSize = batchSize;
             return this;
@@ -499,6 +586,8 @@ public class QueryIteratorReq {
          * @param reduceStopForBest {@code true} if stop-for-best is enabled
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder reduceStopForBest(boolean reduceStopForBest) {
             this.reduceStopForBest = reduceStopForBest;
             return this;
@@ -510,6 +599,8 @@ public class QueryIteratorReq {
          * @param filterTemplateValues the filter template values
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
@@ -521,6 +612,8 @@ public class QueryIteratorReq {
          * @param cursor the query iterator cursor
          * @return this builder
          */
+
+
         public QueryIteratorReqBuilder cursor(QueryIteratorCursor cursor) {
             this.cursor = cursor;
             return this;
@@ -531,6 +624,8 @@ public class QueryIteratorReq {
          *
          * @return the request
          */
+
+
         public QueryIteratorReq build() {
             return new QueryIteratorReq(this);
         }

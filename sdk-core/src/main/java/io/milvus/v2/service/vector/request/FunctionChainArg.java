@@ -26,6 +26,8 @@ import io.milvus.v2.exception.MilvusClientException;
  * An argument of a function-chain expression: either a collection-field reference or a literal
  * value. Mirrors PyMilvus's {@code FunctionChainArg} union of {@code ColumnRef} and literal.
  */
+
+
 public class FunctionChainArg {
     private final String columnName;
     private final FunctionParamValue literal;
@@ -42,6 +44,8 @@ public class FunctionChainArg {
      * @return the column argument
      * @throws MilvusClientException if the column name is empty
      */
+
+
     public static FunctionChainArg col(String name) {
         if (name == null || name.isEmpty()) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Column name must not be empty");
@@ -55,6 +59,8 @@ public class FunctionChainArg {
      * @param value the literal value
      * @return the literal argument
      */
+
+
     public static FunctionChainArg literal(Object value) {
         return new FunctionChainArg(null, FunctionParamValue.from(value));
     }
@@ -64,6 +70,8 @@ public class FunctionChainArg {
      *
      * @return {@code true} if this argument is a column reference
      */
+
+
     public boolean isColumn() {
         return columnName != null;
     }
@@ -73,6 +81,8 @@ public class FunctionChainArg {
      *
      * @return the column name, or {@code null} if this is a literal argument
      */
+
+
     public String getColumnName() {
         return columnName;
     }
@@ -82,6 +92,8 @@ public class FunctionChainArg {
      *
      * @return the literal value, or {@code null} if this is a column argument
      */
+
+
     public FunctionParamValue getLiteral() {
         return literal;
     }
@@ -91,6 +103,8 @@ public class FunctionChainArg {
      *
      * @return the gRPC argument
      */
+
+
     public io.milvus.grpc.FunctionChainExprArg toGrpc() {
         if (columnName != null) {
             return io.milvus.grpc.FunctionChainExprArg.newBuilder()

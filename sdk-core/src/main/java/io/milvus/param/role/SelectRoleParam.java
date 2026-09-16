@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the selectRole API.
+ */
+
+
 public class SelectRoleParam {
 
     private final String roleName;
@@ -38,13 +43,34 @@ public class SelectRoleParam {
         this.includeUserInfo = builder.includeUserInfo;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static SelectRoleParam.Builder newBuilder() {
         return new SelectRoleParam.Builder();
     }
 
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
+
     public String getRoleName() {
         return roleName;
     }
+
+    /**
+     * Returns the includeUserInfo.
+     *
+     * @return the includeUserInfo
+     */
+
 
     public boolean isIncludeUserInfo() {
         return includeUserInfo;
@@ -61,6 +87,8 @@ public class SelectRoleParam {
     /**
      * Builder for {@link SelectRoleParam} class.
      */
+
+
     public static final class Builder {
         private String roleName;
         private boolean includeUserInfo;
@@ -74,6 +102,8 @@ public class SelectRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public SelectRoleParam.Builder withRoleName(String roleName) {
             if (roleName == null) {
                 throw new IllegalArgumentException("Role name cannot be null");
@@ -88,6 +118,8 @@ public class SelectRoleParam {
          * @param includeUserInfo includeUserInfo
          * @return <code>Builder</code>
          */
+
+
         public SelectRoleParam.Builder withIncludeUserInfo(boolean includeUserInfo) {
             this.includeUserInfo = includeUserInfo;
             return this;
@@ -98,6 +130,8 @@ public class SelectRoleParam {
          *
          * @return {@link SelectRoleParam}
          */
+
+
         public SelectRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");
 

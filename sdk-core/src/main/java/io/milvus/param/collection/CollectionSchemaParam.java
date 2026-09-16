@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Parameters for <code>createCollection</code> interface.
  */
+
+
 public class CollectionSchemaParam {
     private final List<FieldType> fieldTypes;
     private final boolean enableDynamicField;
@@ -39,9 +41,23 @@ public class CollectionSchemaParam {
         this.enableDynamicField = builder.enableDynamicField;
     }
 
+    /**
+     * Returns the fieldTypes.
+     *
+     * @return the fieldTypes
+     */
+
+
     public List<FieldType> getFieldTypes() {
         return fieldTypes;
     }
+
+    /**
+     * Returns the enableDynamicField.
+     *
+     * @return the enableDynamicField
+     */
+
 
     public boolean isEnableDynamicField() {
         return enableDynamicField;
@@ -55,6 +71,13 @@ public class CollectionSchemaParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -62,6 +85,8 @@ public class CollectionSchemaParam {
     /**
      * Builder for {@link CollectionSchemaParam} class.
      */
+
+
     public static final class Builder {
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private boolean enableDynamicField;
@@ -75,6 +100,8 @@ public class CollectionSchemaParam {
          * @param enableDynamicField enableDynamicField of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withEnableDynamicField(boolean enableDynamicField) {
             this.enableDynamicField = enableDynamicField;
             return this;
@@ -87,6 +114,8 @@ public class CollectionSchemaParam {
          * @return <code>Builder</code>
          * @see FieldType
          */
+
+
         public Builder withFieldTypes(List<FieldType> fieldTypes) {
             if (fieldTypes == null) {
                 throw new IllegalArgumentException("fieldTypes cannot be null");
@@ -102,6 +131,8 @@ public class CollectionSchemaParam {
          * @return <code>Builder</code>
          * @see FieldType
          */
+
+
         public Builder addFieldType(FieldType fieldType) {
             if (fieldType == null) {
                 throw new IllegalArgumentException("fieldType cannot be null");
@@ -115,6 +146,8 @@ public class CollectionSchemaParam {
          *
          * @return {@link CollectionSchemaParam}
          */
+
+
         public CollectionSchemaParam build() throws ParamException {
             if (fieldTypes.isEmpty()) {
                 throw new ParamException("Field numbers must be larger than 0");

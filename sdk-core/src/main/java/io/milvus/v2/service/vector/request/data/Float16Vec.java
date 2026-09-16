@@ -29,6 +29,8 @@ import java.util.List;
  * A float16 vector used in search and insert requests, stored in half-precision so that
  * each two bytes represent one dimension of the vector.
  */
+
+
 public class Float16Vec implements BaseVector {
     private final ByteBuffer data;
 
@@ -37,6 +39,8 @@ public class Float16Vec implements BaseVector {
      *
      * @param data the float16 vector data
      */
+
+
     public Float16Vec(ByteBuffer data) {
         this.data = data;
     }
@@ -46,6 +50,8 @@ public class Float16Vec implements BaseVector {
      *
      * @param data the float16 vector data
      */
+
+
     public Float16Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }
@@ -56,6 +62,8 @@ public class Float16Vec implements BaseVector {
      *
      * @param data a float32 vector
      */
+
+
     public Float16Vec(List<Float> data) {
         this.data = Float16Utils.f32VectorToFp16Buffer(data);
     }

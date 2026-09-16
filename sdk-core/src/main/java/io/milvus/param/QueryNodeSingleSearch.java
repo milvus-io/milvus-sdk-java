@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Defined single search for query node listener send heartbeat.
  */
+
+
 public class QueryNodeSingleSearch {
 
     private final String collectionName;
@@ -46,25 +48,67 @@ public class QueryNodeSingleSearch {
         this.params = builder.params;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
 
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the metricType.
+     *
+     * @return the metricType
+     */
+
+
     public MetricType getMetricType() {
         return metricType;
     }
+
+    /**
+     * Returns the vectorFieldName.
+     *
+     * @return the vectorFieldName
+     */
+
 
     public String getVectorFieldName() {
         return vectorFieldName;
     }
 
+    /**
+     * Returns the vectors.
+     *
+     * @return the vectors
+     */
+
+
     public List<?> getVectors() {
         return vectors;
     }
+
+    /**
+     * Returns the params.
+     *
+     * @return the params
+     */
+
 
     public String getParams() {
         return params;
@@ -73,6 +117,8 @@ public class QueryNodeSingleSearch {
     /**
      * Builder for {@link QueryNodeSingleSearch}
      */
+
+
     public static class Builder {
         private String collectionName;
         private MetricType metricType = MetricType.L2;
@@ -89,6 +135,8 @@ public class QueryNodeSingleSearch {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -103,6 +151,8 @@ public class QueryNodeSingleSearch {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
+
+
         public Builder withMetricType(MetricType metricType) {
             if (metricType == null) {
                 throw new IllegalArgumentException("Metric type cannot be null");
@@ -117,6 +167,8 @@ public class QueryNodeSingleSearch {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
+
+
         public Builder withVectorFieldName(String vectorFieldName) {
             if (vectorFieldName == null) {
                 throw new IllegalArgumentException("Vector field name cannot be null");
@@ -134,6 +186,8 @@ public class QueryNodeSingleSearch {
          *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float]
          * @return <code>Builder</code>
          */
+
+
         public Builder withVectors(List<?> vectors) {
             if (vectors == null) {
                 throw new IllegalArgumentException("Vectors cannot be null");
@@ -151,6 +205,8 @@ public class QueryNodeSingleSearch {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
+
+
         public Builder withParams(String params) {
             if (params == null) {
                 throw new IllegalArgumentException("Params cannot be null");
@@ -164,6 +220,8 @@ public class QueryNodeSingleSearch {
          *
          * @return {@link QueryNodeSingleSearch}
          */
+
+
         public QueryNodeSingleSearch build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");

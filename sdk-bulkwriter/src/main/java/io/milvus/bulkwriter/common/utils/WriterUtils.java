@@ -27,6 +27,8 @@ import java.util.Map;
 /**
  * Utility class for normalizing field values before they are written to bulk data files.
  */
+
+
 public class WriterUtils {
     private WriterUtils() {
     }
@@ -39,6 +41,8 @@ public class WriterUtils {
      * @param value the field value to normalize
      * @return the normalized field value
      */
+
+
     public static Object normalizeValue(Object value) {
         if (value instanceof ByteBuffer) {
             ByteBuffer byteBuffer = (ByteBuffer) value;

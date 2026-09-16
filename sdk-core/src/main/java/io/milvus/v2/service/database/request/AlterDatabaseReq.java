@@ -42,6 +42,8 @@ public class AlterDatabaseReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -51,6 +53,8 @@ public class AlterDatabaseReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -60,6 +64,8 @@ public class AlterDatabaseReq {
      *
      * @return the database properties
      */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -69,6 +75,8 @@ public class AlterDatabaseReq {
      *
      * @param properties the database properties
      */
+
+
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -86,9 +94,16 @@ public class AlterDatabaseReq {
      *
      * @return a new {@link AlterDatabaseReqBuilder}
      */
+
+
     public static AlterDatabaseReqBuilder builder() {
         return new AlterDatabaseReqBuilder();
     }
+
+    /**
+     * Builder for {@link AlterDatabaseReq} class.
+     */
+
 
     public static class AlterDatabaseReqBuilder {
         private String databaseName;
@@ -103,6 +118,8 @@ public class AlterDatabaseReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public AlterDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -114,6 +131,8 @@ public class AlterDatabaseReq {
          * @param properties the database properties
          * @return this builder
          */
+
+
         public AlterDatabaseReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
@@ -124,6 +143,8 @@ public class AlterDatabaseReq {
          *
          * @return the built request
          */
+
+
         public AlterDatabaseReq build() {
             return new AlterDatabaseReq(this);
         }

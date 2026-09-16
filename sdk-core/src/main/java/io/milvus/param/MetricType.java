@@ -23,6 +23,8 @@ package io.milvus.param;
  * Represents the available metric types.
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/metric.md">Similarity Metrics</a>
  */
+
+
 public enum MetricType {
     None,
 

@@ -23,6 +23,8 @@ package io.milvus.v2.service.utility.response;
  * Information of a refresh-external-collection job, as returned by the
  * {@code listRefreshExternalCollectionJobs} and {@code getRefreshExternalCollectionProgress} APIs.
  */
+
+
 public class RefreshExternalCollectionJobInfo {
     private final long jobId;
     private final String collectionName;
@@ -51,6 +53,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the builder
      */
+
+
     public static RefreshExternalCollectionJobInfoBuilder builder() {
         return new RefreshExternalCollectionJobInfoBuilder();
     }
@@ -60,6 +64,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the job ID
      */
+
+
     public long getJobId() {
         return jobId;
     }
@@ -69,6 +75,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -78,6 +86,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the job state
      */
+
+
     public String getState() {
         return state;
     }
@@ -87,6 +97,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the job progress
      */
+
+
     public int getProgress() {
         return progress;
     }
@@ -96,6 +108,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the reason
      */
+
+
     public String getReason() {
         return reason;
     }
@@ -105,6 +119,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the external source
      */
+
+
     public String getExternalSource() {
         return externalSource;
     }
@@ -114,6 +130,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the external specification
      */
+
+
     public String getExternalSpec() {
         return externalSpec;
     }
@@ -123,6 +141,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the start time in milliseconds
      */
+
+
     public long getStartTime() {
         return startTime;
     }
@@ -132,6 +152,8 @@ public class RefreshExternalCollectionJobInfo {
      *
      * @return the end time in milliseconds
      */
+
+
     public long getEndTime() {
         return endTime;
     }
@@ -154,6 +176,8 @@ public class RefreshExternalCollectionJobInfo {
     /**
      * Builder for {@link RefreshExternalCollectionJobInfo}.
      */
+
+
     public static class RefreshExternalCollectionJobInfoBuilder {
         private long jobId;
         private String collectionName;
@@ -171,6 +195,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param jobId the job ID
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder jobId(long jobId) {
             this.jobId = jobId;
             return this;
@@ -182,6 +208,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -193,6 +221,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param state the job state
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder state(String state) {
             this.state = state;
             return this;
@@ -204,6 +234,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param progress the job progress
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder progress(int progress) {
             this.progress = progress;
             return this;
@@ -215,6 +247,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param reason the reason
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder reason(String reason) {
             this.reason = reason;
             return this;
@@ -226,6 +260,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param externalSource the external source
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder externalSource(String externalSource) {
             this.externalSource = externalSource;
             return this;
@@ -237,6 +273,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param externalSpec the external specification
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder externalSpec(String externalSpec) {
             this.externalSpec = externalSpec;
             return this;
@@ -248,6 +286,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param startTime the start time in milliseconds
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder startTime(long startTime) {
             this.startTime = startTime;
             return this;
@@ -259,6 +299,8 @@ public class RefreshExternalCollectionJobInfo {
          * @param endTime the end time in milliseconds
          * @return this builder
          */
+
+
         public RefreshExternalCollectionJobInfoBuilder endTime(long endTime) {
             this.endTime = endTime;
             return this;
@@ -269,6 +311,8 @@ public class RefreshExternalCollectionJobInfo {
          *
          * @return the job information
          */
+
+
         public RefreshExternalCollectionJobInfo build() {
             return new RefreshExternalCollectionJobInfo(this);
         }

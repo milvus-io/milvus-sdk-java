@@ -25,8 +25,17 @@ import io.milvus.grpc.ImportResponse;
 /**
  * Util class to wrap response of <code>bulkInsert</code> interface.
  */
+
+
 public class BulkInsertResponseWrapper {
     private final ImportResponse response;
+
+    /**
+     * Wraps the given bulk insert response.
+     *
+     * @param response the gRPC {@code ImportResponse}, must not be {@code null}
+     */
+
 
     public BulkInsertResponseWrapper(ImportResponse response) {
         if (response == null) {
@@ -40,6 +49,8 @@ public class BulkInsertResponseWrapper {
      *
      * @return Long ID of the bulk insert task
      */
+
+
     public long getTaskID() {
         if (response.getTasksCount() == 0) {
             throw new IllegalResponseException("no task id returned from server");

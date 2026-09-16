@@ -22,6 +22,8 @@ package io.milvus.v2.service.index.request;
 /**
  * Request parameters for the {@code describeIndex} API.
  */
+
+
 public class DescribeIndexReq {
     private String databaseName;
     private String collectionName;
@@ -45,6 +47,8 @@ public class DescribeIndexReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -54,6 +58,8 @@ public class DescribeIndexReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -63,6 +69,8 @@ public class DescribeIndexReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -73,6 +81,8 @@ public class DescribeIndexReq {
      * @param collectionName the collection name
      * @throws IllegalArgumentException if the collection name is null
      */
+
+
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -85,6 +95,8 @@ public class DescribeIndexReq {
      *
      * @return the field name
      */
+
+
     public String getFieldName() {
         return fieldName;
     }
@@ -94,6 +106,8 @@ public class DescribeIndexReq {
      *
      * @param fieldName the field name
      */
+
+
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
@@ -103,6 +117,8 @@ public class DescribeIndexReq {
      *
      * @return the index name
      */
+
+
     public String getIndexName() {
         return indexName;
     }
@@ -112,6 +128,8 @@ public class DescribeIndexReq {
      *
      * @param indexName the index name
      */
+
+
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
@@ -121,6 +139,8 @@ public class DescribeIndexReq {
      *
      * @return the timestamp value; only segments generated before this timestamp are checked
      */
+
+
     public Long getTimestamp() {
         return timestamp;
     }
@@ -130,6 +150,8 @@ public class DescribeIndexReq {
      *
      * @param timestamp the timestamp value; all segments are checked if this value is zero
      */
+
+
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
@@ -150,9 +172,16 @@ public class DescribeIndexReq {
      *
      * @return the builder
      */
+
+
     public static DescribeIndexReqBuilder builder() {
         return new DescribeIndexReqBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeIndexReq} class.
+     */
+
 
     public static class DescribeIndexReqBuilder {
         private String databaseName;
@@ -170,6 +199,8 @@ public class DescribeIndexReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DescribeIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -182,6 +213,8 @@ public class DescribeIndexReq {
          * @return this builder
          * @throws IllegalArgumentException if the collection name is null
          */
+
+
         public DescribeIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -196,6 +229,8 @@ public class DescribeIndexReq {
          * @param fieldName the field name
          * @return this builder
          */
+
+
         public DescribeIndexReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
@@ -207,6 +242,8 @@ public class DescribeIndexReq {
          * @param indexName the index name
          * @return this builder
          */
+
+
         public DescribeIndexReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
@@ -218,6 +255,8 @@ public class DescribeIndexReq {
          * @param timestamp the timestamp value; all segments are checked if this value is zero
          * @return this builder
          */
+
+
         public DescribeIndexReqBuilder timestamp(Long timestamp) {
             this.timestamp = timestamp;
             return this;
@@ -228,6 +267,8 @@ public class DescribeIndexReq {
          *
          * @return the built request
          */
+
+
         public DescribeIndexReq build() {
             return new DescribeIndexReq(this);
         }

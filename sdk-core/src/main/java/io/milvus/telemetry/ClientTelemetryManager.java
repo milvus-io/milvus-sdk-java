@@ -72,6 +72,8 @@ import java.util.regex.Pattern;
  * <p>The manager is thread-safe. Command replies remain queued until a heartbeat succeeds,
  * and persistent command hashes are deterministic across SDK languages.</p>
  */
+
+
 public final class ClientTelemetryManager implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ClientTelemetryManager.class);
     private static final Gson GSON = new Gson();
@@ -140,6 +142,17 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private long heartbeatGeneration;
     private boolean retirementPending;
 
+    /**
+     * Creates a telemetry manager with a randomly generated client ID.
+     *
+     * @param config           the telemetry configuration, or {@code null} for defaults
+     * @param user             the connected user name
+     * @param sdkVersion       the SDK version
+     * @param databaseProvider supplies the current database name for telemetry snapshots
+     * @param configProvider   supplies the current client configuration for telemetry snapshots
+     */
+
+
     public ClientTelemetryManager(
             TelemetryConfig config,
             String user,
@@ -148,6 +161,19 @@ public final class ClientTelemetryManager implements AutoCloseable {
             Supplier<Map<String, Object>> configProvider) {
         this(config, user, sdkVersion, databaseProvider, configProvider, "");
     }
+
+    /**
+     * Creates a telemetry manager with the given runtime client ID.
+     *
+     * @param config           the telemetry configuration, or {@code null} for defaults
+     * @param user             the connected user name
+     * @param sdkVersion       the SDK version
+     * @param databaseProvider supplies the current database name for telemetry snapshots
+     * @param configProvider   supplies the current client configuration for telemetry snapshots
+     * @param runtimeClientId  the client ID to use, used when transferring state to a replacement
+     *                         manager; ignored when the config pins a stable client ID
+     */
+
 
     public ClientTelemetryManager(
             TelemetryConfig config,
@@ -175,6 +201,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         registerDefaultHandlers();
     }
 
+    /**
+     * Attaches the gRPC blocking stub used to send heartbeats to the server.
+     *
+     * @param stub the telemetry service blocking stub
+     */
+
+
     public void setStub(ClientTelemetryServiceGrpc.ClientTelemetryServiceBlockingStub stub) {
         this.stub = stub;
         // A newly attached transport must be probed immediately. Carrying an
@@ -182,6 +215,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
         // supporting endpoint silent for up to thirty minutes.
         unsupportedStreak = 0;
     }
+
+    /**
+     * Starts the heartbeat scheduler. The manager becomes ready and begins sending heartbeats.
+     */
+
 
     public void start() {
         if (closed.get()) {
@@ -206,27 +244,68 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Returns whether the heartbeat scheduler has been started.
+     *
+     * @return {@code true} if the manager is ready
+     */
+
+
     public boolean isReady() {
         return ready.get();
     }
+
+    /**
+     * Returns whether this manager has been closed.
+     *
+     * @return {@code true} if the manager is closed
+     */
+
 
     public boolean isClosed() {
         return closed.get();
     }
 
+    /**
+     * Returns whether the attached server endpoint supports client telemetry.
+     *
+     * @return {@code true} when no unsupported-endpoint streak has been recorded
+     */
+
+
     public boolean isSupported() {
         return unsupportedStreak == 0;
     }
+
+    /**
+     * Returns the last heartbeat error, if any.
+     *
+     * @return the last heartbeat error, or {@code null} if none occurred
+     */
+
 
     public Throwable getLastHeartbeatError() {
         return lastHeartbeatError;
     }
 
+    /**
+     * Returns the client ID used by this manager.
+     *
+     * @return the client ID
+     */
+
+
     public String getClientId() {
         return clientId;
     }
 
-    /** Returns a non-zero lowercase OpenTelemetry TraceID for client_request_id. */
+    /**
+     * Returns a non-zero lowercase OpenTelemetry TraceID for client_request_id.
+     *
+     * @return a 32-character lowercase hexadecimal TraceID
+     */
+
+
     public static String newClientRequestId() {
         byte[] value = new byte[16];
         do {
@@ -248,22 +327,58 @@ public final class ClientTelemetryManager implements AutoCloseable {
         return true;
     }
 
+    /**
+     * Returns the hash of the last persisted server configuration, if any.
+     *
+     * @return the config hash, or an empty string if none was computed
+     */
+
+
     public String getConfigHash() {
         return configHash;
     }
+
+    /**
+     * Returns the timestamp of the last command processed from the server.
+     *
+     * @return the last command timestamp
+     */
+
 
     public long getLastCommandTimestamp() {
         return lastCommandTimestamp;
     }
 
+    /**
+     * Returns the telemetry configuration of this manager.
+     *
+     * @return the telemetry config
+     */
+
+
     public TelemetryConfig getConfig() {
         return config;
     }
+
+    /**
+     * Registers a handler for server-pushed commands of the given type.
+     *
+     * @param type    the command type
+     * @param handler the handler to invoke for commands of this type
+     */
+
 
     public synchronized void registerCommandHandler(String type, CommandHandler handler) {
         handlers.put(type, handler);
         customHandlers.put(type, handler);
     }
+
+    /**
+     * Captures an immutable snapshot of the in-memory telemetry and command state.
+     *
+     * @return the {@link RuntimeState} snapshot
+     */
+
 
     public synchronized RuntimeState snapshotRuntimeState() {
         List<ErrorInfo> errorValues;
@@ -318,6 +433,14 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 config.getSamplingRate());
     }
 
+    /**
+     * Restores the in-memory telemetry and command state from a snapshot.
+     *
+     * @param state the {@link RuntimeState} snapshot to restore; {@code null} is ignored
+     * @throws IllegalArgumentException if the snapshot belongs to a different client ID
+     */
+
+
     public synchronized void restoreRuntimeState(RuntimeState state) {
         if (state == null) {
             return;
@@ -371,7 +494,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         handlers.putAll(state.customHandlers);
     }
 
-    /** Atomically hands state to a replacement manager after its last heartbeat finishes. */
+    /**
+     * Atomically hands state to a replacement manager after its last heartbeat finishes.
+     *
+     * @return the runtime state snapshot, taken before this manager is closed
+     */
+
+
     public RuntimeState snapshotAndCloseRuntimeState() {
         synchronized (heartbeatLifecycle) {
             RuntimeState state = snapshotRuntimeState();
@@ -384,7 +513,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
      * Invalidates an in-flight heartbeat and prevents another one from starting while the
      * surrounding connection switch is pending. The token can be cancelled if that switch
      * rolls back, without making the old manager unusable.
+     *
+     * @return the retirement token to use with {@link #cancelRuntimeStateRetirement(long)} and
+     *         {@link #handoffRuntimeStateTo(ClientTelemetryManager, long)}
      */
+
+
     public long beginRuntimeStateRetirement() {
         synchronized (heartbeatRetirement) {
             if (retirementPending) {
@@ -395,7 +529,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
-    /** Restores the old manager after the surrounding connection switch rolls back. */
+    /**
+     * Restores the old manager after the surrounding connection switch rolls back.
+     *
+     * @param retirementToken the token returned by {@link #beginRuntimeStateRetirement()}
+     */
+
+
     public void cancelRuntimeStateRetirement(long retirementToken) {
         synchronized (heartbeatRetirement) {
             if (retirementPending && retirementToken == heartbeatGeneration) {
@@ -404,7 +544,15 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
-    /** Completes a state handoff that was fenced before the outer client switch committed. */
+    /**
+     * Completes a state handoff that was fenced before the outer client switch committed.
+     *
+     * @param replacement     the replacement telemetry manager prepared via
+     *                        {@link #prepareRuntimeStateHandoffFrom(ClientTelemetryManager)}
+     * @param retirementToken the token returned by {@link #beginRuntimeStateRetirement()}
+     */
+
+
     public void handoffRuntimeStateTo(
             ClientTelemetryManager replacement, long retirementToken) {
         if (replacement == null || replacement == this) {
@@ -441,7 +589,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         replacement.start();
     }
 
-    /** Redirects replacement-client operations to the active manager until the switch commits. */
+    /**
+     * Redirects replacement-client operations to the active manager until the switch commits.
+     *
+     * @param activeManager the active manager that receives the forwarded operations
+     */
+
+
     public void prepareRuntimeStateHandoffFrom(ClientTelemetryManager activeManager) {
         if (activeManager == null || activeManager == this) {
             throw new IllegalArgumentException("active telemetry manager is required");
@@ -454,7 +608,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
-    /** Cancels a prepared handoff after the surrounding client switch failed. */
+    /**
+     * Cancels a prepared handoff after the surrounding client switch failed.
+     *
+     * @param activeManager the active manager the operations were being forwarded to
+     */
+
+
     public void cancelRuntimeStateHandoffFrom(ClientTelemetryManager activeManager) {
         synchronized (runtimeStateHandoff) {
             if (handoffTarget == activeManager) {
@@ -462,6 +622,18 @@ public final class ClientTelemetryManager implements AutoCloseable {
             }
         }
     }
+
+    /**
+     * Records a client operation for telemetry, forwarding to the handoff target when a
+     * replacement manager is active.
+     *
+     * @param operation the operation name
+     * @param collection the collection name, may be empty
+     * @param startNanos the operation start time in nanoseconds
+     * @param error      the error message, empty when the operation succeeded
+     * @param requestId  the request ID for error correlation, may be empty
+     */
+
 
     public void recordOperation(
             String operation, String collection, long startNanos, String error, String requestId) {
@@ -477,7 +649,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
-    /** Suppresses per-attempt interceptor metrics for this manager only. */
+    /**
+     * Suppresses per-attempt interceptor metrics for this manager only.
+     *
+     * @return a scope to close when the logical operation finishes
+     */
+
+
     public LogicalOperationScope beginLogicalOperation() {
         logicalOperationDepth.set(logicalOperationDepth.get() + 1);
         return new LogicalOperationScope();
@@ -513,6 +691,14 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Returns the most recent recorded errors, newest first.
+     *
+     * @param maxCount the maximum number of errors to return, or negative for all
+     * @return the recent {@link ErrorInfo} entries
+     */
+
+
     public List<ErrorInfo> getRecentErrors(int maxCount) {
         List<ErrorInfo> result;
         synchronized (errors) {
@@ -525,12 +711,26 @@ public final class ClientTelemetryManager implements AutoCloseable {
         return result;
     }
 
+    /**
+     * Returns the metrics snapshots retained by this manager.
+     *
+     * @return the {@link MetricsSnapshot} list, pruned of expired entries
+     */
+
+
     public List<MetricsSnapshot> getMetricsSnapshots() {
         synchronized (snapshots) {
             pruneSnapshotsLocked(System.currentTimeMillis());
             return new ArrayList<>(snapshots);
         }
     }
+
+    /**
+     * Processes server-pushed commands, executing each new command once and queuing its reply.
+     *
+     * @param commands the commands received from the server
+     */
+
 
     public synchronized void processCommands(List<ClientCommand> commands) {
         long previousTimestamp = lastCommandTimestamp;
@@ -575,6 +775,14 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
         lastCommandTimestamp = Math.max(lastCommandTimestamp, maxTimestamp);
     }
+
+    /**
+     * Computes a stable hash over the persistent commands in the given batch.
+     *
+     * @param commands the commands received from the server
+     * @return the SHA-256 based config hash, or an empty string if there are no persistent commands
+     */
+
 
     public static String calculateConfigHash(List<ClientCommand> commands) {
         List<ClientCommand> persistent = new ArrayList<>();
@@ -1436,6 +1644,9 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Handles a server-pushed {@link ClientCommand} and produces the corresponding {@link CommandReply}.
+     */
     @FunctionalInterface
     public interface CommandHandler {
         CommandReply handle(ClientCommand command) throws Exception;
@@ -1452,6 +1663,8 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     /** In-memory telemetry and command state transferred to a replacement connection manager. */
+
+
     public static final class RuntimeState {
         private final String clientId;
         private final String configHash;
@@ -1517,14 +1730,33 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.samplingRate = samplingRate;
         }
 
+        /**
+         * Returns the client ID of the snapshot.
+         *
+         * @return the client ID
+         */
+
+
         public String getClientId() {
             return clientId;
         }
+
+        /**
+         * Returns the number of command replies still pending delivery.
+         *
+         * @return the pending reply count
+         */
+
 
         public int getPendingReplyCount() {
             return pendingReplies.size();
         }
     }
+
+    /**
+     * Holds the details of a single client-side error recorded for telemetry.
+     */
+
 
     public static final class ErrorInfo {
         public final long timestamp;
@@ -1541,6 +1773,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.request_id = requestId;
         }
     }
+
+    /**
+     * Auto-closeable scope that tracks the depth of logically nested operations for telemetry.
+     */
+
 
     public final class LogicalOperationScope implements AutoCloseable {
         private boolean closed;
@@ -1563,6 +1800,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Snapshot of the metrics collected for a single heartbeat window.
+     */
+
+
     public static final class MetricsSnapshot {
         public final long timestamp;
         public final long end_time;
@@ -1575,6 +1817,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Per-operation metrics snapshot with global and per-collection breakdowns.
+     */
+
+
     public static final class OperationSnapshot {
         public final String operation;
         public final MetricSnapshot global;
@@ -1586,6 +1833,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.collection_metrics = collections;
         }
     }
+
+    /**
+     * Aggregated request counters and latency statistics for a set of operations.
+     */
+
 
     public static final class MetricSnapshot {
         public final long request_count;

@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the dropRole API.
+ */
+
+
 public class DropRoleParam {
 
     private final String roleName;
@@ -35,13 +40,34 @@ public class DropRoleParam {
         this.forceDrop = builder.forceDrop;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static DropRoleParam.Builder newBuilder() {
         return new DropRoleParam.Builder();
     }
 
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
+
     public String getRoleName() {
         return roleName;
     }
+
+    /**
+     * Returns the forceDrop.
+     *
+     * @return the forceDrop
+     */
+
 
     public boolean isForceDrop() {
         return forceDrop;
@@ -58,6 +84,8 @@ public class DropRoleParam {
     /**
      * Builder for {@link DropRoleParam} class.
      */
+
+
     public static final class Builder {
         private String roleName;
         private boolean forceDrop;
@@ -71,6 +99,8 @@ public class DropRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public DropRoleParam.Builder withRoleName(String roleName) {
             if (roleName == null) {
                 throw new IllegalArgumentException("Role name cannot be null");
@@ -85,6 +115,8 @@ public class DropRoleParam {
          * @param forceDrop forceDrop
          * @return <code>Builder</code>
          */
+
+
         public DropRoleParam.Builder withForceDrop(boolean forceDrop) {
             this.forceDrop = forceDrop;
             return this;
@@ -95,6 +127,8 @@ public class DropRoleParam {
          *
          * @return {@link DropRoleParam}
          */
+
+
         public DropRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");
 

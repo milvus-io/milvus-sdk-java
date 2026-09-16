@@ -21,6 +21,14 @@ package io.milvus.bulkwriter.request.volume;
 
 import io.milvus.bulkwriter.model.UploadProgress;
 
+/**
+ * Request for uploading a local file or directory to a target directory within a Volume.
+ *
+ * <p>Allows configuring upload concurrency, retry behavior, multipart part size, and an
+ * optional progress listener.</p>
+ */
+
+
 public class UploadFilesRequest {
     /**
      * The full path of a local file or directory:
@@ -60,9 +68,20 @@ public class UploadFilesRequest {
      * Multipart upload part size in bytes. Zero or negative means automatic.
      */
     private long partSizeBytes = 0L;
+    /**
+     * Creates a new UploadFilesRequest.
+     */
+
 
     public UploadFilesRequest() {
     }
+    /**
+     * Creates a new UploadFilesRequest.
+     *
+     * @param sourceFilePath the sourceFilePath
+     * @param targetVolumePath the targetVolumePath
+     */
+
 
     public UploadFilesRequest(String sourceFilePath, String targetVolumePath) {
         this.sourceFilePath = sourceFilePath;
@@ -78,58 +97,142 @@ public class UploadFilesRequest {
         this.progressListener = builder.progressListener;
         this.partSizeBytes = builder.partSizeBytes;
     }
+    /**
+     * Returns the sourceFilePath.
+     *
+     * @return the sourceFilePath
+     */
+
 
     public String getSourceFilePath() {
         return sourceFilePath;
     }
+    /**
+     * Sets the sourceFilePath.
+     *
+     * @param sourceFilePath the sourceFilePath
+     */
+
 
     public void setSourceFilePath(String sourceFilePath) {
         this.sourceFilePath = sourceFilePath;
     }
+    /**
+     * Returns the targetVolumePath.
+     *
+     * @return the targetVolumePath
+     */
+
 
     public String getTargetVolumePath() {
         return targetVolumePath;
     }
+    /**
+     * Sets the targetVolumePath.
+     *
+     * @param targetVolumePath the targetVolumePath
+     */
+
 
     public void setTargetVolumePath(String targetVolumePath) {
         this.targetVolumePath = targetVolumePath;
     }
+    /**
+     * Returns the uploadConcurrency.
+     *
+     * @return the uploadConcurrency
+     */
+
 
     public int getUploadConcurrency() {
         return uploadConcurrency;
     }
+    /**
+     * Sets the uploadConcurrency.
+     *
+     * @param uploadConcurrency the uploadConcurrency
+     */
+
 
     public void setUploadConcurrency(int uploadConcurrency) {
         this.uploadConcurrency = uploadConcurrency;
     }
+    /**
+     * Returns the maxRetries.
+     *
+     * @return the maxRetries
+     */
+
 
     public int getMaxRetries() {
         return maxRetries;
     }
+    /**
+     * Sets the maxRetries.
+     *
+     * @param maxRetries the maxRetries
+     */
+
 
     public void setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
     }
+    /**
+     * Returns the retryIntervalMillis.
+     *
+     * @return the retryIntervalMillis
+     */
+
 
     public long getRetryIntervalMillis() {
         return retryIntervalMillis;
     }
+    /**
+     * Sets the retryIntervalMillis.
+     *
+     * @param retryIntervalMillis the retryIntervalMillis
+     */
+
 
     public void setRetryIntervalMillis(long retryIntervalMillis) {
         this.retryIntervalMillis = retryIntervalMillis;
     }
+    /**
+     * Returns the progressListener.
+     *
+     * @return the progressListener
+     */
+
 
     public ProgressListener getProgressListener() {
         return progressListener;
     }
+    /**
+     * Sets the progressListener.
+     *
+     * @param progressListener the progressListener
+     */
+
 
     public void setProgressListener(ProgressListener progressListener) {
         this.progressListener = progressListener;
     }
+    /**
+     * Returns the partSizeBytes.
+     *
+     * @return the partSizeBytes
+     */
+
 
     public long getPartSizeBytes() {
         return partSizeBytes;
     }
+    /**
+     * Sets the partSizeBytes.
+     *
+     * @param partSizeBytes the partSizeBytes
+     */
+
 
     public void setPartSizeBytes(long partSizeBytes) {
         this.partSizeBytes = partSizeBytes;
@@ -147,10 +250,21 @@ public class UploadFilesRequest {
                 ", partSizeBytes=" + partSizeBytes +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static UploadFilesRequestBuilder builder() {
         return new UploadFilesRequestBuilder();
     }
+
+    /**
+     * Builder for {@link UploadFilesRequest} class.
+     */
+
 
     public static class UploadFilesRequestBuilder {
         private String sourceFilePath;
@@ -170,47 +284,105 @@ public class UploadFilesRequest {
             this.progressListener = null;
             this.partSizeBytes = 0L;
         }
+        /**
+         * Sets the sourceFilePath.
+         *
+         * @param sourceFilePath the sourceFilePath
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder sourceFilePath(String sourceFilePath) {
             this.sourceFilePath = sourceFilePath;
             return this;
         }
+        /**
+         * Sets the targetVolumePath.
+         *
+         * @param targetVolumePath the targetVolumePath
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder targetVolumePath(String targetVolumePath) {
             this.targetVolumePath = targetVolumePath;
             return this;
         }
+        /**
+         * Sets the uploadConcurrency.
+         *
+         * @param uploadConcurrency the uploadConcurrency
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder uploadConcurrency(int uploadConcurrency) {
             this.uploadConcurrency = uploadConcurrency;
             return this;
         }
+        /**
+         * Sets the maxRetries.
+         *
+         * @param maxRetries the maxRetries
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder maxRetries(int maxRetries) {
             this.maxRetries = maxRetries;
             return this;
         }
+        /**
+         * Sets the retryIntervalMillis.
+         *
+         * @param retryIntervalMillis the retryIntervalMillis
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder retryIntervalMillis(long retryIntervalMillis) {
             this.retryIntervalMillis = retryIntervalMillis;
             return this;
         }
+        /**
+         * Sets the progressListener.
+         *
+         * @param progressListener the progressListener
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder progressListener(ProgressListener progressListener) {
             this.progressListener = progressListener;
             return this;
         }
+        /**
+         * Sets the partSizeBytes.
+         *
+         * @param partSizeBytes the partSizeBytes
+         * @return this builder
+         */
+
 
         public UploadFilesRequestBuilder partSizeBytes(long partSizeBytes) {
             this.partSizeBytes = partSizeBytes;
             return this;
         }
+        /**
+         * Builds the UploadFilesRequest.
+         *
+         * @return the built UploadFilesRequest
+         */
+
 
         public UploadFilesRequest build() {
             return new UploadFilesRequest(this);
         }
     }
 
+    /**
+     * Listener for upload progress callbacks.
+     */
     @FunctionalInterface
     public interface ProgressListener {
         void onProgress(UploadProgress progress);

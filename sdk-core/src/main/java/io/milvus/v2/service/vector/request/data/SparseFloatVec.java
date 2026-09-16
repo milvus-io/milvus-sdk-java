@@ -27,6 +27,8 @@ import java.util.SortedMap;
  * A sparse float vector used in search and insert requests, stored as a sorted map of
  * dimension index to value so that only the non-zero dimensions need to be provided.
  */
+
+
 public class SparseFloatVec implements BaseVector {
     private final SortedMap<Long, Float> data;
 
@@ -35,6 +37,8 @@ public class SparseFloatVec implements BaseVector {
      *
      * @param data the sparse vector data
      */
+
+
     public SparseFloatVec(SortedMap<Long, Float> data) {
         this.data = data;
     }

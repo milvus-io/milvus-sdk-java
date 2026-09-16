@@ -23,6 +23,8 @@ package io.milvus.common.clientenum;
  * The type of a function used to build a vector index from one or more scalar fields, such as
  * sparse BM25 or dense text embedding.
  */
+
+
 public enum FunctionType {
     /**
      * The function type is not specified or unknown.
@@ -63,6 +65,7 @@ public enum FunctionType {
      *
      * @return the function type code
      */
+
     public int getCode() {
         return code;
     }
@@ -72,6 +75,8 @@ public enum FunctionType {
      *
      * @return the function type name
      */
+
+
     public String getName() {
         return name;
     }
@@ -83,6 +88,8 @@ public enum FunctionType {
      * @param name the function type name
      * @return the matching function type
      */
+
+
     public static FunctionType fromName(String name) {
         for (FunctionType type : FunctionType.values()) {
             if (type.getName().equals(name) || type.name().equals(name)) {
@@ -99,6 +106,8 @@ public enum FunctionType {
      * @param code the function type code
      * @return the matching function type
      */
+
+
     public static FunctionType fromCode(int code) {
         for (FunctionType type : FunctionType.values()) {
             if (type.getCode() == code) {

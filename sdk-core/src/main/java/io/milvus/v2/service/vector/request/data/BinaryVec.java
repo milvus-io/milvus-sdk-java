@@ -27,6 +27,8 @@ import java.nio.ByteBuffer;
  * A binary vector used in search and insert requests, where each bit of the raw bytes
  * represents one dimension of the vector.
  */
+
+
 public class BinaryVec implements BaseVector {
     private final ByteBuffer data;
 
@@ -35,6 +37,8 @@ public class BinaryVec implements BaseVector {
      *
      * @param data the binary vector data
      */
+
+
     public BinaryVec(ByteBuffer data) {
         this.data = data;
     }
@@ -44,6 +48,8 @@ public class BinaryVec implements BaseVector {
      *
      * @param data the binary vector data
      */
+
+
     public BinaryVec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }

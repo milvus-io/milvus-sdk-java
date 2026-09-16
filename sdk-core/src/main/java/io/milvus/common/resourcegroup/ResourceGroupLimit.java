@@ -19,6 +19,12 @@
 
 package io.milvus.common.resourcegroup;
 
+/**
+ * Represents the requested or limited node number of a resource group. Supports conversion
+ * to and from the gRPC representation.
+ */
+
+
 public class ResourceGroupLimit {
     private Integer nodeNum;
 
@@ -27,6 +33,8 @@ public class ResourceGroupLimit {
      *
      * @param nodeNum query node number in this group
      */
+
+
     public ResourceGroupLimit(Integer nodeNum) {
         if (nodeNum == null) {
             throw new IllegalArgumentException("Node number cannot be null");
@@ -39,6 +47,8 @@ public class ResourceGroupLimit {
      *
      * @param grpcLimit grpc object to set limit of node number
      */
+
+
     public ResourceGroupLimit(io.milvus.grpc.ResourceGroupLimit grpcLimit) {
         if (grpcLimit == null) {
             throw new IllegalArgumentException("GRPC limit cannot be null");
@@ -51,6 +61,8 @@ public class ResourceGroupLimit {
      *
      * @return <code>io.milvus.grpc.ResourceGroupLimit</code>
      */
+
+
     public io.milvus.grpc.ResourceGroupLimit toGRPC() {
         io.milvus.grpc.ResourceGroupLimit result = io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(nodeNum).build();
         if (result == null) {
@@ -58,6 +70,13 @@ public class ResourceGroupLimit {
         }
         return result;
     }
+
+    /**
+     * Returns the node number of the limit.
+     *
+     * @return the node number
+     */
+
 
     public Integer getNodeNum() {
         return nodeNum;

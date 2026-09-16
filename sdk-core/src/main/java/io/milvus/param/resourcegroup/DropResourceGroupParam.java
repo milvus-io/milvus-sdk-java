@@ -23,6 +23,11 @@ package io.milvus.param.resourcegroup;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the dropResourceGroup API.
+ */
+
+
 public class DropResourceGroupParam {
     private final String groupName;
 
@@ -33,9 +38,23 @@ public class DropResourceGroupParam {
         this.groupName = builder.groupName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Returns the groupName.
+     *
+     * @return the groupName
+     */
+
 
     public String getGroupName() {
         return groupName;
@@ -51,6 +70,8 @@ public class DropResourceGroupParam {
     /**
      * Builder for {@link DropResourceGroupParam} class.
      */
+
+
     public static final class Builder {
         private String groupName;
 
@@ -63,6 +84,8 @@ public class DropResourceGroupParam {
          * @param groupName group name
          * @return <code>Builder</code>
          */
+
+
         public Builder withGroupName(String groupName) {
             if (groupName == null) {
                 throw new IllegalArgumentException("Group name cannot be null");
@@ -76,6 +99,8 @@ public class DropResourceGroupParam {
          *
          * @return {@link DropResourceGroupParam}
          */
+
+
         public DropResourceGroupParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(groupName, "Group name");
 

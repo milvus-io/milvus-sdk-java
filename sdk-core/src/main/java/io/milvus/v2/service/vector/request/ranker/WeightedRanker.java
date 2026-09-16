@@ -51,6 +51,8 @@ import java.util.Map;
  * .param("weights", "[0.4, 0.6]")
  * .build();
  */
+
+
 public class WeightedRanker extends CreateCollectionReq.Function {
     private List<Float> weights;
 
@@ -81,6 +83,8 @@ public class WeightedRanker extends CreateCollectionReq.Function {
      *
      * @return the weights
      */
+
+
     public List<Float> getWeights() {
         return weights;
     }
@@ -90,6 +94,8 @@ public class WeightedRanker extends CreateCollectionReq.Function {
      *
      * @param weights the weights
      */
+
+
     public void setWeights(List<Float> weights) {
         this.weights = weights;
     }
@@ -139,6 +145,8 @@ public class WeightedRanker extends CreateCollectionReq.Function {
      *
      * @return a new builder
      */
+
+
     public static WeightedRankerBuilder builder() {
         return new WeightedRankerBuilder();
     }
@@ -146,6 +154,8 @@ public class WeightedRanker extends CreateCollectionReq.Function {
     /**
      * Builder for {@link WeightedRanker}.
      */
+
+
     public static class WeightedRankerBuilder extends Function.FunctionBuilder<WeightedRankerBuilder> {
         private List<Float> weights = new ArrayList<>();
 
@@ -158,6 +168,8 @@ public class WeightedRanker extends CreateCollectionReq.Function {
          * @param weights the weights
          * @return this builder
          */
+
+
         public WeightedRankerBuilder weights(List<Float> weights) {
             this.weights = weights;
             return this;

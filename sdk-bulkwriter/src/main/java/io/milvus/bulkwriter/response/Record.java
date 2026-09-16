@@ -5,6 +5,8 @@ package io.milvus.bulkwriter.response;
  *
  * <p>It describes a single import job through its collection, unique job ID, and state.</p>
  */
+
+
 public class Record {
     private String collectionName;
     private String jobId;
@@ -13,6 +15,8 @@ public class Record {
     /**
      * Constructs an empty {@code Record}.
      */
+
+
     public Record() {
     }
 
@@ -23,6 +27,8 @@ public class Record {
      * @param jobId          the unique ID of the import job
      * @param state          the current state of the import job
      */
+
+
     public Record(String collectionName, String jobId, String state) {
         this.collectionName = collectionName;
         this.jobId = jobId;
@@ -40,6 +46,8 @@ public class Record {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -49,6 +57,8 @@ public class Record {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -58,6 +68,8 @@ public class Record {
      *
      * @return the import job ID
      */
+
+
     public String getJobId() {
         return jobId;
     }
@@ -67,6 +79,8 @@ public class Record {
      *
      * @param jobId the import job ID
      */
+
+
     public void setJobId(String jobId) {
         this.jobId = jobId;
     }
@@ -76,6 +90,8 @@ public class Record {
      *
      * @return the import job state
      */
+
+
     public String getState() {
         return state;
     }
@@ -85,6 +101,8 @@ public class Record {
      *
      * @param state the import job state
      */
+
+
     public void setState(String state) {
         this.state = state;
     }
@@ -103,6 +121,8 @@ public class Record {
      *
      * @return a {@code Record} builder
      */
+
+
     public static RecordBuilder builder() {
         return new RecordBuilder();
     }
@@ -110,6 +130,8 @@ public class Record {
     /**
      * Builder for {@link Record}.
      */
+
+
     public static class RecordBuilder {
         private String collectionName;
         private String jobId;
@@ -127,6 +149,8 @@ public class Record {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public RecordBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -138,6 +162,8 @@ public class Record {
          * @param jobId the import job ID
          * @return this builder
          */
+
+
         public RecordBuilder jobId(String jobId) {
             this.jobId = jobId;
             return this;
@@ -149,6 +175,8 @@ public class Record {
          * @param state the import job state
          * @return this builder
          */
+
+
         public RecordBuilder state(String state) {
             this.state = state;
             return this;
@@ -159,6 +187,8 @@ public class Record {
          *
          * @return the built {@code Record}
          */
+
+
         public Record build() {
             return new Record(this);
         }

@@ -37,6 +37,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code search} API.
  */
+
+
 public class SearchReq {
     private String databaseName;
     private String collectionName;
@@ -130,6 +132,7 @@ public class SearchReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -139,6 +142,8 @@ public class SearchReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -148,6 +153,8 @@ public class SearchReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -157,6 +164,8 @@ public class SearchReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -164,6 +173,7 @@ public class SearchReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @return the cluster ID
      */
     @Deprecated
     public String getClusterId() {
@@ -173,6 +183,7 @@ public class SearchReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @param clusterId the cluster ID
      */
     @Deprecated
     public void setClusterId(String clusterId) {
@@ -184,6 +195,8 @@ public class SearchReq {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -193,6 +206,8 @@ public class SearchReq {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -202,6 +217,8 @@ public class SearchReq {
      *
      * @return the ANN search field name
      */
+
+
     public String getAnnsField() {
         return annsField;
     }
@@ -211,6 +228,8 @@ public class SearchReq {
      *
      * @param annsField the ANN search field name
      */
+
+
     public void setAnnsField(String annsField) {
         this.annsField = annsField;
     }
@@ -220,6 +239,8 @@ public class SearchReq {
      *
      * @return the metric type
      */
+
+
     public IndexParam.MetricType getMetricType() {
         return metricType;
     }
@@ -229,6 +250,8 @@ public class SearchReq {
      *
      * @param metricType the metric type
      */
+
+
     public void setMetricType(IndexParam.MetricType metricType) {
         this.metricType = metricType;
     }
@@ -261,6 +284,8 @@ public class SearchReq {
      *
      * @return the filter expression
      */
+
+
     public String getFilter() {
         return filter;
     }
@@ -270,6 +295,8 @@ public class SearchReq {
      *
      * @param filter the filter expression
      */
+
+
     public void setFilter(String filter) {
         this.filter = filter;
     }
@@ -279,6 +306,8 @@ public class SearchReq {
      *
      * @return the output fields
      */
+
+
     public List<String> getOutputFields() {
         return outputFields;
     }
@@ -288,6 +317,8 @@ public class SearchReq {
      *
      * @param outputFields the output fields
      */
+
+
     public void setOutputFields(List<String> outputFields) {
         this.outputFields = outputFields;
     }
@@ -297,6 +328,8 @@ public class SearchReq {
      *
      * @return the query vectors
      */
+
+
     public List<BaseVector> getData() {
         return data;
     }
@@ -306,6 +339,8 @@ public class SearchReq {
      *
      * @param data the query vectors
      */
+
+
     public void setData(List<BaseVector> data) {
         this.data = data;
     }
@@ -315,6 +350,8 @@ public class SearchReq {
      *
      * @return the primary key values
      */
+
+
     public List<Object> getIds() {
         return ids;
     }
@@ -324,6 +361,8 @@ public class SearchReq {
      *
      * @return the offset
      */
+
+
     public long getOffset() {
         return offset;
     }
@@ -333,6 +372,8 @@ public class SearchReq {
      *
      * @param offset the offset
      */
+
+
     public void setOffset(long offset) {
         this.offset = offset;
     }
@@ -342,6 +383,8 @@ public class SearchReq {
      *
      * @return the limit value
      */
+
+
     public long getLimit() {
         return limit;
     }
@@ -351,6 +394,8 @@ public class SearchReq {
      *
      * @param limit the limit value
      */
+
+
     public void setLimit(long limit) {
         this.limit = limit;
         this.topK = (int) limit;
@@ -361,6 +406,8 @@ public class SearchReq {
      *
      * @return the round decimal value
      */
+
+
     public int getRoundDecimal() {
         return roundDecimal;
     }
@@ -370,6 +417,8 @@ public class SearchReq {
      *
      * @param roundDecimal the round decimal value
      */
+
+
     public void setRoundDecimal(int roundDecimal) {
         this.roundDecimal = roundDecimal;
     }
@@ -379,6 +428,8 @@ public class SearchReq {
      *
      * @return the search parameters
      */
+
+
     public Map<String, Object> getSearchParams() {
         return searchParams;
     }
@@ -388,6 +439,8 @@ public class SearchReq {
      *
      * @param searchParams the search parameters
      */
+
+
     public void setSearchParams(Map<String, Object> searchParams) {
         this.searchParams = searchParams;
     }
@@ -398,6 +451,8 @@ public class SearchReq {
      * @deprecated no longer used
      * @return the guarantee timestamp
      */
+
+
     public long getGuaranteeTimestamp() {
         return guaranteeTimestamp;
     }
@@ -408,6 +463,8 @@ public class SearchReq {
      * @deprecated no longer used
      * @param guaranteeTimestamp the guarantee timestamp
      */
+
+
     public void setGuaranteeTimestamp(long guaranteeTimestamp) {
         this.guaranteeTimestamp = guaranteeTimestamp;
     }
@@ -418,6 +475,8 @@ public class SearchReq {
      * @deprecated no longer used
      * @return the graceful time
      */
+
+
     public Long getGracefulTime() {
         return gracefulTime;
     }
@@ -428,6 +487,8 @@ public class SearchReq {
      * @deprecated no longer used
      * @param gracefulTime the graceful time
      */
+
+
     public void setGracefulTime(Long gracefulTime) {
         this.gracefulTime = gracefulTime;
     }
@@ -437,6 +498,8 @@ public class SearchReq {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -446,6 +509,8 @@ public class SearchReq {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -455,6 +520,8 @@ public class SearchReq {
      *
      * @return {@code true} if growing segments are ignored
      */
+
+
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
@@ -464,6 +531,8 @@ public class SearchReq {
      *
      * @param ignoreGrowing {@code true} if growing segments are ignored
      */
+
+
     public void setIgnoreGrowing(boolean ignoreGrowing) {
         this.ignoreGrowing = ignoreGrowing;
     }
@@ -473,6 +542,8 @@ public class SearchReq {
      *
      * @return the timezone
      */
+
+
     public String getTimezone() {
         return timezone;
     }
@@ -482,6 +553,8 @@ public class SearchReq {
      *
      * @return the order-by fields
      */
+
+
     public List<OrderByField> getOrderByFields() {
         return orderByFields;
     }
@@ -491,6 +564,8 @@ public class SearchReq {
      *
      * @param orderByFields the order-by fields
      */
+
+
     public void setOrderByFields(List<OrderByField> orderByFields) {
         this.orderByFields = orderByFields;
     }
@@ -500,6 +575,8 @@ public class SearchReq {
      *
      * @return the group-by field name
      */
+
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
@@ -509,6 +586,8 @@ public class SearchReq {
      *
      * @param groupByFieldName the group-by field name
      */
+
+
     public void setGroupByFieldName(String groupByFieldName) {
         this.groupByFieldName = groupByFieldName;
     }
@@ -518,6 +597,8 @@ public class SearchReq {
      *
      * @return the group size
      */
+
+
     public Integer getGroupSize() {
         return groupSize;
     }
@@ -527,6 +608,8 @@ public class SearchReq {
      *
      * @param groupSize the group size
      */
+
+
     public void setGroupSize(Integer groupSize) {
         this.groupSize = groupSize;
     }
@@ -536,6 +619,8 @@ public class SearchReq {
      *
      * @return {@code true} if the group size is strict
      */
+
+
     public Boolean getStrictGroupSize() {
         return strictGroupSize;
     }
@@ -545,6 +630,8 @@ public class SearchReq {
      *
      * @param strictGroupSize {@code true} if the group size is strict
      */
+
+
     public void setStrictGroupSize(Boolean strictGroupSize) {
         this.strictGroupSize = strictGroupSize;
     }
@@ -554,6 +641,8 @@ public class SearchReq {
      *
      * @return the ranker
      */
+
+
     public CreateCollectionReq.Function getRanker() {
         return ranker;
     }
@@ -563,6 +652,8 @@ public class SearchReq {
      *
      * @param ranker the ranker
      */
+
+
     public void setRanker(CreateCollectionReq.Function ranker) {
         this.ranker = ranker;
     }
@@ -572,6 +663,8 @@ public class SearchReq {
      *
      * @return the function score
      */
+
+
     public FunctionScore getFunctionScore() {
         return functionScore;
     }
@@ -581,6 +674,8 @@ public class SearchReq {
      *
      * @param functionScore the function score
      */
+
+
     public void setFunctionScore(FunctionScore functionScore) {
         this.functionScore = functionScore;
     }
@@ -590,6 +685,8 @@ public class SearchReq {
      *
      * @return the function chains
      */
+
+
     public List<FunctionChain> getFunctionChains() {
         return functionChains;
     }
@@ -599,6 +696,8 @@ public class SearchReq {
      *
      * @param functionChains the function chains
      */
+
+
     public void setFunctionChains(List<FunctionChain> functionChains) {
         this.functionChains = functionChains;
     }
@@ -608,6 +707,8 @@ public class SearchReq {
      *
      * @return the filter template values
      */
+
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -617,6 +718,8 @@ public class SearchReq {
      *
      * @param filterTemplateValues the filter template values
      */
+
+
     public void setFilterTemplateValues(Map<String, Object> filterTemplateValues) {
         this.filterTemplateValues = filterTemplateValues;
     }
@@ -626,6 +729,8 @@ public class SearchReq {
      *
      * @return the highlighter
      */
+
+
     public Highlighter getHighlighter() {
         return highlighter;
     }
@@ -635,6 +740,8 @@ public class SearchReq {
      *
      * @return the search aggregation
      */
+
+
     public SearchAggregation getSearchAggregation() {
         return searchAggregation;
     }
@@ -644,6 +751,8 @@ public class SearchReq {
      *
      * @param searchAggregation the search aggregation
      */
+
+
     public void setSearchAggregation(SearchAggregation searchAggregation) {
         this.searchAggregation = searchAggregation;
     }
@@ -688,9 +797,16 @@ public class SearchReq {
      *
      * @return the builder
      */
+
+
     public static SearchReqBuilder builder() {
         return new SearchReqBuilder();
     }
+
+    /**
+     * Builder for {@link SearchReq} class.
+     */
+
 
     public static class SearchReqBuilder {
         private String databaseName;
@@ -733,6 +849,8 @@ public class SearchReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public SearchReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -744,6 +862,8 @@ public class SearchReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public SearchReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -752,6 +872,8 @@ public class SearchReq {
         /**
          * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
          * {@code MilvusClientV2Session}.
+         * @param clusterId the cluster ID
+         * @return this builder
          */
         @Deprecated
         public SearchReqBuilder clusterId(String clusterId) {
@@ -765,6 +887,8 @@ public class SearchReq {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public SearchReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -776,6 +900,8 @@ public class SearchReq {
          * @param annsField the ANN search field name
          * @return this builder
          */
+
+
         public SearchReqBuilder annsField(String annsField) {
             this.annsField = annsField;
             return this;
@@ -787,12 +913,29 @@ public class SearchReq {
          * @param metricType the metric type
          * @return this builder
          */
+
+
         public SearchReqBuilder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
+        /**
+         * Sets the maximum number of results to return.
+         *
+         * @deprecated replaced by {@link #limit(long)}. {@code topK} and {@code limit} must be the
+         * same value.
+         * @param topK the topK value
+         * @return this builder
+         */
         // topK is deprecated, topK and limit must be the same value
+        /**
+         * Sets the top-k value, keeping it in sync with the limit.
+         *
+         * @param topK the top-k value
+         * @return this builder
+         * @deprecated use {@link #limit(long)} instead; topK and limit must be the same value
+         */
         @Deprecated
         public SearchReqBuilder topK(int topK) {
             this.topK = topK;
@@ -806,6 +949,8 @@ public class SearchReq {
          * @param filter the filter expression
          * @return this builder
          */
+
+
         public SearchReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
@@ -817,6 +962,8 @@ public class SearchReq {
          * @param outputFields the output fields
          * @return this builder
          */
+
+
         public SearchReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
@@ -828,6 +975,8 @@ public class SearchReq {
          * @param data the query vectors
          * @return this builder
          */
+
+
         public SearchReqBuilder data(List<BaseVector> data) {
             this.data = data;
             return this;
@@ -839,6 +988,8 @@ public class SearchReq {
          * @param ids the primary key values
          * @return this builder
          */
+
+
         public SearchReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
@@ -850,6 +1001,8 @@ public class SearchReq {
          * @param offset the offset
          * @return this builder
          */
+
+
         public SearchReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
@@ -861,6 +1014,8 @@ public class SearchReq {
          * @param limit the limit value
          * @return this builder
          */
+
+
         public SearchReqBuilder limit(long limit) {
             this.topK = (int) limit;
             this.limit = limit;
@@ -873,6 +1028,8 @@ public class SearchReq {
          * @param roundDecimal the round decimal value
          * @return this builder
          */
+
+
         public SearchReqBuilder roundDecimal(int roundDecimal) {
             this.roundDecimal = roundDecimal;
             return this;
@@ -884,6 +1041,8 @@ public class SearchReq {
          * @param searchParams the search parameters
          * @return this builder
          */
+
+
         public SearchReqBuilder searchParams(Map<String, Object> searchParams) {
             this.searchParams = searchParams;
             return this;
@@ -896,6 +1055,8 @@ public class SearchReq {
          * @param guaranteeTimestamp the guarantee timestamp
          * @return this builder
          */
+
+
         public SearchReqBuilder guaranteeTimestamp(long guaranteeTimestamp) {
             this.guaranteeTimestamp = guaranteeTimestamp;
             return this;
@@ -908,6 +1069,8 @@ public class SearchReq {
          * @param gracefulTime the graceful time
          * @return this builder
          */
+
+
         public SearchReqBuilder gracefulTime(Long gracefulTime) {
             this.gracefulTime = gracefulTime;
             return this;
@@ -919,6 +1082,8 @@ public class SearchReq {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public SearchReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -930,6 +1095,8 @@ public class SearchReq {
          * @param ignoreGrowing {@code true} if growing segments are ignored
          * @return this builder
          */
+
+
         public SearchReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
@@ -941,6 +1108,8 @@ public class SearchReq {
          * @param timezone the timezone
          * @return this builder
          */
+
+
         public SearchReqBuilder timezone(String timezone) {
             this.timezone = timezone;
             return this;
@@ -952,6 +1121,8 @@ public class SearchReq {
          * @param orderByFields the order-by fields
          * @return this builder
          */
+
+
         public SearchReqBuilder orderByFields(List<OrderByField> orderByFields) {
             this.orderByFields = orderByFields;
             return this;
@@ -963,6 +1134,8 @@ public class SearchReq {
          * @param groupByFieldName the group-by field name
          * @return this builder
          */
+
+
         public SearchReqBuilder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
@@ -974,6 +1147,8 @@ public class SearchReq {
          * @param groupSize the group size
          * @return this builder
          */
+
+
         public SearchReqBuilder groupSize(Integer groupSize) {
             this.groupSize = groupSize;
             return this;
@@ -985,6 +1160,8 @@ public class SearchReq {
          * @param strictGroupSize {@code true} if the group size is strict
          * @return this builder
          */
+
+
         public SearchReqBuilder strictGroupSize(Boolean strictGroupSize) {
             this.strictGroupSize = strictGroupSize;
             return this;
@@ -996,6 +1173,8 @@ public class SearchReq {
          * @param ranker the ranker
          * @return this builder
          */
+
+
         public SearchReqBuilder ranker(CreateCollectionReq.Function ranker) {
             this.ranker = ranker;
             return this;
@@ -1007,6 +1186,8 @@ public class SearchReq {
          * @param functionScore the function score
          * @return this builder
          */
+
+
         public SearchReqBuilder functionScore(FunctionScore functionScore) {
             this.functionScore = functionScore;
             return this;
@@ -1018,6 +1199,8 @@ public class SearchReq {
          * @param functionChains the function chains
          * @return this builder
          */
+
+
         public SearchReqBuilder functionChains(List<FunctionChain> functionChains) {
             this.functionChains = functionChains;
             return this;
@@ -1029,6 +1212,8 @@ public class SearchReq {
          * @param functionChain the function chain to add
          * @return this builder
          */
+
+
         public SearchReqBuilder addFunctionChain(FunctionChain functionChain) {
             if (functionChain == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function chain must not be null");
@@ -1046,6 +1231,8 @@ public class SearchReq {
          * @param filterTemplateValues the filter template values
          * @return this builder
          */
+
+
         public SearchReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
@@ -1057,6 +1244,8 @@ public class SearchReq {
          * @param highlighter the highlighter
          * @return this builder
          */
+
+
         public SearchReqBuilder highlighter(Highlighter highlighter) {
             this.highlighter = highlighter;
             return this;
@@ -1068,6 +1257,8 @@ public class SearchReq {
          * @param searchAggregation the search aggregation
          * @return this builder
          */
+
+
         public SearchReqBuilder searchAggregation(SearchAggregation searchAggregation) {
             this.searchAggregation = searchAggregation;
             return this;
@@ -1078,6 +1269,8 @@ public class SearchReq {
          *
          * @return the request
          */
+
+
         public SearchReq build() {
             return new SearchReq(this);
         }

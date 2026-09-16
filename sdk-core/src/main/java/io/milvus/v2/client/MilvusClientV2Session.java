@@ -37,6 +37,8 @@ import java.util.concurrent.CompletableFuture;
  * All DML and DQL operations issued through a session are routed to the bound cluster. The session
  * becomes unusable once {@link #close()} is called.
  */
+
+
 public class MilvusClientV2Session {
     private final MilvusClientV2 parent;
     private final String clusterId;
@@ -52,6 +54,8 @@ public class MilvusClientV2Session {
      *
      * @return the cluster ID
      */
+
+
     public String getClusterId() {
         return clusterId;
     }
@@ -62,6 +66,8 @@ public class MilvusClientV2Session {
      * @param request search request
      * @return {@link SearchResp}
      */
+
+
     public SearchResp search(SearchReq request) {
         ensureOpen();
         return parent.search(request, clusterId);
@@ -73,6 +79,8 @@ public class MilvusClientV2Session {
      * @param request search request
      * @return a future completed with {@link SearchResp}, or exceptionally when the operation fails
      */
+
+
     public CompletableFuture<SearchResp> searchAsync(SearchReq request) {
         ensureOpen();
         return parent.searchAsync(request, clusterId);
@@ -84,6 +92,8 @@ public class MilvusClientV2Session {
      * @param request hybrid search request
      * @return {@link SearchResp}
      */
+
+
     public SearchResp hybridSearch(HybridSearchReq request) {
         ensureOpen();
         return parent.hybridSearch(request, clusterId);
@@ -95,6 +105,8 @@ public class MilvusClientV2Session {
      * @param request hybrid search request
      * @return a future completed with {@link SearchResp}, or exceptionally when the operation fails
      */
+
+
     public CompletableFuture<SearchResp> hybridSearchAsync(HybridSearchReq request) {
         ensureOpen();
         return parent.hybridSearchAsync(request, clusterId);
@@ -106,6 +118,8 @@ public class MilvusClientV2Session {
      * @param request query request
      * @return {@link QueryResp}
      */
+
+
     public QueryResp query(QueryReq request) {
         ensureOpen();
         return parent.query(request, clusterId);
@@ -117,6 +131,8 @@ public class MilvusClientV2Session {
      * @param request query request
      * @return a future completed with {@link QueryResp}, or exceptionally when the operation fails
      */
+
+
     public CompletableFuture<QueryResp> queryAsync(QueryReq request) {
         ensureOpen();
         return parent.queryAsync(request, clusterId);
@@ -128,6 +144,8 @@ public class MilvusClientV2Session {
      * @param request query iterator request
      * @return {@link QueryIterator}
      */
+
+
     public QueryIterator queryIterator(QueryIteratorReq request) {
         ensureOpen();
         return parent.queryIterator(request, clusterId);
@@ -139,6 +157,8 @@ public class MilvusClientV2Session {
      * @param request search iterator request
      * @return {@link SearchIterator}
      */
+
+
     public SearchIterator searchIterator(SearchIteratorReq request) {
         ensureOpen();
         return parent.searchIterator(request, clusterId);
@@ -150,6 +170,8 @@ public class MilvusClientV2Session {
      * @param request search iterator V2 request
      * @return {@link SearchIteratorV2}
      */
+
+
     public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
         ensureOpen();
         return parent.searchIteratorV2(request, clusterId);
@@ -161,6 +183,8 @@ public class MilvusClientV2Session {
      * @param request get request
      * @return {@link GetResp}
      */
+
+
     public GetResp get(GetReq request) {
         ensureOpen();
         return parent.get(request, clusterId);
@@ -172,6 +196,8 @@ public class MilvusClientV2Session {
      * @param request get request
      * @return a future completed with {@link GetResp}, or exceptionally when the operation fails
      */
+
+
     public CompletableFuture<GetResp> getAsync(GetReq request) {
         ensureOpen();
         return parent.getAsync(request, clusterId);
@@ -181,6 +207,8 @@ public class MilvusClientV2Session {
      * Closes this session. Any subsequent operation on the session fails with
      * {@link MilvusClientException}.
      */
+
+
     public void close() {
         closed = true;
     }

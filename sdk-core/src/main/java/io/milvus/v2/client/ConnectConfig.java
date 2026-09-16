@@ -40,6 +40,8 @@ import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
  * Use {@link #builder()} to create a configuration, then pass it to the
  * {@code MilvusClientV2} constructor. The builder validates required fields such as {@code uri}.
  */
+
+
 public class ConnectConfig {
     private String uri;
     private String token;
@@ -110,6 +112,8 @@ public class ConnectConfig {
     *
     * @return a configuration builder
     */
+
+
     public static ConnectConfigBuilder builder() {
         return new ConnectConfigBuilder();
     }
@@ -120,6 +124,7 @@ public class ConnectConfig {
     *
     * @return the connection URI of the Milvus server
     */
+
     public String getUri() {
         return uri;
     }
@@ -129,6 +134,8 @@ public class ConnectConfig {
     *
     * @return the authentication token
     */
+
+
     public String getToken() {
         return token;
     }
@@ -138,6 +145,8 @@ public class ConnectConfig {
     *
     * @return the username used for authentication
     */
+
+
     public String getUsername() {
         return username;
     }
@@ -147,6 +156,8 @@ public class ConnectConfig {
     *
     * @return the password used for authentication
     */
+
+
     public String getPassword() {
         return password;
     }
@@ -156,6 +167,8 @@ public class ConnectConfig {
     *
     * @return the connection timeout in milliseconds
     */
+
+
     public long getConnectTimeoutMs() {
         return connectTimeoutMs;
     }
@@ -165,6 +178,8 @@ public class ConnectConfig {
     *
     * @return the keep-alive time in milliseconds
     */
+
+
     public long getKeepAliveTimeMs() {
         return keepAliveTimeMs;
     }
@@ -174,6 +189,8 @@ public class ConnectConfig {
     *
     * @return the keep-alive timeout in milliseconds
     */
+
+
     public long getKeepAliveTimeoutMs() {
         return keepAliveTimeoutMs;
     }
@@ -183,6 +200,8 @@ public class ConnectConfig {
     *
     * @return true if keep-alive is enabled for idle channels
     */
+
+
     public boolean isKeepAliveWithoutCalls() {
         return keepAliveWithoutCalls;
     }
@@ -192,6 +211,8 @@ public class ConnectConfig {
     *
     * @return the RPC deadline in milliseconds
     */
+
+
     public long getRpcDeadlineMs() {
         return rpcDeadlineMs;
     }
@@ -201,6 +222,8 @@ public class ConnectConfig {
     *
     * @return the path to the client key file
     */
+
+
     public String getClientKeyPath() {
         return clientKeyPath;
     }
@@ -210,6 +233,8 @@ public class ConnectConfig {
     *
     * @return the path to the client certificate (PEM) file
     */
+
+
     public String getClientPemPath() {
         return clientPemPath;
     }
@@ -219,6 +244,8 @@ public class ConnectConfig {
     *
     * @return the path to the CA certificate (PEM) file
     */
+
+
     public String getCaPemPath() {
         return caPemPath;
     }
@@ -228,6 +255,8 @@ public class ConnectConfig {
     *
     * @return the path to the server certificate (PEM) file
     */
+
+
     public String getServerPemPath() {
         return serverPemPath;
     }
@@ -237,6 +266,8 @@ public class ConnectConfig {
     *
     * @return the server name used for TLS verification
     */
+
+
     public String getServerName() {
         return serverName;
     }
@@ -246,6 +277,8 @@ public class ConnectConfig {
     *
     * @return whether a secure (TLS) connection is used
     */
+
+
     public Boolean getSecure() {
         return secure;
     }
@@ -255,6 +288,8 @@ public class ConnectConfig {
     *
     * @return the idle timeout in milliseconds
     */
+
+
     public long getIdleTimeoutMs() {
         return idleTimeoutMs;
     }
@@ -264,6 +299,8 @@ public class ConnectConfig {
     *
     * @return the SSL context used for TLS connections
     */
+
+
     public SSLContext getSslContext() {
         return sslContext;
     }
@@ -273,6 +310,8 @@ public class ConnectConfig {
     *
     * @return the thread-local client request ID
     */
+
+
     public ThreadLocal<String> getClientRequestId() {
         return clientRequestId;
     }
@@ -282,6 +321,8 @@ public class ConnectConfig {
     *
     * @return the telemetry configuration
     */
+
+
     public TelemetryConfig getTelemetryConfig() {
         return telemetryConfig;
     }
@@ -291,6 +332,8 @@ public class ConnectConfig {
     *
     * @return the telemetry client ID
     */
+
+
     public String getTelemetryClientId() {
         return telemetryClientId;
     }
@@ -300,6 +343,8 @@ public class ConnectConfig {
     *
     * @return the stored telemetry runtime state, or null if none is stored
     */
+
+
     public synchronized ClientTelemetryManager.RuntimeState takeTelemetryRuntimeState() {
         ClientTelemetryManager.RuntimeState state = telemetryRuntimeState;
         telemetryRuntimeState = null;
@@ -311,6 +356,8 @@ public class ConnectConfig {
     *
     * @return true if telemetry start is deferred
     */
+
+
     public boolean isDeferTelemetryStart() {
         return deferTelemetryStart;
     }
@@ -320,6 +367,8 @@ public class ConnectConfig {
     *
     * @return the proxy address
     */
+
+
     public String getProxyAddress() {
         return proxyAddress;
     }
@@ -329,6 +378,8 @@ public class ConnectConfig {
     *
     * @return true if precheck is enabled
     */
+
+
     public boolean isEnablePrecheck() {
         return enablePrecheck;
     }
@@ -338,6 +389,8 @@ public class ConnectConfig {
     *
     * @return additional connection options
     */
+
+
     public Map<String, String> getOption() {
         return option;
     }
@@ -347,6 +400,7 @@ public class ConnectConfig {
     *
     * @param uri the connection URI of the Milvus server
     */
+
     public void setUri(String uri) {
         if (uri == null) {
             throw new NullPointerException("uri is marked non-null but is null");
@@ -359,6 +413,8 @@ public class ConnectConfig {
     *
     * @param token the authentication token
     */
+
+
     public void setToken(String token) {
         this.token = token;
     }
@@ -368,6 +424,8 @@ public class ConnectConfig {
     *
     * @param username the username used for authentication
     */
+
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -377,6 +435,8 @@ public class ConnectConfig {
     *
     * @param password the password used for authentication
     */
+
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -386,6 +446,8 @@ public class ConnectConfig {
     *
     * @param dbName the database name
     */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -395,6 +457,8 @@ public class ConnectConfig {
     *
     * @param connectTimeoutMs the connection timeout in milliseconds
     */
+
+
     public void setConnectTimeoutMs(long connectTimeoutMs) {
         this.connectTimeoutMs = connectTimeoutMs;
     }
@@ -404,6 +468,8 @@ public class ConnectConfig {
     *
     * @param keepAliveTimeMs the keep-alive time in milliseconds
     */
+
+
     public void setKeepAliveTimeMs(long keepAliveTimeMs) {
         this.keepAliveTimeMs = keepAliveTimeMs;
     }
@@ -413,6 +479,8 @@ public class ConnectConfig {
     *
     * @param keepAliveTimeoutMs the keep-alive timeout in milliseconds
     */
+
+
     public void setKeepAliveTimeoutMs(long keepAliveTimeoutMs) {
         this.keepAliveTimeoutMs = keepAliveTimeoutMs;
     }
@@ -422,6 +490,8 @@ public class ConnectConfig {
     *
     * @param keepAliveWithoutCalls whether to keep the channel alive when there are no active calls
     */
+
+
     public void setKeepAliveWithoutCalls(boolean keepAliveWithoutCalls) {
         this.keepAliveWithoutCalls = keepAliveWithoutCalls;
     }
@@ -431,6 +501,8 @@ public class ConnectConfig {
     *
     * @param rpcDeadlineMs the RPC deadline in milliseconds
     */
+
+
     public void setRpcDeadlineMs(long rpcDeadlineMs) {
         this.rpcDeadlineMs = rpcDeadlineMs;
     }
@@ -440,6 +512,8 @@ public class ConnectConfig {
     *
     * @param clientKeyPath the path to the client key file
     */
+
+
     public void setClientKeyPath(String clientKeyPath) {
         this.clientKeyPath = clientKeyPath;
     }
@@ -449,6 +523,8 @@ public class ConnectConfig {
     *
     * @param clientPemPath the path to the client certificate (PEM) file
     */
+
+
     public void setClientPemPath(String clientPemPath) {
         this.clientPemPath = clientPemPath;
     }
@@ -458,6 +534,8 @@ public class ConnectConfig {
     *
     * @param caPemPath the path to the CA certificate (PEM) file
     */
+
+
     public void setCaPemPath(String caPemPath) {
         this.caPemPath = caPemPath;
     }
@@ -467,6 +545,8 @@ public class ConnectConfig {
     *
     * @param serverPemPath the path to the server certificate (PEM) file
     */
+
+
     public void setServerPemPath(String serverPemPath) {
         this.serverPemPath = serverPemPath;
     }
@@ -476,6 +556,8 @@ public class ConnectConfig {
     *
     * @param serverName the server name used for TLS verification
     */
+
+
     public void setServerName(String serverName) {
         this.serverName = serverName;
     }
@@ -485,6 +567,8 @@ public class ConnectConfig {
     *
     * @param proxyAddress the proxy address
     */
+
+
     public void setProxyAddress(String proxyAddress) {
         this.proxyAddress = proxyAddress;
     }
@@ -494,6 +578,8 @@ public class ConnectConfig {
     *
     * @param secure whether to use a secure (TLS) connection
     */
+
+
     public void setSecure(Boolean secure) {
         this.secure = secure;
     }
@@ -503,6 +589,8 @@ public class ConnectConfig {
     *
     * @param enablePrecheck whether to precheck host, port and certificates before connecting
     */
+
+
     public void setEnablePrecheck(boolean enablePrecheck) {
         this.enablePrecheck = enablePrecheck;
     }
@@ -512,6 +600,8 @@ public class ConnectConfig {
     *
     * @param option additional connection options
     */
+
+
     public void setOption(Map<String, String> option) {
         this.option = option;
     }
@@ -521,6 +611,8 @@ public class ConnectConfig {
     *
     * @param idleTimeoutMs the idle timeout in milliseconds
     */
+
+
     public void setIdleTimeoutMs(long idleTimeoutMs) {
         this.idleTimeoutMs = idleTimeoutMs;
     }
@@ -530,6 +622,8 @@ public class ConnectConfig {
     *
     * @param sslContext the SSL context used for TLS connections
     */
+
+
     public void setSslContext(SSLContext sslContext) {
         this.sslContext = sslContext;
     }
@@ -539,6 +633,8 @@ public class ConnectConfig {
     *
     * @param clientRequestId the thread-local client request ID
     */
+
+
     public void setClientRequestId(ThreadLocal<String> clientRequestId) {
         this.clientRequestId = clientRequestId;
     }
@@ -548,6 +644,8 @@ public class ConnectConfig {
     *
     * @param telemetryConfig the telemetry configuration
     */
+
+
     public void setTelemetryConfig(TelemetryConfig telemetryConfig) {
         this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
     }
@@ -557,6 +655,8 @@ public class ConnectConfig {
     *
     * @param telemetryClientId the telemetry client ID
     */
+
+
     public void setTelemetryClientId(String telemetryClientId) {
         this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
     }
@@ -566,6 +666,8 @@ public class ConnectConfig {
     *
     * @param telemetryRuntimeState the telemetry runtime state
     */
+
+
     public synchronized void setTelemetryRuntimeState(ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
         this.telemetryRuntimeState = telemetryRuntimeState;
     }
@@ -575,6 +677,8 @@ public class ConnectConfig {
     *
     * @return the host
     */
+
+
     public String getHost() {
         URLParser urlParser = new URLParser(this.uri);
         return urlParser.getHostname();
@@ -586,6 +690,8 @@ public class ConnectConfig {
     *
     * @return the port
     */
+
+
     public int getPort() {
         URLParser urlParser = new URLParser(this.uri);
         int port = urlParser.getPort();
@@ -600,6 +706,8 @@ public class ConnectConfig {
     *
     * @return the authorization value, or null if no credentials are configured
     */
+
+
     public String getAuthorization() {
         if (token != null) {
             return token;
@@ -615,6 +723,8 @@ public class ConnectConfig {
     *
     * @return the database name
     */
+
+
     public String getDbName() {
         URLParser urlParser = new URLParser(this.uri);
         return StringUtils.isNotEmpty(urlParser.getDatabase()) ? urlParser.getDatabase() : this.dbName;
@@ -626,6 +736,8 @@ public class ConnectConfig {
     *
     * @return true if the connection is secure
     */
+
+
     public Boolean isSecure() {
         if (uri.startsWith("https")) {
             return true;
@@ -659,6 +771,11 @@ public class ConnectConfig {
                 ", clientRequestId=" + clientRequestId +
                 '}';
     }
+
+    /**
+     * Builder for {@link ConnectConfig} class.
+     */
+
 
     public static class ConnectConfigBuilder {
         private String uri;
@@ -694,6 +811,8 @@ public class ConnectConfig {
         * @param uri the connection URI of the Milvus server
         * @return this builder
         */
+
+
         public ConnectConfigBuilder uri(String uri) {
             if (uri == null) {
                 throw new NullPointerException("uri is marked non-null but is null");
@@ -708,6 +827,8 @@ public class ConnectConfig {
         * @param token the authentication token
         * @return this builder
         */
+
+
         public ConnectConfigBuilder token(String token) {
             this.token = token;
             return this;
@@ -719,6 +840,8 @@ public class ConnectConfig {
         * @param username the username used for authentication
         * @return this builder
         */
+
+
         public ConnectConfigBuilder username(String username) {
             if (username == null || username.trim().isEmpty()) {
                 throw new IllegalArgumentException("Username cannot be null or blank");
@@ -733,6 +856,8 @@ public class ConnectConfig {
         * @param password the password used for authentication
         * @return this builder
         */
+
+
         public ConnectConfigBuilder password(String password) {
             this.password = password;
             return this;
@@ -744,6 +869,8 @@ public class ConnectConfig {
         * @param dbName the database name
         * @return this builder
         */
+
+
         public ConnectConfigBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -755,6 +882,8 @@ public class ConnectConfig {
         * @param connectTimeoutMs the connection timeout in milliseconds
         * @return this builder
         */
+
+
         public ConnectConfigBuilder connectTimeoutMs(long connectTimeoutMs) {
             this.connectTimeoutMs = connectTimeoutMs;
             return this;
@@ -766,6 +895,8 @@ public class ConnectConfig {
         * @param keepAliveTimeMs the keep-alive time in milliseconds
         * @return this builder
         */
+
+
         public ConnectConfigBuilder keepAliveTimeMs(long keepAliveTimeMs) {
             this.keepAliveTimeMs = keepAliveTimeMs;
             return this;
@@ -777,6 +908,8 @@ public class ConnectConfig {
         * @param keepAliveTimeoutMs the keep-alive timeout in milliseconds
         * @return this builder
         */
+
+
         public ConnectConfigBuilder keepAliveTimeoutMs(long keepAliveTimeoutMs) {
             this.keepAliveTimeoutMs = keepAliveTimeoutMs;
             return this;
@@ -788,6 +921,8 @@ public class ConnectConfig {
         * @param keepAliveWithoutCalls whether to keep the channel alive when there are no active calls
         * @return this builder
         */
+
+
         public ConnectConfigBuilder keepAliveWithoutCalls(boolean keepAliveWithoutCalls) {
             this.keepAliveWithoutCalls = keepAliveWithoutCalls;
             return this;
@@ -799,6 +934,8 @@ public class ConnectConfig {
         * @param rpcDeadlineMs the RPC deadline in milliseconds
         * @return this builder
         */
+
+
         public ConnectConfigBuilder rpcDeadlineMs(long rpcDeadlineMs) {
             this.rpcDeadlineMs = rpcDeadlineMs;
             return this;
@@ -810,6 +947,8 @@ public class ConnectConfig {
         * @param clientKeyPath the path to the client key file
         * @return this builder
         */
+
+
         public ConnectConfigBuilder clientKeyPath(String clientKeyPath) {
             this.clientKeyPath = clientKeyPath;
             return this;
@@ -821,6 +960,8 @@ public class ConnectConfig {
         * @param clientPemPath the path to the client certificate (PEM) file
         * @return this builder
         */
+
+
         public ConnectConfigBuilder clientPemPath(String clientPemPath) {
             this.clientPemPath = clientPemPath;
             return this;
@@ -832,6 +973,8 @@ public class ConnectConfig {
         * @param caPemPath the path to the CA certificate (PEM) file
         * @return this builder
         */
+
+
         public ConnectConfigBuilder caPemPath(String caPemPath) {
             this.caPemPath = caPemPath;
             return this;
@@ -843,6 +986,8 @@ public class ConnectConfig {
         * @param serverPemPath the path to the server certificate (PEM) file
         * @return this builder
         */
+
+
         public ConnectConfigBuilder serverPemPath(String serverPemPath) {
             this.serverPemPath = serverPemPath;
             return this;
@@ -854,6 +999,8 @@ public class ConnectConfig {
         * @param serverName the server name used for TLS verification
         * @return this builder
         */
+
+
         public ConnectConfigBuilder serverName(String serverName) {
             this.serverName = serverName;
             return this;
@@ -865,6 +1012,8 @@ public class ConnectConfig {
         * @param proxyAddress the proxy address
         * @return this builder
         */
+
+
         public ConnectConfigBuilder proxyAddress(String proxyAddress) {
             this.proxyAddress = proxyAddress;
             return this;
@@ -876,6 +1025,8 @@ public class ConnectConfig {
         * @param secure whether to use a secure (TLS) connection
         * @return this builder
         */
+
+
         public ConnectConfigBuilder secure(Boolean secure) {
             this.secure = secure;
             return this;
@@ -887,6 +1038,8 @@ public class ConnectConfig {
         * @param enablePrecheck whether to precheck host, port and certificates before connecting
         * @return this builder
         */
+
+
         public ConnectConfigBuilder enablePrecheck(boolean enablePrecheck) {
             this.enablePrecheck = enablePrecheck;
             return this;
@@ -898,6 +1051,8 @@ public class ConnectConfig {
         * @param idleTimeoutMs the idle timeout in milliseconds
         * @return this builder
         */
+
+
         public ConnectConfigBuilder idleTimeoutMs(long idleTimeoutMs) {
             this.idleTimeoutMs = idleTimeoutMs;
             return this;
@@ -909,6 +1064,8 @@ public class ConnectConfig {
         * @param sslContext the SSL context used for TLS connections
         * @return this builder
         */
+
+
         public ConnectConfigBuilder sslContext(SSLContext sslContext) {
             this.sslContext = sslContext;
             return this;
@@ -920,6 +1077,8 @@ public class ConnectConfig {
         * @param clientRequestId the thread-local client request ID
         * @return this builder
         */
+
+
         public ConnectConfigBuilder clientRequestId(ThreadLocal<String> clientRequestId) {
             this.clientRequestId = clientRequestId;
             return this;
@@ -931,6 +1090,8 @@ public class ConnectConfig {
         * @param telemetryConfig the telemetry configuration
         * @return this builder
         */
+
+
         public ConnectConfigBuilder telemetryConfig(TelemetryConfig telemetryConfig) {
             this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
             return this;
@@ -942,6 +1103,8 @@ public class ConnectConfig {
         * @param telemetryClientId the telemetry client ID
         * @return this builder
         */
+
+
         public ConnectConfigBuilder telemetryClientId(String telemetryClientId) {
             this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
             return this;
@@ -953,6 +1116,8 @@ public class ConnectConfig {
         * @param telemetryRuntimeState the telemetry runtime state
         * @return this builder
         */
+
+
         public ConnectConfigBuilder telemetryRuntimeState(
                 ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
             this.telemetryRuntimeState = telemetryRuntimeState;
@@ -969,6 +1134,7 @@ public class ConnectConfig {
         * @param deferTelemetryStart whether to defer starting the telemetry worker
         * @return this builder
         */
+
         public ConnectConfigBuilder deferTelemetryStart(boolean deferTelemetryStart) {
             this.deferTelemetryStart = deferTelemetryStart;
             return this;
@@ -980,6 +1146,8 @@ public class ConnectConfig {
         * @param option additional connection options
         * @return this builder
         */
+
+
         public ConnectConfigBuilder option(Map<String, String> option) {
             this.option = option;
             return this;
@@ -990,6 +1158,8 @@ public class ConnectConfig {
         *
         * @return the built configuration
         */
+
+
         public ConnectConfig build() {
             return new ConnectConfig(this);
         }

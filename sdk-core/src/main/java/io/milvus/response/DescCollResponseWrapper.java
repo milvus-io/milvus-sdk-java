@@ -34,10 +34,19 @@ import java.util.*;
 /**
  * Util class to wrap response of <code>describeCollection</code> interface.
  */
+
+
 public class DescCollResponseWrapper {
     private final DescribeCollectionResponse response;
 
     Map<String, String> pairs = new HashMap<>();
+
+    /**
+     * Wraps the given describe collection response.
+     *
+     * @param response the gRPC {@code DescribeCollectionResponse}, must not be {@code null}
+     */
+
 
     public DescCollResponseWrapper(DescribeCollectionResponse response) {
         if (response == null) {
@@ -52,6 +61,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>String</code> name of the collection
      */
+
+
     public String getCollectionName() {
         CollectionSchema schema = response.getSchema();
         return schema.getName();
@@ -62,6 +73,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>String</code> name of the database
      */
+
+
     public String getDatabaseName() {
         return response.getDbName();
     }
@@ -71,6 +84,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>String</code> description of the collection
      */
+
+
     public String getCollectionDescription() {
         CollectionSchema schema = response.getSchema();
         return schema.getDescription();
@@ -81,6 +96,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>long</code> internal id of the collection
      */
+
+
     public long getCollectionID() {
         return response.getCollectionID();
     }
@@ -90,6 +107,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>int</code> shard number of the collection
      */
+
+
     public int getShardNumber() {
         return response.getShardsNum();
     }
@@ -99,6 +118,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>ConsistencyLevelEnum</code> consistency level of the collection
      */
+
+
     public ConsistencyLevelEnum getConsistencyLevel() {
         // may throw IllegalArgumentException
         return ConsistencyLevelEnum.valueOf(response.getConsistencyLevel().name().toUpperCase());
@@ -109,6 +130,8 @@ public class DescCollResponseWrapper {
      *
      * @return <code>long</code> utc timestamp when collection created
      */
+
+
     public long getCreatedUtcTimestamp() {
         return response.getCreatedUtcTimestamp();
     }
@@ -118,6 +141,8 @@ public class DescCollResponseWrapper {
      *
      * @return List of String, aliases of the collection
      */
+
+
     public List<String> getAliases() {
         List<String> aliases = new ArrayList<>();
         for (int i = 0; i < response.getAliasesCount(); ++i) {
@@ -132,6 +157,8 @@ public class DescCollResponseWrapper {
      *
      * @return List of FieldType, schema of the collection's fields
      */
+
+
     public List<FieldType> getFields() {
         List<FieldType> results = new ArrayList<>();
         CollectionSchema schema = response.getSchema();
@@ -148,6 +175,8 @@ public class DescCollResponseWrapper {
      * @param fieldName field name to get field description
      * @return {@link FieldType} schema of the field
      */
+
+
     public FieldType getFieldByName(String fieldName) {
         if (fieldName == null) {
             throw new IllegalArgumentException("Field name cannot be null");
@@ -165,6 +194,13 @@ public class DescCollResponseWrapper {
 
     // duplicated with isDynamicFieldEnabled()
     @Deprecated
+    /**
+     * Returns whether the collection dynamic field is enabled.
+     *
+     * @return {@code true} if the dynamic field is enabled
+     * @deprecated use {@link #isDynamicFieldEnabled()} instead
+     */
+
     public boolean getEnableDynamicField() {
         CollectionSchema schema = response.getSchema();
         return schema.getEnableDynamicField();
@@ -175,6 +211,8 @@ public class DescCollResponseWrapper {
      *
      * @return boolean
      */
+
+
     public boolean isDynamicFieldEnabled() {
         CollectionSchema schema = response.getSchema();
         return schema.getEnableDynamicField();
@@ -186,6 +224,8 @@ public class DescCollResponseWrapper {
      *
      * @return {@link FieldType} schema of the partition key field
      */
+
+
     public FieldType getPartitionKeyField() {
         CollectionSchema schema = response.getSchema();
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
@@ -204,6 +244,8 @@ public class DescCollResponseWrapper {
      *
      * @return {@link FieldType} schema of the primary key field
      */
+
+
     public FieldType getPrimaryField() {
         CollectionSchema schema = response.getSchema();
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
@@ -241,6 +283,8 @@ public class DescCollResponseWrapper {
      *
      * @return {@link FieldType} schema of the vector key field
      */
+
+
     public List<FieldType> getVectorFields() {
         List<FieldType> vectorFields = new ArrayList<>();
         CollectionSchema schema = response.getSchema();
@@ -259,6 +303,8 @@ public class DescCollResponseWrapper {
      *
      * @return List of String, aliases of the collection
      */
+
+
     public Map<String, String> getProperties() {
         return pairs;
     }
@@ -268,6 +314,8 @@ public class DescCollResponseWrapper {
      *
      * @return {@link CollectionSchemaParam} schema of the collection
      */
+
+
     public CollectionSchemaParam getSchema() {
         return CollectionSchemaParam.newBuilder()
                 .withFieldTypes(getFields())
@@ -281,6 +329,9 @@ public class DescCollResponseWrapper {
      *
      * @return resource group names
      */
+
+
+
     public List<String> getResourceGroups() {
         String value = pairs.get(Constant.COLLECTION_RESOURCE_GROUPS);
         if (value == null) {
@@ -294,6 +345,8 @@ public class DescCollResponseWrapper {
      *
      * @return replica number
      */
+
+
     public int getReplicaNumber() {
         String value = pairs.get(Constant.COLLECTION_REPLICA_NUMBER);
         if (value == null) {

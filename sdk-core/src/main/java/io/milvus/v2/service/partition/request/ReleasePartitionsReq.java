@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code releasePartitions} API.
  */
+
+
 public class ReleasePartitionsReq {
     private String databaseName;
     private String collectionName;
@@ -40,6 +42,8 @@ public class ReleasePartitionsReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -49,6 +53,8 @@ public class ReleasePartitionsReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -58,6 +64,8 @@ public class ReleasePartitionsReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -67,6 +75,8 @@ public class ReleasePartitionsReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -76,6 +86,8 @@ public class ReleasePartitionsReq {
      *
      * @return the list of partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -85,6 +97,8 @@ public class ReleasePartitionsReq {
      *
      * @param partitionNames the list of partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -103,9 +117,16 @@ public class ReleasePartitionsReq {
      *
      * @return the builder
      */
+
+
     public static ReleasePartitionsReqBuilder builder() {
         return new ReleasePartitionsReqBuilder();
     }
+
+    /**
+     * Builder for {@link ReleasePartitionsReq} class.
+     */
+
 
     public static class ReleasePartitionsReqBuilder {
         private String databaseName;
@@ -121,6 +142,8 @@ public class ReleasePartitionsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ReleasePartitionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -132,6 +155,8 @@ public class ReleasePartitionsReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public ReleasePartitionsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -143,6 +168,8 @@ public class ReleasePartitionsReq {
          * @param partitionNames the list of partition names
          * @return this builder
          */
+
+
         public ReleasePartitionsReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -153,6 +180,8 @@ public class ReleasePartitionsReq {
          *
          * @return the built request
          */
+
+
         public ReleasePartitionsReq build() {
             return new ReleasePartitionsReq(this);
         }

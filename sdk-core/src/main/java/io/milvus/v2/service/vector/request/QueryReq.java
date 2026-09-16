@@ -27,6 +27,8 @@ import java.util.*;
 /**
  * Request parameters for the {@code query} API.
  */
+
+
 public class QueryReq {
     private String databaseName;
     private String collectionName;
@@ -85,6 +87,8 @@ public class QueryReq {
      *
      * @return the builder
      */
+
+
     public static QueryReqBuilder builder() {
         return new QueryReqBuilder();
     }
@@ -94,6 +98,8 @@ public class QueryReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -103,6 +109,8 @@ public class QueryReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -112,6 +120,8 @@ public class QueryReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -121,6 +131,8 @@ public class QueryReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -137,6 +149,7 @@ public class QueryReq {
     /**
      * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
      * {@code MilvusClientV2Session}.
+     * @param clusterId the cluster ID
      */
     @Deprecated
     public void setClusterId(String clusterId) {
@@ -148,6 +161,8 @@ public class QueryReq {
      *
      * @return the partition names
      */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
@@ -157,6 +172,8 @@ public class QueryReq {
      *
      * @param partitionNames the partition names
      */
+
+
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
     }
@@ -166,6 +183,8 @@ public class QueryReq {
      *
      * @return the output fields
      */
+
+
     public List<String> getOutputFields() {
         return outputFields;
     }
@@ -175,6 +194,8 @@ public class QueryReq {
      *
      * @param outputFields the output fields
      */
+
+
     public void setOutputFields(List<String> outputFields) {
         this.outputFields = outputFields;
     }
@@ -184,6 +205,8 @@ public class QueryReq {
      *
      * @return the primary key values
      */
+
+
     public List<Object> getIds() {
         return ids;
     }
@@ -193,6 +216,8 @@ public class QueryReq {
      *
      * @param ids the primary key values
      */
+
+
     public void setIds(List<Object> ids) {
         this.ids = ids;
     }
@@ -202,6 +227,8 @@ public class QueryReq {
      *
      * @return the filter expression
      */
+
+
     public String getFilter() {
         return filter;
     }
@@ -211,6 +238,8 @@ public class QueryReq {
      *
      * @param filter the filter expression
      */
+
+
     public void setFilter(String filter) {
         this.filter = filter;
     }
@@ -220,6 +249,8 @@ public class QueryReq {
      *
      * @return the consistency level
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -229,6 +260,8 @@ public class QueryReq {
      *
      * @param consistencyLevel the consistency level
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -238,6 +271,8 @@ public class QueryReq {
      *
      * @return the offset
      */
+
+
     public long getOffset() {
         return offset;
     }
@@ -247,6 +282,8 @@ public class QueryReq {
      *
      * @param offset the offset
      */
+
+
     public void setOffset(long offset) {
         this.offset = offset;
     }
@@ -256,6 +293,8 @@ public class QueryReq {
      *
      * @return the limit value
      */
+
+
     public long getLimit() {
         return limit;
     }
@@ -265,6 +304,8 @@ public class QueryReq {
      *
      * @param limit the limit value
      */
+
+
     public void setLimit(long limit) {
         this.limit = limit;
     }
@@ -274,6 +315,8 @@ public class QueryReq {
      *
      * @return {@code true} if growing segments are ignored
      */
+
+
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
@@ -283,6 +326,8 @@ public class QueryReq {
      *
      * @param ignoreGrowing {@code true} if growing segments are ignored
      */
+
+
     public void setIgnoreGrowing(boolean ignoreGrowing) {
         this.ignoreGrowing = ignoreGrowing;
     }
@@ -292,6 +337,8 @@ public class QueryReq {
      *
      * @return the timezone
      */
+
+
     public String getTimezone() {
         return timezone;
     }
@@ -301,6 +348,8 @@ public class QueryReq {
      *
      * @return the order-by fields
      */
+
+
     public List<OrderByField> getOrderByFields() {
         return orderByFields;
     }
@@ -310,6 +359,8 @@ public class QueryReq {
      *
      * @param orderByFields the order-by fields
      */
+
+
     public void setOrderByFields(List<OrderByField> orderByFields) {
         this.orderByFields = orderByFields;
     }
@@ -319,6 +370,8 @@ public class QueryReq {
      *
      * @return the query parameters
      */
+
+
     public Map<String, Object> getQueryParams() {
         return queryParams;
     }
@@ -328,6 +381,8 @@ public class QueryReq {
      *
      * @param queryParams the query parameters
      */
+
+
     public void setQueryParams(Map<String, Object> queryParams) {
         this.queryParams = queryParams;
     }
@@ -337,6 +392,8 @@ public class QueryReq {
      *
      * @return the filter template values
      */
+
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -346,6 +403,8 @@ public class QueryReq {
      *
      * @param filterTemplateValues the filter template values
      */
+
+
     public void setFilterTemplateValues(Map<String, Object> filterTemplateValues) {
         this.filterTemplateValues = filterTemplateValues;
     }
@@ -371,6 +430,11 @@ public class QueryReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link QueryReq} class.
+     */
+
+
     public static class QueryReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -394,6 +458,8 @@ public class QueryReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public QueryReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -405,6 +471,8 @@ public class QueryReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public QueryReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -413,6 +481,7 @@ public class QueryReq {
         /**
          * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
          * {@code MilvusClientV2Session}.
+         * @param clusterId the cluster ID
          */
         @Deprecated
         public QueryReqBuilder clusterId(String clusterId) {
@@ -426,6 +495,8 @@ public class QueryReq {
          * @param partitionNames the partition names
          * @return this builder
          */
+
+
         public QueryReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
@@ -437,6 +508,8 @@ public class QueryReq {
          * @param outputFields the output fields
          * @return this builder
          */
+
+
         public QueryReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
@@ -448,6 +521,8 @@ public class QueryReq {
          * @param ids the primary key values
          * @return this builder
          */
+
+
         public QueryReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
@@ -459,6 +534,8 @@ public class QueryReq {
          * @param filter the filter expression
          * @return this builder
          */
+
+
         public QueryReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
@@ -470,6 +547,8 @@ public class QueryReq {
          * @param consistencyLevel the consistency level
          * @return this builder
          */
+
+
         public QueryReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -481,6 +560,8 @@ public class QueryReq {
          * @param offset the offset
          * @return this builder
          */
+
+
         public QueryReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
@@ -492,6 +573,8 @@ public class QueryReq {
          * @param limit the limit value
          * @return this builder
          */
+
+
         public QueryReqBuilder limit(long limit) {
             this.limit = limit;
             return this;
@@ -503,6 +586,8 @@ public class QueryReq {
          * @param ignoreGrowing {@code true} if growing segments are ignored
          * @return this builder
          */
+
+
         public QueryReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
@@ -514,6 +599,8 @@ public class QueryReq {
          * @param timezone the timezone
          * @return this builder
          */
+
+
         public QueryReqBuilder timezone(String timezone) {
             this.timezone = timezone;
             return this;
@@ -525,6 +612,8 @@ public class QueryReq {
          * @param orderByFields the order-by fields
          * @return this builder
          */
+
+
         public QueryReqBuilder orderByFields(List<OrderByField> orderByFields) {
             this.orderByFields = orderByFields;
             return this;
@@ -536,6 +625,8 @@ public class QueryReq {
          * @param queryParams the query parameters
          * @return this builder
          */
+
+
         public QueryReqBuilder queryParams(Map<String, Object> queryParams) {
             this.queryParams = queryParams;
             return this;
@@ -547,6 +638,8 @@ public class QueryReq {
          * @param filterTemplateValues the filter template values
          * @return this builder
          */
+
+
         public QueryReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
@@ -557,6 +650,8 @@ public class QueryReq {
          *
          * @return the request
          */
+
+
         public QueryReq build() {
             return new QueryReq(this);
         }

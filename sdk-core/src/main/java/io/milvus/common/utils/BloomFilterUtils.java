@@ -62,34 +62,50 @@ import java.util.List;
  * <code>docs/design-docs/design_docs/20260707-bloom-filter-expression.md</code> in the milvus
  * repository.
  */
+
+
 public class BloomFilterUtils {
     /** The 4-byte MBF1 envelope magic. */
+
     public static final String MAGIC = "MBF1";
     /** The MBF1 envelope version implemented by this class. */
+
     public static final short VERSION = 1;
     /** Identifies the parquet SBBF + XXH64 algorithm. */
+
     public static final short ALGO_PARQUET_SBBF_XXH64 = 1;
     /** Size in bytes of the MBF1 envelope header. */
+
     public static final int HEADER_SIZE = 32;
     /** Size of one SBBF block (parquet-format spec). */
+
     public static final int BYTES_PER_BLOCK = 32;
 
     /** Marks a filter that recorded int64 values (8-byte little-endian hash domain). */
+
+
     public static final byte DOMAIN_INT64 = 1;
     /** Marks a filter that recorded string values (raw UTF-8 hash domain). */
+
     public static final byte DOMAIN_UTF8 = 2;
 
     /**
      * Minimum / maximum filter body size, mirroring Arrow's
      * BlockSplitBloomFilter::kMinimumBloomFilterBytes / kMaximumBloomFilterBytes.
      */
+
+
     public static final int MIN_FILTER_BYTES = 32;
-    /** @see #MIN_FILTER_BYTES */
+    /** Maximum filter body size in bytes. */
+
     public static final int MAX_FILTER_BYTES = 128 * 1024 * 1024;
 
     /** Lowest accepted false-positive rate. */
+
+
     public static final double MIN_FPR = 0.0001;
     /** Highest accepted false-positive rate. */
+
     public static final double MAX_FPR = 0.05;
     /**
      * Recommended false-positive rate when a caller has no specific target. Sizing follows the
@@ -98,6 +114,7 @@ public class BloomFilterUtils {
      * two, a member count just past a tier boundary doubles the blob; raising fpr is usually the
      * cheaper fix.
      */
+
     public static final double DEFAULT_FPR = 0.005;
 
     private static final int WORDS_PER_BLOCK = 8;
@@ -121,6 +138,8 @@ public class BloomFilterUtils {
      * @return the MBF1 blob to pass as a filter template value
      * @see #buildBloomFilter(List, double)
      */
+
+
     public static byte[] buildBloomFilter(List<?> members) {
         return buildBloomFilter(members, DEFAULT_FPR);
     }
@@ -138,6 +157,8 @@ public class BloomFilterUtils {
      * @throws MilvusClientException if fpr is out of range, or members is null, mixed-type or
      *                               contains an unsupported element type
      */
+
+
     public static byte[] buildBloomFilter(List<?> members, double fpr) {
         if (members == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -182,6 +203,8 @@ public class BloomFilterUtils {
      * @return the blob size in bytes, header included
      * @throws MilvusClientException if n is negative or fpr is out of range
      */
+
+
     public static int estimateBlobSize(long n, double fpr) {
         validateMemberCount(n);
         validateFpr(fpr);
@@ -261,6 +284,8 @@ public class BloomFilterUtils {
      * <p>Unlike the convenience method, a Builder accepts both domains, which produces a filter
      * that matches integer and string members alike.
      */
+
+
     public static class Builder {
         /** HEADER_SIZE + numBlocks * BYTES_PER_BLOCK: the blob {@link #build()} returns. */
         private final byte[] buf;
@@ -277,6 +302,8 @@ public class BloomFilterUtils {
          * @param fpr the false-positive rate, in [{@link #MIN_FPR}, {@link #MAX_FPR}]
          * @throws MilvusClientException if n is negative or fpr is out of range
          */
+
+
         public Builder(long n, double fpr) {
             validateMemberCount(n);
             validateFpr(fpr);
@@ -287,14 +314,28 @@ public class BloomFilterUtils {
             this.fpr = fpr;
         }
 
-        /** Inserts an integer value, hashed as its 8-byte little-endian encoding. */
+        /**
+         * Inserts an integer value, hashed as its 8-byte little-endian encoding.
+         *
+         * @param value the integer value to insert
+         * @return this builder
+         */
+
+
         public Builder addInt64(long value) {
             domains |= DOMAIN_INT64;
             addHash(XXHash64.hashInt64(value));
             return this;
         }
 
-        /** Inserts a string value, hashed as its raw UTF-8 bytes. */
+        /**
+         * Inserts a string value, hashed as its raw UTF-8 bytes.
+         *
+         * @param value the string value to insert
+         * @return this builder
+         */
+
+
         public Builder addString(String value) {
             if (value == null) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -305,12 +346,24 @@ public class BloomFilterUtils {
             return this;
         }
 
-        /** Returns the value domains inserted so far. Zero means nothing was inserted. */
+        /**
+         * Returns the value domains inserted so far. Zero means nothing was inserted.
+         *
+         * @return the inserted domains bit mask
+         */
+
+
         public byte getDomains() {
             return domains;
         }
 
-        /** Returns the number of 32-byte blocks in the filter body. */
+        /**
+         * Returns the number of 32-byte blocks in the filter body.
+         *
+         * @return the number of blocks
+         */
+
+
         public int getNumBlocks() {
             return numBlocks;
         }
@@ -323,7 +376,11 @@ public class BloomFilterUtils {
          * serialization buffer, which matters at 64 MiB. Treat it as read-only, and copy it if
          * you keep inserting afterwards: a later {@code add} mutates an array already handed out.
          * Calling {@code build()} repeatedly is fine; each call re-stamps the header.
+         *
+         * @return the MBF1 filter envelope
          */
+
+
         public byte[] build() {
             ByteBuffer header = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN);
             header.put(MAGIC.getBytes(StandardCharsets.US_ASCII));

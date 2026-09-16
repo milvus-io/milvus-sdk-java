@@ -28,8 +28,17 @@ import java.util.List;
 /**
  * Utility class to wrap response of <code>getCollectionStatistics</code> interface.
  */
+
+
 public class GetCollStatResponseWrapper {
     private final GetCollectionStatisticsResponse stat;
+
+    /**
+     * Wraps the given collection statistics response.
+     *
+     * @param stat the gRPC {@code GetCollectionStatisticsResponse}, must not be {@code null}
+     */
+
 
     public GetCollStatResponseWrapper(GetCollectionStatisticsResponse stat) {
         if (stat == null) {
@@ -44,6 +53,8 @@ public class GetCollStatResponseWrapper {
      *
      * @return <code>int</code> dimension of the vector field
      */
+
+
     public long getRowCount() throws NumberFormatException {
         List<KeyValuePair> stats = stat.getStatsList();
         for (KeyValuePair kv : stats) {

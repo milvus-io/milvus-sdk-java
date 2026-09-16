@@ -26,6 +26,8 @@ import io.milvus.param.collection.ShowCollectionsParam;
 /**
  * Parameters for <code>listCollections</code> interface.
  */
+
+
 public class ListCollectionsParam {
     private final ShowCollectionsParam showCollectionsParam;
 
@@ -33,10 +35,22 @@ public class ListCollectionsParam {
         this.showCollectionsParam = showCollectionsParam;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the showCollectionsParam.
+     *
+     * @return the showCollectionsParam
+     */
     // Getter method to replace @Getter annotation
     public ShowCollectionsParam getShowCollectionsParam() {
         return showCollectionsParam;
@@ -53,6 +67,8 @@ public class ListCollectionsParam {
     /**
      * Builder for {@link ListCollectionsParam} class.
      */
+
+
     public static final class Builder {
         private Builder() {
         }
@@ -62,6 +78,8 @@ public class ListCollectionsParam {
          *
          * @return {@link ListCollectionsParam}
          */
+
+
         public ListCollectionsParam build() throws ParamException {
             ShowCollectionsParam showCollectionsParam = ShowCollectionsParam.newBuilder()
                     .withShowType(ShowType.All)

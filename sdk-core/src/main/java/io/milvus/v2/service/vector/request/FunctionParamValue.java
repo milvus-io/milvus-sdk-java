@@ -36,6 +36,8 @@ import java.util.Map;
  * {@code byte[]}/{@code char[]}/{@link ByteString} -&gt; bytes, {@code List} -&gt; array,
  * {@code Map} -&gt; object.
  */
+
+
 public class FunctionParamValue {
     private final io.milvus.grpc.FunctionParamValue grpcValue;
 
@@ -48,6 +50,8 @@ public class FunctionParamValue {
      *
      * @return the gRPC value
      */
+
+
     public io.milvus.grpc.FunctionParamValue toGrpc() {
         return grpcValue;
     }
@@ -58,6 +62,8 @@ public class FunctionParamValue {
      * @param value the boolean value
      * @return the parameter value
      */
+
+
     public static FunctionParamValue of(boolean value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setBoolValue(value).build());
     }
@@ -68,6 +74,8 @@ public class FunctionParamValue {
      * @param value the integer value
      * @return the parameter value
      */
+
+
     public static FunctionParamValue of(long value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setInt64Value(value).build());
     }
@@ -78,6 +86,8 @@ public class FunctionParamValue {
      * @param value the double value
      * @return the parameter value
      */
+
+
     public static FunctionParamValue of(double value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setDoubleValue(value).build());
     }
@@ -88,6 +98,8 @@ public class FunctionParamValue {
      * @param value the string value
      * @return the parameter value
      */
+
+
     public static FunctionParamValue of(String value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setStringValue(value).build());
     }
@@ -98,6 +110,8 @@ public class FunctionParamValue {
      * @param value the byte array value
      * @return the parameter value
      */
+
+
     public static FunctionParamValue of(byte[] value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setBytesValue(ByteString.copyFrom(value)).build());
     }
@@ -108,6 +122,8 @@ public class FunctionParamValue {
      * @param value the byte string value
      * @return the parameter value
      */
+
+
     public static FunctionParamValue of(ByteString value) {
         return wrap(io.milvus.grpc.FunctionParamValue.newBuilder().setBytesValue(value).build());
     }
@@ -118,6 +134,8 @@ public class FunctionParamValue {
      * @param values the list elements
      * @return the parameter value
      */
+
+
     public static FunctionParamValue ofArray(List<FunctionParamValue> values) {
         io.milvus.grpc.FunctionParamArray.Builder builder = io.milvus.grpc.FunctionParamArray.newBuilder();
         values.forEach(v -> builder.addValues(v.toGrpc()));
@@ -130,6 +148,8 @@ public class FunctionParamValue {
      * @param fields the object fields
      * @return the parameter value
      */
+
+
     public static FunctionParamValue ofObject(Map<String, FunctionParamValue> fields) {
         io.milvus.grpc.FunctionParamObject.Builder builder = io.milvus.grpc.FunctionParamObject.newBuilder();
         fields.forEach((k, v) -> builder.putFields(k, v.toGrpc()));
@@ -144,7 +164,10 @@ public class FunctionParamValue {
      * int64), {@code Float}/{@code Double}, {@code String}/{@code Character},
      * {@code byte[]}/{@code char[]}/{@link ByteString}, {@code List} (recursively), and
      * {@code Map} (recursively).
+     * @param value the value to convert
      */
+
+
     public static FunctionParamValue from(Object value) {
         if (value == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function chain parameters do not support null");

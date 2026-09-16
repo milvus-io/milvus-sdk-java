@@ -23,6 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Describes the configuration of a resource group, including requested and limited node counts,
+ * node transfers from/to other groups, and an optional node label filter. Supports conversion
+ * to and from the gRPC representation.
+ */
+
+
 public class ResourceGroupConfig {
     private final ResourceGroupLimit requests;
     private final ResourceGroupLimit limits;
@@ -48,9 +55,21 @@ public class ResourceGroupConfig {
         }
     }
 
+    /**
+     * Creates a new {@link ResourceGroupConfig} builder.
+     *
+     * @return a new builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    /**
+     * Builder for {@link ResourceGroupConfig} class.
+     */
+
 
     public static final class Builder {
         private ResourceGroupLimit requests;
@@ -68,6 +87,8 @@ public class ResourceGroupConfig {
          * @param requests requests node num in resource group, if node num is less than requests.nodeNum, it will be transfer from other resource group.
          * @return <code>Builder</code>
          */
+
+
         public Builder withRequests(ResourceGroupLimit requests) {
             if (requests == null) {
                 throw new IllegalArgumentException("requests cannot be null");
@@ -82,6 +103,8 @@ public class ResourceGroupConfig {
          * @param limits limited node num in resource group, if node num is more than limits.nodeNum, it will be transfer to other resource group.
          * @return <code>Builder</code>
          */
+
+
         public Builder withLimits(ResourceGroupLimit limits) {
             if (limits == null) {
                 throw new IllegalArgumentException("limits cannot be null");
@@ -96,6 +119,8 @@ public class ResourceGroupConfig {
          * @param from missing node should be transfer from given resource group at high priority in repeated list.
          * @return <code>Builder</code>
          */
+
+
         public Builder withFrom(List<ResourceGroupTransfer> from) {
             if (from == null) {
                 throw new IllegalArgumentException("from cannot be null");
@@ -110,6 +135,8 @@ public class ResourceGroupConfig {
          * @param to redundant node should be transfer to given resource group at high priority in repeated list.
          * @return <code>Builder</code>
          */
+
+
         public Builder withTo(List<ResourceGroupTransfer> to) {
             if (to == null) {
                 throw new IllegalArgumentException("to cannot be null");
@@ -124,6 +151,8 @@ public class ResourceGroupConfig {
          * @param nodeFilter if node filter set, resource group will prefer to accept node which match node filter.
          * @return <code>Builder</code>
          */
+
+
         public Builder withNodeFilter(ResourceGroupNodeFilter nodeFilter) {
             if (nodeFilter == null) {
                 throw new IllegalArgumentException("nodeFilter cannot be null");
@@ -132,10 +161,24 @@ public class ResourceGroupConfig {
             return this;
         }
 
+        /**
+         * Builds the {@link ResourceGroupConfig} instance.
+         *
+         * @return the built resource group config
+         */
+
+
         public ResourceGroupConfig build() {
             return new ResourceGroupConfig(this);
         }
     }
+
+    /**
+     * Creates a resource group config from its gRPC representation.
+     *
+     * @param grpcConfig the gRPC resource group config, must not be {@code null}
+     */
+
 
     public ResourceGroupConfig(io.milvus.grpc.ResourceGroupConfig grpcConfig) {
         if (grpcConfig == null) {
@@ -152,25 +195,67 @@ public class ResourceGroupConfig {
         this.nodeFilter = new ResourceGroupNodeFilter(grpcConfig.getNodeFilter());
     }
 
+    /**
+     * Returns the requested node count limit of the resource group.
+     *
+     * @return the requested node limit
+     */
+
+
     public ResourceGroupLimit getRequests() {
         return requests;
     }
+
+    /**
+     * Returns the limited node count of the resource group.
+     *
+     * @return the node limit
+     */
+
 
     public ResourceGroupLimit getLimits() {
         return limits;
     }
 
+    /**
+     * Returns the list of resource groups to transfer missing nodes from, in priority order.
+     *
+     * @return the transfer-from list
+     */
+
+
     public List<ResourceGroupTransfer> getFrom() {
         return from;
     }
+
+    /**
+     * Returns the list of resource groups to transfer redundant nodes to, in priority order.
+     *
+     * @return the transfer-to list
+     */
+
 
     public List<ResourceGroupTransfer> getTo() {
         return to;
     }
 
+    /**
+     * Returns the node label filter of the resource group, if any.
+     *
+     * @return the node filter, or {@code null} if none is set
+     */
+
+
     public ResourceGroupNodeFilter getNodeFilter() {
         return nodeFilter;
     }
+
+    /**
+     * Converts this config into its gRPC representation.
+     *
+     * @return the gRPC resource group config
+     */
+
 
     public io.milvus.grpc.ResourceGroupConfig toGRPC() {
         io.milvus.grpc.ResourceGroupConfig.Builder builder = io.milvus.grpc.ResourceGroupConfig.newBuilder()

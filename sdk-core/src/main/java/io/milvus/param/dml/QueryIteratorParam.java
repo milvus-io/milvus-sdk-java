@@ -35,6 +35,8 @@ import static io.milvus.param.Constant.UNLIMITED;
 /**
  * Parameters for <code>queryIterator</code> interface.
  */
+
+
 public class QueryIteratorParam {
     private final String databaseName;
     private final String collectionName;
@@ -74,62 +76,165 @@ public class QueryIteratorParam {
         this.batchSize = builder.batchSize;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
 
     public List<String> getPartitionNames() {
         return partitionNames;
     }
 
+    /**
+     * Returns the outFields.
+     *
+     * @return the outFields
+     */
+
+
     public List<String> getOutFields() {
         return outFields;
     }
+
+    /**
+     * Returns the expr.
+     *
+     * @return the expr
+     */
+
 
     public String getExpr() {
         return expr;
     }
 
+    /**
+     * Returns the travelTimestamp.
+     *
+     * @return the travelTimestamp
+     */
+
+
     public long getTravelTimestamp() {
         return travelTimestamp;
     }
+
+    /**
+     * Returns the guaranteeTimestamp.
+     *
+     * @return the guaranteeTimestamp
+     */
+
 
     public long getGuaranteeTimestamp() {
         return guaranteeTimestamp;
     }
 
+    /**
+     * Returns the gracefulTime.
+     *
+     * @return the gracefulTime
+     */
+
+
     public long getGracefulTime() {
         return gracefulTime;
     }
+
+    /**
+     * Returns the consistencyLevel.
+     *
+     * @return the consistencyLevel
+     */
+
 
     public ConsistencyLevelEnum getConsistencyLevel() {
         return consistencyLevel;
     }
 
+    /**
+     * Returns the offset.
+     *
+     * @return the offset
+     */
+
+
     public long getOffset() {
         return offset;
     }
+
+    /**
+     * Returns the limit.
+     *
+     * @return the limit
+     */
+
 
     public long getLimit() {
         return limit;
     }
 
+    /**
+     * Returns the ignoreGrowing.
+     *
+     * @return the ignoreGrowing
+     */
+
+
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
 
+    /**
+     * Returns the reduceStopForBest.
+     *
+     * @return the reduceStopForBest
+     */
+
+
     public boolean isReduceStopForBest() {
         return reduceStopForBest;
     }
+
+    /**
+     * Returns the batchSize.
+     *
+     * @return the batchSize
+     */
+
 
     public long getBatchSize() {
         return batchSize;
@@ -159,6 +264,8 @@ public class QueryIteratorParam {
     /**
      * Builder for {@link QueryIteratorParam} class.
      */
+
+
     public static class Builder {
         private String databaseName;
         private String collectionName;
@@ -184,6 +291,8 @@ public class QueryIteratorParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -195,6 +304,8 @@ public class QueryIteratorParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -210,6 +321,8 @@ public class QueryIteratorParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -221,6 +334,8 @@ public class QueryIteratorParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             // Replace @NonNull logic with explicit null check
             if (partitionNames == null) {
@@ -236,6 +351,8 @@ public class QueryIteratorParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -253,6 +370,8 @@ public class QueryIteratorParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
+
+
         public Builder withOutFields(List<String> outFields) {
             // Replace @NonNull logic with explicit null check
             if (outFields == null) {
@@ -268,6 +387,8 @@ public class QueryIteratorParam {
          * @param fieldName field name
          * @return <code>Builder</code>
          */
+
+
         public Builder addOutField(String fieldName) {
             // Replace @NonNull logic with explicit null check
             if (fieldName == null) {
@@ -286,6 +407,8 @@ public class QueryIteratorParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
+
+
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
             if (expr == null) {
@@ -302,6 +425,8 @@ public class QueryIteratorParam {
          * @param offset a value to define the position
          * @return <code>Builder</code>
          */
+
+
         public Builder withOffset(Long offset) {
             // Replace @NonNull logic with explicit null check
             if (offset == null) {
@@ -318,6 +443,8 @@ public class QueryIteratorParam {
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
+
+
         public Builder withLimit(Long limit) {
             // Replace @NonNull logic with explicit null check
             if (limit == null) {
@@ -334,6 +461,8 @@ public class QueryIteratorParam {
          * @param batchSize a value to define the number of entities returned per batch
          * @return <code>Builder</code>
          */
+
+
         public Builder withBatchSize(@NotNull Long batchSize) {
             this.batchSize = batchSize;
             return this;
@@ -346,6 +475,8 @@ public class QueryIteratorParam {
          * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withIgnoreGrowing(Boolean ignoreGrowing) {
             // Replace @NonNull logic with explicit null check
             if (ignoreGrowing == null) {
@@ -361,6 +492,8 @@ public class QueryIteratorParam {
          * @param reduceStopForBest <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withReduceStopForBest(Boolean reduceStopForBest) {
             // Replace @NonNull logic with explicit null check
             if (reduceStopForBest == null) {
@@ -375,6 +508,8 @@ public class QueryIteratorParam {
          *
          * @return {@link QueryIteratorParam}
          */
+
+
         public QueryIteratorParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullString(expr, "Expression");

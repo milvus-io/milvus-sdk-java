@@ -28,8 +28,17 @@ import java.util.List;
 /**
  * Util class to wrap response of <code>showCollections</code> interface.
  */
+
+
 public class ShowCollResponseWrapper {
     private final ShowCollectionsResponse response;
+
+    /**
+     * Wraps the given show collections response.
+     *
+     * @param response the gRPC {@code ShowCollectionsResponse}, must not be {@code null}
+     */
+
 
     public ShowCollResponseWrapper(ShowCollectionsResponse response) {
         if (response == null) {
@@ -37,6 +46,13 @@ public class ShowCollResponseWrapper {
         }
         this.response = response;
     }
+
+    /**
+     * Returns the names of the collections.
+     *
+     * @return the collection names
+     */
+
 
     public List<String> getCollectionNames() {
         return response.getCollectionNamesList();
@@ -47,6 +63,8 @@ public class ShowCollResponseWrapper {
      *
      * @return List of CollectionInfo, information array of the collections
      */
+
+
     public List<CollectionInfo> getCollectionsInfo() throws IllegalResponseException {
         if (response.getCollectionNamesCount() != response.getCollectionIdsCount()
                 || response.getCollectionNamesCount() != response.getCreatedUtcTimestampsCount()) {
@@ -72,6 +90,8 @@ public class ShowCollResponseWrapper {
      * @param collectionName collection name to get information
      * @return {@link CollectionInfo} information of the collection
      */
+
+
     public CollectionInfo getCollectionInfoByName(String collectionName) {
         if (collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
@@ -93,11 +113,22 @@ public class ShowCollResponseWrapper {
     /**
      * Internal-use class to wrap response of <code>showCollections</code> interface.
      */
+
+
     public static final class CollectionInfo {
         private final String name;
         private final long id;
         private final long utcTimestamp;
         private long inMemoryPercentage = 0;
+
+        /**
+         * Creates a collection info entry.
+         *
+         * @param name         the collection name
+         * @param id           the collection ID
+         * @param utcTimestamp the creation timestamp in UTC
+         */
+
 
         public CollectionInfo(String name, long id, long utcTimestamp) {
             this.name = name;
@@ -105,22 +136,56 @@ public class ShowCollResponseWrapper {
             this.utcTimestamp = utcTimestamp;
         }
 
+        /**
+         * Sets the in-memory load percentage of the collection.
+         *
+         * @param inMemoryPercentage the percentage value
+         */
+
+
         public void setInMemoryPercentage(long inMemoryPercentage) {
             this.inMemoryPercentage = inMemoryPercentage;
         }
 
-        // Getter methods
+        /**
+         * Returns the collection name.
+         *
+         * @return the name
+         */
+
+
         public String getName() {
             return name;
         }
+
+        /**
+         * Returns the collection ID.
+         *
+         * @return the ID
+         */
+
 
         public long getId() {
             return id;
         }
 
+        /**
+         * Returns the creation timestamp of the collection in UTC.
+         *
+         * @return the UTC timestamp
+         */
+
+
         public long getUtcTimestamp() {
             return utcTimestamp;
         }
+
+        /**
+         * Returns the in-memory load percentage of the collection.
+         *
+         * @return the in-memory percentage
+         */
+
 
         public long getInMemoryPercentage() {
             return inMemoryPercentage;

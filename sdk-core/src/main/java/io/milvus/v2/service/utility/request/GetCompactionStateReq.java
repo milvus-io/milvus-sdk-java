@@ -22,12 +22,21 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code getCompactionState} API.
  */
+
+
 public class GetCompactionStateReq {
     private Long compactionID;
 
     private GetCompactionStateReq(GetCompactionStateReqBuilder builder) {
         this.compactionID = builder.compactionID;
     }
+
+    /**
+     * Creates a new builder for {@code GetCompactionStateReq}.
+     *
+     * @return the builder
+     */
+
 
     public static GetCompactionStateReqBuilder builder() {
         return new GetCompactionStateReqBuilder();
@@ -38,6 +47,8 @@ public class GetCompactionStateReq {
      *
      * @return the compaction ID
      */
+
+
     public Long getCompactionID() {
         return compactionID;
     }
@@ -47,6 +58,8 @@ public class GetCompactionStateReq {
      *
      * @param compactionID the compaction ID
      */
+
+
     public void setCompactionID(Long compactionID) {
         this.compactionID = compactionID;
     }
@@ -58,6 +71,11 @@ public class GetCompactionStateReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetCompactionStateReq} class.
+     */
+
+
     public static class GetCompactionStateReqBuilder {
         private Long compactionID;
 
@@ -67,6 +85,8 @@ public class GetCompactionStateReq {
          * @param compactionID the compaction ID
          * @return this builder
          */
+
+
         public GetCompactionStateReqBuilder compactionID(Long compactionID) {
             this.compactionID = compactionID;
             return this;
@@ -77,6 +97,8 @@ public class GetCompactionStateReq {
          *
          * @return the constructed {@code GetCompactionStateReq}
          */
+
+
         public GetCompactionStateReq build() {
             return new GetCompactionStateReq(this);
         }

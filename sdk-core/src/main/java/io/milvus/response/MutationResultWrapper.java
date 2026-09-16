@@ -28,8 +28,17 @@ import java.util.List;
 /**
  * Utility class to wrap response of <code>insert/delete</code> interface.
  */
+
+
 public class MutationResultWrapper {
     private final MutationResult result;
+
+    /**
+     * Wraps the given mutation result.
+     *
+     * @param result the gRPC {@code MutationResult}, must not be {@code null}
+     */
+
 
     public MutationResultWrapper(MutationResult result) {
         if (result == null) {
@@ -43,6 +52,8 @@ public class MutationResultWrapper {
      *
      * @return <code>int</code> row count of the inserted entities
      */
+
+
     public long getInsertCount() {
         return result.getInsertCnt();
     }
@@ -53,6 +64,8 @@ public class MutationResultWrapper {
      *
      * @return List of Long, ID array returned by insert interface
      */
+
+
     public List<Long> getLongIDs() throws ParamException {
         if (result.getIDs().hasIntId()) {
             return result.getIDs().getIntId().getDataList();
@@ -68,6 +81,8 @@ public class MutationResultWrapper {
      *
      * @return List of String, ID array returned by insert interface
      */
+
+
     public List<String> getStringIDs() throws ParamException {
         if (result.getIDs().hasStrId()) {
             return result.getIDs().getStrId().getDataList();
@@ -81,6 +96,8 @@ public class MutationResultWrapper {
      *
      * @return List of Ids, ID array returned by insert interface
      */
+
+
     public List<?> getInsertIDs() {
         if (result.getIDs().hasIntId()) {
             return result.getIDs().getIntId().getDataList();
@@ -96,6 +113,8 @@ public class MutationResultWrapper {
      *
      * @return List of Ids, ID array returned by delete interface
      */
+
+
     public List<?> getDeleteIDs() {
         if (result.getIDs().hasIntId()) {
             return result.getIDs().getIntId().getDataList();
@@ -111,6 +130,8 @@ public class MutationResultWrapper {
      *
      * @return <code>int</code> row count of the deleted entities
      */
+
+
     public long getDeleteCount() {
         return result.getDeleteCnt();
     }
@@ -123,6 +144,8 @@ public class MutationResultWrapper {
      *
      * @return <code>int</code> row count of the deleted entities
      */
+
+
     public long getOperationTs() {
         return result.getTimestamp();
     }

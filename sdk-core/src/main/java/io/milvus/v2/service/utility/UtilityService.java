@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
  * Service for utility operations, such as flushing, compacting, aliases, health checks,
  * and segment information queries.
  */
+
+
 public class UtilityService extends BaseService {
     /**
      * Returns the Milvus server version, optionally including build details.
@@ -50,6 +52,7 @@ public class UtilityService extends BaseService {
      * @param request the get server version request
      * @return the get server version response
      */
+
     public GetServerVersionResp getServerVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                  GetServerVersionReq request) {
         if (Boolean.TRUE.equals(request.getDetail())) {
@@ -79,6 +82,8 @@ public class UtilityService extends BaseService {
      * @param request the flush request
      * @return the flush response
      */
+
+
     public FlushResp flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
         String dbName = request.getDatabaseName();
         List<String> collectionNames = request.getCollectionNames();
@@ -116,6 +121,8 @@ public class UtilityService extends BaseService {
      * @param request the flush all request
      * @return the flush all response
      */
+
+
     public FlushAllResp flushAll(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushAllReq request) {
         String dbName = request.getDatabaseName();
         String title = String.format("Flush all in database: '%s'", dbName);
@@ -139,6 +146,8 @@ public class UtilityService extends BaseService {
      * @param request the get flush all state request
      * @return the get flush all state response
      */
+
+
     public GetFlushAllStateResp getFlushAllState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                  GetFlushAllStateReq request) {
         String dbName = request.getDatabaseName();
@@ -165,6 +174,8 @@ public class UtilityService extends BaseService {
      * @param flushResp the flush response returned by {@link #flush(MilvusServiceGrpc.MilvusServiceBlockingStub, FlushReq)}
      * @return {@code null}
      */
+
+
     public Void waitFlush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushResp flushResp) {
         Map<String, List<Long>> collectionSegmentIDs = flushResp.getCollectionSegmentIDs();
         Map<String, Long> collectionFlushTs = flushResp.getCollectionFlushTs();
@@ -206,6 +217,8 @@ public class UtilityService extends BaseService {
      * @param request the original flush all request providing the wait timeout
      * @return {@code null}
      */
+
+
     public Void waitFlushAll(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushAllResp flushAllResp,
                              FlushAllReq request) {
         boolean flushed = false;
@@ -242,6 +255,8 @@ public class UtilityService extends BaseService {
      * @param request the compact request
      * @return the compact response
      */
+
+
     public CompactResp compact(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CompactReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -280,6 +295,8 @@ public class UtilityService extends BaseService {
      * @param request the get compaction state request
      * @return the get compaction state response
      */
+
+
     public GetCompactionStateResp getCompactionState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                      GetCompactionStateReq request) {
         String title = "Get compaction state";
@@ -304,6 +321,8 @@ public class UtilityService extends BaseService {
      * @param request the get compaction plans request
      * @return the get compaction plans response
      */
+
+
     public GetCompactionPlansResp getCompactionPlans(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                      GetCompactionPlansReq request) {
         String title = "Get compaction plans";
@@ -336,6 +355,8 @@ public class UtilityService extends BaseService {
      * @param request the create alias request
      * @return {@code null}
      */
+
+
     public Void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -365,6 +386,8 @@ public class UtilityService extends BaseService {
      * @param request the drop alias request
      * @return {@code null}
      */
+
+
     public Void dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
         String dbName = request.getDatabaseName();
         String alias = request.getAlias();
@@ -389,6 +412,8 @@ public class UtilityService extends BaseService {
      * @param request the alter alias request
      * @return {@code null}
      */
+
+
     public Void alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -418,6 +443,8 @@ public class UtilityService extends BaseService {
      * @param request the describe alias request
      * @return the describe alias response
      */
+
+
     public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeAliasReq request) {
         String dbName = request.getDatabaseName();
         String alias = request.getAlias();
@@ -444,6 +471,8 @@ public class UtilityService extends BaseService {
      * @param request the list aliases request
      * @return the list aliases response
      */
+
+
     public ListAliasResp listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListAliasesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -469,6 +498,8 @@ public class UtilityService extends BaseService {
      * @param blockingStub the gRPC blocking stub
      * @return the check health response
      */
+
+
     public CheckHealthResp checkHealth(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         String title = "Check health";
         CheckHealthResponse response = blockingStub.checkHealth(CheckHealthRequest.newBuilder().build());
@@ -490,6 +521,8 @@ public class UtilityService extends BaseService {
      * @param request the get persistent segment info request
      * @return the get persistent segment info response
      */
+
+
     public GetPersistentSegmentInfoResp getPersistentSegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                                  GetPersistentSegmentInfoReq request) {
         String dbName = request.getDatabaseName();
@@ -529,6 +562,8 @@ public class UtilityService extends BaseService {
      * @param request the get query segment info request
      * @return the get query segment info response
      */
+
+
     public GetQuerySegmentInfoResp getQuerySegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                        GetQuerySegmentInfoReq request) {
         String dbName = request.getDatabaseName();
@@ -572,6 +607,8 @@ public class UtilityService extends BaseService {
      * @param request the refresh external collection request
      * @return the refresh external collection response
      */
+
+
     public RefreshExternalCollectionResp refreshExternalCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                                     RefreshExternalCollectionReq request) {
         String dbName = request.getDatabaseName();
@@ -600,6 +637,8 @@ public class UtilityService extends BaseService {
      * @param request the get refresh external collection progress request
      * @return the get refresh external collection progress response
      */
+
+
     public GetRefreshExternalCollectionProgressResp getRefreshExternalCollectionProgress(
             MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
             GetRefreshExternalCollectionProgressReq request) {
@@ -623,6 +662,8 @@ public class UtilityService extends BaseService {
      * @param request the list refresh external collection jobs request
      * @return the list refresh external collection jobs response
      */
+
+
     public ListRefreshExternalCollectionJobsResp listRefreshExternalCollectionJobs(
             MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
             ListRefreshExternalCollectionJobsReq request) {
@@ -669,6 +710,8 @@ public class UtilityService extends BaseService {
      * @param request the add file resource request
      * @return {@code null}
      */
+
+
     public Void addFileResource(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                 AddFileResourceReq request) {
         if (StringUtils.isEmpty(request.getName())) {
@@ -696,6 +739,8 @@ public class UtilityService extends BaseService {
      * @param request the remove file resource request
      * @return {@code null}
      */
+
+
     public Void removeFileResource(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                    RemoveFileResourceReq request) {
         if (StringUtils.isEmpty(request.getName())) {
@@ -719,6 +764,8 @@ public class UtilityService extends BaseService {
      * @param request the list file resources request
      * @return the list file resources response
      */
+
+
     public ListFileResourcesResp listFileResources(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                    ListFileResourcesReq request) {
         String title = "ListFileResources";

@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * A privilege group that bundles multiple privileges for RBAC management.
  */
+
+
 public class PrivilegeGroup {
     private String groupName;
     private List<String> privileges;
@@ -39,6 +41,8 @@ public class PrivilegeGroup {
      *
      * @return the privilege group name
      */
+
+
     public String getGroupName() {
         return groupName;
     }
@@ -48,6 +52,8 @@ public class PrivilegeGroup {
      *
      * @param groupName the privilege group name
      */
+
+
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
@@ -57,6 +63,8 @@ public class PrivilegeGroup {
      *
      * @return the privileges
      */
+
+
     public List<String> getPrivileges() {
         return privileges;
     }
@@ -66,6 +74,8 @@ public class PrivilegeGroup {
      *
      * @param privileges the privileges
      */
+
+
     public void setPrivileges(List<String> privileges) {
         this.privileges = privileges;
     }
@@ -83,6 +93,8 @@ public class PrivilegeGroup {
      *
      * @return the builder
      */
+
+
     public static PrivilegeGroupBuilder builder() {
         return new PrivilegeGroupBuilder();
     }
@@ -90,6 +102,8 @@ public class PrivilegeGroup {
     /**
      * Builder for {@link PrivilegeGroup}.
      */
+
+
     public static class PrivilegeGroupBuilder {
         private String groupName;
         private List<String> privileges = new ArrayList<>();
@@ -103,6 +117,8 @@ public class PrivilegeGroup {
          * @param groupName the privilege group name
          * @return this builder
          */
+
+
         public PrivilegeGroupBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
@@ -114,6 +130,8 @@ public class PrivilegeGroup {
          * @param privileges the privileges
          * @return this builder
          */
+
+
         public PrivilegeGroupBuilder privileges(List<String> privileges) {
             this.privileges = privileges;
             return this;
@@ -124,6 +142,8 @@ public class PrivilegeGroup {
          *
          * @return the privilege group
          */
+
+
         public PrivilegeGroup build() {
             return new PrivilegeGroup(this);
         }

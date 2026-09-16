@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Parameters for <code>delete</code> interface.
  */
+
+
 public class DeleteIdsParam {
     private final String collectionName;
     private final String partitionName;
@@ -44,18 +46,44 @@ public class DeleteIdsParam {
         this.primaryIds = builder.primaryIds;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter methods to replace @Getter annotation
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
+
     public String getPartitionName() {
         return partitionName;
     }
+
+    /**
+     * Returns the primaryIds.
+     *
+     * @return the primaryIds
+     */
+
 
     public List<?> getPrimaryIds() {
         return primaryIds;
@@ -74,6 +102,8 @@ public class DeleteIdsParam {
     /**
      * Builder for {@link DeleteIdsParam} class.
      */
+
+
     public static class Builder<T> {
         private String collectionName;
         private String partitionName = "";
@@ -88,6 +118,8 @@ public class DeleteIdsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -103,6 +135,8 @@ public class DeleteIdsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -118,6 +152,8 @@ public class DeleteIdsParam {
          * @param primaryIds input primary key list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPrimaryIds(List<T> primaryIds) {
             // Replace @NonNull logic with explicit null check
             if (primaryIds == null) {
@@ -133,6 +169,8 @@ public class DeleteIdsParam {
          * @param primaryId input primary key id
          * @return <code>Builder</code>
          */
+
+
         public Builder addPrimaryId(T primaryId) {
             // Replace @NonNull logic with explicit null check
             if (primaryId == null) {
@@ -147,6 +185,8 @@ public class DeleteIdsParam {
          *
          * @return {@link DeleteIdsParam}
          */
+
+
         public DeleteIdsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             if (CollectionUtils.isEmpty(primaryIds)) {

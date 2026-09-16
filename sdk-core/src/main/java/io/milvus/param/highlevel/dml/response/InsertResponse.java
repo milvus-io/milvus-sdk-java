@@ -24,6 +24,8 @@ import java.util.List;
 /**
  * Parameters for <code>insert</code> interface.
  */
+
+
 public class InsertResponse {
     private final Long insertCount;
     public List<?> insertIds;
@@ -33,14 +35,33 @@ public class InsertResponse {
         this.insertIds = builder.insertIds;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Returns the insertCount.
+     *
+     * @return the insertCount
+     */
     // Getter method to replace @Getter annotation
     public Long getInsertCount() {
         return insertCount;
     }
+
+    /**
+     * Returns the insertIds.
+     *
+     * @return the insertIds
+     */
+
 
     public List<?> getInsertIds() {
         return insertIds;
@@ -49,6 +70,8 @@ public class InsertResponse {
     /**
      * Builder for {@link InsertResponse} class to replace @Builder annotation.
      */
+
+
     public static class Builder {
         private Long insertCount;
         private List<?> insertIds;
@@ -56,15 +79,38 @@ public class InsertResponse {
         private Builder() {
         }
 
+        /**
+         * Sets the insertCount.
+         *
+         * @param insertCount the insertCount
+         * @return this builder
+         */
+
+
         public Builder insertCount(Long insertCount) {
             this.insertCount = insertCount;
             return this;
         }
 
+        /**
+         * Sets the insertIds.
+         *
+         * @param insertIds the insertIds
+         * @return this builder
+         */
+
+
         public Builder insertIds(List<?> insertIds) {
             this.insertIds = insertIds;
             return this;
         }
+
+        /**
+         * Builds the InsertResponse.
+         *
+         * @return the built InsertResponse
+         */
+
 
         public InsertResponse build() {
             return new InsertResponse(this);

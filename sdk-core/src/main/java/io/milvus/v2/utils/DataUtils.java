@@ -40,11 +40,33 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
+/**
+ * Helper for converting V2 insert/upsert/delete request data into gRPC requests. Validates
+ * row data against the collection schema and generates gRPC FieldData for normal, struct,
+ * and dynamic fields.
+ */
+
+
 public class DataUtils {
+
+    /**
+     * Data class for {@link DataUtils}.
+     */
+
 
     public static class InsertBuilderWrapper {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
+
+        /**
+         * Converts the given V2 insert request into a gRPC insert request, validating the row
+         * data against the collection schema.
+         *
+         * @param requestParam the V2 insert request
+         * @param descColl the described collection schema
+         * @return the built gRPC insert request
+         */
+
 
         public InsertRequest convertGrpcInsertRequest(InsertReq requestParam, DescribeCollectionResp descColl) {
             String dbName = requestParam.getDatabaseName();
@@ -63,6 +85,16 @@ public class DataUtils {
             fillFieldsData(requestParam, descColl);
             return insertBuilder.build();
         }
+
+        /**
+         * Converts the given V2 upsert request into a gRPC upsert request, validating the row
+         * data against the collection schema.
+         *
+         * @param requestParam the V2 upsert request
+         * @param descColl the described collection schema
+         * @return the built gRPC upsert request
+         */
+
 
         public UpsertRequest convertGrpcUpsertRequest(UpsertReq requestParam, DescribeCollectionResp descColl) {
             String dbName = requestParam.getDatabaseName();
@@ -554,9 +586,22 @@ public class DataUtils {
         }
     }
 
+    /**
+     * Data class for {@link DataUtils}.
+     */
+
+
     public static class InsertDataInfo {
         public CreateCollectionReq.FieldSchema field;
         public LinkedList<Object> data;
+
+        /**
+         * Creates an {@code InsertDataInfo} for a field and the data collected for it.
+         *
+         * @param field the field schema
+         * @param data the collected field data
+         */
+
 
         public InsertDataInfo(CreateCollectionReq.FieldSchema field, LinkedList<Object> data) {
             this.field = field;
@@ -624,6 +669,15 @@ public class DataUtils {
         }
     }
 
+    /**
+     * Generates a gRPC vector array for struct field data.
+     *
+     * @param dataType the vector data type
+     * @param objects the vector values to encode
+     * @param dim the expected vector dimension
+     * @return the built gRPC vector array
+     * @throws MilvusClientException if the data type is unsupported or the dimension mismatches
+     */
     @SuppressWarnings("unchecked")
     public static VectorArray genVectorArray(DataType dataType, List<?> objects, int dim) {
         VectorArray.Builder builder = VectorArray.newBuilder().setElementType(dataType).setDim(dim);
@@ -661,6 +715,14 @@ public class DataUtils {
         }
     }
 
+    /**
+     * Converts the given V2 delete request into a gRPC delete request.
+     *
+     * @param request the V2 delete request
+     * @return the built gRPC delete request
+     */
+
+
     public DeleteRequest ConvertToGrpcDeleteRequest(DeleteReq request) {
         DeleteRequest.Builder builder = DeleteRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -692,6 +754,15 @@ public class DataUtils {
         return ParamUtils.genFieldData(
                 fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, dimension);
     }
+
+    /**
+     * Validates and converts a field value against the field schema.
+     *
+     * @param field the field schema
+     * @param fieldData the field value to check
+     * @return the validated and converted field value
+     */
+
 
     public static Object checkFieldValue(CreateCollectionReq.FieldSchema field, JsonElement fieldData) {
         DataType dataType = ConvertUtils.toProtoDataType(field.getDataType());

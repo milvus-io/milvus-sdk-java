@@ -53,6 +53,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Service for collection-related operations, such as creating, loading, and describing collections.
  */
+
+
 public class CollectionService extends BaseService {
     private static final String ALLOW_INSERT_AUTO_ID = "allow_insert_auto_id";
 
@@ -67,6 +69,8 @@ public class CollectionService extends BaseService {
      * @param request the create collection request
      * @return {@code null}
      */
+
+
     public Void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         if (request.getCollectionSchema() != null) {
             //create collections with schema
@@ -170,6 +174,8 @@ public class CollectionService extends BaseService {
      * @param request the create collection request
      * @return {@code null}
      */
+
+
     public Void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -251,6 +257,8 @@ public class CollectionService extends BaseService {
      * @param dbName the database name
      * @return the list collections response
      */
+
+
     public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName) {
         String title = String.format("List collections in database: '%s'", dbName);
         ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder();
@@ -286,6 +294,8 @@ public class CollectionService extends BaseService {
      * @param request the drop collection request
      * @return {@code null}
      */
+
+
     public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -310,6 +320,8 @@ public class CollectionService extends BaseService {
      * @param request the truncate collection request
      * @return {@code null}
      */
+
+
     public Void truncateCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, TruncateCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -333,6 +345,8 @@ public class CollectionService extends BaseService {
      * @param request the alter collection properties request
      * @return {@code null}
      */
+
+
     public Void alterCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -365,6 +379,8 @@ public class CollectionService extends BaseService {
      * @param request the add collection field request
      * @return {@code null}
      */
+
+
     public Void addCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -421,6 +437,8 @@ public class CollectionService extends BaseService {
      * @param request the add collection struct field request
      * @return {@code null}
      */
+
+
     public Void addCollectionStructField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionStructFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -453,6 +471,8 @@ public class CollectionService extends BaseService {
      * @param request the alter collection field request
      * @return {@code null}
      */
+
+
     public Void alterCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -482,6 +502,8 @@ public class CollectionService extends BaseService {
      * @param request the drop collection field request
      * @return {@code null}
      */
+
+
     public Void dropCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -524,6 +546,8 @@ public class CollectionService extends BaseService {
      * @param request the drop collection properties request
      * @return {@code null}
      */
+
+
     public Void dropCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -552,6 +576,8 @@ public class CollectionService extends BaseService {
      * @param request the drop collection field properties request
      * @return {@code null}
      */
+
+
     public Void dropCollectionFieldProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -581,6 +607,8 @@ public class CollectionService extends BaseService {
      * @param request the has collection request
      * @return {@code true} if the collection exists, otherwise {@code false}
      */
+
+
     public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -602,6 +630,8 @@ public class CollectionService extends BaseService {
      * @param request the describe collection request
      * @return the describe collection response
      */
+
+
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -630,6 +660,8 @@ public class CollectionService extends BaseService {
      * @param request the batch describe collection request
      * @return the list of describe collection responses
      */
+
+
     public List<DescribeCollectionResp> batchDescribeCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BatchDescribeCollectionReq request) {
         String dbName = request.getDatabaseName();
         List<String> collectionNames = request.getCollectionNames();
@@ -658,6 +690,8 @@ public class CollectionService extends BaseService {
      * @param request the rename collection request
      * @return {@code null}
      */
+
+
     public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -693,6 +727,8 @@ public class CollectionService extends BaseService {
      * @param request the load collection request
      * @return {@code null}
      */
+
+
     public Void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -731,6 +767,8 @@ public class CollectionService extends BaseService {
      * @param request the refresh load request
      * @return {@code null}
      */
+
+
     public Void refreshLoad(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RefreshLoadReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -762,6 +800,8 @@ public class CollectionService extends BaseService {
      * @param request the release collection request
      * @return {@code null}
      */
+
+
     public Void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -784,6 +824,8 @@ public class CollectionService extends BaseService {
      * @param request the get load state request
      * @return {@code true} when the collection is loaded, otherwise {@code false}
      */
+
+
     public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
         return getLoadStateResponse(blockingStub, request).getState() == LoadState.LoadStateLoaded;
     }
@@ -796,6 +838,8 @@ public class CollectionService extends BaseService {
      * @param request the get load state request
      * @return the get load state response
      */
+
+
     public GetLoadStateResp getLoadStateV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
         GetLoadStateResponse response = getLoadStateResponse(blockingStub, request);
         GetLoadStateResp.GetLoadStateRespBuilder respBuilder = GetLoadStateResp.builder()
@@ -873,6 +917,8 @@ public class CollectionService extends BaseService {
      * @param request the get collection stats request
      * @return the collection statistics response
      */
+
+
     public GetCollectionStatsResp getCollectionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetCollectionStatsReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -899,6 +945,8 @@ public class CollectionService extends BaseService {
      *
      * @return an empty collection schema
      */
+
+
     public static CreateCollectionReq.CollectionSchema createSchema() {
         return CreateCollectionReq.CollectionSchema.builder()
                 .build();
@@ -911,6 +959,8 @@ public class CollectionService extends BaseService {
      * @param request the describe replicas request
      * @return the describe replicas response
      */
+
+
     public DescribeReplicasResp describeReplicas(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                  DescribeReplicasReq request) {
         String dbName = request.getDatabaseName();
@@ -967,6 +1017,8 @@ public class CollectionService extends BaseService {
      * @param request the add collection function request
      * @return {@code null}
      */
+
+
     public Void addCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                       AddCollectionFunctionReq request) {
         if (request.getFunction() == null) {
@@ -997,6 +1049,8 @@ public class CollectionService extends BaseService {
      * @param request the add function field request
      * @return {@code null}
      */
+
+
     public Void addFunctionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                  AddFunctionFieldReq request) {
         if (request.getFunction() == null) {
@@ -1102,6 +1156,8 @@ public class CollectionService extends BaseService {
      * @param request the alter collection function request
      * @return {@code null}
      */
+
+
     public Void alterCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                         AlterCollectionFunctionReq request) {
         if (request.getFunction() == null) {
@@ -1132,6 +1188,8 @@ public class CollectionService extends BaseService {
      * @param request the drop collection function request
      * @return {@code null}
      */
+
+
     public Void dropCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                        DropCollectionFunctionReq request) {
         if (StringUtils.isEmpty(request.getFunctionName())) {
@@ -1162,6 +1220,8 @@ public class CollectionService extends BaseService {
      * @param request the drop function field request
      * @return {@code null}
      */
+
+
     public Void dropFunctionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                   DropFunctionFieldReq request) {
         if (StringUtils.isEmpty(request.getFunctionName())) {

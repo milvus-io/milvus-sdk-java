@@ -28,6 +28,8 @@ import java.util.Map;
 /**
  * Request parameters for the {@code delete} API.
  */
+
+
 public class DeleteReq {
     private String databaseName;
     private String collectionName;
@@ -61,6 +63,8 @@ public class DeleteReq {
      *
      * @return the builder
      */
+
+
     public static DeleteReqBuilder builder() {
         return new DeleteReqBuilder();
     }
@@ -70,6 +74,8 @@ public class DeleteReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -79,6 +85,8 @@ public class DeleteReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -88,6 +96,8 @@ public class DeleteReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -97,6 +107,8 @@ public class DeleteReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -106,6 +118,8 @@ public class DeleteReq {
      *
      * @return the partition name
      */
+
+
     public String getPartitionName() {
         return partitionName;
     }
@@ -115,6 +129,8 @@ public class DeleteReq {
      *
      * @param partitionName the partition name
      */
+
+
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
     }
@@ -124,6 +140,8 @@ public class DeleteReq {
      *
      * @return the filter expression
      */
+
+
     public String getFilter() {
         return filter;
     }
@@ -133,6 +151,8 @@ public class DeleteReq {
      *
      * @param filter the filter expression
      */
+
+
     public void setFilter(String filter) {
         this.filter = filter;
     }
@@ -142,6 +162,8 @@ public class DeleteReq {
      *
      * @return the primary key values
      */
+
+
     public List<Object> getIds() {
         return ids;
     }
@@ -151,6 +173,8 @@ public class DeleteReq {
      *
      * @param ids the primary key values
      */
+
+
     public void setIds(List<Object> ids) {
         this.ids = ids;
     }
@@ -160,6 +184,8 @@ public class DeleteReq {
      *
      * @return the filter template values
      */
+
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -169,6 +195,8 @@ public class DeleteReq {
      *
      * @param filterTemplateValues the filter template values
      */
+
+
     public void setFilterTemplateValues(Map<String, Object> filterTemplateValues) {
         this.filterTemplateValues = filterTemplateValues;
     }
@@ -178,6 +206,8 @@ public class DeleteReq {
      *
      * @return the consistency level, or {@code null} for the server default
      */
+
+
     public ConsistencyLevel getConsistencyLevel() {
         return consistencyLevel;
     }
@@ -187,6 +217,8 @@ public class DeleteReq {
      *
      * @param consistencyLevel the consistency level, or {@code null} for the server default
      */
+
+
     public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
         this.consistencyLevel = consistencyLevel;
     }
@@ -204,6 +236,11 @@ public class DeleteReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DeleteReq} class.
+     */
+
+
     public static class DeleteReqBuilder {
         private String databaseName = "";
         private String collectionName;
@@ -219,6 +256,8 @@ public class DeleteReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DeleteReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -230,6 +269,8 @@ public class DeleteReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DeleteReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -241,6 +282,8 @@ public class DeleteReq {
          * @param partitionName the partition name
          * @return this builder
          */
+
+
         public DeleteReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
@@ -252,6 +295,8 @@ public class DeleteReq {
          * @param filter the filter expression
          * @return this builder
          */
+
+
         public DeleteReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
@@ -263,6 +308,8 @@ public class DeleteReq {
          * @param ids the primary key values
          * @return this builder
          */
+
+
         public DeleteReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
@@ -274,6 +321,8 @@ public class DeleteReq {
          * @param filterTemplateValues the filter template values
          * @return this builder
          */
+
+
         public DeleteReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
@@ -285,6 +334,8 @@ public class DeleteReq {
          * @param consistencyLevel the consistency level, or {@code null} for the server default
          * @return this builder
          */
+
+
         public DeleteReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -295,6 +346,8 @@ public class DeleteReq {
          *
          * @return the request
          */
+
+
         public DeleteReq build() {
             return new DeleteReq(this);
         }

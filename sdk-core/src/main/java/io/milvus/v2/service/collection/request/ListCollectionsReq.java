@@ -22,6 +22,8 @@ package io.milvus.v2.service.collection.request;
 /**
  * Request parameters for the {@code listCollections} API.
  */
+
+
 public class ListCollectionsReq {
     private String databaseName;
 
@@ -34,6 +36,8 @@ public class ListCollectionsReq {
      *
      * @return the builder
      */
+
+
     public static ListCollectionsReqBuilder builder() {
         return new ListCollectionsReqBuilder();
     }
@@ -44,6 +48,7 @@ public class ListCollectionsReq {
      *
      * @return the database name
      */
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -54,6 +59,7 @@ public class ListCollectionsReq {
      *
      * @param databaseName the database name
      */
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -64,6 +70,11 @@ public class ListCollectionsReq {
                 "databaseName='" + databaseName +
                 '}';
     }
+
+    /**
+     * Builder for {@link ListCollectionsReq} class.
+     */
+
 
     public static class ListCollectionsReqBuilder {
         private String databaseName;
@@ -77,6 +88,8 @@ public class ListCollectionsReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public ListCollectionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -87,6 +100,8 @@ public class ListCollectionsReq {
          *
          * @return the request
          */
+
+
         public ListCollectionsReq build() {
             return new ListCollectionsReq(this);
         }

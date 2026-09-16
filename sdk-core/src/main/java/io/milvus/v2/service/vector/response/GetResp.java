@@ -28,6 +28,8 @@ import java.util.List;
  * inherits all members from {@link QueryResp}. The result entities are accessed through the
  * inherited {@link #getQueryResults()}; {@link #getGetResults()} is kept as a deprecated alias.
  */
+
+
 public class GetResp extends QueryResp {
 
     private GetResp(QueryRespBuilder builder) {
@@ -39,6 +41,8 @@ public class GetResp extends QueryResp {
      *
      * @return the builder
      */
+
+
     public static GetRespBuilder builder() {
         return new GetRespBuilder();
     }
@@ -65,6 +69,11 @@ public class GetResp extends QueryResp {
         setQueryResults(getResults);
     }
 
+    /**
+     * Builder for {@link GetResp} class.
+     */
+
+
     public static class GetRespBuilder extends QueryRespBuilder {
 
         /**
@@ -80,42 +89,83 @@ public class GetResp extends QueryResp {
             return this;
         }
 
+        /**
+         * Sets the queried entities.
+         *
+         * @param queryResults the query results
+         * @return this builder
+         */
         @Override
         public GetRespBuilder queryResults(List<QueryResult> queryResults) {
             super.queryResults(queryResults);
             return this;
         }
 
+        /**
+         * Sets the session timestamp.
+         *
+         * @param sessionTs the session timestamp
+         * @return this builder
+         */
         @Override
         public GetRespBuilder sessionTs(long sessionTs) {
             super.sessionTs(sessionTs);
             return this;
         }
 
+        /**
+         * Sets the time cost of the query operation.
+         *
+         * @param cost the cost
+         * @return this builder
+         */
         @Override
         public GetRespBuilder cost(Long cost) {
             super.cost(cost);
             return this;
         }
 
+        /**
+         * Sets the number of bytes scanned remotely during the query.
+         *
+         * @param scannedRemoteBytes the scanned remote bytes
+         * @return this builder
+         */
         @Override
         public GetRespBuilder scannedRemoteBytes(Long scannedRemoteBytes) {
             super.scannedRemoteBytes(scannedRemoteBytes);
             return this;
         }
 
+        /**
+         * Sets the total number of bytes scanned during the query.
+         *
+         * @param scannedTotalBytes the scanned total bytes
+         * @return this builder
+         */
         @Override
         public GetRespBuilder scannedTotalBytes(Long scannedTotalBytes) {
             super.scannedTotalBytes(scannedTotalBytes);
             return this;
         }
 
+        /**
+         * Sets the cache hit ratio of the query.
+         *
+         * @param cacheHitRatio the cache hit ratio
+         * @return this builder
+         */
         @Override
         public GetRespBuilder cacheHitRatio(Float cacheHitRatio) {
             super.cacheHitRatio(cacheHitRatio);
             return this;
         }
 
+        /**
+         * Builds the {@link GetResp}.
+         *
+         * @return the response
+         */
         @Override
         public GetResp build() {
             return new GetResp(this);

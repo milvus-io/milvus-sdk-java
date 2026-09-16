@@ -41,6 +41,8 @@ import java.util.List;
  * Rows are buffered locally into chunked data files, then uploaded to the target volume
  * through a {@link VolumeFileManager}. The local copies are removed after a successful upload.
  */
+
+
 public class VolumeBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(VolumeBulkWriter.class);
 
@@ -48,6 +50,13 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     private final List<List<String>> remoteFiles;
     private final VolumeFileManager volumeFileManager;
     private final VolumeBulkWriterParam volumeBulkWriterParam;
+    /**
+     * Creates a bulk writer that writes chunked bulk data files and uploads them to a data volume service.
+     *
+     * @param bulkWriterParam the bulk writer parameters
+     * @throws IOException if the data directory cannot be created
+     */
+
 
     public VolumeBulkWriter(VolumeBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(),
@@ -82,6 +91,7 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     * @throws IOException if writing the row fails
     * @throws InterruptedException if the calling thread is interrupted while committing
     */
+
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
@@ -93,6 +103,7 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     * @param async if true, the flush runs in a background thread; otherwise it blocks until done
     * @throws InterruptedException if the calling thread is interrupted while waiting
     */
+
     public void commit(boolean async) throws InterruptedException {
         super.commit(async);
     }
@@ -113,6 +124,7 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     *
     * @return the list of remote file path batches
     */
+
     public List<List<String>> getBatchFiles() {
         return remoteFiles;
     }
@@ -122,6 +134,8 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     *
     * @return the volume upload result
     */
+
+
     public UploadFilesResult getVolumeUploadResult() {
         return UploadFilesResult.builder()
                 .volumeName(volumeBulkWriterParam.getVolumeName())
@@ -196,6 +210,7 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     *
     * @throws Exception if an error occurs while closing
     */
+
     public void close() throws Exception {
         try {
             logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");

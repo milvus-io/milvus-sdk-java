@@ -32,6 +32,8 @@ import java.util.Map;
 /**
  * Parameters for <code>createCollection</code> interface.
  */
+
+
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
@@ -59,42 +61,110 @@ public class CreateCollectionParam {
         this.properties.putAll(builder.properties);
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter methods
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Returns the shardsNum.
+     *
+     * @return the shardsNum
+     */
+
+
     public int getShardsNum() {
         return shardsNum;
     }
+
+    /**
+     * Returns the description.
+     *
+     * @return the description
+     */
+
 
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Returns the partitionsNum.
+     *
+     * @return the partitionsNum
+     */
+
+
     public int getPartitionsNum() {
         return partitionsNum;
     }
+
+    /**
+     * Returns the consistencyLevel.
+     *
+     * @return the consistencyLevel
+     */
+
 
     public ConsistencyLevelEnum getConsistencyLevel() {
         return consistencyLevel;
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the fieldTypes.
+     *
+     * @return the fieldTypes
+     */
+
 
     public List<FieldType> getFieldTypes() {
         return fieldTypes;
     }
 
+    /**
+     * Returns the enableDynamicField.
+     *
+     * @return the enableDynamicField
+     */
+
+
     public boolean isEnableDynamicField() {
         return enableDynamicField;
     }
+
+    /**
+     * Returns the properties.
+     *
+     * @return the properties
+     */
+
 
     public Map<String, String> getProperties() {
         return properties;
@@ -119,6 +189,8 @@ public class CreateCollectionParam {
     /**
      * Builder for {@link CreateCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
         private int shardsNum = 0; // default to 0, let server decide the value
@@ -142,6 +214,8 @@ public class CreateCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
@@ -156,6 +230,8 @@ public class CreateCollectionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -169,6 +245,8 @@ public class CreateCollectionParam {
          * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
          * @return <code>Builder</code>
          */
+
+
         public Builder withShardsNum(int shardsNum) {
             this.shardsNum = shardsNum;
             return this;
@@ -193,6 +271,8 @@ public class CreateCollectionParam {
          * @param description description of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withDescription(String description) {
             if (description == null) {
                 throw new IllegalArgumentException("Description cannot be null");
@@ -242,6 +322,8 @@ public class CreateCollectionParam {
          * @return <code>Builder</code>
          * @see ConsistencyLevelEnum
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             if (consistencyLevel == null) {
                 throw new IllegalArgumentException("ConsistencyLevel cannot be null");
@@ -259,6 +341,8 @@ public class CreateCollectionParam {
          * @param partitionsNum partitions number
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionsNum(int partitionsNum) {
             this.partitionsNum = partitionsNum;
             return this;
@@ -270,6 +354,8 @@ public class CreateCollectionParam {
          * @param schema the schema of collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withSchema(CollectionSchemaParam schema) {
             if (schema == null) {
                 throw new IllegalArgumentException("Schema cannot be null");
@@ -284,6 +370,8 @@ public class CreateCollectionParam {
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
+
+
         public Builder withReplicaNumber(int replicaNumber) {
             return this.withProperty(Constant.COLLECTION_REPLICA_NUMBER, Integer.toString(replicaNumber));
         }
@@ -294,6 +382,8 @@ public class CreateCollectionParam {
          * @param resourceGroups resource group names
          * @return <code>Builder</code>
          */
+
+
         public Builder withResourceGroups(List<String> resourceGroups) {
             if (resourceGroups == null) {
                 throw new IllegalArgumentException("ResourceGroups cannot be null");
@@ -309,6 +399,8 @@ public class CreateCollectionParam {
          * @param value the value
          * @return <code>Builder</code>
          */
+
+
         public Builder withProperty(String key, String value) {
             if (key == null) {
                 throw new IllegalArgumentException("Key cannot be null");
@@ -325,6 +417,8 @@ public class CreateCollectionParam {
          *
          * @return {@link CreateCollectionParam}
          */
+
+
         public CreateCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

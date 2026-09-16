@@ -24,12 +24,21 @@ import java.util.List;
 /**
  * Response returned by the {@code listFileResources} API.
  */
+
+
 public class ListFileResourcesResp {
     private final List<FileResourceInfo> resources;
 
     private ListFileResourcesResp(ListFileResourcesRespBuilder builder) {
         this.resources = builder.resources;
     }
+
+    /**
+     * Creates a new builder for {@code ListFileResourcesResp}.
+     *
+     * @return the builder
+     */
+
 
     public static ListFileResourcesRespBuilder builder() {
         return new ListFileResourcesRespBuilder();
@@ -40,6 +49,8 @@ public class ListFileResourcesResp {
      *
      * @return the list of file resources
      */
+
+
     public List<FileResourceInfo> getResources() {
         return resources;
     }
@@ -51,6 +62,11 @@ public class ListFileResourcesResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListFileResourcesResp} class.
+     */
+
+
     public static class ListFileResourcesRespBuilder {
         private List<FileResourceInfo> resources;
 
@@ -60,6 +76,8 @@ public class ListFileResourcesResp {
          * @param resources the list of file resources
          * @return this builder
          */
+
+
         public ListFileResourcesRespBuilder resources(List<FileResourceInfo> resources) {
             this.resources = resources;
             return this;
@@ -70,6 +88,8 @@ public class ListFileResourcesResp {
          *
          * @return the constructed {@code ListFileResourcesResp}
          */
+
+
         public ListFileResourcesResp build() {
             return new ListFileResourcesResp(this);
         }

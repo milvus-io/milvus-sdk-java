@@ -22,17 +22,41 @@ package io.milvus.exception;
 /**
  * Base class of Milvus exceptions.
  */
+
+
 public class MilvusException extends RuntimeException {
     protected Integer status;
+
+    /**
+     * Creates a Milvus exception with a message and status code.
+     *
+     * @param msg    the error message
+     * @param status the Milvus status code
+     */
+
 
     public MilvusException(String msg, Integer status) {
         super(msg);
         this.status = status;
     }
 
+    /**
+     * Returns the Milvus status code of this exception.
+     *
+     * @return the status code
+     */
+
+
     public Integer getStatus() {
         return status;
     }
+
+    /**
+     * Sets the Milvus status code of this exception.
+     *
+     * @param status the status code to set
+     */
+
 
     public void setStatus(Integer status) {
         this.status = status;

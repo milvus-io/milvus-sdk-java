@@ -24,6 +24,8 @@ import java.util.Arrays;
 /**
  * Data type of a field in a collection schema.
  */
+
+
 public enum DataType {
     /**
      * No data type specified.
@@ -126,6 +128,8 @@ public enum DataType {
      *
      * @return the numeric code
      */
+
+
     public int getCode() {
         return code;
     }
@@ -136,6 +140,8 @@ public enum DataType {
      * @param code the numeric code of the data type
      * @return the matching data type, or {@code null} if none matches
      */
+
+
     public static DataType forNumber(int code) {
         return Arrays.stream(DataType.values())
                 .filter(dataType -> dataType.code == code)

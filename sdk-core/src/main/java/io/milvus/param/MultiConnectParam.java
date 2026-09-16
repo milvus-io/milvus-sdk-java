@@ -32,6 +32,8 @@ import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_H
 /**
  * Parameters for client connection of multi server.
  */
+
+
 public class MultiConnectParam extends ConnectParam {
     private final List<ServerAddress> hosts;
     private final QueryNodeSingleSearch queryNodeSingleSearch;
@@ -45,13 +47,34 @@ public class MultiConnectParam extends ConnectParam {
         this.queryNodeSingleSearch = builder.queryNodeSingleSearch;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the hosts.
+     *
+     * @return the hosts
+     */
+
+
     public List<ServerAddress> getHosts() {
         return hosts;
     }
+
+    /**
+     * Returns the queryNodeSingleSearch.
+     *
+     * @return the queryNodeSingleSearch
+     */
+
 
     public QueryNodeSingleSearch getQueryNodeSingleSearch() {
         return queryNodeSingleSearch;
@@ -69,6 +92,8 @@ public class MultiConnectParam extends ConnectParam {
     /**
      * Builder for {@link MultiConnectParam}
      */
+
+
     public static class Builder extends ConnectParam.Builder {
         private List<ServerAddress> hosts;
         private QueryNodeSingleSearch queryNodeSingleSearch;
@@ -82,6 +107,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param hosts hosts serverAddresses
          * @return <code>Builder</code>
          */
+
+
         public Builder withHosts(List<ServerAddress> hosts) {
             if (hosts == null) {
                 throw new IllegalArgumentException("Hosts cannot be null");
@@ -96,6 +123,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param queryNodeSingleSearch query node single search for listener
          * @return <code>Builder</code>
          */
+
+
         public Builder withQueryNodeSingleSearch(QueryNodeSingleSearch queryNodeSingleSearch) {
             if (queryNodeSingleSearch == null) {
                 throw new IllegalArgumentException("Query node single search cannot be null");
@@ -110,6 +139,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param host host name/address
          * @return <code>Builder</code>
          */
+
+
         public Builder withHost(String host) {
             if (host == null) {
                 throw new IllegalArgumentException("Host cannot be null");
@@ -124,6 +155,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param port port value
          * @return <code>Builder</code>
          */
+
+
         public Builder withPort(int port) {
             super.withPort(port);
             return this;
@@ -135,6 +168,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param databaseName databaseName
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             super.withDatabaseName(databaseName);
             return this;
@@ -146,6 +181,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param uri the uri of Milvus instance
          * @return <code>Builder</code>
          */
+
+
         public Builder withUri(String uri) {
             super.withUri(uri);
             return this;
@@ -157,6 +194,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param token serving as the key for identification and authentication purposes.
          * @return <code>Builder</code>
          */
+
+
         public Builder withToken(String token) {
             super.withToken(token);
             return this;
@@ -169,6 +208,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param timeUnit       timeout unit
          * @return <code>Builder</code>
          */
+
+
         public Builder withConnectTimeout(long connectTimeout, TimeUnit timeUnit) {
             if (timeUnit == null) {
                 throw new IllegalArgumentException("TimeUnit cannot be null");
@@ -184,6 +225,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param timeUnit      keep-alive unit
          * @return <code>Builder</code>
          */
+
+
         public Builder withKeepAliveTime(long keepAliveTime, TimeUnit timeUnit) {
             if (timeUnit == null) {
                 throw new IllegalArgumentException("TimeUnit cannot be null");
@@ -199,6 +242,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param timeUnit         timeout unit
          * @return <code>Builder</code>
          */
+
+
         public Builder withKeepAliveTimeout(long keepAliveTimeout, TimeUnit timeUnit) {
             if (timeUnit == null) {
                 throw new IllegalArgumentException("TimeUnit cannot be null");
@@ -213,6 +258,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param enable true keep-alive
          * @return <code>Builder</code>
          */
+
+
         public Builder keepAliveWithoutCalls(boolean enable) {
             super.keepAliveWithoutCalls(enable);
             return this;
@@ -225,6 +272,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param timeUnit    timeout unit
          * @return <code>Builder</code>
          */
+
+
         public Builder withIdleTimeout(long idleTimeout, TimeUnit timeUnit) {
             if (timeUnit == null) {
                 throw new IllegalArgumentException("TimeUnit cannot be null");
@@ -242,6 +291,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param timeUnit deadline unit
          * @return <code>Builder</code>
          */
+
+
         public Builder withRpcDeadline(long deadline, TimeUnit timeUnit) {
             if (timeUnit == null) {
                 throw new IllegalArgumentException("TimeUnit cannot be null");
@@ -257,6 +308,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param password password
          * @return <code>Builder</code>
          */
+
+
         public Builder withAuthorization(String username, String password) {
             super.withAuthorization(username, password);
             return this;
@@ -268,6 +321,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param secure boolean
          * @return <code>Builder</code>
          */
+
+
         public Builder withSecure(boolean secure) {
             super.withSecure(secure);
             return this;
@@ -279,6 +334,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param authorization the authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
+
+
         public Builder withAuthorization(String authorization) {
             if (authorization == null) {
                 throw new IllegalArgumentException("Authorization cannot be null");
@@ -293,6 +350,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param clientKeyPath path of client.key
          * @return <code>Builder</code>
          */
+
+
         public Builder withClientKeyPath(String clientKeyPath) {
             if (clientKeyPath == null) {
                 throw new IllegalArgumentException("Client key path cannot be null");
@@ -307,6 +366,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param clientPemPath path of client.pem
          * @return <code>Builder</code>
          */
+
+
         public Builder withClientPemPath(String clientPemPath) {
             if (clientPemPath == null) {
                 throw new IllegalArgumentException("Client pem path cannot be null");
@@ -321,6 +382,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param caPemPath path of ca.pem
          * @return <code>Builder</code>
          */
+
+
         public Builder withCaPemPath(String caPemPath) {
             if (caPemPath == null) {
                 throw new IllegalArgumentException("CA pem path cannot be null");
@@ -335,6 +398,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param serverPemPath path of server.pem
          * @return <code>Builder</code>
          */
+
+
         public Builder withServerPemPath(String serverPemPath) {
             if (serverPemPath == null) {
                 throw new IllegalArgumentException("Server pem path cannot be null");
@@ -350,6 +415,8 @@ public class MultiConnectParam extends ConnectParam {
          * @param serverName path of server.pem
          * @return <code>Builder</code>
          */
+
+
         public Builder withServerName(String serverName) {
             if (serverName == null) {
                 throw new IllegalArgumentException("Server name cannot be null");
@@ -363,6 +430,8 @@ public class MultiConnectParam extends ConnectParam {
          *
          * @return {@link MultiConnectParam}
          */
+
+
         public MultiConnectParam build() throws ParamException {
             super.verify();
 

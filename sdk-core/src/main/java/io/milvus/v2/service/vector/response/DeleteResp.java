@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Response returned by the {@code delete} API.
  */
+
+
 public class DeleteResp {
     private long deleteCnt;
     /**
@@ -46,6 +48,8 @@ public class DeleteResp {
      *
      * @return the builder
      */
+
+
     public static DeleteRespBuilder builder() {
         return new DeleteRespBuilder();
     }
@@ -55,6 +59,8 @@ public class DeleteResp {
      *
      * @return the delete count
      */
+
+
     public long getDeleteCnt() {
         return deleteCnt;
     }
@@ -64,6 +70,8 @@ public class DeleteResp {
      *
      * @param deleteCnt the delete count
      */
+
+
     public void setDeleteCnt(long deleteCnt) {
         this.deleteCnt = deleteCnt;
     }
@@ -73,6 +81,8 @@ public class DeleteResp {
      *
      * @return the deleted primary keys
      */
+
+
     public List<Object> getPrimaryKeys() {
         return primaryKeys;
     }
@@ -82,6 +92,8 @@ public class DeleteResp {
      *
      * @param primaryKeys the deleted primary keys
      */
+
+
     public void setPrimaryKeys(List<Object> primaryKeys) {
         this.primaryKeys = primaryKeys;
     }
@@ -91,6 +103,8 @@ public class DeleteResp {
      *
      * @return the cost
      */
+
+
     public Long getCost() {
         return cost;
     }
@@ -100,6 +114,8 @@ public class DeleteResp {
      *
      * @param cost the cost
      */
+
+
     public void setCost(Long cost) {
         this.cost = cost;
     }
@@ -113,6 +129,11 @@ public class DeleteResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link DeleteResp} class.
+     */
+
+
     public static class DeleteRespBuilder {
         private long deleteCnt;
         private List<Object> primaryKeys = new ArrayList<>();
@@ -124,6 +145,8 @@ public class DeleteResp {
          * @param deleteCnt the delete count
          * @return this builder
          */
+
+
         public DeleteRespBuilder deleteCnt(long deleteCnt) {
             this.deleteCnt = deleteCnt;
             return this;
@@ -135,6 +158,8 @@ public class DeleteResp {
          * @param primaryKeys the deleted primary keys
          * @return this builder
          */
+
+
         public DeleteRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
@@ -146,6 +171,8 @@ public class DeleteResp {
          * @param cost the cost
          * @return this builder
          */
+
+
         public DeleteRespBuilder cost(Long cost) {
             this.cost = cost;
             return this;
@@ -156,6 +183,8 @@ public class DeleteResp {
          *
          * @return the response
          */
+
+
         public DeleteResp build() {
             return new DeleteResp(this);
         }

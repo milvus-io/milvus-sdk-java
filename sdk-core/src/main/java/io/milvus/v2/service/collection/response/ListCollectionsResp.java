@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Response of the {@code listCollections} API, holding the collections in a database.
  */
+
+
 public class ListCollectionsResp {
     private List<String> collectionNames;
     private List<CollectionInfo> collectionInfos;
@@ -41,6 +43,8 @@ public class ListCollectionsResp {
      *
      * @return the builder
      */
+
+
     public static ListCollectionsRespBuilder builder() {
         return new ListCollectionsRespBuilder();
     }
@@ -51,6 +55,7 @@ public class ListCollectionsResp {
      *
      * @return the collection names
      */
+
     public List<String> getCollectionNames() {
         return collectionNames;
     }
@@ -60,6 +65,8 @@ public class ListCollectionsResp {
      *
      * @return the collection information
      */
+
+
     public List<CollectionInfo> getCollectionInfos() {
         return collectionInfos;
     }
@@ -70,6 +77,7 @@ public class ListCollectionsResp {
      *
      * @param collectionNames the collection names
      */
+
     public void setCollectionNames(List<String> collectionNames) {
         this.collectionNames = collectionNames;
     }
@@ -79,6 +87,8 @@ public class ListCollectionsResp {
      *
      * @param collectionInfos the collection information
      */
+
+
     public void setCollectionInfos(List<CollectionInfo> collectionInfos) {
         this.collectionInfos = collectionInfos;
     }
@@ -91,6 +101,11 @@ public class ListCollectionsResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link ListCollectionsResp} class.
+     */
+
+
     public static class ListCollectionsRespBuilder {
         private List<String> collectionNames;
         private List<CollectionInfo> collectionInfos;
@@ -101,6 +116,8 @@ public class ListCollectionsResp {
          * @param collectionNames the collection names
          * @return this builder
          */
+
+
         public ListCollectionsRespBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
@@ -112,6 +129,8 @@ public class ListCollectionsResp {
          * @param collectionInfos the collection information
          * @return this builder
          */
+
+
         public ListCollectionsRespBuilder collectionInfos(List<CollectionInfo> collectionInfos) {
             this.collectionInfos = collectionInfos;
             return this;
@@ -122,6 +141,8 @@ public class ListCollectionsResp {
          *
          * @return the response
          */
+
+
         public ListCollectionsResp build() {
             return new ListCollectionsResp(this);
         }

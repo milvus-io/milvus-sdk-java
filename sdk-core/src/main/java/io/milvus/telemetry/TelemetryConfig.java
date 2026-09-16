@@ -20,6 +20,8 @@
 package io.milvus.telemetry;
 
 /** Configuration for client telemetry and server-pushed commands. */
+
+
 public final class TelemetryConfig {
     private volatile boolean enabled;
     private volatile long heartbeatIntervalMs;
@@ -38,29 +40,78 @@ public final class TelemetryConfig {
         this.clientId = builder.clientId == null ? "" : builder.clientId;
     }
 
+    /**
+     * Creates a new {@link TelemetryConfig} builder.
+     *
+     * @return a new builder
+     */
+
+
     public static Builder builder() {
         return new Builder();
     }
+
+    /**
+     * Returns a telemetry config with default settings.
+     *
+     * @return the default config
+     */
+
 
     public static TelemetryConfig defaults() {
         return builder().build();
     }
 
+    /**
+     * Returns whether client telemetry is enabled.
+     *
+     * @return {@code true} if telemetry is enabled
+     */
+
+
     public boolean isEnabled() {
         return enabled;
     }
+
+    /**
+     * Returns the heartbeat interval in milliseconds.
+     *
+     * @return the heartbeat interval
+     */
+
 
     public long getHeartbeatIntervalMs() {
         return heartbeatIntervalMs;
     }
 
+    /**
+     * Returns the sampling rate of telemetry operations, in {@code [0, 1]}.
+     *
+     * @return the sampling rate
+     */
+
+
     public double getSamplingRate() {
         return samplingRate;
     }
 
+    /**
+     * Returns the maximum number of recorded errors.
+     *
+     * @return the error max count
+     */
+
+
     public int getErrorMaxCount() {
         return errorMaxCount;
     }
+
+    /**
+     * Returns the pinned client ID, empty when none is configured.
+     *
+     * @return the client ID
+     */
+
 
     public String getClientId() {
         return clientId;
@@ -85,6 +136,11 @@ public final class TelemetryConfig {
         return Math.max(0.0, Math.min(1.0, samplingRate));
     }
 
+    /**
+     * Builder for {@link TelemetryConfig} class.
+     */
+
+
     public static final class Builder {
         private boolean enabled = true;
         // Milliseconds between heartbeats, and therefore the metrics window: each heartbeat
@@ -96,31 +152,78 @@ public final class TelemetryConfig {
         private int errorMaxCount = 100;
         private String clientId = "";
 
+        /**
+         * Sets whether client telemetry is enabled.
+         *
+         * @param enabled {@code true} to enable telemetry
+         * @return this builder
+         */
+
+
         public Builder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
         }
+
+        /**
+         * Sets the heartbeat interval in milliseconds.
+         *
+         * @param heartbeatIntervalMs the heartbeat interval, must be positive
+         * @return this builder
+         */
+
 
         public Builder heartbeatIntervalMs(long heartbeatIntervalMs) {
             this.heartbeatIntervalMs = heartbeatIntervalMs;
             return this;
         }
 
+        /**
+         * Sets the sampling rate of telemetry operations.
+         *
+         * @param samplingRate the sampling rate, clamped to {@code [0, 1]}
+         * @return this builder
+         */
+
+
         public Builder samplingRate(double samplingRate) {
             this.samplingRate = samplingRate;
             return this;
         }
+
+        /**
+         * Sets the maximum number of recorded errors.
+         *
+         * @param errorMaxCount the error max count, must be positive
+         * @return this builder
+         */
+
 
         public Builder errorMaxCount(int errorMaxCount) {
             this.errorMaxCount = errorMaxCount;
             return this;
         }
 
-        /** Pins the telemetry client ID across process restarts. */
+        /**
+         * Pins the telemetry client ID across process restarts.
+         *
+         * @param clientId the client ID to pin, or empty to generate one at runtime
+         * @return this builder
+         */
+
+
         public Builder clientId(String clientId) {
             this.clientId = clientId;
             return this;
         }
+
+        /**
+         * Builds the {@link TelemetryConfig} instance.
+         *
+         * @return the built telemetry config
+         * @throws IllegalArgumentException if the heartbeat interval is not positive
+         */
+
 
         public TelemetryConfig build() {
             return new TelemetryConfig(this);

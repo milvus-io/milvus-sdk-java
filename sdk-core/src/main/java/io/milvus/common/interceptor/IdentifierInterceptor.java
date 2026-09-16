@@ -14,11 +14,20 @@ import io.grpc.*;
  * <p>This aligns Java SDK behavior with pymilvus, which implements the same mechanism
  * via {@code header_adder_interceptor}.
  */
+
+
 public class IdentifierInterceptor implements ClientInterceptor {
     private static final Metadata.Key<String> IDENTIFIER_KEY =
             Metadata.Key.of("identifier", Metadata.ASCII_STRING_MARSHALLER);
 
     private final String identifier;
+
+    /**
+     * Creates an interceptor that injects the given connection identifier into outgoing RPCs.
+     *
+     * @param identifier the connection identifier returned by the server during Connect
+     */
+
 
     public IdentifierInterceptor(long identifier) {
         this.identifier = String.valueOf(identifier);

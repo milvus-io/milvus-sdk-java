@@ -24,7 +24,15 @@ import io.milvus.param.R;
 /**
  * Exception for unexpected exception.
  */
+
+
 public class UnExpectedException extends MilvusException {
+    /**
+     * Creates an exception for an unexpected error.
+     *
+     * @param msg the error message
+     */
+
     public UnExpectedException(String msg) {
         super(msg, R.Status.UnexpectedError.getCode());
     }

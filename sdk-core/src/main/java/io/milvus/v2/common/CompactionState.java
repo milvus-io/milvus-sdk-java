@@ -22,6 +22,8 @@ package io.milvus.v2.common;
 /**
  * State of a compaction job as reported by the {@code getCompactionState} API.
  */
+
+
 public enum CompactionState {
     /**
      * The compaction state is undefined.
@@ -47,6 +49,8 @@ public enum CompactionState {
      *
      * @return the numeric code
      */
+
+
     public int getCode() {
         return code;
     }

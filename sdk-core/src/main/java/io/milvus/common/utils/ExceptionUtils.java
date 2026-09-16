@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
  * <p>These helpers centralize error logging, response-status checking and argument validation so
  * that the callers report consistent error messages.
  */
+
+
 public class ExceptionUtils {
     private static final Logger logger = LoggerFactory.getLogger(ExceptionUtils.class);
 
@@ -39,6 +41,8 @@ public class ExceptionUtils {
      * @param msg the error message
      * @throws UnExpectedException always
      */
+
+
     public static void throwUnExpectedException(String msg) {
         logger.error(msg);
         throw new UnExpectedException(msg);
@@ -51,6 +55,8 @@ public class ExceptionUtils {
      * @param r the response wrapper to check
      * @throws RuntimeException if the response status is not {@code Success}
      */
+
+
     public static void handleResponseStatus(R<?> r) {
         if (r.getStatus() != R.Status.Success.getCode()) {
             throw new RuntimeException(r.getMessage());
@@ -64,6 +70,8 @@ public class ExceptionUtils {
      * @param msg the message prefix describing the missing argument
      * @throws IllegalArgumentException if {@code obj} is {@code null}
      */
+
+
     public static void checkNotNull(Object obj, String msg) {
         if (obj == null) {
             throw new IllegalArgumentException(msg + "cannot be null");

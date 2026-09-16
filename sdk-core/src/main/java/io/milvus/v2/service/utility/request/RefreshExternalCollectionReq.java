@@ -24,6 +24,8 @@ import com.google.gson.JsonObject;
 /**
  * Request parameters for the {@code refreshExternalCollection} API.
  */
+
+
 public class RefreshExternalCollectionReq {
     private final String databaseName;
     private final String collectionName;
@@ -37,6 +39,13 @@ public class RefreshExternalCollectionReq {
         this.externalSpec = builder.externalSpec;
     }
 
+    /**
+     * Creates a new builder for {@code RefreshExternalCollectionReq}.
+     *
+     * @return the builder
+     */
+
+
     public static RefreshExternalCollectionReqBuilder builder() {
         return new RefreshExternalCollectionReqBuilder();
     }
@@ -46,6 +55,8 @@ public class RefreshExternalCollectionReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -55,6 +66,8 @@ public class RefreshExternalCollectionReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -64,6 +77,8 @@ public class RefreshExternalCollectionReq {
      *
      * @return the external source name
      */
+
+
     public String getExternalSource() {
         return externalSource;
     }
@@ -73,6 +88,8 @@ public class RefreshExternalCollectionReq {
      *
      * @return the external source specification
      */
+
+
     public JsonObject getExternalSpec() {
         return externalSpec;
     }
@@ -87,6 +104,11 @@ public class RefreshExternalCollectionReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link RefreshExternalCollectionReq} class.
+     */
+
+
     public static class RefreshExternalCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -99,6 +121,8 @@ public class RefreshExternalCollectionReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public RefreshExternalCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -110,6 +134,8 @@ public class RefreshExternalCollectionReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public RefreshExternalCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -121,6 +147,8 @@ public class RefreshExternalCollectionReq {
          * @param externalSource the external source name
          * @return this builder
          */
+
+
         public RefreshExternalCollectionReqBuilder externalSource(String externalSource) {
             this.externalSource = externalSource;
             return this;
@@ -132,6 +160,8 @@ public class RefreshExternalCollectionReq {
          * @param externalSpec the external source specification
          * @return this builder
          */
+
+
         public RefreshExternalCollectionReqBuilder externalSpec(JsonObject externalSpec) {
             this.externalSpec = externalSpec;
             return this;
@@ -142,6 +172,8 @@ public class RefreshExternalCollectionReq {
          *
          * @return the constructed {@code RefreshExternalCollectionReq}
          */
+
+
         public RefreshExternalCollectionReq build() {
             return new RefreshExternalCollectionReq(this);
         }

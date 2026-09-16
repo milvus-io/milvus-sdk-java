@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Response returned by the {@code listPrivilegeGroups} API.
  */
+
+
 public class ListPrivilegeGroupsResp {
     private List<PrivilegeGroup> privilegeGroups;
 
@@ -39,6 +41,8 @@ public class ListPrivilegeGroupsResp {
      *
      * @return the list of privilege groups
      */
+
+
     public List<PrivilegeGroup> getPrivilegeGroups() {
         return privilegeGroups;
     }
@@ -48,6 +52,8 @@ public class ListPrivilegeGroupsResp {
      *
      * @param privilegeGroups the list of privilege groups
      */
+
+
     public void setPrivilegeGroups(List<PrivilegeGroup> privilegeGroups) {
         this.privilegeGroups = privilegeGroups;
     }
@@ -64,9 +70,16 @@ public class ListPrivilegeGroupsResp {
      *
      * @return a new {@link ListPrivilegeGroupsRespBuilder}
      */
+
+
     public static ListPrivilegeGroupsRespBuilder builder() {
         return new ListPrivilegeGroupsRespBuilder();
     }
+
+    /**
+     * Builder for {@link ListPrivilegeGroupsResp} class.
+     */
+
 
     public static class ListPrivilegeGroupsRespBuilder {
         private List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
@@ -80,6 +93,8 @@ public class ListPrivilegeGroupsResp {
          * @param privilegeGroups the list of privilege groups
          * @return this builder
          */
+
+
         public ListPrivilegeGroupsRespBuilder privilegeGroups(List<PrivilegeGroup> privilegeGroups) {
             this.privilegeGroups = privilegeGroups;
             return this;
@@ -90,6 +105,8 @@ public class ListPrivilegeGroupsResp {
          *
          * @return the built response
          */
+
+
         public ListPrivilegeGroupsResp build() {
             return new ListPrivilegeGroupsResp(this);
         }

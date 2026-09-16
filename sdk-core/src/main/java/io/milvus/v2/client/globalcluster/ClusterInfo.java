@@ -22,10 +22,21 @@ package io.milvus.v2.client.globalcluster;
 /**
  * Describes a single cluster discovered in a global cluster deployment.
  */
+
+
 public class ClusterInfo {
     private final String clusterId;
     private final String endpoint;
     private final int capability;
+
+    /**
+     * Creates a {@code ClusterInfo} for the given cluster.
+     *
+     * @param clusterId the cluster ID
+     * @param endpoint the endpoint of the cluster
+     * @param capability the capability bit flags of the cluster
+     */
+
 
     public ClusterInfo(String clusterId, String endpoint, int capability) {
         this.clusterId = clusterId;
@@ -38,6 +49,8 @@ public class ClusterInfo {
      *
      * @return the cluster ID
      */
+
+
     public String getClusterId() {
         return clusterId;
     }
@@ -47,6 +60,8 @@ public class ClusterInfo {
      *
      * @return the cluster endpoint
      */
+
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -56,6 +71,8 @@ public class ClusterInfo {
      *
      * @return the capability bit flags
      */
+
+
     public int getCapability() {
         return capability;
     }
@@ -65,6 +82,8 @@ public class ClusterInfo {
      *
      * @return true if the cluster is writable
      */
+
+
     public boolean isPrimary() {
         return (capability & ClusterCapability.WRITABLE) != 0;
     }

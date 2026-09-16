@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac.request;
 /**
  * Request parameters for the {@code dropRole} API.
  */
+
+
 public class DropRoleReq {
     private String roleName;
     private boolean forceDrop;
@@ -36,6 +38,8 @@ public class DropRoleReq {
      *
      * @return the role name
      */
+
+
     public String getRoleName() {
         return roleName;
     }
@@ -45,6 +49,8 @@ public class DropRoleReq {
      *
      * @param roleName the role name
      */
+
+
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
@@ -54,6 +60,8 @@ public class DropRoleReq {
      *
      * @return {@code true} if the role is force dropped, {@code false} otherwise
      */
+
+
     public boolean isForceDrop() {
         return forceDrop;
     }
@@ -63,6 +71,8 @@ public class DropRoleReq {
      *
      * @param forceDrop {@code true} to force drop the role, {@code false} otherwise
      */
+
+
     public void setForceDrop(boolean forceDrop) {
         this.forceDrop = forceDrop;
     }
@@ -80,9 +90,16 @@ public class DropRoleReq {
      *
      * @return a new {@link DropRoleReqBuilder}
      */
+
+
     public static DropRoleReqBuilder builder() {
         return new DropRoleReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropRoleReq} class.
+     */
+
 
     public static class DropRoleReqBuilder {
         private String roleName;
@@ -97,6 +114,8 @@ public class DropRoleReq {
          * @param roleName the role name
          * @return this builder
          */
+
+
         public DropRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
@@ -108,6 +127,8 @@ public class DropRoleReq {
          * @param forceDrop {@code true} to force drop the role, {@code false} otherwise
          * @return this builder
          */
+
+
         public DropRoleReqBuilder forceDrop(boolean forceDrop) {
             this.forceDrop = forceDrop;
             return this;
@@ -118,6 +139,8 @@ public class DropRoleReq {
          *
          * @return the built request
          */
+
+
         public DropRoleReq build() {
             return new DropRoleReq(this);
         }

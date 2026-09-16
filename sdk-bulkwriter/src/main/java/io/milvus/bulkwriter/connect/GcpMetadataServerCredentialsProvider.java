@@ -47,6 +47,8 @@ import java.util.concurrent.TimeUnit;
  * token is still valid, the cached token is served until it truly expires; the cached
  * fast path is lock-free, since {@code fetch()} is invoked per storage request.</p>
  */
+
+
 public class GcpMetadataServerCredentialsProvider implements Provider {
     private static final String TOKEN_URL =
             "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token";
@@ -62,6 +64,10 @@ public class GcpMetadataServerCredentialsProvider implements Provider {
 
     private volatile Credentials cachedCredentials;
     private volatile long expiresAtMillis;
+    /**
+     * Creates a credentials provider that fetches a bearer token from the GCP metadata server.
+     */
+
 
     public GcpMetadataServerCredentialsProvider() {
         this(TOKEN_URL, new OkHttpClient.Builder()

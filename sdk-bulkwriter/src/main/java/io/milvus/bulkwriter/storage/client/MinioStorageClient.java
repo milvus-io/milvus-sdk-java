@@ -75,6 +75,8 @@ import static com.amazonaws.services.s3.internal.Constants.MB;
  * listener reports upload progress. This class also adjusts the multipart upload completion flow
  * for full MinIO/S3 compatibility.
  */
+
+
 public class MinioStorageClient extends MinioAsyncClient implements StorageClient {
     private static final Logger logger = LoggerFactory.getLogger(MinioStorageClient.class);
     private static final String UPLOAD_ID = "uploadId";
@@ -101,6 +103,8 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
      * @param connectParam the connection parameters
      * @return the configured {@link MinioStorageClient}
      */
+
+
     public static MinioStorageClient getStorageClient(S3ConnectParam connectParam) {
         return getStorageClient(connectParam.getCloudName(), connectParam.getEndpoint(),
                 connectParam.getAccessKey(), connectParam.getSecretKey(), connectParam.getSessionToken(),
@@ -121,6 +125,8 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
      *                   own one
      * @return the configured {@link MinioStorageClient}
      */
+
+
     public static MinioStorageClient getStorageClient(String cloudName,
                                                       String endpoint,
                                                       String accessKey,
@@ -218,6 +224,8 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
      * @return the object size in bytes
      * @throws Exception if the object cannot be statted
      */
+
+
     public Long getObjectEntity(String bucketName, String objectKey) throws Exception {
         StatObjectArgs statObjectArgs = StatObjectArgs.builder()
                 .bucket(bucketName)
@@ -235,6 +243,8 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
      * @param objectKey the object key
      * @throws Exception if the upload fails
      */
+
+
     public void putObject(File file, String bucketName, String objectKey) throws Exception {
         putObject(file, bucketName, objectKey, null, 0L);
     }
@@ -337,6 +347,8 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
      * @return {@code true} if the bucket exists, {@code false} otherwise
      * @throws Exception if the bucket existence cannot be determined
      */
+
+
     public boolean checkBucketExist(String bucketName) throws Exception {
         BucketExistsArgs bucketExistsArgs = BucketExistsArgs.builder()
                 .bucket(bucketName)

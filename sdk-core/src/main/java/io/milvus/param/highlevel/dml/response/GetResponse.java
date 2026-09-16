@@ -26,6 +26,8 @@ import java.util.List;
 /**
  * Parameters for <code>get</code> interface.
  */
+
+
 public class GetResponse {
     public List<QueryResultsWrapper.RowRecord> rowRecords;
 
@@ -33,10 +35,22 @@ public class GetResponse {
         this.rowRecords = builder.rowRecords;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Returns the rowRecords.
+     *
+     * @return the rowRecords
+     */
     // Getter method to replace @Getter annotation
     public List<QueryResultsWrapper.RowRecord> getRowRecords() {
         return rowRecords;
@@ -45,16 +59,33 @@ public class GetResponse {
     /**
      * Builder for {@link GetResponse} class to replace @Builder annotation.
      */
+
+
     public static class Builder {
         private List<QueryResultsWrapper.RowRecord> rowRecords;
 
         private Builder() {
         }
 
+        /**
+         * Sets the rowRecords.
+         *
+         * @param rowRecords the rowRecords
+         * @return this builder
+         */
+
+
         public Builder rowRecords(List<QueryResultsWrapper.RowRecord> rowRecords) {
             this.rowRecords = rowRecords;
             return this;
         }
+
+        /**
+         * Builds the GetResponse.
+         *
+         * @return the built GetResponse
+         */
+
 
         public GetResponse build() {
             return new GetResponse(this);

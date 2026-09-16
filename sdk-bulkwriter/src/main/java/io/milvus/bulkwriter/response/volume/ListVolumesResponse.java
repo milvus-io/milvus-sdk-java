@@ -28,6 +28,8 @@ import java.util.List;
  * <p>It carries the total count of volumes, the pagination information, and the list of
  * {@link VolumeInfo} entries on the current page.</p>
  */
+
+
 public class ListVolumesResponse {
     private Integer count;
     private Integer currentPage;
@@ -37,6 +39,8 @@ public class ListVolumesResponse {
     /**
      * Constructs an empty {@code ListVolumesResponse}.
      */
+
+
     public ListVolumesResponse() {
     }
 
@@ -48,6 +52,8 @@ public class ListVolumesResponse {
      * @param pageSize    the number of volumes per page
      * @param volumes     the list of volumes on the current page
      */
+
+
     public ListVolumesResponse(Integer count, Integer currentPage, Integer pageSize, List<VolumeInfo> volumes) {
         this.count = count;
         this.currentPage = currentPage;
@@ -67,6 +73,8 @@ public class ListVolumesResponse {
      *
      * @return the total number of volumes
      */
+
+
     public Integer getCount() {
         return count;
     }
@@ -76,6 +84,8 @@ public class ListVolumesResponse {
      *
      * @param count the total number of volumes
      */
+
+
     public void setCount(Integer count) {
         this.count = count;
     }
@@ -85,6 +95,8 @@ public class ListVolumesResponse {
      *
      * @return the current page number
      */
+
+
     public Integer getCurrentPage() {
         return currentPage;
     }
@@ -94,6 +106,8 @@ public class ListVolumesResponse {
      *
      * @param currentPage the current page number
      */
+
+
     public void setCurrentPage(Integer currentPage) {
         this.currentPage = currentPage;
     }
@@ -103,6 +117,8 @@ public class ListVolumesResponse {
      *
      * @return the page size
      */
+
+
     public Integer getPageSize() {
         return pageSize;
     }
@@ -112,6 +128,8 @@ public class ListVolumesResponse {
      *
      * @param pageSize the page size
      */
+
+
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
@@ -121,6 +139,8 @@ public class ListVolumesResponse {
      *
      * @return the list of volumes
      */
+
+
     public List<VolumeInfo> getVolumes() {
         return volumes;
     }
@@ -130,6 +150,8 @@ public class ListVolumesResponse {
      *
      * @param volumes the list of volumes
      */
+
+
     public void setVolumes(List<VolumeInfo> volumes) {
         this.volumes = volumes;
     }
@@ -148,6 +170,8 @@ public class ListVolumesResponse {
      *
      * @return a {@code ListVolumesResponse} builder
      */
+
+
     public static ListVolumesResponseBuilder builder() {
         return new ListVolumesResponseBuilder();
     }
@@ -155,6 +179,8 @@ public class ListVolumesResponse {
     /**
      * Builder for {@link ListVolumesResponse}.
      */
+
+
     public static class ListVolumesResponseBuilder {
         private Integer count;
         private Integer currentPage;
@@ -174,6 +200,8 @@ public class ListVolumesResponse {
          * @param count the total number of volumes
          * @return this builder
          */
+
+
         public ListVolumesResponseBuilder count(Integer count) {
             this.count = count;
             return this;
@@ -185,6 +213,8 @@ public class ListVolumesResponse {
          * @param currentPage the current page number
          * @return this builder
          */
+
+
         public ListVolumesResponseBuilder currentPage(Integer currentPage) {
             this.currentPage = currentPage;
             return this;
@@ -196,6 +226,8 @@ public class ListVolumesResponse {
          * @param pageSize the page size
          * @return this builder
          */
+
+
         public ListVolumesResponseBuilder pageSize(Integer pageSize) {
             this.pageSize = pageSize;
             return this;
@@ -207,6 +239,8 @@ public class ListVolumesResponse {
          * @param volumes the list of volumes
          * @return this builder
          */
+
+
         public ListVolumesResponseBuilder volumes(List<VolumeInfo> volumes) {
             this.volumes = volumes;
             return this;
@@ -217,6 +251,8 @@ public class ListVolumesResponse {
          *
          * @return the built {@code ListVolumesResponse}
          */
+
+
         public ListVolumesResponse build() {
             return new ListVolumesResponse(this);
         }

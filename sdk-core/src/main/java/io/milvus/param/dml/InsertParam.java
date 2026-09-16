@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Parameters for <code>insert</code> interface.
  */
+
+
 public class InsertParam {
     protected final List<Field> fields;
     protected final List<JsonObject> rows;
@@ -50,30 +52,77 @@ public class InsertParam {
         this.rows = builder.rows;
     }
 
+    /**
+     * Returns the fields.
+     *
+     * @return the fields
+     */
     // Getter methods to replace @Getter annotation
     public List<Field> getFields() {
         return fields;
     }
 
+    /**
+     * Returns the rows.
+     *
+     * @return the rows
+     */
+
+
     public List<JsonObject> getRows() {
         return rows;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionName.
+     *
+     * @return the partitionName
+     */
+
 
     public String getPartitionName() {
         return partitionName;
     }
 
+    /**
+     * Returns the rowCount.
+     *
+     * @return the rowCount
+     */
+
+
     public int getRowCount() {
         return rowCount;
     }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -82,6 +131,8 @@ public class InsertParam {
     /**
      * Builder for {@link InsertParam} class.
      */
+
+
     public static class Builder {
         protected String databaseName;
         protected String collectionName;
@@ -99,6 +150,8 @@ public class InsertParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -110,6 +163,8 @@ public class InsertParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -125,6 +180,8 @@ public class InsertParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionName(String partitionName) {
             if (partitionName == null) {
                 throw new IllegalArgumentException("partitionName cannot be null");
@@ -140,6 +197,8 @@ public class InsertParam {
          * @return <code>Builder</code>
          * @see InsertParam.Field
          */
+
+
         public Builder withFields(List<InsertParam.Field> fields) {
             if (fields == null) {
                 throw new IllegalArgumentException("fields cannot be null");
@@ -174,6 +233,8 @@ public class InsertParam {
          * @return <code>Builder</code>
          * @see JsonObject
          */
+
+
         public Builder withRows(List<JsonObject> rows) {
             if (rows == null) {
                 throw new IllegalArgumentException("rows cannot be null");
@@ -187,6 +248,8 @@ public class InsertParam {
          *
          * @return {@link InsertParam}
          */
+
+
         public InsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -280,9 +343,19 @@ public class InsertParam {
      * (why? because the rpc proto only support int32/int64 type, actually Int8/Int16/Int32 use int32 type to encode/decode)
      *
      */
+
+
     public static class Field {
         private final String name;
         private final List<?> values;
+
+        /**
+         * Constructs a new Field with the given name and values.
+         *
+         * @param name the field name
+         * @param values the field values
+         */
+
 
         public Field(String name, List<?> values) {
             this.name = name;
@@ -294,6 +367,8 @@ public class InsertParam {
          *
          * @return <code>String</code>
          */
+
+
         public String getName() {
             return name;
         }
@@ -303,6 +378,8 @@ public class InsertParam {
          *
          * @return <code>List</code>
          */
+
+
         public List<?> getValues() {
             return values;
         }
@@ -316,9 +393,21 @@ public class InsertParam {
                     '}';
         }
 
+        /**
+         * Creates a new builder.
+         *
+         * @return the builder
+         */
+
+
         public static Builder builder() {
             return new Builder();
         }
+
+        /**
+         * Builder for {@link InsertParam.Field} class.
+         */
+
 
         public static class Builder {
             private String name;
@@ -327,15 +416,38 @@ public class InsertParam {
             private Builder() {
             }
 
+            /**
+             * Sets the name.
+             *
+             * @param name the name
+             * @return this builder
+             */
+
+
             public Builder name(String name) {
                 this.name = name;
                 return this;
             }
 
+            /**
+             * Sets the values.
+             *
+             * @param values the values
+             * @return this builder
+             */
+
+
             public Builder values(List<?> values) {
                 this.values = values;
                 return this;
             }
+
+            /**
+             * Builds the Field.
+             *
+             * @return the built Field
+             */
+
 
             public Field build() {
                 return new Field(name, values);

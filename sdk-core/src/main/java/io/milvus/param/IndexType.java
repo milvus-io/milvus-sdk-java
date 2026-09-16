@@ -23,6 +23,8 @@ package io.milvus.param;
  * Represents the available index types.
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Types</a>
  */
+
+
 public enum IndexType {
     None(0),
     // Only supported for float vectors
@@ -77,9 +79,23 @@ public enum IndexType {
         this.code = code;
     }
 
+    /**
+     * Returns the name.
+     *
+     * @return the name
+     */
+
+
     public String getName() {
         return name;
     }
+
+    /**
+     * Returns the code.
+     *
+     * @return the code
+     */
+
 
     public int getCode() {
         return code;

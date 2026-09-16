@@ -40,6 +40,8 @@ import java.util.Map;
 /**
  * Parameters for <code>createCollection</code> interface.
  */
+
+
 public class CreateSimpleCollectionParam {
     private final CreateCollectionParam createCollectionParam;
     private final CreateIndexParam createIndexParam;
@@ -51,18 +53,44 @@ public class CreateSimpleCollectionParam {
         this.loadCollectionParam = loadCollectionParam;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the createCollectionParam.
+     *
+     * @return the createCollectionParam
+     */
     // Getter methods to replace @Getter annotation
     public CreateCollectionParam getCreateCollectionParam() {
         return createCollectionParam;
     }
 
+    /**
+     * Returns the createIndexParam.
+     *
+     * @return the createIndexParam
+     */
+
+
     public CreateIndexParam getCreateIndexParam() {
         return createIndexParam;
     }
+
+    /**
+     * Returns the loadCollectionParam.
+     *
+     * @return the loadCollectionParam
+     */
+
 
     public LoadCollectionParam getLoadCollectionParam() {
         return loadCollectionParam;
@@ -81,6 +109,8 @@ public class CreateSimpleCollectionParam {
     /**
      * Builder for {@link CreateSimpleCollectionParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
         private int dimension;
@@ -106,6 +136,8 @@ public class CreateSimpleCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName cannot be null");
@@ -121,6 +153,9 @@ public class CreateSimpleCollectionParam {
          * @param dimension collection vector dimension
          * @return <code>Builder</code>
          */
+
+
+
         public Builder withDimension(int dimension) {
             this.dimension = dimension;
             return this;
@@ -132,6 +167,8 @@ public class CreateSimpleCollectionParam {
          * @param metricType metricType of vectorField
          * @return <code>Builder</code>
          */
+
+
         public Builder withMetricType(MetricType metricType) {
             if (metricType == null) {
                 throw new IllegalArgumentException("metricType cannot be null");
@@ -146,6 +183,8 @@ public class CreateSimpleCollectionParam {
          * @param description description of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withDescription(String description) {
             if (description == null) {
                 throw new IllegalArgumentException("description cannot be null");
@@ -160,6 +199,8 @@ public class CreateSimpleCollectionParam {
          * @param primaryField primaryFiled name of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withPrimaryField(String primaryField) {
             if (primaryField == null) {
                 throw new IllegalArgumentException("primaryField cannot be null");
@@ -174,6 +215,8 @@ public class CreateSimpleCollectionParam {
          * @param vectorField vectorField name of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withVectorField(String vectorField) {
             if (vectorField == null) {
                 throw new IllegalArgumentException("vectorField cannot be null");
@@ -188,6 +231,8 @@ public class CreateSimpleCollectionParam {
          * @param autoId if open autoId
          * @return <code>Builder</code>
          */
+
+
         public Builder withAutoId(boolean autoId) {
             this.autoId = autoId;
             return this;
@@ -199,6 +244,8 @@ public class CreateSimpleCollectionParam {
          * @param syncLoad set to true to be sync mode
          * @return <code>Builder</code>
          */
+
+
         public Builder withSyncLoad(boolean syncLoad) {
             this.syncLoad = syncLoad;
             return this;
@@ -211,6 +258,8 @@ public class CreateSimpleCollectionParam {
          * @return <code>Builder</code>
          * @see ConsistencyLevelEnum
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             if (consistencyLevel == null) {
                 throw new IllegalArgumentException("consistencyLevel cannot be null");
@@ -225,6 +274,8 @@ public class CreateSimpleCollectionParam {
          * @param primaryFieldType primaryFiled type of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withPrimaryFieldType(DataType primaryFieldType) {
             if (primaryFieldType == null) {
                 throw new IllegalArgumentException("primaryFieldType cannot be null");
@@ -240,6 +291,8 @@ public class CreateSimpleCollectionParam {
          * @param maxLength maxLength of the primary field
          * @return <code>Builder</code>
          */
+
+
         public Builder withMaxLength(Integer maxLength) {
             if (maxLength == null) {
                 throw new IllegalArgumentException("maxLength cannot be null");
@@ -253,6 +306,8 @@ public class CreateSimpleCollectionParam {
          *
          * @return {@link CreateSimpleCollectionParam}
          */
+
+
         public CreateSimpleCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             if (dimension <= 0) {

@@ -39,6 +39,8 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Utility methods for detecting global cluster endpoints and fetching the global cluster topology.
  */
+
+
 public class GlobalClusterUtils {
     private static final Logger logger = LoggerFactory.getLogger(GlobalClusterUtils.class);
 
@@ -58,6 +60,8 @@ public class GlobalClusterUtils {
      * @param uri the connection URI
      * @return true if the URI is a global cluster endpoint
      */
+
+
     public static boolean isGlobalEndpoint(String uri) {
         if (uri == null) {
             return false;
@@ -73,6 +77,8 @@ public class GlobalClusterUtils {
      * @return the fetched topology
      * @throws RuntimeException if the topology cannot be fetched after all retries
      */
+
+
     public static GlobalTopology fetchTopology(String globalEndpoint, String token) {
         String topologyUrl = buildTopologyUrl(globalEndpoint);
 

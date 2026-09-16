@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code dropCollectionProperties} API.
  */
+
+
 public class DropCollectionPropertiesReq {
     private String collectionName;
     private String databaseName;
@@ -41,6 +43,8 @@ public class DropCollectionPropertiesReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -50,6 +54,8 @@ public class DropCollectionPropertiesReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -59,6 +65,8 @@ public class DropCollectionPropertiesReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -68,6 +76,8 @@ public class DropCollectionPropertiesReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -77,6 +87,8 @@ public class DropCollectionPropertiesReq {
      *
      * @return the property keys
      */
+
+
     public List<String> getPropertyKeys() {
         return propertyKeys;
     }
@@ -86,6 +98,8 @@ public class DropCollectionPropertiesReq {
      *
      * @param propertyKeys the property keys
      */
+
+
     public void setPropertyKeys(List<String> propertyKeys) {
         this.propertyKeys = propertyKeys;
     }
@@ -104,9 +118,16 @@ public class DropCollectionPropertiesReq {
      *
      * @return the builder
      */
+
+
     public static DropCollectionPropertiesReqBuilder builder() {
         return new DropCollectionPropertiesReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropCollectionPropertiesReq} class.
+     */
+
 
     public static class DropCollectionPropertiesReqBuilder {
         private String collectionName;
@@ -122,6 +143,8 @@ public class DropCollectionPropertiesReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DropCollectionPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -133,6 +156,8 @@ public class DropCollectionPropertiesReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropCollectionPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -144,6 +169,8 @@ public class DropCollectionPropertiesReq {
          * @param propertyKeys the property keys
          * @return this builder
          */
+
+
         public DropCollectionPropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
@@ -154,6 +181,8 @@ public class DropCollectionPropertiesReq {
          *
          * @return the request
          */
+
+
         public DropCollectionPropertiesReq build() {
             return new DropCollectionPropertiesReq(this);
         }

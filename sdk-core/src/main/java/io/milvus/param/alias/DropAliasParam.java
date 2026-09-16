@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>dropAlias</code> interface.
  */
+
+
 public class DropAliasParam {
     private final String alias;
     private final String databaseName;
@@ -37,10 +39,22 @@ public class DropAliasParam {
         this.databaseName = builder.databaseName;
     }
 
+    /**
+     * Returns the alias.
+     *
+     * @return the alias
+     */
     // Getter methods to replace @Getter annotation
     public String getAlias() {
         return alias;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -55,6 +69,13 @@ public class DropAliasParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -62,6 +83,8 @@ public class DropAliasParam {
     /**
      * Builder for {@link DropAliasParam} class.
      */
+
+
     public static final class Builder {
         private String alias;
         private String databaseName;
@@ -75,6 +98,8 @@ public class DropAliasParam {
          * @param alias alias of the collection
          * @return <code>Builder</code>
          */
+
+
         public Builder withAlias(String alias) {
             if (alias == null) {
                 throw new IllegalArgumentException("alias cannot be null");
@@ -89,6 +114,8 @@ public class DropAliasParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -99,6 +126,8 @@ public class DropAliasParam {
          *
          * @return {@link DropAliasParam}
          */
+
+
         public DropAliasParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(alias, "Alias");
 

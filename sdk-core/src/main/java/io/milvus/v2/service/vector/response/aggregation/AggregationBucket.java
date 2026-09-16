@@ -30,6 +30,8 @@ import java.util.Map;
  * together with the entity count, aggregated metric values, top hits, and any nested
  * sub-aggregation buckets.
  */
+
+
 public class AggregationBucket {
     private final List<KeyEntry> key;
     private final long count;
@@ -50,6 +52,8 @@ public class AggregationBucket {
      *
      * @return a new builder
      */
+
+
     public static AggregationBucketBuilder builder() {
         return new AggregationBucketBuilder();
     }
@@ -59,6 +63,8 @@ public class AggregationBucket {
      *
      * @return the bucket key entries
      */
+
+
     public List<KeyEntry> getKey() {
         return key;
     }
@@ -68,6 +74,8 @@ public class AggregationBucket {
      *
      * @return the entity count
      */
+
+
     public long getCount() {
         return count;
     }
@@ -77,6 +85,8 @@ public class AggregationBucket {
      *
      * @return the metric values
      */
+
+
     public Map<String, Object> getMetrics() {
         return metrics;
     }
@@ -86,6 +96,8 @@ public class AggregationBucket {
      *
      * @return the top hits, or an empty list if none were requested
      */
+
+
     public List<AggregationHit> getHits() {
         return hits;
     }
@@ -95,6 +107,8 @@ public class AggregationBucket {
      *
      * @return the sub-aggregation buckets
      */
+
+
     public List<AggregationBucket> getSubGroups() {
         return subGroups;
     }
@@ -113,6 +127,8 @@ public class AggregationBucket {
     /**
      * Builder for {@link AggregationBucket}.
      */
+
+
     public static class AggregationBucketBuilder {
         private List<KeyEntry> key = new ArrayList<>();
         private long count;
@@ -129,6 +145,8 @@ public class AggregationBucket {
          * @param key the bucket key entries
          * @return this builder
          */
+
+
         public AggregationBucketBuilder key(List<KeyEntry> key) {
             this.key = key;
             return this;
@@ -140,6 +158,8 @@ public class AggregationBucket {
          * @param count the entity count
          * @return this builder
          */
+
+
         public AggregationBucketBuilder count(long count) {
             this.count = count;
             return this;
@@ -151,6 +171,8 @@ public class AggregationBucket {
          * @param metrics the metric values
          * @return this builder
          */
+
+
         public AggregationBucketBuilder metrics(Map<String, Object> metrics) {
             this.metrics = metrics;
             return this;
@@ -162,6 +184,8 @@ public class AggregationBucket {
          * @param hits the top hits
          * @return this builder
          */
+
+
         public AggregationBucketBuilder hits(List<AggregationHit> hits) {
             this.hits = hits;
             return this;
@@ -173,6 +197,8 @@ public class AggregationBucket {
          * @param subGroups the sub-aggregation buckets
          * @return this builder
          */
+
+
         public AggregationBucketBuilder subGroups(List<AggregationBucket> subGroups) {
             this.subGroups = subGroups;
             return this;
@@ -183,6 +209,8 @@ public class AggregationBucket {
          *
          * @return the built bucket
          */
+
+
         public AggregationBucket build() {
             return new AggregationBucket(this);
         }
@@ -192,6 +220,8 @@ public class AggregationBucket {
      * A single field entry of a bucket key, describing one grouped field of the
      * aggregation together with its value.
      */
+
+
     public static class KeyEntry {
         private final long fieldId;
         private final String fieldName;
@@ -208,6 +238,8 @@ public class AggregationBucket {
          *
          * @return a new builder
          */
+
+
         public static KeyEntryBuilder builder() {
             return new KeyEntryBuilder();
         }
@@ -217,6 +249,8 @@ public class AggregationBucket {
          *
          * @return the field ID
          */
+
+
         public long getFieldId() {
             return fieldId;
         }
@@ -226,6 +260,8 @@ public class AggregationBucket {
          *
          * @return the field name
          */
+
+
         public String getFieldName() {
             return fieldName;
         }
@@ -235,6 +271,8 @@ public class AggregationBucket {
          *
          * @return the field value
          */
+
+
         public Object getValue() {
             return value;
         }
@@ -251,6 +289,8 @@ public class AggregationBucket {
         /**
          * Builder for {@link KeyEntry}.
          */
+
+
         public static class KeyEntryBuilder {
             private long fieldId;
             private String fieldName;
@@ -265,6 +305,8 @@ public class AggregationBucket {
              * @param fieldId the field ID
              * @return this builder
              */
+
+
             public KeyEntryBuilder fieldId(long fieldId) {
                 this.fieldId = fieldId;
                 return this;
@@ -276,6 +318,8 @@ public class AggregationBucket {
              * @param fieldName the field name
              * @return this builder
              */
+
+
             public KeyEntryBuilder fieldName(String fieldName) {
                 this.fieldName = fieldName;
                 return this;
@@ -287,6 +331,8 @@ public class AggregationBucket {
              * @param value the field value
              * @return this builder
              */
+
+
             public KeyEntryBuilder value(Object value) {
                 this.value = value;
                 return this;
@@ -297,6 +343,8 @@ public class AggregationBucket {
              *
              * @return the built key entry
              */
+
+
             public KeyEntry build() {
                 return new KeyEntry(this);
             }

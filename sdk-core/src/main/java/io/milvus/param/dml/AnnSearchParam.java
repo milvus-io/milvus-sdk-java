@@ -31,6 +31,8 @@ import java.util.SortedMap;
 /**
  * Parameters for <code>hybridSearch</code> interface.
  */
+
+
 public class AnnSearchParam {
 
     private final String metricType;
@@ -57,38 +59,99 @@ public class AnnSearchParam {
         this.plType = builder.plType;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the metricType.
+     *
+     * @return the metricType
+     */
     // Getter methods to replace @Getter annotation
     public String getMetricType() {
         return metricType;
     }
 
+    /**
+     * Returns the vectorFieldName.
+     *
+     * @return the vectorFieldName
+     */
+
+
     public String getVectorFieldName() {
         return vectorFieldName;
     }
+
+    /**
+     * Returns the topK.
+     *
+     * @return the topK
+     */
+
 
     public Long getTopK() {
         return topK;
     }
 
+    /**
+     * Returns the expr.
+     *
+     * @return the expr
+     */
+
+
     public String getExpr() {
         return expr;
     }
+
+    /**
+     * Returns the vectors.
+     *
+     * @return the vectors
+     */
+
 
     public List<?> getVectors() {
         return vectors;
     }
 
+    /**
+     * Returns the NQ.
+     *
+     * @return the NQ
+     */
+
+
     public Long getNQ() {
         return NQ;
     }
 
+    /**
+     * Returns the params.
+     *
+     * @return the params
+     */
+
+
     public String getParams() {
         return params;
     }
+
+    /**
+     * Returns the plType.
+     *
+     * @return the plType
+     */
+
 
     public PlaceholderType getPlType() {
         return plType;
@@ -97,6 +160,8 @@ public class AnnSearchParam {
     /**
      * Builder for {@link AnnSearchParam} class.
      */
+
+
     public static class Builder {
         private MetricType metricType = MetricType.None;
         private String vectorFieldName;
@@ -120,6 +185,8 @@ public class AnnSearchParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
+
+
         public Builder withMetricType(MetricType metricType) {
             // Replace @NonNull logic with explicit null check
             if (metricType == null) {
@@ -135,6 +202,8 @@ public class AnnSearchParam {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
+
+
         public Builder withVectorFieldName(String vectorFieldName) {
             // Replace @NonNull logic with explicit null check
             if (vectorFieldName == null) {
@@ -160,6 +229,14 @@ public class AnnSearchParam {
             return this;
         }
 
+        /**
+         * Sets the limit.
+         *
+         * @param limit the limit
+         * @return this builder
+         */
+
+
         public Builder withLimit(Long limit) {
             // Replace @NonNull logic with explicit null check
             if (limit == null) {
@@ -176,6 +253,8 @@ public class AnnSearchParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
+
+
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
             if (expr == null) {
@@ -191,6 +270,8 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withFloatVectors(List<List<Float>> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -208,6 +289,8 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withBinaryVectors(List<ByteBuffer> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -225,6 +308,8 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withFloat16Vectors(List<ByteBuffer> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -242,6 +327,8 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withBFloat16Vectors(List<ByteBuffer> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -259,6 +346,8 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
+
+
         public Builder withSparseFloatVectors(List<SortedMap<Long, Float>> vectors) {
             // Replace @NonNull logic with explicit null check
             if (vectors == null) {
@@ -280,6 +369,9 @@ public class AnnSearchParam {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
+
+
+
         public Builder withParams(String params) {
             // Replace @NonNull logic with explicit null check
             if (params == null) {
@@ -295,6 +387,9 @@ public class AnnSearchParam {
          *
          * @return {@link AnnSearchParam}
          */
+
+
+
         public AnnSearchParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
 

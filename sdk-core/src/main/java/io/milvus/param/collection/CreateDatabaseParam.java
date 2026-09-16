@@ -30,6 +30,8 @@ import java.util.Map;
 /**
  * Parameters for <code>createDatabase</code> interface.
  */
+
+
 public class CreateDatabaseParam {
     private final String databaseName;
     private final Map<String, String> properties = new HashMap<>();
@@ -42,9 +44,23 @@ public class CreateDatabaseParam {
         this.properties.putAll(builder.properties);
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Returns the properties.
+     *
+     * @return the properties
+     */
+
 
     public Map<String, String> getProperties() {
         return properties;
@@ -58,6 +74,13 @@ public class CreateDatabaseParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -65,6 +88,8 @@ public class CreateDatabaseParam {
     /**
      * Builder for {@link CreateDatabaseParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
 
@@ -79,6 +104,8 @@ public class CreateDatabaseParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             if (databaseName == null) {
                 throw new IllegalArgumentException("databaseName cannot be null");
@@ -93,6 +120,8 @@ public class CreateDatabaseParam {
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
+
+
         public Builder withReplicaNumber(int replicaNumber) {
             return this.withProperty(Constant.DATABASE_REPLICA_NUMBER, Integer.toString(replicaNumber));
         }
@@ -103,6 +132,8 @@ public class CreateDatabaseParam {
          * @param resourceGroups resource group names
          * @return <code>Builder</code>
          */
+
+
         public Builder withResourceGroups(List<String> resourceGroups) {
             if (resourceGroups == null) {
                 throw new IllegalArgumentException("resourceGroups cannot be null");
@@ -117,6 +148,8 @@ public class CreateDatabaseParam {
          * @param value the value
          * @return <code>Builder</code>
          */
+
+
         public Builder withProperty(String key, String value) {
             if (key == null) {
                 throw new IllegalArgumentException("key cannot be null");
@@ -133,6 +166,8 @@ public class CreateDatabaseParam {
          *
          * @return {@link CreateDatabaseParam}
          */
+
+
         public CreateDatabaseParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(databaseName, "Database name");
 

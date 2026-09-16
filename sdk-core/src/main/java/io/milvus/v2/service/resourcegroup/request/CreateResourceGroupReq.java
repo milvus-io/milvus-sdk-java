@@ -24,6 +24,8 @@ import io.milvus.common.resourcegroup.ResourceGroupConfig;
 /**
  * Request parameters for the {@code createResourceGroup} API.
  */
+
+
 public class CreateResourceGroupReq {
     private String groupName;
     private ResourceGroupConfig config;
@@ -38,6 +40,8 @@ public class CreateResourceGroupReq {
      *
      * @return the builder
      */
+
+
     public static CreateResourceGroupReqBuilder builder() {
         return new CreateResourceGroupReqBuilder();
     }
@@ -47,6 +51,8 @@ public class CreateResourceGroupReq {
      *
      * @return the resource group name
      */
+
+
     public String getGroupName() {
         return groupName;
     }
@@ -56,6 +62,8 @@ public class CreateResourceGroupReq {
      *
      * @param groupName the resource group name
      */
+
+
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
@@ -65,6 +73,8 @@ public class CreateResourceGroupReq {
      *
      * @return the resource group config
      */
+
+
     public ResourceGroupConfig getConfig() {
         return config;
     }
@@ -74,6 +84,8 @@ public class CreateResourceGroupReq {
      *
      * @param config the resource group config
      */
+
+
     public void setConfig(ResourceGroupConfig config) {
         this.config = config;
     }
@@ -86,6 +98,11 @@ public class CreateResourceGroupReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link CreateResourceGroupReq} class.
+     */
+
+
     public static class CreateResourceGroupReqBuilder {
         private String groupName;
         private ResourceGroupConfig config;
@@ -96,6 +113,8 @@ public class CreateResourceGroupReq {
          * @param groupName the resource group name
          * @return this builder
          */
+
+
         public CreateResourceGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
@@ -107,6 +126,8 @@ public class CreateResourceGroupReq {
          * @param config the resource group config
          * @return this builder
          */
+
+
         public CreateResourceGroupReqBuilder config(ResourceGroupConfig config) {
             this.config = config;
             return this;
@@ -117,6 +138,8 @@ public class CreateResourceGroupReq {
          *
          * @return the built request
          */
+
+
         public CreateResourceGroupReq build() {
             return new CreateResourceGroupReq(this);
         }

@@ -34,6 +34,8 @@ import java.util.Map;
  * {@code arg(FunctionChainArg.literal(...))}, and keyword parameters with
  * {@code param(String, Object)}. This mirrors PyMilvus's {@code FunctionChainExpr}.
  */
+
+
 public class FunctionChainExpr {
     private final String name;
     private final List<FunctionChainArg> args;
@@ -45,21 +47,56 @@ public class FunctionChainExpr {
         this.params = new LinkedHashMap<>(builder.params);
     }
 
+    /**
+     * Creates a new {@code FunctionChainExpr} builder.
+     *
+     * @return the builder
+     */
+
+
     public static FunctionChainExprBuilder builder() {
         return new FunctionChainExprBuilder();
     }
+
+    /**
+     * Returns the name of this function chain expression.
+     *
+     * @return the expression name
+     */
+
 
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the arguments of this function chain expression.
+     *
+     * @return the arguments
+     */
+
+
     public List<FunctionChainArg> getArgs() {
         return args;
     }
 
+    /**
+     * Returns the keyword parameters of this function chain expression.
+     *
+     * @return the parameters
+     */
+
+
     public Map<String, FunctionParamValue> getParams() {
         return params;
     }
+
+    /**
+     * Converts this function chain expression to its gRPC representation.
+     *
+     * @return the gRPC function chain expression
+     */
+
 
     public io.milvus.grpc.FunctionChainExpr toGrpc() {
         io.milvus.grpc.FunctionChainExpr.Builder builder = io.milvus.grpc.FunctionChainExpr.newBuilder().setName(name);
@@ -67,6 +104,11 @@ public class FunctionChainExpr {
         params.forEach((k, v) -> builder.putParams(k, v.toGrpc()));
         return builder.build();
     }
+
+    /**
+     * Builder for {@link FunctionChainExpr} class.
+     */
+
 
     public static class FunctionChainExprBuilder {
         private String name;
@@ -76,10 +118,26 @@ public class FunctionChainExpr {
         private FunctionChainExprBuilder() {
         }
 
+        /**
+         * Sets the name of this function chain expression.
+         *
+         * @param name the expression name
+         * @return this builder
+         */
+
+
         public FunctionChainExprBuilder name(String name) {
             this.name = name;
             return this;
         }
+
+        /**
+         * Adds an argument to this function chain expression.
+         *
+         * @param arg the argument
+         * @return this builder
+         */
+
 
         public FunctionChainExprBuilder arg(FunctionChainArg arg) {
             if (arg == null) {
@@ -90,6 +148,15 @@ public class FunctionChainExpr {
             return this;
         }
 
+        /**
+         * Adds a keyword parameter to this function chain expression.
+         *
+         * @param key the parameter name
+         * @param value the parameter value
+         * @return this builder
+         */
+
+
         public FunctionChainExprBuilder param(String key, Object value) {
             if (key == null || key.isEmpty()) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
@@ -98,6 +165,13 @@ public class FunctionChainExpr {
             this.params.put(key, FunctionParamValue.from(value));
             return this;
         }
+
+        /**
+         * Builds the {@link FunctionChainExpr}.
+         *
+         * @return the function chain expression
+         */
+
 
         public FunctionChainExpr build() {
             if (name == null || name.isEmpty()) {

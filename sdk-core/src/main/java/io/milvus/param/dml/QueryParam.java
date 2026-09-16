@@ -31,6 +31,8 @@ import java.util.List;
 /**
  * Parameters for <code>query</code> interface.
  */
+
+
 public class QueryParam {
     private String databaseName;
     private final String collectionName;
@@ -64,60 +66,155 @@ public class QueryParam {
         this.ignoreGrowing = builder.ignoreGrowing;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the partitionNames.
+     *
+     * @return the partitionNames
+     */
+
 
     public List<String> getPartitionNames() {
         return partitionNames;
     }
 
+    /**
+     * Returns the outFields.
+     *
+     * @return the outFields
+     */
+
+
     public List<String> getOutFields() {
         return outFields;
     }
+
+    /**
+     * Returns the expr.
+     *
+     * @return the expr
+     */
+
 
     public String getExpr() {
         return expr;
     }
 
+    /**
+     * Returns the travelTimestamp.
+     *
+     * @return the travelTimestamp
+     */
+
+
     public long getTravelTimestamp() {
         return travelTimestamp;
     }
+
+    /**
+     * Returns the guaranteeTimestamp.
+     *
+     * @return the guaranteeTimestamp
+     */
+
 
     public long getGuaranteeTimestamp() {
         return guaranteeTimestamp;
     }
 
+    /**
+     * Returns the gracefulTime.
+     *
+     * @return the gracefulTime
+     */
+
+
     public long getGracefulTime() {
         return gracefulTime;
     }
+
+    /**
+     * Returns the consistencyLevel.
+     *
+     * @return the consistencyLevel
+     */
+
 
     public ConsistencyLevelEnum getConsistencyLevel() {
         return consistencyLevel;
     }
 
+    /**
+     * Returns the offset.
+     *
+     * @return the offset
+     */
+
+
     public long getOffset() {
         return offset;
     }
+
+    /**
+     * Returns the limit.
+     *
+     * @return the limit
+     */
+
 
     public long getLimit() {
         return limit;
     }
 
+    /**
+     * Returns the ignoreGrowing.
+     *
+     * @return the ignoreGrowing
+     */
+
+
     public boolean isIgnoreGrowing() {
         return ignoreGrowing;
     }
 
+    /**
+     * Sets the databaseName.
+     *
+     * @param databaseName the databaseName
+     */
     // Setter method to replace @Setter annotation
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -144,6 +241,8 @@ public class QueryParam {
     /**
      * Builder for {@link QueryParam} class.
      */
+
+
     public static class Builder {
         private String databaseName;
         private String collectionName;
@@ -167,6 +266,8 @@ public class QueryParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -178,6 +279,8 @@ public class QueryParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -193,6 +296,8 @@ public class QueryParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
+
+
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
@@ -204,6 +309,8 @@ public class QueryParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
+
+
         public Builder withPartitionNames(List<String> partitionNames) {
             // Replace @NonNull logic with explicit null check
             if (partitionNames == null) {
@@ -219,6 +326,8 @@ public class QueryParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
+
+
         public Builder addPartitionName(String partitionName) {
             // Replace @NonNull logic with explicit null check
             if (partitionName == null) {
@@ -236,6 +345,8 @@ public class QueryParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
+
+
         public Builder withOutFields(List<String> outFields) {
             // Replace @NonNull logic with explicit null check
             if (outFields == null) {
@@ -251,6 +362,8 @@ public class QueryParam {
          * @param fieldName field name
          * @return <code>Builder</code>
          */
+
+
         public Builder addOutField(String fieldName) {
             // Replace @NonNull logic with explicit null check
             if (fieldName == null) {
@@ -269,6 +382,8 @@ public class QueryParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
+
+
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
             if (expr == null) {
@@ -285,6 +400,8 @@ public class QueryParam {
          * @param offset a value to define the position
          * @return <code>Builder</code>
          */
+
+
         public Builder withOffset(Long offset) {
             // Replace @NonNull logic with explicit null check
             if (offset == null) {
@@ -301,6 +418,8 @@ public class QueryParam {
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
+
+
         public Builder withLimit(Long limit) {
             // Replace @NonNull logic with explicit null check
             if (limit == null) {
@@ -317,6 +436,8 @@ public class QueryParam {
          * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
+
+
         public Builder withIgnoreGrowing(Boolean ignoreGrowing) {
             // Replace @NonNull logic with explicit null check
             if (ignoreGrowing == null) {
@@ -331,6 +452,8 @@ public class QueryParam {
          *
          * @return {@link QueryParam}
          */
+
+
         public QueryParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullString(expr, "Expression");

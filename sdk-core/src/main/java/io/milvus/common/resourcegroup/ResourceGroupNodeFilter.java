@@ -27,6 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Defines a node label filter that a resource group applies when accepting query nodes.
+ * Built through a {@link Builder} and convertible to and from the gRPC representation.
+ */
+
+
 public class ResourceGroupNodeFilter {
     private final Map<String, String> nodeLabels;
 
@@ -39,12 +45,21 @@ public class ResourceGroupNodeFilter {
      *
      * @param filter grpc filter object
      */
+
+
     public ResourceGroupNodeFilter(io.milvus.grpc.ResourceGroupNodeFilter filter) {
         if (filter == null) {
             throw new IllegalArgumentException("filter cannot be null");
         }
         this.nodeLabels = filter.getNodeLabelsList().stream().collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
     }
+
+    /**
+     * Creates a new {@link ResourceGroupNodeFilter} builder.
+     *
+     * @return a new builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -56,14 +71,27 @@ public class ResourceGroupNodeFilter {
      * @param filter grpc filter object
      * @return ResourceGroupNodeFilter instance
      */
+
+
     public static ResourceGroupNodeFilter fromGRPC(io.milvus.grpc.ResourceGroupNodeFilter filter) {
         return new ResourceGroupNodeFilter(filter);
     }
 
-    // Getter method to replace @Getter annotation
+    /**
+     * Returns the node label map of the filter.
+     *
+     * @return the node labels as a key-value map
+     */
+
+
     public Map<String, String> getNodeLabels() {
         return nodeLabels;
     }
+
+    /**
+     * Builder for {@link ResourceGroupNodeFilter} class.
+     */
+
 
     public static class Builder {
         private Map<String, String> nodeLabels = new HashMap<>();
@@ -78,6 +106,8 @@ public class ResourceGroupNodeFilter {
          * @param value label value
          * @return <code>Builder</code>
          */
+
+
         public Builder withNodeLabel(String key, String value) {
             // Replace @NonNull logic with explicit null checks
             if (key == null) {
@@ -90,6 +120,13 @@ public class ResourceGroupNodeFilter {
             return this;
         }
 
+        /**
+         * Builds the {@link ResourceGroupNodeFilter} instance.
+         *
+         * @return the built node filter
+         */
+
+
         public ResourceGroupNodeFilter build() {
             return new ResourceGroupNodeFilter(this);
         }
@@ -100,6 +137,8 @@ public class ResourceGroupNodeFilter {
      *
      * @return io.milvus.grpc.ResourceGroupNodeFilter
      */
+
+
     public io.milvus.grpc.ResourceGroupNodeFilter toGRPC() {
         List<KeyValuePair> pair = ParamUtils.AssembleKvPair(nodeLabels);
         io.milvus.grpc.ResourceGroupNodeFilter result = io.milvus.grpc.ResourceGroupNodeFilter.newBuilder()

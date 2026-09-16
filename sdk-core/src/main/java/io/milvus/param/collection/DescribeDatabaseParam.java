@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>describeDatabase</code> interface.
  */
+
+
 public class DescribeDatabaseParam {
     private final String databaseName;
 
@@ -34,6 +36,13 @@ public class DescribeDatabaseParam {
         }
         this.databaseName = builder.databaseName;
     }
+
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
+
 
     public String getDatabaseName() {
         return databaseName;
@@ -46,6 +55,13 @@ public class DescribeDatabaseParam {
                 '}';
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -53,6 +69,8 @@ public class DescribeDatabaseParam {
     /**
      * Builder for {@link DescribeDatabaseParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
 
@@ -65,6 +83,8 @@ public class DescribeDatabaseParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             if (databaseName == null) {
                 throw new IllegalArgumentException("databaseName cannot be null");
@@ -78,6 +98,8 @@ public class DescribeDatabaseParam {
          *
          * @return {@link DescribeDatabaseParam}
          */
+
+
         public DescribeDatabaseParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(databaseName, "Database name");
 

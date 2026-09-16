@@ -33,6 +33,8 @@ import java.util.Map;
 /**
  * Parameters for <code>bulkWriter</code> interface.
  */
+
+
 public class RemoteBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final StorageConnectParam connectParam;
@@ -55,6 +57,8 @@ public class RemoteBulkWriterParam {
     *
     * @return the collection schema
     */
+
+
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
         return collectionSchema;
     }
@@ -64,6 +68,8 @@ public class RemoteBulkWriterParam {
     *
     * @return the cloud storage connection parameters
     */
+
+
     public StorageConnectParam getConnectParam() {
         return connectParam;
     }
@@ -73,6 +79,8 @@ public class RemoteBulkWriterParam {
     *
     * @return the remote path where data files are uploaded
     */
+
+
     public String getRemotePath() {
         return remotePath;
     }
@@ -82,6 +90,8 @@ public class RemoteBulkWriterParam {
     *
     * @return the chunk size threshold in bytes
     */
+
+
     public long getChunkSize() {
         return chunkSize;
     }
@@ -91,6 +101,8 @@ public class RemoteBulkWriterParam {
     *
     * @return the bulk data file type
     */
+
+
     public BulkFileType getFileType() {
         return fileType;
     }
@@ -100,6 +112,8 @@ public class RemoteBulkWriterParam {
     *
     * @return the writer configuration map
     */
+
+
     public Map<String, Object> getConfig() {
         return config;
     }
@@ -113,6 +127,12 @@ public class RemoteBulkWriterParam {
                 ", fileType=" + fileType +
                 '}';
     }
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
 
     public static Builder newBuilder() {
         return new Builder();
@@ -121,6 +141,8 @@ public class RemoteBulkWriterParam {
     /**
      * Builder for {@link RemoteBulkWriterParam} class.
      */
+
+
     public static final class Builder {
         private CreateCollectionReq.CollectionSchema collectionSchema;
         private StorageConnectParam connectParam;
@@ -138,6 +160,8 @@ public class RemoteBulkWriterParam {
          * @param collectionSchema collection info
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionSchema(CollectionSchemaParam collectionSchema) {
             this.collectionSchema = V2AdapterUtils.convertV1Schema(collectionSchema);
             return this;
@@ -149,6 +173,8 @@ public class RemoteBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
@@ -157,26 +183,24 @@ public class RemoteBulkWriterParam {
         /**
         * Sets the cloud storage connection parameters.
         *
-        * @param c the cloud storage connection parameters
+        * @param connectParam the cloud storage connection parameters
         * @return this builder
         */
+
+
         public Builder withConnectParam(StorageConnectParam connectParam) {
             this.connectParam = connectParam;
             return this;
         }
 
         /**
-         * Sets the remotePath.
-         *
-         * @param remotePath remote path
-         * @return <code>Builder</code>
-         */
-        /**
         * Sets the remote path where data files are uploaded.
         *
-        * @param r the remote path where data files are uploaded
+        * @param remotePath the remote path where data files are uploaded
         * @return this builder
         */
+
+
         public Builder withRemotePath(String remotePath) {
             this.remotePath = remotePath;
             return this;
@@ -185,9 +209,11 @@ public class RemoteBulkWriterParam {
         /**
         * Sets the chunk size threshold in bytes.
         *
-        * @param c the chunk size threshold in bytes
+        * @param chunkSize the chunk size threshold in bytes
         * @return this builder
         */
+
+
         public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
@@ -196,9 +222,11 @@ public class RemoteBulkWriterParam {
         /**
         * Sets the bulk data file type.
         *
-        * @param f the bulk data file type
+        * @param fileType the bulk data file type
         * @return this builder
         */
+
+
         public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
@@ -211,6 +239,8 @@ public class RemoteBulkWriterParam {
         * @param val the value
         * @return this builder
         */
+
+
         public Builder withConfig(String key, Object val) {
             this.config.put(key, val);
             return this;
@@ -220,7 +250,10 @@ public class RemoteBulkWriterParam {
          * Verifies parameters and creates a new {@link RemoteBulkWriterParam} instance.
          *
          * @return {@link RemoteBulkWriterParam}
+         * @throws ParamException if the required parameters are invalid
          */
+
+
         public RemoteBulkWriterParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(remotePath, "localPath");
 

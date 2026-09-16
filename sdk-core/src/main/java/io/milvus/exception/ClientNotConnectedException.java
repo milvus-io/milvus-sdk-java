@@ -24,7 +24,15 @@ import io.milvus.param.R;
 /**
  * Milvus client API throws this exception when not connected to the Milvus server.
  */
+
+
 public class ClientNotConnectedException extends MilvusException {
+    /**
+     * Creates an exception indicating that the client is not connected to the Milvus server.
+     *
+     * @param msg the error message
+     */
+
     public ClientNotConnectedException(String msg) {
         super(msg, R.Status.ClientNotConnected.getCode());
     }

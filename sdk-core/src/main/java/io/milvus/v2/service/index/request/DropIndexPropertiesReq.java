@@ -25,6 +25,8 @@ import java.util.List;
 /**
  * Request parameters for the {@code dropIndexProperties} API.
  */
+
+
 public class DropIndexPropertiesReq {
     private String collectionName;
     private String databaseName;
@@ -43,6 +45,8 @@ public class DropIndexPropertiesReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -52,6 +56,8 @@ public class DropIndexPropertiesReq {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -61,6 +67,8 @@ public class DropIndexPropertiesReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -70,6 +78,8 @@ public class DropIndexPropertiesReq {
      *
      * @param databaseName the database name
      */
+
+
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
@@ -79,6 +89,8 @@ public class DropIndexPropertiesReq {
      *
      * @return the index name
      */
+
+
     public String getIndexName() {
         return indexName;
     }
@@ -88,6 +100,8 @@ public class DropIndexPropertiesReq {
      *
      * @param indexName the index name
      */
+
+
     public void setIndexName(String indexName) {
         this.indexName = indexName;
     }
@@ -97,6 +111,8 @@ public class DropIndexPropertiesReq {
      *
      * @return the list of property keys
      */
+
+
     public List<String> getPropertyKeys() {
         return propertyKeys;
     }
@@ -106,6 +122,8 @@ public class DropIndexPropertiesReq {
      *
      * @param propertyKeys the list of property keys
      */
+
+
     public void setPropertyKeys(List<String> propertyKeys) {
         this.propertyKeys = propertyKeys;
     }
@@ -125,9 +143,16 @@ public class DropIndexPropertiesReq {
      *
      * @return the builder
      */
+
+
     public static DropIndexPropertiesReqBuilder builder() {
         return new DropIndexPropertiesReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropIndexPropertiesReq} class.
+     */
+
 
     public static class DropIndexPropertiesReqBuilder {
         private String collectionName;
@@ -144,6 +169,8 @@ public class DropIndexPropertiesReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public DropIndexPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -155,6 +182,8 @@ public class DropIndexPropertiesReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public DropIndexPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -166,6 +195,8 @@ public class DropIndexPropertiesReq {
          * @param indexName the index name
          * @return this builder
          */
+
+
         public DropIndexPropertiesReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
@@ -177,6 +208,8 @@ public class DropIndexPropertiesReq {
          * @param propertyKeys the list of property keys
          * @return this builder
          */
+
+
         public DropIndexPropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
@@ -187,6 +220,8 @@ public class DropIndexPropertiesReq {
          *
          * @return the built request
          */
+
+
         public DropIndexPropertiesReq build() {
             return new DropIndexPropertiesReq(this);
         }

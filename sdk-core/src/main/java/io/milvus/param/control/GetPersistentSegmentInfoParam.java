@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 /**
  * Parameters for <code>getPersistentSegmentInfo</code> interface.
  */
+
+
 public class GetPersistentSegmentInfoParam {
     private final String collectionName;
 
@@ -35,10 +37,22 @@ public class GetPersistentSegmentInfoParam {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
     // Getter method to replace @Getter annotation
     public String getCollectionName() {
         return collectionName;
@@ -55,6 +69,8 @@ public class GetPersistentSegmentInfoParam {
     /**
      * Builder for {@link GetPersistentSegmentInfoParam} class.
      */
+
+
     public static final class Builder {
         private String collectionName;
 
@@ -67,6 +83,8 @@ public class GetPersistentSegmentInfoParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -81,6 +99,8 @@ public class GetPersistentSegmentInfoParam {
          *
          * @return {@link GetPersistentSegmentInfoParam}
          */
+
+
         public GetPersistentSegmentInfoParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 

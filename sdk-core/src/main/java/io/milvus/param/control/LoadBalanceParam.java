@@ -29,6 +29,8 @@ import java.util.List;
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+17+--+Support+handoff+and+load+balance+segment+on+query+nodes">Handoff and load balance</a>
  */
+
+
 public class LoadBalanceParam {
     private final String databaseName;
     private final String collectionName;
@@ -47,26 +49,66 @@ public class LoadBalanceParam {
         this.segmentIDs = builder.segmentIDs;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Returns the databaseName.
+     *
+     * @return the databaseName
+     */
     // Getter methods to replace @Getter annotation
     public String getDatabaseName() {
         return databaseName;
     }
 
+    /**
+     * Returns the collectionName.
+     *
+     * @return the collectionName
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Returns the srcNodeID.
+     *
+     * @return the srcNodeID
+     */
+
 
     public Long getSrcNodeID() {
         return srcNodeID;
     }
 
+    /**
+     * Returns the destNodeIDs.
+     *
+     * @return the destNodeIDs
+     */
+
+
     public List<Long> getDestNodeIDs() {
         return destNodeIDs;
     }
+
+    /**
+     * Returns the segmentIDs.
+     *
+     * @return the segmentIDs
+     */
+
 
     public List<Long> getSegmentIDs() {
         return segmentIDs;
@@ -87,6 +129,8 @@ public class LoadBalanceParam {
     /**
      * Builder for {@link LoadBalanceParam} class.
      */
+
+
     public static final class Builder {
         private String databaseName;
         private String collectionName;
@@ -103,6 +147,8 @@ public class LoadBalanceParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
+
+
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -114,6 +160,8 @@ public class LoadBalanceParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
+
+
         public Builder withCollectionName(String collectionName) {
             // Replace @NonNull logic with explicit null check
             if (collectionName == null) {
@@ -129,6 +177,8 @@ public class LoadBalanceParam {
          * @param srcNodeID source query node id
          * @return <code>Builder</code>
          */
+
+
         public Builder withSourceNodeID(Long srcNodeID) {
             // Replace @NonNull logic with explicit null check
             if (srcNodeID == null) {
@@ -144,6 +194,8 @@ public class LoadBalanceParam {
          * @param destNodeID destination query node id
          * @return <code>Builder</code>
          */
+
+
         public Builder addDestinationNodeID(Long destNodeID) {
             // Replace @NonNull logic with explicit null check
             if (destNodeID == null) {
@@ -162,6 +214,8 @@ public class LoadBalanceParam {
          * @param destNodeIDs destination query node id array
          * @return <code>Builder</code>
          */
+
+
         public Builder withDestinationNodeID(List<Long> destNodeIDs) {
             // Replace @NonNull logic with explicit null check
             if (destNodeIDs == null) {
@@ -177,6 +231,8 @@ public class LoadBalanceParam {
          * @param segmentID sealed segment id
          * @return <code>Builder</code>
          */
+
+
         public Builder addSegmentID(Long segmentID) {
             // Replace @NonNull logic with explicit null check
             if (segmentID == null) {
@@ -195,6 +251,8 @@ public class LoadBalanceParam {
          * @param segmentIDs sealed segments id array
          * @return <code>Builder</code>
          */
+
+
         public Builder withSegmentIDs(List<Long> segmentIDs) {
             // Replace @NonNull logic with explicit null check
             if (segmentIDs == null) {
@@ -209,6 +267,8 @@ public class LoadBalanceParam {
          *
          * @return {@link LoadBalanceParam}
          */
+
+
         public LoadBalanceParam build() throws ParamException {
             if (segmentIDs.isEmpty()) {
                 throw new ParamException("Sealed segment id array cannot be empty");

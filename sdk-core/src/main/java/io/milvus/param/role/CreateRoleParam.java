@@ -22,6 +22,11 @@ package io.milvus.param.role;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+/**
+ * Request parameters for the createRole API.
+ */
+
+
 public class CreateRoleParam {
 
     private final String roleName;
@@ -33,9 +38,23 @@ public class CreateRoleParam {
         this.roleName = builder.roleName;
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+
+
     public static CreateRoleParam.Builder newBuilder() {
         return new CreateRoleParam.Builder();
     }
+
+    /**
+     * Returns the roleName.
+     *
+     * @return the roleName
+     */
+
 
     public String getRoleName() {
         return roleName;
@@ -51,6 +70,8 @@ public class CreateRoleParam {
     /**
      * Builder for {@link CreateRoleParam} class.
      */
+
+
     public static final class Builder {
         private String roleName;
 
@@ -63,6 +84,8 @@ public class CreateRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
+
+
         public CreateRoleParam.Builder withRoleName(String roleName) {
             if (roleName == null) {
                 throw new IllegalArgumentException("Role name cannot be null");
@@ -76,6 +99,8 @@ public class CreateRoleParam {
          *
          * @return {@link CreateRoleParam}
          */
+
+
         public CreateRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");
 

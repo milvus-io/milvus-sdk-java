@@ -24,6 +24,8 @@ import io.milvus.v2.common.CompactionState;
 /**
  * Response returned by the {@code getCompactionState} API.
  */
+
+
 public class GetCompactionStateResp {
     private CompactionState state;
     private Long executingPlanNo;
@@ -37,6 +39,13 @@ public class GetCompactionStateResp {
         this.completedPlanNo = builder.completedPlanNo;
     }
 
+    /**
+     * Creates a new builder for {@code GetCompactionStateResp}.
+     *
+     * @return the builder
+     */
+
+
     public static GetCompactionStateRespBuilder builder() {
         return new GetCompactionStateRespBuilder();
     }
@@ -46,6 +55,8 @@ public class GetCompactionStateResp {
      *
      * @return the compaction state
      */
+
+
     public CompactionState getState() {
         return state;
     }
@@ -55,6 +66,8 @@ public class GetCompactionStateResp {
      *
      * @param state the compaction state
      */
+
+
     public void setState(CompactionState state) {
         this.state = state;
     }
@@ -64,6 +77,8 @@ public class GetCompactionStateResp {
      *
      * @return the number of executing compaction plans
      */
+
+
     public Long getExecutingPlanNo() {
         return executingPlanNo;
     }
@@ -73,6 +88,8 @@ public class GetCompactionStateResp {
      *
      * @param executingPlanNo the number of executing compaction plans
      */
+
+
     public void setExecutingPlanNo(Long executingPlanNo) {
         this.executingPlanNo = executingPlanNo;
     }
@@ -82,6 +99,8 @@ public class GetCompactionStateResp {
      *
      * @return the number of timed-out compaction plans
      */
+
+
     public Long getTimeoutPlanNo() {
         return timeoutPlanNo;
     }
@@ -91,6 +110,8 @@ public class GetCompactionStateResp {
      *
      * @param timeoutPlanNo the number of timed-out compaction plans
      */
+
+
     public void setTimeoutPlanNo(Long timeoutPlanNo) {
         this.timeoutPlanNo = timeoutPlanNo;
     }
@@ -100,6 +121,8 @@ public class GetCompactionStateResp {
      *
      * @return the number of completed compaction plans
      */
+
+
     public Long getCompletedPlanNo() {
         return completedPlanNo;
     }
@@ -109,6 +132,8 @@ public class GetCompactionStateResp {
      *
      * @param completedPlanNo the number of completed compaction plans
      */
+
+
     public void setCompletedPlanNo(Long completedPlanNo) {
         this.completedPlanNo = completedPlanNo;
     }
@@ -123,6 +148,11 @@ public class GetCompactionStateResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetCompactionStateResp} class.
+     */
+
+
     public static class GetCompactionStateRespBuilder {
         private CompactionState state = CompactionState.UndefiedState;
         private Long executingPlanNo = 0L;
@@ -135,6 +165,8 @@ public class GetCompactionStateResp {
          * @param state the compaction state
          * @return this builder
          */
+
+
         public GetCompactionStateRespBuilder state(CompactionState state) {
             this.state = state;
             return this;
@@ -146,6 +178,8 @@ public class GetCompactionStateResp {
          * @param executingPlanNo the number of executing compaction plans
          * @return this builder
          */
+
+
         public GetCompactionStateRespBuilder executingPlanNo(Long executingPlanNo) {
             this.executingPlanNo = executingPlanNo;
             return this;
@@ -157,6 +191,8 @@ public class GetCompactionStateResp {
          * @param timeoutPlanNo the number of timed-out compaction plans
          * @return this builder
          */
+
+
         public GetCompactionStateRespBuilder timeoutPlanNo(Long timeoutPlanNo) {
             this.timeoutPlanNo = timeoutPlanNo;
             return this;
@@ -168,6 +204,8 @@ public class GetCompactionStateResp {
          * @param completedPlanNo the number of completed compaction plans
          * @return this builder
          */
+
+
         public GetCompactionStateRespBuilder completedPlanNo(Long completedPlanNo) {
             this.completedPlanNo = completedPlanNo;
             return this;
@@ -178,6 +216,8 @@ public class GetCompactionStateResp {
          *
          * @return the constructed {@code GetCompactionStateResp}
          */
+
+
         public GetCompactionStateResp build() {
             return new GetCompactionStateResp(this);
         }

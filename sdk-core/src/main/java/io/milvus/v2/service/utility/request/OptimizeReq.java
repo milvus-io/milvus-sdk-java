@@ -22,6 +22,8 @@ package io.milvus.v2.service.utility.request;
 /**
  * Request parameters for the {@code optimize} API.
  */
+
+
 public class OptimizeReq {
     private String databaseName;
     private String collectionName;
@@ -37,6 +39,13 @@ public class OptimizeReq {
         this.timeout = builder.timeout;
     }
 
+    /**
+     * Creates a new builder for {@code OptimizeReq}.
+     *
+     * @return the builder
+     */
+
+
     public static OptimizeReqBuilder builder() {
         return new OptimizeReqBuilder();
     }
@@ -46,6 +55,8 @@ public class OptimizeReq {
      *
      * @return the database name
      */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -55,6 +66,8 @@ public class OptimizeReq {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -64,6 +77,8 @@ public class OptimizeReq {
      *
      * @return the target segment size, e.g. {@code "512MB"} or {@code "1GB"}, or {@code null} for the server default
      */
+
+
     public String getTargetSize() {
         return targetSize;
     }
@@ -73,6 +88,8 @@ public class OptimizeReq {
      *
      * @return {@code true} to return the task immediately, {@code false} to block until done
      */
+
+
     public boolean isAsync() {
         return async;
     }
@@ -82,6 +99,8 @@ public class OptimizeReq {
      *
      * @return the timeout in milliseconds, or {@code null} for no timeout
      */
+
+
     public Long getTimeout() {
         return timeout;
     }
@@ -97,6 +116,11 @@ public class OptimizeReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link OptimizeReq} class.
+     */
+
+
     public static class OptimizeReqBuilder {
         private String databaseName;
         private String collectionName;
@@ -110,6 +134,8 @@ public class OptimizeReq {
          * @param databaseName the database name
          * @return this builder
          */
+
+
         public OptimizeReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
@@ -121,6 +147,8 @@ public class OptimizeReq {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public OptimizeReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -132,6 +160,8 @@ public class OptimizeReq {
          * @param targetSize the target segment size, e.g. {@code "512MB"} or {@code "1GB"}, or {@code null} for the server default
          * @return this builder
          */
+
+
         public OptimizeReqBuilder targetSize(String targetSize) {
             this.targetSize = targetSize;
             return this;
@@ -143,6 +173,8 @@ public class OptimizeReq {
          * @param async {@code true} to return the task immediately, {@code false} to block until done
          * @return this builder
          */
+
+
         public OptimizeReqBuilder async(boolean async) {
             this.async = async;
             return this;
@@ -154,6 +186,8 @@ public class OptimizeReq {
          * @param timeout the timeout in milliseconds, or {@code null} for no timeout
          * @return this builder
          */
+
+
         public OptimizeReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
@@ -164,6 +198,8 @@ public class OptimizeReq {
          *
          * @return the constructed {@code OptimizeReq}
          */
+
+
         public OptimizeReq build() {
             if (collectionName == null || collectionName.isEmpty()) {
                 throw new IllegalArgumentException("collectionName cannot be null or empty");

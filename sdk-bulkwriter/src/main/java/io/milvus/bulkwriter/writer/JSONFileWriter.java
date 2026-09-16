@@ -13,12 +13,28 @@ import java.util.Map;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
+/**
+ * A FormatFileWriter that writes row data to a local JSON file.
+ *
+ * <p>Rows are serialized as JSON objects and wrapped in a JSON array, which is completed
+ * with a closing bracket when the writer is closed.</p>
+ */
+
+
 public class JSONFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(JSONFileWriter.class);
 
     private BufferedWriter writer;
     private CreateCollectionReq.CollectionSchema collectionSchema;
     private String filePath;
+    /**
+     * Creates a JSON file writer that writes row data to a local JSON file.
+     *
+     * @param collectionSchema the collection schema
+     * @param filePathPrefix the file path prefix; the {@code .json} suffix is appended
+     * @throws IOException if the output file cannot be created
+     */
+
 
     public JSONFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix) throws IOException {
         this.collectionSchema = collectionSchema;

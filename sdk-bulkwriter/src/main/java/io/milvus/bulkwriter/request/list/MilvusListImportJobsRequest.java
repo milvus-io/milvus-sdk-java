@@ -25,6 +25,8 @@ package io.milvus.bulkwriter.request.list;
  * <p>It filters the import jobs by collection name and database name, and inherits the
  * API key handling from {@link BaseListImportJobsRequest}.</p>
  */
+
+
 public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
     private static final long serialVersionUID = 8957739122547766268L;
     private String collectionName;
@@ -50,6 +52,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
      *
      * @return the collection name
      */
+
+
     public String getCollectionName() {
         return collectionName;
     }
@@ -59,6 +63,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
      *
      * @param collectionName the collection name
      */
+
+
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -68,6 +74,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
      *
      * @return the database name
      */
+
+
     public String getDbName() {
         return dbName;
     }
@@ -77,6 +85,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
      *
      * @param dbName the database name
      */
+
+
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
@@ -94,6 +104,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
      *
      * @return a {@code MilvusListImportJobsRequest} builder
      */
+
+
     public static MilvusListImportJobsRequestBuilder builder() {
         return new MilvusListImportJobsRequestBuilder();
     }
@@ -101,6 +113,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
     /**
      * Builder for {@link MilvusListImportJobsRequest}.
      */
+
+
     public static class MilvusListImportJobsRequestBuilder extends BaseListImportJobsRequestBuilder<MilvusListImportJobsRequestBuilder> {
         private String collectionName;
         private String dbName;
@@ -116,6 +130,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
          * @param collectionName the collection name
          * @return this builder
          */
+
+
         public MilvusListImportJobsRequestBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
@@ -127,6 +143,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
          * @param dbName the database name
          * @return this builder
          */
+
+
         public MilvusListImportJobsRequestBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
@@ -137,6 +155,8 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
          *
          * @return the built {@code MilvusListImportJobsRequest}
          */
+
+
         public MilvusListImportJobsRequest build() {
             return new MilvusListImportJobsRequest(this);
         }

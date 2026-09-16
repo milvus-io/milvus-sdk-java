@@ -21,23 +21,223 @@ package io.milvus.unit.v2.utils;
 import io.milvus.v2.utils.SchemaUtils;
 import io.milvus.v2.utils.ConvertUtils;
 
+import io.milvus.grpc.BatchDescribeCollectionResponse;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.ConsistencyLevel;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.ElementIndices;
+import io.milvus.grpc.FieldData;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.FunctionSchema;
 import io.milvus.grpc.FunctionType;
+import io.milvus.grpc.IDs;
+import io.milvus.grpc.IndexDescription;
+import io.milvus.grpc.IndexState;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.LongArray;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.ScalarField;
+import io.milvus.grpc.SearchResultData;
+import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.Status;
 import io.milvus.grpc.StructArrayFieldSchema;
+import io.milvus.param.Constant;
+import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.index.response.DescribeIndexResp;
+import io.milvus.v2.service.vector.response.QueryResp;
+import io.milvus.v2.service.vector.response.SearchResp;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.List;
+
 @Tag("unit")
 public class ConvertUtilsTest {
+
+    @Test
+    void testToProtoDataTypeAndToSdkDataType() {
+        Assertions.assertEquals(DataType.Int64, ConvertUtils.toProtoDataType(io.milvus.v2.common.DataType.Int64));
+        Assertions.assertEquals(DataType.FloatVector, ConvertUtils.toProtoDataType(io.milvus.v2.common.DataType.FloatVector));
+        Assertions.assertEquals(DataType.None, ConvertUtils.toProtoDataType(null));
+
+        Assertions.assertEquals(io.milvus.v2.common.DataType.Int64, ConvertUtils.toSdkDataType(DataType.Int64));
+        Assertions.assertEquals(io.milvus.v2.common.DataType.FloatVector, ConvertUtils.toSdkDataType(DataType.FloatVector));
+        Assertions.assertEquals(io.milvus.v2.common.DataType.None, ConvertUtils.toSdkDataType(null));
+    }
+
+    @Test
+    void testGetEntitiesFromQueryResults() {
+        ConvertUtils convertUtils = new ConvertUtils();
+
+        FieldData countField = FieldData.newBuilder()
+                .setFieldName("count(*)")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(42L).build())
+                        .build())
+                .build();
+        QueryResults countResponse = QueryResults.newBuilder()
+                .addFieldsData(countField)
+                .build();
+        List<QueryResp.QueryResult> countEntities = convertUtils.getEntities(countResponse);
+        Assertions.assertEquals(1, countEntities.size());
+        Assertions.assertEquals(42L, countEntities.get(0).getEntity().get("count(*)"));
+
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).build())
+                        .build())
+                .build();
+        QueryResults normalResponse = QueryResults.newBuilder()
+                .addOutputFields("id")
+                .addFieldsData(idField)
+                .build();
+        List<QueryResp.QueryResult> entities = convertUtils.getEntities(normalResponse);
+        Assertions.assertEquals(2, entities.size());
+        Assertions.assertEquals(1L, entities.get(0).getEntity().get("id"));
+        Assertions.assertEquals(2L, entities.get(1).getEntity().get("id"));
+    }
+
+    @Test
+    void testGetEntitiesFromQueryResultsWithElementIndices() {
+        ConvertUtils convertUtils = new ConvertUtils();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).build())
+                        .build())
+                .build();
+        QueryResults response = QueryResults.newBuilder()
+                .addOutputFields("id")
+                .addFieldsData(idField)
+                .addElementIndices(ElementIndices.newBuilder()
+                        .setIndices(LongArray.newBuilder().addData(0L).addData(1L).build())
+                        .build())
+                .build();
+        List<QueryResp.QueryResult> entities = convertUtils.getEntities(response);
+        Assertions.assertEquals(2, entities.size());
+        Assertions.assertEquals(0L, entities.get(0).getElementOffset());
+        Assertions.assertEquals(1L, entities.get(1).getElementOffset());
+
+        QueryResults mismatch = QueryResults.newBuilder()
+                .addOutputFields("id")
+                .addFieldsData(FieldData.newBuilder()
+                        .setFieldName("id")
+                        .setType(DataType.Int64)
+                        .setScalars(ScalarField.newBuilder()
+                                .setLongData(LongArray.newBuilder().addData(1L).addData(2L).build())
+                                .build())
+                        .build())
+                .addElementIndices(ElementIndices.newBuilder()
+                        .setIndices(LongArray.newBuilder().addData(0L).build())
+                        .build())
+                .build();
+        Assertions.assertThrows(MilvusClientException.class, () -> convertUtils.getEntities(mismatch));
+    }
+
+    @Test
+    void testGetEntitiesFromSearchResults() {
+        ConvertUtils convertUtils = new ConvertUtils();
+
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(7L).build())
+                        .build())
+                .build();
+        SearchResultData data = SearchResultData.newBuilder()
+                .setNumQueries(1)
+                .setTopK(1)
+                .addTopks(1L)
+                .addOutputFields("id")
+                .addFieldsData(idField)
+                .addScores(0.95f)
+                .setIds(IDs.newBuilder()
+                        .setIntId(LongArray.newBuilder().addData(7L).build())
+                        .build())
+                .build();
+        SearchResults response = SearchResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .setResults(data)
+                .build();
+
+        List<List<SearchResp.SearchResult>> results = convertUtils.getEntities(response);
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertEquals(1, results.get(0).size());
+        Assertions.assertEquals(0.95f, results.get(0).get(0).getScore());
+        Assertions.assertEquals(7L, results.get(0).get(0).getId());
+        Assertions.assertEquals(7L, results.get(0).get(0).getEntity().get("id"));
+    }
+
+    @Test
+    void testConvertDescCollectionsResp() {
+        ConvertUtils convertUtils = new ConvertUtils();
+        FieldSchema idField = FieldSchema.newBuilder()
+                .setName("id")
+                .setDataType(DataType.Int64)
+                .setIsPrimaryKey(true)
+                .build();
+        CollectionSchema schema = CollectionSchema.newBuilder()
+                .addFields(idField)
+                .build();
+        DescribeCollectionResponse response = DescribeCollectionResponse.newBuilder()
+                .setCollectionName("c1")
+                .setCollectionID(1L)
+                .setDbName("default")
+                .setSchema(schema)
+                .setNumPartitions(1)
+                .setCreatedTimestamp(0L)
+                .setCreatedUtcTimestamp(0L)
+                .setConsistencyLevel(ConsistencyLevel.Bounded)
+                .setShardsNum(1)
+                .build();
+        BatchDescribeCollectionResponse batch = BatchDescribeCollectionResponse.newBuilder()
+                .addResponses(response)
+                .build();
+
+        List<DescribeCollectionResp> resp = convertUtils.convertDescCollectionsResp(batch);
+        Assertions.assertEquals(1, resp.size());
+        Assertions.assertEquals("c1", resp.get(0).getCollectionName());
+    }
+
+    @Test
+    void testConvertToDescribeIndexResp() {
+        ConvertUtils convertUtils = new ConvertUtils();
+
+        KeyValuePair indexType = KeyValuePair.newBuilder()
+                .setKey(Constant.INDEX_TYPE).setValue("HNSW").build();
+        KeyValuePair metricType = KeyValuePair.newBuilder()
+                .setKey(Constant.METRIC_TYPE).setValue("COSINE").build();
+        IndexDescription description = IndexDescription.newBuilder()
+                .setIndexName("idx")
+                .setFieldName("vector")
+                .setIndexID(9L)
+                .setState(IndexState.Finished)
+                .addParams(indexType)
+                .addParams(metricType)
+                .build();
+
+        DescribeIndexResp resp = convertUtils.convertToDescribeIndexResp(
+                Collections.singletonList(description));
+        Assertions.assertEquals(1, resp.getIndexDescriptions().size());
+        DescribeIndexResp.IndexDesc desc = resp.getIndexDescriptions().get(0);
+        Assertions.assertEquals("idx", desc.getIndexName());
+        Assertions.assertEquals("vector", desc.getFieldName());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.COSINE, desc.getMetricType());
+    }
+
     @Test
     void testConvertDescCollectionRespFieldNamesIncludeStructFields() {
         FieldSchema idField = FieldSchema.newBuilder()

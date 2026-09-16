@@ -40,6 +40,8 @@ public class CompleteMultipartUploadOutputModel {
     /**
      * Constructs an empty {@code CompleteMultipartUploadOutputModel}.
      */
+
+
     public CompleteMultipartUploadOutputModel() {
     }
 
@@ -48,6 +50,8 @@ public class CompleteMultipartUploadOutputModel {
      *
      * @return the object location
      */
+
+
     public String location() {
         return location;
     }
@@ -57,6 +61,8 @@ public class CompleteMultipartUploadOutputModel {
      *
      * @return the bucket name
      */
+
+
     public String bucket() {
         return bucket;
     }
@@ -66,6 +72,8 @@ public class CompleteMultipartUploadOutputModel {
      *
      * @return the object key
      */
+
+
     public String object() {
         return object;
     }
@@ -75,6 +83,8 @@ public class CompleteMultipartUploadOutputModel {
      *
      * @return the object ETag
      */
+
+
     public String etag() {
         return etag;
     }

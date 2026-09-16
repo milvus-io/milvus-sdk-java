@@ -29,6 +29,8 @@ import java.util.Map;
  * A lexical highlighter used by the {@code search} API to highlight the terms of the
  * search query that match the returned text fields, based on lexical (BM25) matching.
  */
+
+
 public class LexicalHighlighter implements Highlighter {
     private final List<HighlightQuery> highlightQueries;
     private final Boolean highlightSearchText;
@@ -43,6 +45,8 @@ public class LexicalHighlighter implements Highlighter {
      *
      * @param builder the builder holding the highlighter settings
      */
+
+
     public LexicalHighlighter(LexicalHighlighterBuilder builder) {
         this.highlightQueries = builder.highlightQueries;
         this.highlightSearchText = builder.highlightSearchText;
@@ -100,18 +104,23 @@ public class LexicalHighlighter implements Highlighter {
      * A single highlight query that specifies the field to highlight and the query text
      * used to match the highlighted terms.
      */
+
+
     public static class HighlightQuery {
         /**
          * The query type, for example {@code match} or {@code match_phrase}.
          */
+
         public String type;
         /**
          * The name of the field to highlight.
          */
+
         public String field;
         /**
          * The query text used for matching.
          */
+
         public String text;
 
         /**
@@ -121,6 +130,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param field the field to highlight
          * @param query the query text
          */
+
+
         public HighlightQuery(String type, String field, String query) {
             this.type = type;
             this.field = field;
@@ -136,6 +147,8 @@ public class LexicalHighlighter implements Highlighter {
     /**
      * Builder for {@link LexicalHighlighter}.
      */
+
+
     public static class LexicalHighlighterBuilder {
         private List<HighlightQuery> highlightQueries;
         private Boolean highlightSearchText;
@@ -144,6 +157,11 @@ public class LexicalHighlighter implements Highlighter {
         private Integer fragmentOffset;
         private Integer fragmentSize;
         private Integer numOfFragments;
+
+        /**
+         * Constructs a new {@code LexicalHighlighterBuilder}.
+         */
+
 
         public LexicalHighlighterBuilder() {
         }
@@ -154,6 +172,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param queries the highlight queries
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder highlightQueries(List<HighlightQuery> queries) {
             this.highlightQueries = queries;
             return this;
@@ -165,6 +185,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param q the highlight query
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder addHighlightQuery(HighlightQuery q) {
             if (this.highlightQueries == null) this.highlightQueries = new ArrayList<>();
             this.highlightQueries.add(q);
@@ -177,6 +199,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param highlightSearchText {@code true} to highlight the search text
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder highlightSearchText(Boolean highlightSearchText) {
             this.highlightSearchText = highlightSearchText;
             return this;
@@ -188,6 +212,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param preTags the pre-tags
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder preTags(List<String> preTags) {
             this.preTags = preTags;
             return this;
@@ -199,6 +225,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param tag the pre-tag
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder addPreTag(String tag) {
             if (this.preTags == null) this.preTags = new ArrayList<>();
             this.preTags.add(tag);
@@ -211,6 +239,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param postTags the post-tags
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder postTags(List<String> postTags) {
             this.postTags = postTags;
             return this;
@@ -222,6 +252,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param tag the post-tag
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder addPostTag(String tag) {
             if (this.postTags == null) this.postTags = new ArrayList<>();
             this.postTags.add(tag);
@@ -234,6 +266,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param offset the fragment offset
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder fragmentOffset(Integer offset) {
             this.fragmentOffset = offset;
             return this;
@@ -245,6 +279,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param size the fragment size
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder fragmentSize(Integer size) {
             this.fragmentSize = size;
             return this;
@@ -256,6 +292,8 @@ public class LexicalHighlighter implements Highlighter {
          * @param num the number of fragments
          * @return this builder
          */
+
+
         public LexicalHighlighterBuilder numOfFragments(Integer num) {
             this.numOfFragments = num;
             return this;
@@ -266,6 +304,8 @@ public class LexicalHighlighter implements Highlighter {
          *
          * @return the built highlighter
          */
+
+
         public LexicalHighlighter build() {
             return new LexicalHighlighter(this);
         }
@@ -276,6 +316,8 @@ public class LexicalHighlighter implements Highlighter {
      *
      * @return a new builder
      */
+
+
     public static LexicalHighlighterBuilder builder() {
         return new LexicalHighlighterBuilder();
     }
