@@ -20,6 +20,8 @@
 package io.milvus.bulkwriter.request.volume;
 
 import io.milvus.bulkwriter.model.UploadProgress;
+import io.milvus.bulkwriter.common.clientenum.UploadPolicy;
+import java.util.Objects;
 
 /**
  * Request for uploading a local file or directory to a target directory within a Volume.
@@ -32,10 +34,23 @@ import io.milvus.bulkwriter.model.UploadProgress;
 public class UploadFilesRequest {
     /**
      * The full path of a local file or directory:
-     * If it is a file, please include the file name, e.g., /Users/zilliz/data/1.parquet
-     * If it is a directory, please end the path with a /, e.g., /Users/zilliz/data/
+     * If it is a file, please include the file name, e.g., /path/to/data/1.parquet
+     * Symbolic links to regular files/directories are followed, retaining their upload paths.
+     * Directory cycles, broken links, and special files fail the upload during scanning.
+     * Keep source files and link targets unchanged during upload.
+     * If it is a directory, please end the path with a /, e.g., /path/to/data/
      */
     private String sourceFilePath;
+
+    /**
+     * Parent directory used only when the request-local index outgrows its internal memory
+     * thresholds and spills to SQLite. Small uploads do not create index files.
+     * Null uses the JVM temporary directory. When needed, it must exist, be writable,
+     * and have space proportional to the number and
+     * length of file paths. The index is deleted on success, failure, or cancellation after
+     * workers stop. Abrupt JVM termination may leave temporary files behind.
+     */
+    private String temporaryDirectory;
 
     /**
      * The target volume directory path:
@@ -60,7 +75,10 @@ public class UploadFilesRequest {
     private long retryIntervalMillis = 5000L;
 
     /**
-     * Optional callback for upload progress snapshots.
+     * Optional callback for upload progress snapshots, throttled to at most once per five
+     * seconds plus a final completion event. This is not a per-file completion callback.
+     * Local scanning and remote existence checks report progress through INFO logs;
+     * they do not emit upload-progress callbacks or contribute to the upload percentage.
      */
     private ProgressListener progressListener = null;
 
@@ -72,6 +90,17 @@ public class UploadFilesRequest {
      * Creates a new UploadFilesRequest.
      */
 
+
+    /**
+     * Upload selection policy. Defaults to SKIP_IF_SAME_SIZE. All comparisons use the exact
+     * target key, including its relative directory path. Non-overwrite policies use paginated
+     * LIST metadata, without HEAD/GET object access. SIZE_AND_MTIME compares local modification
+     * time with the server object's LastModified time, not a preserved source timestamp.
+     * Failed PUT attempts are rechecked using the same policy. Skipped files are excluded from
+     * planned upload limits and progress totals. None of these policies guarantees content
+     * equality or atomic create-if-absent behavior against concurrent writers.
+     */
+    private UploadPolicy uploadPolicy = UploadPolicy.SKIP_IF_SAME_SIZE;
 
     public UploadFilesRequest() {
     }
@@ -96,6 +125,8 @@ public class UploadFilesRequest {
         this.retryIntervalMillis = builder.retryIntervalMillis;
         this.progressListener = builder.progressListener;
         this.partSizeBytes = builder.partSizeBytes;
+        this.uploadPolicy = builder.uploadPolicy;
+        this.temporaryDirectory = builder.temporaryDirectory;
     }
     /**
      * Returns the sourceFilePath.
@@ -103,6 +134,10 @@ public class UploadFilesRequest {
      * @return the sourceFilePath
      */
 
+
+    public String getTemporaryDirectory() { return temporaryDirectory; }
+
+    public void setTemporaryDirectory(String temporaryDirectory) { this.temporaryDirectory = temporaryDirectory; }
 
     public String getSourceFilePath() {
         return sourceFilePath;
@@ -238,6 +273,14 @@ public class UploadFilesRequest {
         this.partSizeBytes = partSizeBytes;
     }
 
+    public UploadPolicy getUploadPolicy() {
+        return uploadPolicy;
+    }
+
+    public void setUploadPolicy(UploadPolicy uploadPolicy) {
+        this.uploadPolicy = Objects.requireNonNull(uploadPolicy, "uploadPolicy");
+    }
+
     @Override
     public String toString() {
         return "UploadFilesRequest{" +
@@ -248,6 +291,7 @@ public class UploadFilesRequest {
                 ", retryIntervalMillis=" + retryIntervalMillis +
                 ", progressListener=" + (progressListener != null) +
                 ", partSizeBytes=" + partSizeBytes +
+                ", uploadPolicy=" + uploadPolicy +
                 '}';
     }
     /**
@@ -268,12 +312,14 @@ public class UploadFilesRequest {
 
     public static class UploadFilesRequestBuilder {
         private String sourceFilePath;
+        private String temporaryDirectory;
         private String targetVolumePath;
         private int uploadConcurrency;
         private int maxRetries;
         private long retryIntervalMillis;
         private ProgressListener progressListener;
         private long partSizeBytes;
+        private UploadPolicy uploadPolicy = UploadPolicy.SKIP_IF_SAME_SIZE;
 
         private UploadFilesRequestBuilder() {
             this.sourceFilePath = "";
@@ -291,6 +337,11 @@ public class UploadFilesRequest {
          * @return this builder
          */
 
+
+        public UploadFilesRequestBuilder temporaryDirectory(String temporaryDirectory) {
+            this.temporaryDirectory = temporaryDirectory;
+            return this;
+        }
 
         public UploadFilesRequestBuilder sourceFilePath(String sourceFilePath) {
             this.sourceFilePath = sourceFilePath;
@@ -377,6 +428,11 @@ public class UploadFilesRequest {
 
         public UploadFilesRequest build() {
             return new UploadFilesRequest(this);
+        }
+
+        public UploadFilesRequestBuilder uploadPolicy(UploadPolicy uploadPolicy) {
+            this.uploadPolicy = Objects.requireNonNull(uploadPolicy, "uploadPolicy");
+            return this;
         }
     }
 

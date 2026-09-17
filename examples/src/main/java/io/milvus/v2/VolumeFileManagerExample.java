@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import io.milvus.bulkwriter.VolumeFileManager;
 import io.milvus.bulkwriter.VolumeFileManagerParam;
 import io.milvus.bulkwriter.common.clientenum.ConnectType;
+import io.milvus.bulkwriter.common.clientenum.UploadPolicy;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.volume.UploadFilesRequest;
 
@@ -46,6 +47,7 @@ public class VolumeFileManagerExample {
 
     private static void uploadFiles() throws Exception {
         UploadFilesRequest request = UploadFilesRequest.builder()
+                .uploadPolicy(UploadPolicy.SKIP_IF_SAME_SIZE)
                 .sourceFilePath("/Users/zilliz/data/")
                 .targetVolumePath("data/")
                 .build();
