@@ -21,6 +21,7 @@ package io.milvus.bulkwriter;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import io.milvus.bulkwriter.common.clientenum.UploadPolicy;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.volume.UploadFilesRequest;
 import io.milvus.common.utils.ExceptionUtils;
@@ -34,6 +35,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * BulkWriter that writes bulk data files and uploads them to a data volume service.
+ * <p>
+ * Rows are buffered locally into chunked data files, then uploaded to the target volume
+ * through a {@link VolumeFileManager}. UUID-scoped chunks always use {@link UploadPolicy#OVERWRITE}
+ * to avoid unnecessary existence checks. The local copies are removed after a successful upload.
+ */
+
 
 public class VolumeBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(VolumeBulkWriter.class);
@@ -182,6 +192,7 @@ public class VolumeBulkWriter extends LocalBulkWriter {
 
         UploadFilesRequest uploadFilesRequest = UploadFilesRequest.builder()
                 .sourceFilePath(filePath).targetVolumePath(remotePath)
+                .uploadPolicy(UploadPolicy.OVERWRITE)
                 .build();
 
         volumeFileManager.uploadFilesAsync(uploadFilesRequest).get();
