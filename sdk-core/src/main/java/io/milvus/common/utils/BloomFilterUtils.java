@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * Builds a client-side Split-Block Bloom Filter (SBBF) blob for the
- * <code>bloom_match(field, {blob})</code> filter expression.
+ * <code>membership_match(field, {blob}, type=bloom)</code> filter expression.
  *
  * <p>Building the filter on the client replaces large raw value lists and their serialization
  * overhead with a compact binary representation. For example, 10M int64 members are roughly
@@ -42,7 +42,7 @@ import java.util.List;
  * byte[] blob = BloomFilterUtils.buildBloomFilter(userIds, BloomFilterUtils.DEFAULT_FPR);
  * QueryReq req = QueryReq.builder()
  *         .collectionName("docs")
- *         .filter("bloom_match(user_id, {bf})")
+ *         .filter("membership_match(user_id, {bf}, type=bloom)")
  *         .filterTemplateValues(Collections.singletonMap("bf", blob))
  *         .build();
  * }</pre>

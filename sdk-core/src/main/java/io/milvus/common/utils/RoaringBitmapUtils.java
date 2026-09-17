@@ -27,10 +27,10 @@ import java.util.List;
 
 /**
  * Builds a client-side roaring bitmap blob for the
- * <code>roaring_match(field, {blob})</code> filter expression.
+ * <code>membership_match(field, {blob}, type=roaring)</code> filter expression.
  *
  * <p>Where {@link BloomFilterUtils} trades exactness for size, this is the exact-membership
- * sibling: <code>roaring_match</code> never produces a false positive, and a dense integer set
+ * sibling: <code>membership_match(..., type=roaring)</code> never produces a false positive, and a dense integer set
  * compresses far better than a bloom filter of the same set — one million consecutive ids is a
  * 274-byte blob here versus roughly 2 MB as a bloom filter at a 0.005 false-positive rate.
  * Sparse random sets are the other way round, so pick per workload: a roaring blob's size follows
@@ -43,7 +43,7 @@ import java.util.List;
  * byte[] blob = RoaringBitmapUtils.buildRoaringBitmap(userIds);
  * QueryReq req = QueryReq.builder()
  *         .collectionName("docs")
- *         .filter("roaring_match(user_id, {ids})")
+ *         .filter("membership_match(user_id, {ids}, type=roaring)")
  *         .filterTemplateValues(Collections.singletonMap("ids", blob))
  *         .build();
  * }</pre>
@@ -55,7 +55,7 @@ import java.util.List;
  * blob. All ordering inside the bitmap is on that unsigned key, which is why <code>{-1, 5}</code>
  * is stored as <code>{5, 0xffffffffffffffff}</code>.
  *
- * <p>Building a large bitmap is the expensive part of a <code>roaring_match</code> query, so the
+ * <p>Building a large bitmap is the expensive part of a <code>membership_match(..., type=roaring)</code> query, so the
  * returned array is meant to be built once and reused across many requests rather than rebuilt per
  * call.
  *
