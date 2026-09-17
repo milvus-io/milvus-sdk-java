@@ -47,7 +47,9 @@ jobs:
       - name: Checkout target branch
         uses: actions/checkout@v4
         with:
-          ref: 3.0
+          # quote the branch name: unquoted YAML 3.0 parses as a float and checkout
+          # receives "3" instead of the "3.0" branch
+          ref: '3.0'
           fetch-depth: 0
           # do not persist the GITHUB_TOKEN extraheader into .git/config: it would take
           # precedence over the PAT in the push URL and cause a 403 (contents: read)
