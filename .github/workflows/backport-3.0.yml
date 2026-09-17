@@ -1,0 +1,238 @@
+# Automatically backport every PR merged into master to the 3.0 branch.
+#
+# Triggered when a PR targeting master is merged. The merge commit is cherry-picked
+# onto a throwaway branch off 3.0 and a `[cherry-pick]` PR into 3.0 is opened.
+# Mergify then auto-merges that PR once its CI checks pass (see .github/mergify.yml).
+#
+# Exclude a PR from backporting by adding the `skip-cherry-pick` label before merging.
+#
+# Conflicts cannot be resolved in automation: the run fails loudly and the changes
+# must be backported by hand. Benign cases (commit already present on 3.0, or a
+# cherry-pick that produces an empty change) are skipped quietly.
+#
+# The branch push and PR creation authenticate with the repository secret
+# `CHERRY_PICK_PAT` (a personal access token with `repo` scope, or fine-grained
+# `contents: write` + `pull-requests: write` scoped to this repository).
+
+name: Backport to 3.0
+
+on:
+  # pull_request_target runs in the base-repo context (repository secrets available) and uses
+  # the workflow definition from the base branch. That is required so merged PRs that came from
+  # forks can still be backported with CHERRY_PICK_PAT. It is safe here because the workflow only
+  # checks out the fixed `3.0` ref and acts on the merge_commit_sha from the event payload; it
+  # never checks out or executes the PR head.
+  pull_request_target:
+    types: [closed]
+
+# Least privilege: pushes and PR creation use the PAT (CHERRY_PICK_PAT); the
+# GITHUB_TOKEN is only used by actions/checkout and local git ops, so read is enough.
+permissions:
+  contents: read
+
+# One run per merge commit, so re-dispatch/rerun cannot race on the shared remote branch.
+concurrency:
+  group: backport-3.0-${{ github.event.pull_request.merge_commit_sha }}
+  cancel-in-progress: true
+
+jobs:
+  backport:
+    name: Backport to 3.0
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'master' &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-cherry-pick')
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: 3.0
+          fetch-depth: 0
+          # do not persist the GITHUB_TOKEN extraheader into .git/config: it would take
+          # precedence over the PAT in the push URL and cause a 403 (contents: read)
+          persist-credentials: false
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Validate merge commit
+        id: validate
+        env:
+          COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$COMMIT" ]; then
+            echo "::error::merge_commit_sha is empty"
+            exit 1
+          fi
+          git fetch origin master
+          if ! git rev-parse --verify --quiet "$COMMIT^{commit}" >/dev/null; then
+            echo "::error::merge commit '$COMMIT' does not exist"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$COMMIT" origin/master; then
+            echo "::error::merge commit '$COMMIT' is not on 'master'"
+            exit 1
+          fi
+          if git merge-base --is-ancestor "$COMMIT" HEAD; then
+            echo "::notice::merge commit '$COMMIT' is already on '3.0'; nothing to backport"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          FULL_SHA=$(git rev-parse "$COMMIT")
+          # use git's --grep filter and capture the output: a `grep -q` early-exit would be
+          # killed by SIGPIPE under pipefail and misreport a match as failure.
+          if [ -n "$(git log HEAD --format=%B --grep="cherry picked from commit ${FULL_SHA}")" ]; then
+            echo "::notice::merge commit '$COMMIT' was already cherry-picked onto '3.0'; nothing to backport"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+      - name: Create cherry-pick branch
+        id: branch
+        if: steps.validate.outputs.skip != 'true'
+        env:
+          COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short "$COMMIT")
+          # unique per run AND attempt (GITHUB_RUN_ID): the plain name would be predictable,
+          # and a retried run keeps the same RUN_ID, so include RUN_ATTEMPT to avoid a
+          # non-fast-forward push when a previous attempt already pushed this branch.
+          BRANCH="cherry-pick-${SHORT_SHA}-to-3.0-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Cherry-pick the merge commit
+        id: cherrypick
+        if: steps.validate.outputs.skip != 'true'
+        env:
+          COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          PARENT_COUNT=$(git rev-list --parents -n 1 "$COMMIT" | awk '{print NF}')
+          if [ "$PARENT_COUNT" -gt 2 ]; then
+            echo "::warning::merge commit '$COMMIT' has multiple parents; cherry-picking with -m 1 (diff against first parent)"
+            CHERRY_PICK_ARGS="-x -m 1"
+          else
+            CHERRY_PICK_ARGS="-x"
+          fi
+          if ! git cherry-pick ${CHERRY_PICK_ARGS} "$COMMIT" 2>/tmp/cherry_pick_err; then
+            # capture instead of `git ls-files -u | grep -q .` to avoid SIGPIPE/pipefail
+            # misreporting once the conflict list exceeds the pipe buffer.
+            if [ -n "$(git ls-files -u)" ]; then
+              echo "::error::cherry-pick of '$COMMIT' has conflicts; a manual backport to 3.0 is required"
+            elif git diff --quiet; then
+              echo "::notice::merge commit '$COMMIT' appears to already be applied on '3.0' (cherry-pick produced an empty change); nothing to backport"
+              # leave the working tree clean before skipping the rest of the job
+              git cherry-pick --abort 2>/dev/null || true
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            else
+              echo "::error::cherry-pick of '$COMMIT' failed (neither a conflict nor an empty change)"
+            fi
+            cat /tmp/cherry_pick_err
+            git cherry-pick --abort 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Sign off for DCO
+        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          # If the source commit already carries the author's own DCO attestation,
+          # pass it through unchanged: the cherry-pick preserves the author, so the
+          # sign-off still matches and the workflow adds nothing.
+          AUTHOR_SIGN_OFF="Signed-off-by: $(git show -s --format='%an <%ae>' HEAD)"
+          if git log -1 --format='%B' | grep -Fq "$AUTHOR_SIGN_OFF"; then
+            exit 0
+          fi
+          # Otherwise the source commit was never DCO-signed. The cherry-picked commit
+          # is a NEW commit created by this workflow, so signing it as the original
+          # author would be an attestation they never made. Instead the operator
+          # (github.actor, who merged the source PR) attests DCO for this commit,
+          # and the git committer identity is aligned to the sign-off so DCO's
+          # author-or-committer rule matches.
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git log -1 --format='%B' > /tmp/msg
+          printf '\nSigned-off-by: %s <%s@users.noreply.github.com>\n' "$GITHUB_ACTOR" "$GITHUB_ACTOR" >> /tmp/msg
+          git commit --amend -F /tmp/msg
+
+      - name: Push branch
+        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true'
+        env:
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          PUSH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
+        run: |
+          if [ -z "$PUSH_TOKEN" ]; then
+            echo "::error::secrets.CHERRY_PICK_PAT is not configured; add a PAT with 'repo' scope (contents + PR write) and store it as CHERRY_PICK_PAT"
+            exit 1
+          fi
+          # push with the tokenized URL inline so the PAT is never written into .git/config
+          git push "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
+
+      - name: Create pull request
+        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          SHORT_SHA: ${{ steps.branch.outputs.short_sha }}
+          COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::secrets.CHERRY_PICK_PAT is not configured; add a PAT with 'repo' scope (contents + PR write) and store it as CHERRY_PICK_PAT"
+            exit 1
+          fi
+          COMMIT_TITLE=$(git show -s --format=%s "$COMMIT")
+          COMMIT_BODY=$(git show -s --format=%b "$COMMIT")
+          TITLE="[cherry-pick] ${COMMIT_TITLE}"
+          BODY_FILE=$(mktemp)
+          printf 'Cherry-picks commit `%s` (%s) from `master` to `3.0`.\n\n' "$COMMIT" "$SHORT_SHA" > "$BODY_FILE"
+          printf 'Created automatically by the backport workflow after the PR was merged to master.\n' >> "$BODY_FILE"
+          if [ -n "$COMMIT_BODY" ]; then
+            printf '\n%s\n' "$COMMIT_BODY" >> "$BODY_FILE"
+          fi
+          # Re-running the backport while a previous PR is still open must not create a
+          # duplicate: match an existing open PR whose body references this exact source
+          # commit SHA AND the marker unique to this workflow, so a PR opened by the manual
+          # cherry-pick.yml for the same commit is never labeled or auto-merged. gh's --jq
+          # does not forward jq flags, so read the SHA from the environment instead of --arg.
+          # awk reads all input (no early-exit pipe); gh pr list pages internally, and the
+          # generous --limit window is ample because the auto-merge + branch deletion keep
+          # the 3.0 backport queue short.
+          FULL_SHA=$(git rev-parse "$COMMIT")
+          export FULL_SHA
+          EXISTING_URL=$(gh pr list --state open --base 3.0 --limit 500 --json url,body \
+            --jq '.[] | select((.body // "") | (contains(env.FULL_SHA) and contains("Created automatically by the backport workflow"))) | .url' \
+            | awk 'NR == 1 { print }')
+          # The backport-3.0 label is the trusted-provenance signal for the Mergify auto-merge
+          # rule: it can only be added with the CHERRY_PICK_PAT (a trusted member's token), so a
+          # fork spoofing the cherry-pick branch/title pattern cannot get its PR auto-merged.
+          # Ensure the label exists first (idempotent), then apply it to whatever PR is used so
+          # a re-run after a labeling failure restores the auto-merge invariant.
+          gh label create backport-3.0 --force >/dev/null 2>&1 || true
+          if [ -n "$EXISTING_URL" ]; then
+            echo "An open cherry-pick PR already exists: $EXISTING_URL"
+            if ! gh pr edit "$EXISTING_URL" --add-label backport-3.0; then
+              echo "::error::Failed to add 'backport-3.0' label to $EXISTING_URL"
+              exit 1
+            fi
+          else
+            PR_URL=$(gh pr create --base 3.0 --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE" 2>/tmp/pr_err)
+            if [ -z "$PR_URL" ]; then
+              echo "::error::Failed to create pull request"
+              cat /tmp/pr_err
+              exit 1
+            fi
+            # A PR created without the backport-3.0 label would never auto-merge, so fail
+            # loudly if the label cannot be added instead of leaving it silent.
+            if ! gh pr edit "$PR_URL" --add-label backport-3.0; then
+              echo "::error::Failed to add 'backport-3.0' label to $PR_URL"
+              exit 1
+            fi
+            echo "Pull request created: $PR_URL"
+          fi
