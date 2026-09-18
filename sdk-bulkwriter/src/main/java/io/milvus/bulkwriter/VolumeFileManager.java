@@ -21,7 +21,7 @@ package io.milvus.bulkwriter;
 
 import com.google.gson.Gson;
 import io.milvus.bulkwriter.common.clientenum.ConnectType;
-import io.milvus.bulkwriter.common.utils.FileUtils;
+import io.milvus.bulkwriter.common.clientenum.UploadPolicy;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.model.UploadProgress;
 import io.milvus.bulkwriter.request.volume.ApplyVolumeRequest;
@@ -34,22 +34,21 @@ import io.milvus.bulkwriter.storage.client.MinioStorageClient;
 import io.milvus.exception.ParamException;
 import io.minio.errors.ErrorResponseException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -89,87 +88,92 @@ public class VolumeFileManager {
      * @param request the upload request containing the source local file or directory path
      *                and the target directory path in the Volume {@link UploadFilesRequest}
      * @return a {@link CompletableFuture} that completes with an {@link UploadFilesResult}
-     * once all files have been uploaded successfully
+     * once all files have been uploaded successfully. Scanning and preflight checks also run
+     * asynchronously. A request-local adaptive index bounds heap use independently of file count;
+     * uploads retain at most uploadConcurrency in-flight tasks. Cancellation interrupts the
+     * workers and cleans up the index once in-flight operations have stopped.
      * @throws CompletionException if an error occurs during the upload process
      */
 
 
     public CompletableFuture<UploadFilesResult> uploadFilesAsync(UploadFilesRequest request) {
-        String localDirOrFilePath = request.getSourceFilePath();
-        Pair<List<String>, Long> localPathPair = FileUtils.processLocalPath(localDirOrFilePath);
+        Path source = Paths.get(request.getSourceFilePath()).toAbsolutePath().normalize();
         String volumePath = convertDirPath(request.getTargetVolumePath());
-        int uploadConcurrency = Math.max(1, request.getUploadConcurrency());
+        int concurrency = Math.max(1, request.getUploadConcurrency());
         int maxRetries = Math.max(0, request.getMaxRetries());
-        long retryIntervalMillis = Math.max(0L, request.getRetryIntervalMillis());
-        long partSizeBytes = Math.max(0L, request.getPartSizeBytes());
-        long totalBytes = localPathPair.getValue();
-        long totalFilesCount = localPathPair.getKey().size();
-        long startTime = System.currentTimeMillis();
-        logger.info("Starting volume upload: sourcePath:{}, volumeName:{}, volumePath:{}, totalFileCount:{}, totalFileSize:{} bytes ({}), uploadConcurrency:{}, maxRetries:{}, retryInterval:{}, partSize:{}, startTime:{}",
-                localDirOrFilePath, volumeName, volumePath, totalFilesCount, totalBytes, formatBytes(totalBytes),
-                uploadConcurrency, maxRetries, formatDurationMillis(retryIntervalMillis),
-                formatPartSize(partSizeBytes), Instant.ofEpochMilli(startTime));
+        long retryInterval = Math.max(0L, request.getRetryIntervalMillis());
+        long partSize = Math.max(0L, request.getPartSizeBytes());
+        UploadPolicy uploadPolicy = java.util.Objects.requireNonNull(request.getUploadPolicy(), "uploadPolicy");
+        UploadFilesRequest.ProgressListener listener = request.getProgressListener();
+        Path temporaryDirectory = request.getTemporaryDirectory() == null ? null
+                : Paths.get(request.getTemporaryDirectory()).toAbsolutePath();
+        CompletableFuture<UploadFilesResult> result = new CompletableFuture<>();
+        ExecutorService coordinator = Executors.newSingleThreadExecutor();
+        Future<?> task = coordinator.submit(() -> {
+            long startTime = System.currentTimeMillis();
+            try {
+                result.complete(runUpload(source, volumePath, temporaryDirectory, concurrency, maxRetries,
+                        retryInterval, partSize, uploadPolicy, listener));
+            } catch (Throwable failure) {
+                logUploadFailed(source.toString(), volumePath, startTime);
+                result.completeExceptionally(failure);
+            }
+        });
+        // Cancellation must interrupt the actual coordinator, not only the returned future.
+        result.whenComplete((value, failure) -> {
+            if (result.isCancelled()) { task.cancel(true); }
+        });
+        coordinator.shutdown();
+        return result;
+    }
 
-        VolumeSession initialSession;
-        try {
-            initialSession = refreshVolumeAndClient(volumePath);
-        } catch (RuntimeException e) {
-            logUploadFailed(localDirOrFilePath, volumePath, startTime);
-            throw e;
+    private UploadFilesResult runUpload(Path source, String volumePath, Path temporaryDirectory,
+                                         int concurrency, int maxRetries, long retryInterval, long partSize,
+                                         UploadPolicy uploadPolicy, UploadFilesRequest.ProgressListener listener) throws Exception {
+        logger.info("Planning volume upload: sourcePath:{}, volumePath:{}, concurrency:{}, uploadPolicy:{}",
+                source, volumePath, concurrency, uploadPolicy);
+        try (UploadManifest manifest = new UploadManifest(temporaryDirectory)) {
+            boolean singleFile = manifest.scan(source);
+            UploadManifest.checkInterrupted();
+            UploadContext context = new UploadContext(refreshVolumeAndClient(volumePath));
+            try {
+                String targetPrefix = context.currentSession().applyVolumeResponse.getVolumePrefix() + volumePath;
+                if (uploadPolicy != UploadPolicy.OVERWRITE) {
+                    filterExistingFiles(manifest, targetPrefix,
+                            singleFile ? targetPrefix + source.getFileName() : targetPrefix,
+                            volumePath, maxRetries, retryInterval, context, uploadPolicy);
+                }
+                long uploadBytes = manifest.remainingBytes();
+                initValidator(manifest.remainingCount(), uploadBytes, context.currentSession().applyVolumeResponse);
+                logger.info("Volume upload plan: filesToUpload:{}, skippedFiles:{}, bytesToUpload:{}",
+                        manifest.remainingCount(), manifest.fileCount() - manifest.remainingCount(), uploadBytes);
+                UploadProgressTracker tracker = new UploadProgressTracker(uploadBytes, manifest.remainingCount(), listener);
+                Path base = singleFile ? source.getParent() : source;
+                try (UploadManifest.Cursor cursor = manifest.openCursor()) {
+                    BoundedUploadExecutor.run(concurrency, cursor::next, entry -> {
+                        Path path = base.resolve(entry.relativePath);
+                        validateSource(path, entry);
+                        putObjectWithRetry(path.toFile(), entry.size, entry.modified, targetPrefix + entry.relativePath,
+                                volumePath, maxRetries, retryInterval, tracker, context, partSize, uploadPolicy);
+                        validateSource(path, entry);
+                        tracker.finishFile(path.toString(), entry.size);
+                    });
+                }
+                tracker.finishUpload();
+                return UploadFilesResult.builder()
+                        .volumeName(context.currentSession().applyVolumeResponse.getVolumeName())
+                        .path(volumePath).build();
+            } finally {
+                context.closeSessions();
+            }
         }
-        try {
-            initValidator(localPathPair, initialSession.applyVolumeResponse);
-        } catch (RuntimeException e) {
-            closeVolumeSession(initialSession);
-            logUploadFailed(localDirOrFilePath, volumePath, startTime);
-            throw e;
+    }
+
+    private void validateSource(Path path, UploadManifest.Entry entry) throws IOException {
+        BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+        if (!attrs.isRegularFile() || attrs.size() != entry.size || attrs.lastModifiedTime().toMillis() != entry.modified) {
+            throw new ParamException("Local file changed after upload planning: " + path);
         }
-        UploadContext uploadContext = new UploadContext(initialSession);
-        ExecutorService uploadExecutor = Executors.newFixedThreadPool(uploadConcurrency);
-        UploadProgressTracker progressTracker = new UploadProgressTracker(totalBytes, totalFilesCount, request.getProgressListener());
-
-        return CompletableFuture.allOf(localPathPair.getKey().stream()
-                        .map(localFilePath -> CompletableFuture.runAsync(() -> {
-                            File file = new File(localFilePath);
-                            String progressFilePath = file.getAbsolutePath();
-                            long fileStartTime = System.currentTimeMillis();
-
-                            try {
-                                uploadLocalFileToVolume(localFilePath, localDirOrFilePath, volumePath, maxRetries, retryIntervalMillis, progressTracker, uploadContext, partSizeBytes);
-                                UploadProgressSnapshot progress = progressTracker.finishFile(progressFilePath, file.length());
-                                long elapsed = System.currentTimeMillis() - fileStartTime;
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Uploaded file {}/{}: {} ({} bytes) elapsed:{} ms, progress(total bytes): {}/{} bytes, progress(total percentage):{}%, speedBPS:{}, estimatedRemainingTime:{}",
-                                            progress.completedFiles, totalFilesCount, localFilePath, file.length(), elapsed,
-                                            progress.uploadedBytes, totalBytes, String.format("%.2f", progress.percent),
-                                            progress.speedBps, progress.estimatedRemainingTime);
-                                }
-                            } catch (Exception e) {
-                                logger.error("Upload failed: {}", localFilePath, e);
-                                throw new CompletionException(e);
-                            }
-                        }, uploadExecutor)).toArray(CompletableFuture[]::new))
-                .whenComplete((v, t) -> {
-                    uploadExecutor.shutdown();
-                    uploadContext.closeSessions();
-                    if (t != null) {
-                        logUploadFailed(localDirOrFilePath, volumePath, startTime);
-                    }
-                })
-                .thenApply(v -> {
-                    progressTracker.finishUpload();
-                    long endTime = System.currentTimeMillis();
-                    long totalElapsed = endTime - startTime;
-                    VolumeSession session = uploadContext.currentSession();
-                    logger.info("Volume upload completed: sourcePath:{}, volumeName:{}, volumePath:{}, totalFileCount:{}, totalFileSize:{} bytes ({}), endTime:{}, totalElapsed:{}",
-                            localDirOrFilePath, session.applyVolumeResponse.getVolumeName(), volumePath,
-                            localPathPair.getKey().size(), localPathPair.getValue(), formatBytes(localPathPair.getValue()),
-                            Instant.ofEpochMilli(endTime), formatDurationMillis(totalElapsed));
-                    return UploadFilesResult.builder()
-                            .volumeName(session.applyVolumeResponse.getVolumeName())
-                            .path(volumePath)
-                            .build();
-                });
     }
 
     /**
@@ -184,7 +188,13 @@ public class VolumeFileManager {
 
 
     public UploadFilesResult uploadFiles(UploadFilesRequest request) throws ExecutionException, InterruptedException {
-        return uploadFilesAsync(request).get();
+        CompletableFuture<UploadFilesResult> result = uploadFilesAsync(request);
+        try {
+            return result.get();
+        } catch (InterruptedException e) {
+            result.cancel(true);
+            throw e;
+        }
     }
 
     /**
@@ -205,27 +215,6 @@ public class VolumeFileManager {
                 Instant.ofEpochMilli(endTime), formatDurationMillis(endTime - startTime));
     }
 
-    private static String formatPartSize(long partSizeBytes) {
-        if (partSizeBytes <= 0L) {
-            return "auto";
-        }
-        return partSizeBytes + " bytes (" + formatBytes(partSizeBytes) + ")";
-    }
-
-    private static String formatBytes(long bytes) {
-        if (bytes < 1024L) {
-            return bytes + " B";
-        }
-        double value = bytes;
-        String[] units = new String[]{"B", "KiB", "MiB", "GiB", "TiB", "PiB"};
-        int unitIndex = 0;
-        while (value >= 1024.0 && unitIndex < units.length - 1) {
-            value /= 1024.0;
-            unitIndex++;
-        }
-        return String.format(Locale.ROOT, "%.2f %s", value, units[unitIndex]);
-    }
-
     private static String formatDurationMillis(long durationMillis) {
         if (durationMillis < 0L) {
             return "unknown";
@@ -243,9 +232,8 @@ public class VolumeFileManager {
         return String.format(Locale.ROOT, "%ds", seconds);
     }
 
-    private void initValidator(Pair<List<String>, Long> localPathPair, ApplyVolumeResponse applyVolumeResponse) {
+    private void initValidator(long uploadFileNumber, long uploadFileContentLength, ApplyVolumeResponse applyVolumeResponse) {
         Long maxContentLength = applyVolumeResponse.getCondition().getMaxContentLength();
-        Long uploadFileContentLength = localPathPair.getValue();
         if (uploadFileContentLength > maxContentLength) {
             String msg = String.format("localFileTotalSize %s exceeds the maximum contentLength limit %s defined in the condition. If you are using the free tier, you may switch to the pay-as-you-go volume plan to support uploading larger files.",
                     uploadFileContentLength, maxContentLength);
@@ -254,7 +242,6 @@ public class VolumeFileManager {
         }
 
         Long maxFileNumber = applyVolumeResponse.getCondition().getMaxFileNumber();
-        int uploadFileNumber = localPathPair.getKey().size();
         if (maxFileNumber != null) {
             if (uploadFileNumber > maxFileNumber) {
                 String msg = String.format(
@@ -338,37 +325,74 @@ public class VolumeFileManager {
         return builder + "/";
     }
 
-    private void uploadLocalFileToVolume(String localFilePath, String rootPath, String volumePath,
-                                         int maxRetries, long retryIntervalMillis,
-                                         UploadProgressTracker progressTracker,
-                                         UploadContext uploadContext, long partSizeBytes) {
-        File file = new File(localFilePath);
-        Path filePath = file.toPath().toAbsolutePath();
-        Path root = Paths.get(rootPath).toAbsolutePath();
-
-        String relativePath;
-        if (root.toFile().isFile()) {
-            relativePath = file.getName();
-        } else {
-            relativePath = root.relativize(filePath).toString().replace("\\", "/");
+    private void filterExistingFiles(UploadManifest manifest, String targetPrefix, String listingPrefix,
+                                     String volumePath, int maxRetries, long retryIntervalMillis,
+                                     UploadContext uploadContext, UploadPolicy uploadPolicy) throws Exception {
+        if (manifest.remainingCount() == 0) {
+            logger.info("Volume existence check skipped: prefix:{}, reason:no local files", listingPrefix);
+            return;
         }
-
-        VolumeSession session = uploadContext.currentSession();
-        String remoteFilePath = session.applyVolumeResponse.getVolumePrefix() + volumePath + relativePath;
-        putObjectWithRetry(file, remoteFilePath, volumePath, maxRetries, retryIntervalMillis, progressTracker, uploadContext, partSizeBytes);
+        long listedPages = 0;
+        long listedObjects = 0;
+        long startedAt = System.nanoTime();
+        long lastLogAt = startedAt;
+        logger.info("Volume existence check started: prefix:{}, localFiles:{}", listingPrefix, manifest.fileCount());
+        String continuationToken = null;
+        do {
+            UploadManifest.checkInterrupted();
+            final String pageToken = continuationToken;
+            StorageClient.ObjectListPage page = withRetry("list " + listingPrefix, () -> {
+                refreshIfExpire(volumePath, uploadContext);
+                try (SessionLease lease = uploadContext.acquire()) {
+                    VolumeSession session = lease.session;
+                    return session.storageClient.listObjectsPage(session.applyVolumeResponse.getBucketName(),
+                            listingPrefix, pageToken);
+                }
+            }, volumePath, maxRetries, retryIntervalMillis, uploadContext);
+            listedPages++;
+            manifest.excludeExisting(page.getObjects(), targetPrefix, uploadPolicy);
+            listedObjects += page.getObjects().size();
+            long now = System.nanoTime();
+            if (now - lastLogAt >= TimeUnit.SECONDS.toNanos(5)) {
+                logger.info("Volume existence check progress: prefix:{}, listedPages:{}, listedObjects:{}, skippedFiles:{}, unmatchedLocalFiles:{}, elapsedMillis:{}",
+                        listingPrefix, listedPages, listedObjects, manifest.fileCount() - manifest.remainingCount(),
+                        manifest.unmatchedCount(), TimeUnit.NANOSECONDS.toMillis(now - startedAt));
+                lastLogAt = now;
+            }
+            continuationToken = page.getNextContinuationToken();
+        } while (continuationToken != null && manifest.unmatchedCount() > 0);
+        logger.info("Volume existence check completed: prefix:{}, listedPages:{}, listedObjects:{}, skippedFiles:{}, filesToUpload:{}, elapsedMillis:{}, stopReason:{}",
+                listingPrefix, listedPages, listedObjects, manifest.fileCount() - manifest.remainingCount(),
+                manifest.remainingCount(), TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt),
+                manifest.unmatchedCount() == 0 ? "all local keys checked" : "end of listing");
     }
 
-    private void putObjectWithRetry(File file, String remoteFilePath, String volumePath,
+    private void putObjectWithRetry(File file, long fileSize, long modifiedTimeMillis, String remoteFilePath, String volumePath,
                                     int maxRetries, long retryIntervalMillis,
                                     UploadProgressTracker progressTracker,
-                                    UploadContext uploadContext, long partSizeBytes) {
+                                    UploadContext uploadContext, long partSizeBytes, UploadPolicy uploadPolicy) {
         String msg = "upload " + file.getAbsolutePath();
-        FileUploadProgress progress = new FileUploadProgress(progressTracker, file.getAbsolutePath(), file.length());
+        FileUploadProgress progress = new FileUploadProgress(progressTracker, file.getAbsolutePath(), fileSize);
+        AtomicBoolean firstAttempt = new AtomicBoolean(true);
         withRetry(msg, () -> {
             progress.reset();
-            VolumeSession session = refreshIfExpire(volumePath, uploadContext);
-            session.storageClient.putObject(file, session.applyVolumeResponse.getBucketName(), remoteFilePath, progress, partSizeBytes);
-            return null;
+            refreshIfExpire(volumePath, uploadContext);
+            try (SessionLease lease = uploadContext.acquire()) {
+                VolumeSession session = lease.session;
+                // The first attempt was checked during planning. Recheck retries in case a PUT
+                // succeeded remotely but its response was lost before reaching the client.
+                if (uploadPolicy != UploadPolicy.OVERWRITE && !firstAttempt.getAndSet(false)) {
+                    StorageClient.ObjectMetadata object = session.storageClient.findObject(
+                            session.applyVolumeResponse.getBucketName(), remoteFilePath);
+                    if (object != null && uploadPolicy.shouldSkip(fileSize, modifiedTimeMillis,
+                            object.getSize(), object.getLastModifiedTimeMillis())) {
+                        logger.debug("Skipping volume file on retry: key:{}, uploadPolicy:{}", remoteFilePath, uploadPolicy);
+                        return null;
+                    }
+                }
+                session.storageClient.putObject(file, session.applyVolumeResponse.getBucketName(), remoteFilePath, progress, partSizeBytes);
+                return null;
+            }
         }, volumePath, maxRetries, retryIntervalMillis, uploadContext);
 
     }
@@ -399,7 +423,7 @@ public class VolumeFileManager {
         if (session == null) {
             return;
         }
-        session.storageClient.close();
+        if (session.closed.compareAndSet(false, true)) { session.storageClient.close(); }
     }
 
     private <T> T withRetry(String actionName, Callable<T> callable, String volumePath,
@@ -407,9 +431,15 @@ public class VolumeFileManager {
                             UploadContext uploadContext) {
         int failedAttempts = 0;
         while (true) {
+            VolumeSession attemptedSession = uploadContext.currentSession();
             try {
+                UploadManifest.checkInterrupted();
                 return callable.call();
             } catch (Exception e) {
+                if (Thread.currentThread().isInterrupted() || hasCause(e, InterruptedException.class)) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(actionName + " interrupted", e);
+                }
                 if (hasCause(e, ProgressCallbackException.class)) {
                     throw new RuntimeException("Upload progress callback failed", e);
                 }
@@ -424,7 +454,11 @@ public class VolumeFileManager {
                 if (failedAttempts > maxRetries) {
                     throw new RuntimeException(actionName + " failed after " + failedAttempts + " attempts", e);
                 }
-                refreshUploadContext(volumePath, uploadContext);
+                synchronized (uploadContext.refreshLock) {
+                    if (attemptedSession == uploadContext.currentSession()) {
+                        refreshUploadContext(volumePath, uploadContext);
+                    }
+                }
                 try {
                     Thread.sleep(retryIntervalMillis);
                 } catch (InterruptedException interruptedException) {
@@ -433,15 +467,6 @@ public class VolumeFileManager {
                 }
             }
         }
-    }
-
-    private void withRetry(String actionName, Runnable runnable, String volumePath,
-                           int maxRetries, long retryIntervalMillis,
-                           UploadContext uploadContext) {
-        withRetry(actionName, () -> {
-            runnable.run();
-            return null;
-        }, volumePath, maxRetries, retryIntervalMillis, uploadContext);
     }
 
     private boolean hasCause(Throwable throwable, Class<? extends Throwable> causeClass) {
@@ -472,7 +497,12 @@ public class VolumeFileManager {
             return true;
         }
         String code = exception.errorResponse() == null ? "" : exception.errorResponse().code();
-        return "RequestTimeout".equals(code)
+        // Credential expiration is recoverable even when the service responds with 400/403.
+        // withRetry refreshes the Volume session before retrying; other authorization errors
+        // remain non-retryable. S3 uses ExpiredToken, OSS uses SecurityTokenExpired.
+        return "ExpiredToken".equals(code)
+                || "SecurityTokenExpired".equals(code)
+                || "RequestTimeout".equals(code)
                 || "SlowDown".equals(code)
                 || "InternalError".equals(code)
                 || "ServiceUnavailable".equals(code)
@@ -492,60 +522,65 @@ public class VolumeFileManager {
         return null;
     }
 
-    private VolumeSession currentSession() {
-        VolumeSession session = lastVolumeSession;
-        if (session == null) {
-            throw new IllegalStateException("Volume session is not initialized");
-        }
-        return session;
-    }
-
     private static class UploadContext {
         private final AtomicReference<VolumeSession> sessionRef;
         private final Object refreshLock = new Object();
-        private final Set<VolumeSession> sessions = ConcurrentHashMap.newKeySet();
 
         private UploadContext(VolumeSession session) {
             this.sessionRef = new AtomicReference<>(session);
-            this.sessions.add(session);
         }
 
-        private VolumeSession currentSession() {
-            VolumeSession session = sessionRef.get();
-            if (session == null) {
-                throw new IllegalStateException("Volume session is not initialized");
-            }
-            return session;
+        private VolumeSession currentSession() { return sessionRef.get(); }
+
+        private synchronized SessionLease acquire() {
+            VolumeSession session = currentSession();
+            session.users++;
+            return new SessionLease(this, session);
         }
 
-        private void setSession(VolumeSession session) {
-            sessionRef.set(session);
-            sessions.add(session);
+        private synchronized void setSession(VolumeSession session) {
+            retire(sessionRef.getAndSet(session));
         }
 
-        private void closeSessions() {
-            for (VolumeSession session : sessions) {
-                closeVolumeSession(session);
-            }
-            sessions.clear();
+        private synchronized void release(VolumeSession session) {
+            session.users--;
+            if (session.retired && session.users == 0) { closeVolumeSession(session); }
         }
+
+        private void retire(VolumeSession session) {
+            session.retired = true;
+            if (session.users == 0) { closeVolumeSession(session); }
+        }
+
+        private synchronized void closeSessions() { retire(currentSession()); }
     }
 
-    private static class UploadProgressTracker {
+    private static class SessionLease implements AutoCloseable {
+        private final UploadContext context;
+        private final VolumeSession session;
+
+        private SessionLease(UploadContext context, VolumeSession session) {
+            this.context = context;
+            this.session = session;
+        }
+
+        @Override
+        public void close() { context.release(session); }
+    }
+
+    static class UploadProgressTracker {
         private static final long LOG_INTERVAL_MILLIS = 5000L;
-        private static final double LOG_PERCENT_STEP = 1.0;
 
         private final long totalBytes;
         private final long totalFiles;
         private final UploadFilesRequest.ProgressListener progressListener;
         private final long startTimeMillis;
         private final Map<String, Long> fileProgress = new HashMap<>();
-        private final Set<String> completedFiles = new HashSet<>();
+        private int completedFiles;
         private long uploadedBytes = 0L;
         private long lastLogTimeMillis = 0L;
-        private double lastLoggedPercent = -1.0;
 
-        private UploadProgressTracker(long totalBytes, long totalFiles,
+        UploadProgressTracker(long totalBytes, long totalFiles,
                                       UploadFilesRequest.ProgressListener progressListener) {
             this.totalBytes = totalBytes;
             this.totalFiles = totalFiles;
@@ -560,58 +595,51 @@ public class VolumeFileManager {
         }
 
         void updateFile(String filePath, long fileSize, long chunkBytes) {
-            UploadProgress progress = null;
+            if (chunkBytes <= 0) { return; }
+            UploadProgress progress;
             synchronized (this) {
-                if (chunkBytes <= 0) {
-                    return;
-                }
                 long previous = fileProgress.getOrDefault(filePath, 0L);
                 long current = Math.min(fileSize, previous + chunkBytes);
-                long delta = current - previous;
-                if (delta <= 0) {
-                    return;
-                }
-                fileProgress.put(filePath, current);
-                uploadedBytes += delta;
-                progress = progressIfNeeded(filePath, current, fileSize);
-            }
-            if (progress != null) {
-                emitProgress(progress);
-            }
-        }
-
-        UploadProgressSnapshot finishFile(String filePath, long fileSize) {
-            UploadProgress progress;
-            UploadProgressSnapshot snapshot;
-            synchronized (this) {
-                long previous = fileProgress.getOrDefault(filePath, 0L);
-                long current = Math.max(previous, fileSize);
+                if (current <= previous) { return; }
                 fileProgress.put(filePath, current);
                 uploadedBytes += current - previous;
-                completedFiles.add(filePath);
-                double percent = percent();
-                progress = snapshot(filePath, current, fileSize, percent);
-                long speedBps = speedBps(uploadedBytes, System.currentTimeMillis());
-                snapshot = new UploadProgressSnapshot(uploadedBytes, completedFiles.size(), percent,
-                        speedBps, formatDurationMillis(estimatedRemainingTimeMillis(uploadedBytes, speedBps)));
-                markProgressEmitted(percent);
+                progress = snapshotIfNeeded(filePath, current, fileSize);
             }
-            emitProgress(progress);
-            return snapshot;
+            if (progress != null) { emitProgress(progress); }
+        }
+
+        void finishFile(String filePath, long fileSize) {
+            UploadProgress progress;
+            synchronized (this) {
+                Long previous = fileProgress.remove(filePath);
+                uploadedBytes += fileSize - (previous == null ? 0L : previous);
+                completedFiles++;
+                progress = snapshotIfNeeded(filePath, fileSize, fileSize);
+            }
+            if (progress != null) { emitProgress(progress); }
         }
 
         void finishUpload() {
             UploadProgress progress;
             synchronized (this) {
-                progress = snapshot("", 0L, 0L, percent());
-                markProgressEmitted(progress.getPercent());
+                progress = snapshot("", 0L, 0L, 100.0);
             }
             emitProgress(progress);
         }
 
+        // Called with the tracker monitor held; user callbacks must run after releasing it.
+        private UploadProgress snapshotIfNeeded(String filePath, long uploaded, long size) {
+            long now = System.currentTimeMillis();
+            if (now - lastLogTimeMillis >= LOG_INTERVAL_MILLIS) {
+                lastLogTimeMillis = now;
+                return snapshot(filePath, uploaded, size, percent());
+            }
+            return null;
+        }
+
         private double percent() {
             if (totalBytes == 0) {
-                return 100.0;
+                return totalFiles == 0 ? 100.0 : completedFiles * 100.0 / totalFiles;
             }
             return Math.min(100.0, uploadedBytes * 100.0 / totalBytes);
         }
@@ -632,26 +660,10 @@ public class VolumeFileManager {
             return (long) Math.ceil(remainingBytes * 1000.0 / speedBps);
         }
 
-        private UploadProgress progressIfNeeded(String currentFile, long currentFileUploadedBytes, long currentFileTotalBytes) {
-            long now = System.currentTimeMillis();
-            double percent = percent();
-            if (percent - lastLoggedPercent >= LOG_PERCENT_STEP || now - lastLogTimeMillis >= LOG_INTERVAL_MILLIS) {
-                lastLogTimeMillis = now;
-                lastLoggedPercent = percent;
-                return snapshot(currentFile, currentFileUploadedBytes, currentFileTotalBytes, percent);
-            }
-            return null;
-        }
-
         private UploadProgress snapshot(String currentFile, long currentFileUploadedBytes,
                                         long currentFileTotalBytes, double percent) {
-            return new UploadProgress(uploadedBytes, totalBytes, completedFiles.size(), totalFiles,
+            return new UploadProgress(uploadedBytes, totalBytes, completedFiles, totalFiles,
                     currentFile, currentFileUploadedBytes, currentFileTotalBytes, percent);
-        }
-
-        private void markProgressEmitted(double percent) {
-            lastLogTimeMillis = System.currentTimeMillis();
-            lastLoggedPercent = percent;
         }
 
         private void emitProgress(UploadProgress progress) {
@@ -705,27 +717,14 @@ public class VolumeFileManager {
         }
     }
 
-    private static class UploadProgressSnapshot {
-        private final long uploadedBytes;
-        private final int completedFiles;
-        private final double percent;
-        private final long speedBps;
-        private final String estimatedRemainingTime;
-
-        private UploadProgressSnapshot(long uploadedBytes, int completedFiles, double percent,
-                                       long speedBps, String estimatedRemainingTime) {
-            this.uploadedBytes = uploadedBytes;
-            this.completedFiles = completedFiles;
-            this.percent = percent;
-            this.speedBps = speedBps;
-            this.estimatedRemainingTime = estimatedRemainingTime;
-        }
-    }
-
     private static class VolumeSession {
         private final ApplyVolumeResponse applyVolumeResponse;
         private final StorageClient storageClient;
         private final Instant expireTime;
+        private final AtomicBoolean closed = new AtomicBoolean();
+        // Guarded by the owning UploadContext.
+        private int users;
+        private boolean retired;
 
         private VolumeSession(ApplyVolumeResponse applyVolumeResponse, StorageClient storageClient, Instant expireTime) {
             this.applyVolumeResponse = applyVolumeResponse;

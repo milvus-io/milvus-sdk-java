@@ -42,11 +42,15 @@ import io.minio.errors.XmlParserException;
 import io.minio.http.Method;
 import io.minio.messages.CompleteMultipartUpload;
 import io.minio.messages.ErrorResponse;
+import io.minio.messages.ResponseDate;
 import io.minio.messages.Part;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
+import org.simpleframework.xml.Root;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +61,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
@@ -235,6 +241,64 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         return statObject.size();
     }
 
+    @Override
+    public ObjectListPage listObjectsPage(String bucketName, String prefix, String continuationToken) throws Exception {
+        Multimap<String, String> query = com.google.common.collect.HashMultimap.create();
+        query.put("list-type", "2");
+        query.put("max-keys", "1000");
+        query.put("encoding-type", "url");
+        query.put("prefix", prefix);
+        if (continuationToken != null) { query.put("continuation-token", continuationToken); }
+        ListedObjects result;
+        try {
+            String region = getRegionAsync(bucketName, null).get();
+            try (okhttp3.Response response = executeAsync(Method.GET, bucketName, null, region,
+                    null, query, null, 0).get()) {
+                if (response.body() == null) { throw new IOException("Empty object listing response"); }
+                result = Xml.unmarshal(ListedObjects.class, response.body().charStream());
+            }
+        } catch (java.util.concurrent.ExecutionException e) {
+            if (e.getCause() instanceof Exception) { throw (Exception) e.getCause(); }
+            throw e;
+        }
+        String nextToken = result.truncated ? result.nextToken : null;
+        if (result.truncated && (StringUtils.isEmpty(nextToken) || nextToken.equals(continuationToken))) {
+            throw new IOException("Truncated object listing did not return a new continuation token");
+        }
+        List<ObjectMetadata> objects = new ArrayList<>();
+        for (ListedObject item : result.objects) {
+            String key = "url".equals(result.encodingType)
+                    ? java.net.URLDecoder.decode(item.key, "UTF-8") : item.key;
+            objects.add(new ObjectMetadata(key, item.size,
+                    item.modified == null ? null : item.modified.zonedDateTime().toInstant().toEpochMilli()));
+        }
+        return new ObjectListPage(objects, nextToken);
+    }
+
+    // MinIO's Item.size is a primitive defaulting to zero when Size is absent. Preserve null
+    // metadata here so a malformed/incomplete listing cannot make us skip a zero-byte file.
+    @Root(name = "ListBucketResult", strict = false)
+    private static class ListedObjects {
+        @Element(name = "IsTruncated")
+        private boolean truncated;
+        @Element(name = "NextContinuationToken", required = false)
+        private String nextToken;
+        @Element(name = "EncodingType", required = false)
+        private String encodingType;
+        @ElementList(inline = true, required = false)
+        private List<ListedObject> objects = new ArrayList<>();
+    }
+
+    @Root(name = "Contents", strict = false)
+    private static class ListedObject {
+        @Element(name = "Key")
+        private String key;
+        @Element(name = "Size", required = false)
+        private Long size;
+        @Element(name = "LastModified", required = false)
+        private ResponseDate modified;
+    }
+
     /**
      * Uploads a local data file as an object to the bucket without progress reporting.
      *
@@ -278,7 +342,7 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
     @Override
     public void putObject(File file, String bucketName, String objectKey,
                           UploadProgressListener progressListener, long partSizeBytes) throws Exception {
-        logger.info("uploading file, fileName:{}, size:{} bytes", file.getAbsolutePath(), file.length());
+        logger.debug("uploading file, fileName:{}, size:{} bytes", file.getAbsolutePath(), file.length());
         long uploadPartSize = calculateUploadPartSize(file.length(), partSizeBytes);
         try (InputStream fileInputStream = new ProgressInputStream(new FileInputStream(file), progressListener)) {
             PutObjectArgs putObjectArgs = PutObjectArgs.builder()
@@ -299,6 +363,8 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         if (!closeHttpClient || httpClient == null) {
             return;
         }
+        // An interrupted future.get() does not necessarily cancel its underlying HTTP call.
+        httpClient.dispatcher().cancelAll();
         ExecutorService executorService = httpClient.dispatcher().executorService();
         executorService.shutdown();
         httpClient.connectionPool().evictAll();
