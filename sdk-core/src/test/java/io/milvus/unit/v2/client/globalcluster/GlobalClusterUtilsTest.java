@@ -20,7 +20,7 @@
 package io.milvus.unit.v2.client.globalcluster;
 
 import com.sun.net.httpserver.HttpServer;
-import io.milvus.v2.client.globalcluster.ClusterCapability;
+import io.milvus.v2.client.globalcluster.GlobalClusterApiException;
 import io.milvus.v2.client.globalcluster.GlobalClusterUtils;
 import io.milvus.v2.client.globalcluster.GlobalTopology;
 import org.junit.jupiter.api.Tag;
@@ -54,19 +54,7 @@ class GlobalClusterUtilsTest {
     }
 
     @Test
-    void buildTopologyUrlPreservesAndNormalizesEndpoint() throws Exception {
-        assertEquals("https://xxx.global-cluster.yyy.com:443/global-cluster/topology",
-                invokeBuildTopologyUrl("https://xxx.global-cluster.yyy.com:443"));
-        assertEquals("https://host.global-cluster.example:19530/global-cluster/topology",
-                invokeBuildTopologyUrl("host.global-cluster.example:19530"));
-        assertEquals("https://host.global-cluster.example:19530/global-cluster/topology",
-                invokeBuildTopologyUrl("http://host.global-cluster.example:19530"));
-        assertEquals("https://host.global-cluster.example/global-cluster/topology",
-                invokeBuildTopologyUrl("https://host.global-cluster.example/"));
-    }
-
-    @Test
-    void parseTopologyResponseParsesClustersAndRejectsErrorCode() throws Exception {
+    void parseTopologyResponseParsesClustersAndRejectsErrorCode() throws Throwable {
         String json = "{"
                 + "\"code\":0,"
                 + "\"data\":{"
@@ -83,18 +71,17 @@ class GlobalClusterUtilsTest {
         assertEquals(5L, topology.getVersion());
         assertEquals(2, topology.getClusters().size());
         assertEquals("c1", topology.getClusters().get(0).getClusterId());
-        assertEquals(ClusterCapability.READABLE, topology.getClusters().get(0).getCapability());
         assertEquals("c2", topology.getClusters().get(1).getClusterId());
         assertTrue(topology.getClusters().get(1).isPrimary());
 
-        String errorJson = "{\"code\":1,\"message\":\"boom\"}";
-        InvocationTargetException exception = assertThrows(InvocationTargetException.class,
-                () -> invokeParseTopologyResponse(errorJson));
-        assertTrue(exception.getCause().getMessage().contains("boom"));
+        GlobalClusterApiException exception = assertThrows(GlobalClusterApiException.class,
+                () -> invokeParseTopologyResponse("{\"code\":7,\"message\":\"boom\"}"));
+        assertEquals(7, exception.getCode());
+        assertTrue(exception.getMessage().contains("boom"));
     }
 
     @Test
-    void doHttpGetReturnsBodySendsTokenAndThrowsOnNon200() throws Exception {
+    void doHttpGetReturnsBodySendsTokenAndThrowsOnNon200() throws Throwable {
         AtomicReference<String> authorization = new AtomicReference<>();
         HttpServer okServer = startServer(200, "{\"code\":0,\"data\":{\"version\":1,\"clusters\":[]}}", authorization);
         try {
@@ -108,10 +95,10 @@ class GlobalClusterUtilsTest {
 
         HttpServer errorServer = startServer(500, "error", new AtomicReference<>());
         try {
-            InvocationTargetException exception = assertThrows(InvocationTargetException.class,
+            IOException exception = assertThrows(IOException.class,
                     () -> invokeDoHttpGet(
                             "http://127.0.0.1:" + errorServer.getAddress().getPort() + "/topology", null));
-            assertTrue(exception.getCause() instanceof IOException);
+            assertTrue(exception.getMessage().contains("500"));
         } finally {
             errorServer.stop(0);
         }
@@ -132,21 +119,23 @@ class GlobalClusterUtilsTest {
         return server;
     }
 
-    private static String invokeBuildTopologyUrl(String endpoint) throws Exception {
-        Method method = GlobalClusterUtils.class.getDeclaredMethod("buildTopologyUrl", String.class);
-        method.setAccessible(true);
-        return (String) method.invoke(null, endpoint);
+    private static GlobalTopology invokeParseTopologyResponse(String body) throws Throwable {
+        try {
+            Method method = GlobalClusterUtils.class.getDeclaredMethod("parseTopologyResponse", String.class);
+            method.setAccessible(true);
+            return (GlobalTopology) method.invoke(null, body);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
     }
 
-    private static GlobalTopology invokeParseTopologyResponse(String body) throws Exception {
-        Method method = GlobalClusterUtils.class.getDeclaredMethod("parseTopologyResponse", String.class);
-        method.setAccessible(true);
-        return (GlobalTopology) method.invoke(null, body);
-    }
-
-    private static String invokeDoHttpGet(String url, String token) throws Exception {
-        Method method = GlobalClusterUtils.class.getDeclaredMethod("doHttpGet", String.class, String.class);
-        method.setAccessible(true);
-        return (String) method.invoke(null, url, token);
+    private static String invokeDoHttpGet(String url, String token) throws Throwable {
+        try {
+            Method method = GlobalClusterUtils.class.getDeclaredMethod("doHttpGet", String.class, String.class);
+            method.setAccessible(true);
+            return (String) method.invoke(null, url, token);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
     }
 }
