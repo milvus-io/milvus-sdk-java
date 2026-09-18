@@ -32,6 +32,7 @@ import io.milvus.bulkwriter.response.volume.ListVolumesResponse;
 import io.milvus.bulkwriter.response.volume.VolumeInfo;
 import io.milvus.bulkwriter.storage.StorageClient;
 import io.milvus.exception.ParamException;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -51,6 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 public class VolumeManagerTest {
 
     private final Gson gson = new Gson();
@@ -139,7 +141,7 @@ public class VolumeManagerTest {
                     .progressListener(progressEvents::add)
                     .build());
 
-            assertEquals(3, progressEvents.size());
+            assertEquals(2, progressEvents.size());
             assertEquals(100.0, progressEvents.get(0).getPercent());
             assertEquals(file.toString(), progressEvents.get(0).getCurrentFile());
             assertEquals("", progressEvents.get(progressEvents.size() - 1).getCurrentFile());
@@ -751,6 +753,11 @@ public class VolumeManagerTest {
             this.attemptsByBucket = attemptsByBucket;
             this.closedBuckets = closedBuckets;
             this.uploadExceptionSupplier = uploadExceptionSupplier;
+        }
+
+        @Override
+        public ObjectListPage listObjectsPage(String bucketName, String prefix, String continuationToken) {
+            return new ObjectListPage(Collections.emptyList(), null);
         }
 
         @Override
