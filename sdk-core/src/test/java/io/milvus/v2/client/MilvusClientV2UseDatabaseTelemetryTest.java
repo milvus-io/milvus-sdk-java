@@ -23,6 +23,7 @@ import io.grpc.ManagedChannel;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.telemetry.ClientTelemetryManager;
 import io.milvus.telemetry.TelemetryConfig;
+import io.milvus.v2.client.globalcluster.GlobalStub;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -35,9 +36,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Tag("unit")
 class MilvusClientV2UseDatabaseTelemetryTest {
@@ -130,6 +133,88 @@ class MilvusClientV2UseDatabaseTelemetryTest {
             verify(oldChannel, never()).shutdownNow();
             verify(candidateChannel).shutdownNow();
         } finally {
+            oldManager.close();
+        }
+    }
+
+    @Test
+    void globalCandidateActivatesOnlyAfterAdoptionAndTelemetryHandoff() throws Exception {
+        ConnectConfig config = config("default");
+        ClientTelemetryManager oldManager = manager("client-id");
+        oldManager.start();
+        ManagedChannel oldChannel = mock(ManagedChannel.class);
+        ManagedChannel newChannel = mock(ManagedChannel.class);
+        AtomicReference<GlobalStub> candidateGlobal = new AtomicReference<>();
+        TestClient client = new TestClient(candidateConfig -> {
+            ClientTelemetryManager replacement = manager(candidateConfig.getTelemetryClientId());
+            MilvusClientV2 primary = new MilvusClientV2(null);
+            installConnection(primary, candidateConfig, replacement, newChannel);
+            MilvusClientV2 candidate = new MilvusClientV2(null);
+            installConnection(candidate, candidateConfig, replacement, newChannel);
+            GlobalStub globalStub = mock(GlobalStub.class);
+            when(globalStub.getPrimaryClient()).thenReturn(primary);
+            candidateGlobal.set(globalStub);
+            doAnswer(invocation -> {
+                assertTrue(oldManager.isClosed());
+                assertTrue(replacement.isReady());
+                assertEquals("other", config.getDbName());
+                return null;
+            }).when(globalStub).activate();
+            try {
+                setField(candidate, "globalStub", globalStub);
+            } catch (ReflectiveOperationException exception) {
+                throw new AssertionError(exception);
+            }
+            return candidate;
+        });
+        installConnection(client, config, oldManager, oldChannel);
+
+        try {
+            client.useDatabase("other");
+
+            verify(candidateGlobal.get()).activate();
+        } finally {
+            client.close();
+        }
+    }
+
+    @Test
+    void failedGlobalCandidateRollsBackWithoutActivation() throws Exception {
+        ConnectConfig config = config("default");
+        ClientTelemetryManager oldManager = manager("client-id");
+        oldManager.start();
+        ManagedChannel oldChannel = mock(ManagedChannel.class);
+        ManagedChannel candidateChannel = mock(ManagedChannel.class);
+        AtomicReference<ClientTelemetryManager> candidateManagerRef = new AtomicReference<>();
+        AtomicReference<GlobalStub> candidateGlobal = new AtomicReference<>();
+        TestClient client = new TestClient(candidateConfig -> {
+            ClientTelemetryManager candidateManager = manager("different-client-id");
+            candidateManagerRef.set(candidateManager);
+            MilvusClientV2 primary = new MilvusClientV2(null);
+            installConnection(primary, candidateConfig, candidateManager, candidateChannel);
+            MilvusClientV2 candidate = new MilvusClientV2(null);
+            installConnection(candidate, candidateConfig, candidateManager, candidateChannel);
+            GlobalStub globalStub = mock(GlobalStub.class);
+            when(globalStub.getPrimaryClient()).thenReturn(primary);
+            candidateGlobal.set(globalStub);
+            try {
+                setField(candidate, "globalStub", globalStub);
+            } catch (ReflectiveOperationException exception) {
+                throw new AssertionError(exception);
+            }
+            return candidate;
+        });
+        installConnection(client, config, oldManager, oldChannel);
+
+        try {
+            assertThrows(IllegalArgumentException.class, () -> client.useDatabase("other"));
+
+            verify(candidateGlobal.get(), never()).activate();
+            verify(candidateGlobal.get()).close();
+            assertTrue(oldManager.isReady());
+            assertFalse(oldManager.isClosed());
+        } finally {
+            candidateManagerRef.get().close();
             oldManager.close();
         }
     }
