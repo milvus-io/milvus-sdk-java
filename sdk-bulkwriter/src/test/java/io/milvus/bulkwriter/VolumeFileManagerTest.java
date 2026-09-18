@@ -141,7 +141,7 @@ public class VolumeFileManagerTest {
                     .progressListener(progressEvents::add)
                     .build());
 
-            assertEquals(3, progressEvents.size());
+            assertEquals(2, progressEvents.size());
             assertEquals(100.0, progressEvents.get(0).getPercent());
             assertEquals(file.toString(), progressEvents.get(0).getCurrentFile());
             assertEquals("", progressEvents.get(progressEvents.size() - 1).getCurrentFile());
@@ -753,6 +753,11 @@ public class VolumeFileManagerTest {
             this.attemptsByBucket = attemptsByBucket;
             this.closedBuckets = closedBuckets;
             this.uploadExceptionSupplier = uploadExceptionSupplier;
+        }
+
+        @Override
+        public ObjectListPage listObjectsPage(String bucketName, String prefix, String continuationToken) {
+            return new ObjectListPage(Collections.emptyList(), null);
         }
 
         @Override

@@ -32,6 +32,11 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
 
 @Tag("unit")
 public class VolumeBulkWriterTest {
@@ -122,6 +127,25 @@ public class VolumeBulkWriterTest {
             io.milvus.bulkwriter.model.UploadFilesResult result = writer.getVolumeUploadResult();
             Assertions.assertEquals("volume-1", result.getVolumeName());
             Assertions.assertTrue(result.getPath().startsWith(remotePath));
+        }
+    }
+
+    @Test
+    void generatedChunksOverwriteWithoutListingAndAreRemovedAfterUpload() throws Exception {
+        VolumeFileManagerUploadPolicyTest.FakeManager manager = new VolumeFileManagerUploadPolicyTest.FakeManager();
+        try (VolumeBulkWriter writer = new VolumeBulkWriter(buildParam("data"))) {
+            Field field = VolumeBulkWriter.class.getDeclaredField("volumeFileManager");
+            field.setAccessible(true);
+            field.set(writer, manager);
+            Path file = Files.write(
+                    Paths.get(writer.localPath).resolve("chunk.json"), new byte[]{1, 2, 3});
+            String key = "prefix/" + writer.getDataPath().replace('\\', '/') + "chunk.json";
+            manager.objects.put(key, 3L);
+            writer.callBack(Collections.singletonList(file.toString()));
+            Assertions.assertEquals(0, manager.listCalls.get());
+            Assertions.assertEquals(1, manager.puts.get(), "Same-sized existing chunks must still be overwritten");
+            Assertions.assertFalse(Files.exists(file));
+            Assertions.assertEquals(1, writer.getBatchFiles().size());
         }
     }
 

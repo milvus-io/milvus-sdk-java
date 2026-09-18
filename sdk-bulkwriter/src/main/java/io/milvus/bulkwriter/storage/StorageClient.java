@@ -21,6 +21,7 @@ package io.milvus.bulkwriter.storage;
 
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Defines the contract for uploading and inspecting bulk-import data files in remote/cloud
@@ -42,6 +43,60 @@ public interface StorageClient {
      * @throws Exception if the object cannot be statted
      */
     Long getObjectEntity(String bucketName, String objectKey) throws Exception;
+
+    /** Finds an exact object key via paginated LIST, without HEAD/GET object access. */
+    default ObjectMetadata findObject(String bucketName, String objectKey) throws Exception {
+        String token = null;
+        do {
+            ObjectListPage page = listObjectsPage(bucketName, objectKey, token);
+            for (ObjectMetadata object : page.getObjects()) {
+                if (objectKey.equals(object.getKey())) { return object; }
+            }
+            token = page.getNextContinuationToken();
+        } while (token != null);
+        return null;
+    }
+
+    /**
+     * Lists one recursive page of object metadata below the prefix (up to 1000 objects).
+     * A null continuation token starts a listing; a null next token marks its end.
+     * Implementations must propagate errors instead of treating them as an empty listing.
+     */
+    default ObjectListPage listObjectsPage(String bucketName, String prefix, String continuationToken) throws Exception {
+        throw new UnsupportedOperationException("Object listing is not supported");
+    }
+
+    final class ObjectMetadata {
+        private final String key;
+        private final Long size;
+        private final Long lastModifiedTimeMillis;
+
+        public ObjectMetadata(String key, Long size, Long lastModifiedTimeMillis) {
+            this.key = java.util.Objects.requireNonNull(key, "key");
+            this.size = size;
+            this.lastModifiedTimeMillis = lastModifiedTimeMillis;
+        }
+
+        public String getKey() { return key; }
+        /** Null if size is unavailable. */
+        public Long getSize() { return size; }
+        /** Server LastModified time, or null if unavailable. Not the original source mtime. */
+        public Long getLastModifiedTimeMillis() { return lastModifiedTimeMillis; }
+    }
+
+    final class ObjectListPage {
+        private final List<ObjectMetadata> objects;
+        private final String nextContinuationToken;
+
+        public ObjectListPage(List<ObjectMetadata> objects, String nextContinuationToken) {
+            this.objects = objects;
+            this.nextContinuationToken = nextContinuationToken;
+        }
+
+        public List<ObjectMetadata> getObjects() { return objects; }
+        public String getNextContinuationToken() { return nextContinuationToken; }
+    }
+
 
     /**
      * Checks whether the given bucket exists in the cloud storage.
