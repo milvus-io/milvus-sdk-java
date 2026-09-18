@@ -1,17 +1,24 @@
-# Automatically backport every PR merged into master to the 3.0 branch.
+# Automatically backport every PR merged into master to the 3.0 branch, and keep the
+# backport queue clean by closing redundant backport PRs whose content is already on 3.0.
 #
-# Triggered when a PR targeting master is merged. The merge commit is cherry-picked
-# onto a throwaway branch off 3.0 and a `[cherry-pick]` PR into 3.0 is opened.
-# Mergify then auto-merges that PR once its CI checks pass (see .github/mergify.yml).
-#
+# Backport (pull_request_target.closed on merged master PRs): the merge commit is
+# cherry-picked onto a throwaway branch off 3.0 and a `[cherry-pick]` PR into 3.0 is
+# opened. Mergify then auto-merges that PR once its CI checks pass (see .github/mergify.yml).
 # Exclude a PR from backporting by adding the `skip-cherry-pick` label before merging.
 #
-# Conflicts cannot be resolved in automation: the run fails loudly and the changes
-# must be backported by hand. Benign cases (commit already present on 3.0, or a
-# cherry-pick that produces an empty change) are skipped quietly.
+# Sweep (push to 3.0 / schedule): when a manual cherry-pick delivers a master change to
+# 3.0, an auto-backport PR for the same change may still be open waiting on CI; Mergify
+# would squash-merge it as an empty commit. The sweep detects (git cherry patch-id match)
+# that the PR's content is already on 3.0 and closes the PR and deletes its branch.
+# Only PRs carrying the `backport-3.0` label are considered; manual `cherry-pick.yml` PRs
+# are left untouched for manual review.
 #
-# The branch push and PR creation authenticate with the repository secret
-# `CHERRY_PICK_PAT` (a personal access token with `repo` scope, or fine-grained
+# Conflicts cannot be resolved in automation: the run fails loudly and the changes must be
+# backported by hand. Benign cases (commit already present on 3.0, or a cherry-pick that
+# produces an empty change) are skipped quietly.
+#
+# Branch pushes, PR creation/closing, and branch deletion authenticate with the repository
+# secret `CHERRY_PICK_PAT` (a personal access token with `repo` scope, or fine-grained
 # `contents: write` + `pull-requests: write` scoped to this repository).
 
 name: Backport to 3.0
@@ -24,13 +31,27 @@ on:
   # never checks out or executes the PR head.
   pull_request_target:
     types: [closed]
+  # run the sweep whenever 3.0 moves (e.g. a manual cherry-pick landed) and as a periodic
+  # safety net for pushes that race Mergify's auto-merge.
+  # Note: a `push` trigger executes the workflow file as it exists on the pushed branch, so
+  # the sweep-under-push only becomes effective once this updated file is itself backported
+  # onto 3.0; until then the scheduled run (default-branch version) covers it.
+  push:
+    branches:
+      - '3.0'
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 
-# Least privilege: pushes and PR creation use the PAT (CHERRY_PICK_PAT); the
-# GITHUB_TOKEN is only used by actions/checkout and local git ops, so read is enough.
+# Least privilege: pushes, PR creation/closing and branch deletion use the PAT
+# (CHERRY_PICK_PAT); the GITHUB_TOKEN is only used by actions/checkout and local git ops,
+# so read is enough.
 permissions:
   contents: read
 
-# One run per merge commit, so re-dispatch/rerun cannot race on the shared remote branch.
+# Backport runs are keyed per merge commit so re-dispatch/rerun cannot race on the shared
+# remote branch. Sweep runs (push/schedule, no merge commit) all share the empty group and
+# cancel each other, which is fine because a sweep is idempotent and fast.
 concurrency:
   group: backport-3.0-${{ github.event.pull_request.merge_commit_sha }}
   cancel-in-progress: true
@@ -40,6 +61,7 @@ jobs:
     name: Backport to 3.0
     runs-on: ubuntu-latest
     if: >
+      github.event_name == 'pull_request_target' &&
       github.event.pull_request.merged == true &&
       github.event.pull_request.base.ref == 'master' &&
       !contains(github.event.pull_request.labels.*.name, 'skip-cherry-pick')
@@ -141,8 +163,28 @@ jobs:
             exit 1
           fi
 
-      - name: Sign off for DCO
+      - name: Check for duplicate content on 3.0
+        id: dupcheck
         if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          git fetch origin 3.0
+          # git cherry compares patch-ids, so an equivalent change already on 3.0 (e.g. a
+          # manual cherry-pick merged after this run started) makes every commit of the
+          # branch show as '-' and there is nothing new to backport. Skip instead of opening
+          # a duplicate PR that Mergify would merge as an empty commit.
+          # Capture the full output instead of `grep -q`: grep -q exits at the first match
+          # and would SIGPIPE git cherry under `set -o pipefail`, misreporting the pipeline
+          # as failed and silently skipping a backport that is still needed.
+          if [ -n "$(git cherry -v origin/3.0 HEAD | grep '^+')" ]; then
+            echo "::notice::there are changes not yet on '3.0'; proceeding with the backport"
+          else
+            echo "::notice::the cherry-picked changes are already on '3.0'; nothing to backport"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sign off for DCO
+        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true' && steps.dupcheck.outputs.skip != 'true'
         run: |
           set -euo pipefail
           # If the source commit already carries the author's own DCO attestation,
@@ -165,7 +207,7 @@ jobs:
           git commit --amend -F /tmp/msg
 
       - name: Push branch
-        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true'
+        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true' && steps.dupcheck.outputs.skip != 'true'
         env:
           BRANCH: ${{ steps.branch.outputs.branch }}
           PUSH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
@@ -178,7 +220,7 @@ jobs:
           git push "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
 
       - name: Create pull request
-        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true'
+        if: steps.validate.outputs.skip != 'true' && steps.cherrypick.outputs.skip != 'true' && steps.dupcheck.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
           BRANCH: ${{ steps.branch.outputs.branch }}
@@ -238,3 +280,90 @@ jobs:
             fi
             echo "Pull request created: $PR_URL"
           fi
+
+  sweep:
+    name: Close redundant backports
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request_target'
+    steps:
+      - name: Checkout 3.0
+        uses: actions/checkout@v4
+        with:
+          ref: '3.0'
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Sweep open backport PRs
+        env:
+          GH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::secrets.CHERRY_PICK_PAT is not configured; add a PAT with 'repo' scope and store it as CHERRY_PICK_PAT"
+            exit 1
+          fi
+
+          # Capture the listing and check its exit status: `mapfile < <(...)` swallows the
+          # command's exit code, so a broken PAT / rate limit would otherwise look like "no
+          # open PRs" and report success while doing nothing. Exclude PRs carrying the
+          # do-not-merge escape hatch (documented in .github/mergify.yml) so a maintainer
+          # pausing a backport for review is never force-closed by this sweep.
+          PR_LIST=$(gh pr list --repo "${GITHUB_REPOSITORY}" \
+            --base 3.0 --state open --label backport-3.0 --limit 100 \
+            --json number,headRefName,labels \
+            --jq '.[] | select(all(.labels[]?; .name != "do-not-merge")) | [.number, .headRefName] | @tsv') || {
+            echo "::error::gh pr list failed (check CHERRY_PICK_PAT / rate limit)"
+            exit 1
+          }
+          # An empty listing is the steady state; guard on the string, because
+          # `mapfile -t <<< ""` still produces one empty element (a here-string always
+          # appends a trailing newline), which would otherwise spin the loop once with an
+          # empty NUM/HEAD_REF and log misleading "checking PR #" lines.
+          if [ -z "$PR_LIST" ]; then
+            echo "No open backport PRs to check."
+            exit 0
+          fi
+          mapfile -t PRS <<< "$PR_LIST"
+
+          git fetch origin 3.0
+          closed=0
+          for row in "${PRS[@]}"; do
+            NUM=$(printf '%s' "$row" | cut -f1)
+            HEAD_REF=$(printf '%s' "$row" | cut -f2)
+            echo "Checking PR #${NUM} (${HEAD_REF})"
+            if ! git fetch origin "$HEAD_REF" >/dev/null 2>&1; then
+              echo "skip: cannot fetch ${HEAD_REF}"
+              continue
+            fi
+            # '+' lines mean changes not yet on 3.0; if there are none, the backport is
+            # redundant. Capture the full output instead of `grep -q`: grep -q exits at the
+            # first match and would SIGPIPE git cherry under `set -o pipefail`, misreporting
+            # a '+' match as a failure and wrongly closing a still-needed PR.
+            if [ -z "$(git cherry -v origin/3.0 FETCH_HEAD | grep '^+')" ]; then
+              echo "::notice::PR #${NUM} changes are already on 3.0; closing and deleting ${HEAD_REF}"
+              if gh pr close "$NUM" --repo "${GITHUB_REPOSITORY}" \
+                  --comment "This backport is already present on 3.0 (delivered by another cherry-pick). Closing and deleting its branch."; then
+                closed=$((closed+1))
+              else
+                echo "::warning::failed to close PR #${NUM}"
+                continue
+              fi
+              # Only delete the branch when it matches the throwaway pattern this workflow
+              # creates. The backport-3.0 label is manually assignable and the same branch
+              # can back a second open PR, so a bare push --delete could remove a branch the
+              # author did not intend to be deleted; the close itself is unaffected.
+              case "$HEAD_REF" in
+                cherry-pick-*to-3.0-*)
+                  # push with the tokenized URL inline so the PAT is never written into .git/config
+                  git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete "$HEAD_REF" \
+                    || echo "::warning::failed to delete branch ${HEAD_REF}"
+                  ;;
+                *)
+                  echo "::warning::PR #${NUM} head branch ${HEAD_REF} is not a cherry-pick throwaway branch; leaving it in place"
+                  ;;
+              esac
+            else
+              echo "PR #${NUM} still has changes not on 3.0; keeping it open"
+            fi
+          done
+          echo "Closed ${closed} redundant backport PR(s)."
