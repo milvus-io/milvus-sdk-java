@@ -51,6 +51,7 @@ public class GlobalStub {
     private volatile MilvusClientV2 innerClient;
     private volatile String primaryEndpoint;
     private volatile GlobalTopology topology;
+    private volatile boolean closed;
     private TopologyRefresher refresher;
 
     public GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
@@ -60,21 +61,36 @@ public class GlobalStub {
         this.onPrimaryChange = onPrimaryChange;
         this.clientFactory = this::createClientForEndpoint;
 
-        // Fetch initial topology and connect to primary
+        // Fetch initial topology via SRV seeds. The first seed answer wins so a slow region
+        // does not stall the initial connection; seeds still in flight keep being polled in
+        // the background and may install a newer topology (swapping the primary) through
+        // this::onTopologyChange while this constructor is still running.
         String authorization = originalConfig.getAuthorization();
-        this.topology = GlobalClusterUtils.fetchTopology(globalEndpoint, authorization);
-        ClusterInfo primary = this.topology.getPrimary();
-        this.primaryEndpoint = primary.getEndpoint();
-        logger.info("Global cluster: discovered primary endpoint: {}", redactUriUserInfo(primaryEndpoint));
+        GlobalTopology first = GlobalClusterUtils.fetchTopology(globalEndpoint, authorization,
+                null, this::onTopologyChange);
 
-        this.innerClient = clientFactory.create(
-                primaryEndpoint, originalConfig.takeTelemetryRuntimeState(),
-                originalConfig.isDeferTelemetryStart());
-
-        // Start background refresher
-        this.refresher = new TopologyRefresher(globalEndpoint, authorization,
-                topology.getVersion(), this::onTopologyChange);
-        this.refresher.start();
+        lock.lock();
+        try {
+            if (this.topology == null) {
+                // The background watcher has not installed a newer topology yet — install
+                // the first answer with the constructor's telemetry semantics.
+                ClusterInfo primary = first.getPrimary();
+                this.topology = first;
+                this.primaryEndpoint = primary.getEndpoint();
+                logger.info("Global cluster: discovered primary endpoint: {}",
+                        redactUriUserInfo(primaryEndpoint));
+                this.innerClient = clientFactory.create(primaryEndpoint,
+                        originalConfig.takeTelemetryRuntimeState(),
+                        originalConfig.isDeferTelemetryStart());
+            }
+            // Start background refresher. The stub owns the shared topology; the refresher
+            // reads the current version from it instead of a private snapshot.
+            this.refresher = new TopologyRefresher(globalEndpoint, authorization,
+                    this::getTopology, this::onTopologyChange);
+            this.refresher.start();
+        } finally {
+            lock.unlock();
+        }
     }
 
     GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
@@ -167,6 +183,7 @@ public class GlobalStub {
     public void close() {
         lock.lock();
         try {
+            closed = true;
             if (refresher != null) {
                 refresher.stop();
                 refresher = null;
@@ -180,9 +197,32 @@ public class GlobalStub {
         }
     }
 
-    void onTopologyChange(GlobalTopology newTopology) {
+    /**
+     * Installs a candidate topology only if it strictly advances the version, swapping the
+     * primary client when the primary endpoint moved.
+     * <p>
+     * Every write to the shared topology funnels through this compare-and-set, so no update
+     * path (initial-fetch watcher, periodic refresh, UNAVAILABLE-triggered refresh) can roll
+     * the version back, however the threads interleave. A failed client swap rolls back to
+     * the previous topology, which the next refresh will retry.
+     *
+     * @param newTopology the candidate topology
+     * @return whether the candidate was accepted
+     */
+    boolean onTopologyChange(GlobalTopology newTopology) {
         lock.lock();
         try {
+            if (closed) {
+                logger.debug("Global cluster: ignoring topology update after close (version {})",
+                        newTopology.getVersion());
+                return false;
+            }
+            if (this.topology != null && newTopology.getVersion() <= this.topology.getVersion()) {
+                logger.debug("Global cluster: ignored stale topology version {} (current {})",
+                        newTopology.getVersion(), this.topology.getVersion());
+                return false;
+            }
+
             ClusterInfo newPrimary = newTopology.getPrimary();
             String newEndpoint = newPrimary.getEndpoint();
 
@@ -190,7 +230,7 @@ public class GlobalStub {
                 logger.info("Global cluster: topology version changed but primary endpoint unchanged: {}",
                         redactUriUserInfo(newEndpoint));
                 this.topology = newTopology;
-                return;
+                return true;
             }
 
             logger.info("Global cluster: primary endpoint changed from {} to {}",
@@ -265,6 +305,7 @@ public class GlobalStub {
                     logger.warn("Failed to close old primary client: {}", e.getMessage());
                 }
             }
+            return true;
         } finally {
             lock.unlock();
         }

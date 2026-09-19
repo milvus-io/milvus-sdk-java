@@ -26,18 +26,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
 /**
  * Periodically refreshes the global cluster topology and notifies listeners of changes.
  * <p>
- * The refresher polls the global endpoint on a fixed interval. When the topology version
- * changes, the registered callback is invoked so the caller can reconnect to the new primary.
+ * The connection stub is the single owner of the shared topology: the refresher keeps no
+ * private snapshot. {@code getCurrent} provides the authoritative copy whose version guards
+ * each fetch, and every candidate update is handed to {@code onTopologyChange}, whose
+ * compare-and-set decides whether the shared topology advances — so no refresh path can
+ * regress the version.
  */
-
 
 public class TopologyRefresher {
     private static final Logger logger = LoggerFactory.getLogger(TopologyRefresher.class);
@@ -45,17 +47,18 @@ public class TopologyRefresher {
 
     private final String globalEndpoint;
     private final String token;
+    private final Supplier<GlobalTopology> getCurrent;
     private final Consumer<GlobalTopology> onTopologyChange;
     private final ScheduledExecutorService scheduler;
-    private final AtomicLong currentVersion;
     private final AtomicBoolean refreshing = new AtomicBoolean(false);
 
-    public TopologyRefresher(String globalEndpoint, String token, long initialVersion,
+    public TopologyRefresher(String globalEndpoint, String token,
+                             Supplier<GlobalTopology> getCurrent,
                              Consumer<GlobalTopology> onTopologyChange) {
         this.globalEndpoint = globalEndpoint;
         this.token = token;
+        this.getCurrent = getCurrent;
         this.onTopologyChange = onTopologyChange;
-        this.currentVersion = new AtomicLong(initialVersion);
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "milvus-global-topology-refresher");
             t.setDaemon(true);
@@ -66,8 +69,6 @@ public class TopologyRefresher {
     /**
      * Starts the periodic topology refresh.
      */
-
-
     public void start() {
         scheduler.scheduleWithFixedDelay(this::refresh, REFRESH_INTERVAL_MINUTES,
                 REFRESH_INTERVAL_MINUTES, TimeUnit.MINUTES);
@@ -79,8 +80,6 @@ public class TopologyRefresher {
      * Triggers an immediate topology refresh outside the scheduled interval.
      * Refreshes already in progress are skipped.
      */
-
-
     public void triggerRefresh() {
         if (refreshing.getAndSet(true)) {
             logger.debug("Topology refresh already in progress, skipping");
@@ -97,8 +96,6 @@ public class TopologyRefresher {
     /**
      * Stops the periodic topology refresh and shuts down the scheduler.
      */
-
-
     public void stop() {
         scheduler.shutdownNow();
         logger.info("Global topology refresher stopped for endpoint: {}", redactUriUserInfo(globalEndpoint));
@@ -114,18 +111,20 @@ public class TopologyRefresher {
 
     private void refresh() {
         try {
-            GlobalTopology topology = GlobalClusterUtils.fetchTopology(globalEndpoint, token);
-            long newVersion = topology.getVersion();
-            long oldVersion = currentVersion.get();
-            if (newVersion != oldVersion) {
-                logger.info("Global topology version changed from {} to {}, triggering reconnection", oldVersion, newVersion);
-                onTopologyChange.accept(topology);
-                // Only acknowledge the version after the replacement client has been installed.
-                // A failed reconnect must be retried on the next refresh rather than cached away.
-                currentVersion.set(newVersion);
-            } else {
-                logger.debug("Global topology version unchanged ({}), no action needed", oldVersion);
+            GlobalTopology current = getCurrent.get();
+            Long cachedVersion = current == null ? null : current.getVersion();
+            // fetchTopology returns null when no seed reports a strictly higher version,
+            // so the shared topology can never regress through the refresh path.
+            GlobalTopology newer = GlobalClusterUtils.fetchTopology(globalEndpoint, token,
+                    cachedVersion, null);
+            if (newer == null) {
+                logger.debug("Global topology: no version newer than {} found, keeping cached topology",
+                        cachedVersion);
+                return;
             }
+            logger.info("Global topology: discovered version {} (cached {}), triggering reconnection",
+                    newer.getVersion(), cachedVersion);
+            onTopologyChange.accept(newer);
         } catch (Exception e) {
             logger.warn("Failed to refresh global topology, keeping cached topology: {}", e.getMessage());
         }

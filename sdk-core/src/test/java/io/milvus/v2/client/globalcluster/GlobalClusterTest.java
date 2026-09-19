@@ -64,36 +64,43 @@ public class GlobalClusterTest {
         assertFalse(GlobalClusterUtils.isGlobalEndpoint(""));
     }
 
-    // ==================== buildTopologyUrl tests ====================
+    // ==================== SRV discovery tests ====================
 
     @Test
-    public void testBuildTopologyUrl_httpsUri() {
-        String url = GlobalClusterUtils.buildTopologyUrl("https://my.global-cluster.cloud.zilliz.com:443");
-        assertEquals("https://my.global-cluster.cloud.zilliz.com:443/global-cluster/topology", url);
+    public void testEndpointHostname_stripsSchemePortAndPath() {
+        assertEquals("my.global-cluster.cloud.zilliz.com",
+                GlobalClusterUtils.endpointHostname("https://my.global-cluster.cloud.zilliz.com:443"));
+        assertEquals("my.global-cluster.cloud.zilliz.com",
+                GlobalClusterUtils.endpointHostname("http://my.global-cluster.cloud.zilliz.com/global-cluster/topology"));
+        assertEquals("my.global-cluster.cloud.zilliz.com",
+                GlobalClusterUtils.endpointHostname("my.global-cluster.cloud.zilliz.com"));
+        assertEquals("my.global-cluster.cloud.zilliz.com",
+                GlobalClusterUtils.endpointHostname("  https://my.global-cluster.cloud.zilliz.com  "));
+        assertThrows(RuntimeException.class, () -> GlobalClusterUtils.endpointHostname("https://"));
     }
 
     @Test
-    public void testBuildTopologyUrl_httpUpgradedToHttps() {
-        String url = GlobalClusterUtils.buildTopologyUrl("http://my.global-cluster.cloud.zilliz.com");
-        assertEquals("https://my.global-cluster.cloud.zilliz.com/global-cluster/topology", url);
+    public void testBuildSeedTopologyUrl_passesHostnameVerbatim() {
+        SrvTarget target = new SrvTarget(1, 100, 8443, "seed1.example.com");
+        assertEquals(
+                "https://seed1.example.com:8443/global-cluster/topology?endpoint=my.global-cluster.cloud.zilliz.com",
+                GlobalClusterUtils.buildSeedTopologyUrl(target, "my.global-cluster.cloud.zilliz.com"));
     }
 
     @Test
-    public void testBuildTopologyUrl_noScheme() {
-        String url = GlobalClusterUtils.buildTopologyUrl("my.global-cluster.cloud.zilliz.com");
-        assertEquals("https://my.global-cluster.cloud.zilliz.com/global-cluster/topology", url);
-    }
+    public void testParseSrvRecords_sortsAndSkipsInvalid() {
+        List<SrvTarget> targets = GlobalClusterUtils.parseSrvRecords(new String[]{
+                "2 30 8443 far.example.com.",
+                "1 100 8443 near-b.example.com",
+                "1 50 19530 near-a.example.com.",
+                ". 0 0 unusable.example.com."
+        });
 
-    @Test
-    public void testBuildTopologyUrl_trailingSlash() {
-        String url = GlobalClusterUtils.buildTopologyUrl("https://my.global-cluster.cloud.zilliz.com/");
-        assertEquals("https://my.global-cluster.cloud.zilliz.com/global-cluster/topology", url);
-    }
-
-    @Test
-    public void testBuildTopologyUrl_withWhitespace() {
-        String url = GlobalClusterUtils.buildTopologyUrl("  https://my.global-cluster.cloud.zilliz.com  ");
-        assertEquals("https://my.global-cluster.cloud.zilliz.com/global-cluster/topology", url);
+        assertEquals(3, targets.size());
+        assertEquals("near-b.example.com", targets.get(0).target);
+        assertEquals("near-a.example.com", targets.get(1).target);
+        assertEquals("far.example.com", targets.get(2).target);
+        assertTrue(GlobalClusterUtils.parseSrvRecords(null).isEmpty());
     }
 
     // ==================== parseTopologyResponse tests ====================
@@ -292,8 +299,7 @@ public class GlobalClusterTest {
     @Test
     public void testTopologyRefresher_stopShutdownsExecutor() {
         TopologyRefresher refresher = new TopologyRefresher(
-                "https://test.global-cluster.com", "token", 1,
-                topology -> {});
+                "https://test.global-cluster.com", "token", () -> null, topology -> {});
         refresher.start();
         refresher.stop();
         // Should not throw; executor is shut down
@@ -302,8 +308,7 @@ public class GlobalClusterTest {
     @Test
     public void testTopologyRefresher_triggerRefreshAfterStop() {
         TopologyRefresher refresher = new TopologyRefresher(
-                "https://test.global-cluster.com", "token", 1,
-                topology -> {});
+                "https://test.global-cluster.com", "token", () -> null, topology -> {});
         refresher.start();
         refresher.stop();
         // triggerRefresh after stop should not throw (executor rejects silently)

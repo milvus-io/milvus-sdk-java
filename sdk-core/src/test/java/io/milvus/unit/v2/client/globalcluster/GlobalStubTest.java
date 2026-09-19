@@ -37,9 +37,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -92,10 +94,10 @@ class GlobalStubTest {
         });
     }
 
-    private static void onTopologyChange(GlobalStub stub, GlobalTopology newTopology) throws Exception {
+    private static boolean onTopologyChange(GlobalStub stub, GlobalTopology newTopology) throws Exception {
         Method method = GlobalStub.class.getDeclaredMethod("onTopologyChange", GlobalTopology.class);
         method.setAccessible(true);
-        method.invoke(stub, newTopology);
+        return (Boolean) method.invoke(stub, newTopology);
     }
 
     @Test
@@ -158,11 +160,39 @@ class GlobalStubTest {
         GlobalStub stub = stub(topology(1L, "host1:19530"), inner,
                 clientFactoryReturning(mock(MilvusClientV2.class)));
 
-        onTopologyChange(stub, topology(2L, "host1:19530"));
+        assertTrue(onTopologyChange(stub, topology(2L, "host1:19530")));
 
         assertSame(inner, stub.getPrimaryClient());
         assertEquals(2L, stub.getTopology().getVersion());
         verify(inner, never()).close();
+    }
+
+    @Test
+    void staleTopologyVersionIsRejected() throws Exception {
+        MilvusClientV2 inner = mock(MilvusClientV2.class);
+        GlobalStub stub = stub(topology(2L, "host1:19530"), inner,
+                clientFactoryReturning(mock(MilvusClientV2.class)));
+
+        // Memory only advances: a lower (or equal) version must never roll the topology back,
+        // even when it points at a different primary.
+        assertFalse(onTopologyChange(stub, topology(1L, "host2:19530")));
+        assertFalse(onTopologyChange(stub, topology(2L, "host2:19530")));
+
+        assertSame(inner, stub.getPrimaryClient());
+        assertEquals("host1:19530", stub.getPrimaryEndpoint());
+        assertEquals(2L, stub.getTopology().getVersion());
+        verify(inner, never()).close();
+    }
+
+    @Test
+    void onTopologyChangeAfterCloseIsRejected() throws Exception {
+        MilvusClientV2 inner = mock(MilvusClientV2.class);
+        GlobalStub stub = stub(topology(1L, "host1:19530"), inner,
+                clientFactoryReturning(mock(MilvusClientV2.class)));
+        stub.close();
+
+        assertFalse(onTopologyChange(stub, topology(2L, "host2:19530")));
+        assertNull(stub.getPrimaryClient());
     }
 
     @Test
