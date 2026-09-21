@@ -20,10 +20,12 @@
 package io.milvus.bulkwriter.model;
 
 /**
- * A snapshot of the progress of a file upload to a cloud storage volume.
+ * Zilliz Cloud only. A snapshot of the progress of a file upload to a cloud storage volume.
  *
  * <p>It reports the uploaded and total bytes, the number of completed files, the file
  * currently being uploaded, and the overall upload percentage.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

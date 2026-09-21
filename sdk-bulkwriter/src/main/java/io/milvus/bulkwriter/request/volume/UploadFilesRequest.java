@@ -24,10 +24,12 @@ import io.milvus.bulkwriter.common.clientenum.UploadPolicy;
 import java.util.Objects;
 
 /**
- * Request for uploading a local file or directory to a target directory within a Volume.
+ * Zilliz Cloud only. Request for uploading a local file or directory to a target directory within a Volume.
  *
  * <p>Allows configuring upload concurrency, retry behavior, multipart part size, and an
  * optional progress listener.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

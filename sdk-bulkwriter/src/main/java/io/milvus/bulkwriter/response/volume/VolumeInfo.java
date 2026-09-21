@@ -1,10 +1,12 @@
 package io.milvus.bulkwriter.response.volume;
 
 /**
- * Information about a cloud storage volume used by the BulkWriter.
+ * Zilliz Cloud only. Information about a cloud storage volume used by the BulkWriter.
  *
  * <p>It describes a volume's name, type, region, storage integration, path, status, and
  * creation time, and is returned by the volume describe and list APIs.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

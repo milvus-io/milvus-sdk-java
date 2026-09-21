@@ -1,10 +1,12 @@
 package io.milvus.bulkwriter.model;
 
 /**
- * The result of uploading files to a cloud storage volume.
+ * Zilliz Cloud only. The result of uploading files to a cloud storage volume.
  *
  * <p>It carries the name of the volume the files were uploaded to and the path of the
  * uploaded files within that volume.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

@@ -20,10 +20,12 @@
 package io.milvus.bulkwriter.request.list;
 
 /**
- * Request for listing import jobs on a Zilliz cloud instance.
+ * Zilliz Cloud only. Request for listing import jobs on a Zilliz cloud instance.
  *
  * <p>The jobs are scoped by clusterId (or projectId and regionId for project database
  * deployments) and support pagination via pageSize and currentPage.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

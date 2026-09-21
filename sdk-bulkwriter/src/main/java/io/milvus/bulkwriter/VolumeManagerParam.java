@@ -23,7 +23,9 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
 /**
- * Parameters for <code>volumeManager</code> interface.
+ * Zilliz Cloud only. Parameters for <code>volumeManager</code> interface.
+ *
+ * @zillizCloudOnly
  */
 
 

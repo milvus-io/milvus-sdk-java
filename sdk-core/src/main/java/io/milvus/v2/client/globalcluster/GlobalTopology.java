@@ -22,10 +22,12 @@ package io.milvus.v2.client.globalcluster;
 import java.util.List;
 
 /**
- * Represents the discovered topology of a global cluster deployment.
+ * Zilliz Cloud only. Represents the discovered topology of a global cluster deployment.
  * <p>
  * The topology is identified by a version number and contains the list of known clusters.
  * The primary (writable) cluster can be retrieved via {@link #getPrimary()}.
+ *
+ * @zillizCloudOnly
  */
 
 

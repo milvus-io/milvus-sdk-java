@@ -31,11 +31,13 @@ import java.util.function.Consumer;
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
 /**
- * Manages the client connection to the primary cluster of a global cluster deployment.
+ * Zilliz Cloud only. Manages the client connection to the primary cluster of a global cluster deployment.
  * <p>
  * On construction the stub fetches the global topology, connects to the primary cluster, and
  * starts a background {@link TopologyRefresher}. When the topology changes, the stub swaps to a
  * new client for the new primary endpoint and notifies the registered primary-change callback.
+ *
+ * @zillizCloudOnly
  */
 
 

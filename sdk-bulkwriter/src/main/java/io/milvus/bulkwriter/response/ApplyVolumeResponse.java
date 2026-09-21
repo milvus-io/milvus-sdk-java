@@ -4,11 +4,13 @@ import java.io.Serializable;
 
 
 /**
- * A response representing the result of applying for a cloud storage volume.
+ * Zilliz Cloud only. A response representing the result of applying for a cloud storage volume.
  *
  * <p>It contains the volume access information, temporary credentials, and the upload
  * constraints enforced by the volume service, and is used by the BulkWriter to upload
  * files before bulk importing them.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

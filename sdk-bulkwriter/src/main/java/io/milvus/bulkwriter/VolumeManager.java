@@ -29,10 +29,12 @@ import io.milvus.bulkwriter.response.volume.VolumeInfo;
 import io.milvus.bulkwriter.restful.DataVolumeUtils;
 
 /**
- * Manages Zilliz cloud Volume lifecycle operations.
+ * Zilliz Cloud only. Manages Zilliz cloud Volume lifecycle operations.
  *
  * <p>Provides methods to create, describe, delete, and paginated-list volumes under a
  * specified project.</p>
+ *
+ * @zillizCloudOnly
  */
 
 
