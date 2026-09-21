@@ -20,9 +20,11 @@
 package io.milvus.bulkwriter.request.volume;
 
 /**
- * Request parameters for deleting a cloud storage volume.
+ * Zilliz Cloud only. Request parameters for deleting a cloud storage volume.
  *
  * <p>It identifies the volume to delete through its volume name.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

@@ -20,9 +20,11 @@
 package io.milvus.bulkwriter.request.volume;
 
 /**
- * Request parameters for describing a cloud storage volume.
+ * Zilliz Cloud only. Request parameters for describing a cloud storage volume.
  *
  * <p>It identifies the volume to describe through its volume name.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

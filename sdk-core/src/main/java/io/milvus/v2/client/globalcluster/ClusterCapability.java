@@ -20,7 +20,9 @@
 package io.milvus.v2.client.globalcluster;
 
 /**
- * Bit flags describing the capabilities of a cluster in a global cluster deployment.
+ * Zilliz Cloud only. Bit flags describing the capabilities of a cluster in a global cluster deployment.
+ *
+ * @zillizCloudOnly
  */
 
 

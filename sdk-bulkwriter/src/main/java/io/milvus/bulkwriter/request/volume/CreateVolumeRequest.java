@@ -20,10 +20,12 @@
 package io.milvus.bulkwriter.request.volume;
 
 /**
- * Request for creating a volume under a specified project and region.
+ * Zilliz Cloud only. Request for creating a volume under a specified project and region.
  *
  * <p>Supports MANAGED or EXTERNAL volume types; for EXTERNAL volumes a storage
  * integration and optional storage path can be specified.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

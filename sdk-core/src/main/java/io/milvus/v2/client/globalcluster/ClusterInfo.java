@@ -20,7 +20,9 @@
 package io.milvus.v2.client.globalcluster;
 
 /**
- * Describes a single cluster discovered in a global cluster deployment.
+ * Zilliz Cloud only. Describes a single cluster discovered in a global cluster deployment.
+ *
+ * @zillizCloudOnly
  */
 
 

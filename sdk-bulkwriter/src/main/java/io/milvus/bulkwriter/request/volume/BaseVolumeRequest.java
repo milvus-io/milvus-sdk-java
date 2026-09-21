@@ -24,10 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Base request class for volume operations.
+ * Zilliz Cloud only. Base request class for volume operations.
  *
  * <p>Holds the API key and additional options shared by volume requests. The API key needs
  * to be filled in when calling the cloud API.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

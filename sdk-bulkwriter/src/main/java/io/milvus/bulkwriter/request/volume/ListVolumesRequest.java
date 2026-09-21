@@ -21,9 +21,11 @@ package io.milvus.bulkwriter.request.volume;
 
 
 /**
- * Request for paginated querying of the volume list under a specified project.
+ * Zilliz Cloud only. Request for paginated querying of the volume list under a specified project.
  *
  * <p>Supports an optional volume type filter with available values MANAGED or EXTERNAL.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

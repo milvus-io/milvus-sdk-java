@@ -203,6 +203,13 @@
                         <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
                             <additionalJOption>-Xdoclint:none</additionalJOption>
+                            <tags>
+                                <tag>
+                                    <name>zillizCloudOnly</name>
+                                    <placement>a</placement>
+                                    <head>Zilliz Cloud only</head>
+                                </tag>
+                            </tags>
                         </configuration>
                         <executions>
                             <execution>

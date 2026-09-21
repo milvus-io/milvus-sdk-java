@@ -37,11 +37,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BulkWriter that writes bulk data files and uploads them to a data volume service.
+ * Zilliz Cloud only. BulkWriter that writes bulk data files and uploads them to a data volume service.
  * <p>
  * Rows are buffered locally into chunked data files, then uploaded to the target volume
  * through a {@link VolumeFileManager}. UUID-scoped chunks always use {@link UploadPolicy#OVERWRITE}
  * to avoid unnecessary existence checks. The local copies are removed after a successful upload.
+ *
+ * @zillizCloudOnly
  */
 
 

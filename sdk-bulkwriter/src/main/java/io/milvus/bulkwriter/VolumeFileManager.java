@@ -52,10 +52,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Manages uploading local files or directories to a Zilliz cloud Volume.
+ * Zilliz Cloud only. Manages uploading local files or directories to a Zilliz cloud Volume.
  *
  * <p>Handles applying for the volume, refreshing temporary credentials and the storage
  * client, uploading files concurrently with retry, and reporting upload progress.</p>
+ *
+ * @zillizCloudOnly
  */
 
 
