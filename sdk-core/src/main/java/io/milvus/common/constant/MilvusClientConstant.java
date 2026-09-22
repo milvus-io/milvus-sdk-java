@@ -47,7 +47,9 @@ public class MilvusClientConstant {
         public final static String HOST_HTTP_PREFIX = "http://";
 
         /**
-         * Regular expression matching Zilliz Cloud serverless endpoints.
+         * Zilliz Cloud only. Regular expression matching Zilliz Cloud serverless endpoints.
+         *
+         * @zillizCloudOnly
          */
 
 

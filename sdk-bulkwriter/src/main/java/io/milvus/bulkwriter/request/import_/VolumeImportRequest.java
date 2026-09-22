@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Request for importing data from a Zilliz volume into a Zilliz cloud instance.
+ * Zilliz Cloud only. Request for importing data from a Zilliz volume into a Zilliz cloud instance.
  *
  * <p>Supports multi-path, folder, or single-file import through data paths within the
  * specified volume.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

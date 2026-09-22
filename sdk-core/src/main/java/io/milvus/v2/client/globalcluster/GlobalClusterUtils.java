@@ -37,7 +37,9 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Utility methods for detecting global cluster endpoints and fetching the global cluster topology.
+ * Zilliz Cloud only. Utility methods for detecting global cluster endpoints and fetching the global cluster topology.
+ *
+ * @zillizCloudOnly
  */
 
 

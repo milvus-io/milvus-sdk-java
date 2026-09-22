@@ -20,10 +20,12 @@
 package io.milvus.bulkwriter.request.describe;
 
 /**
- * Request for describing an import job on a Zilliz cloud instance.
+ * Zilliz Cloud only. Request for describing an import job on a Zilliz cloud instance.
  *
  * <p>The job is identified by clusterId (or projectId and regionId for project database
  * deployments) together with the jobId.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

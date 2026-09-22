@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A response containing a paginated list of cloud storage volumes.
+ * Zilliz Cloud only. A response containing a paginated list of cloud storage volumes.
  *
  * <p>It carries the total count of volumes, the pagination information, and the list of
  * {@link VolumeInfo} entries on the current page.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

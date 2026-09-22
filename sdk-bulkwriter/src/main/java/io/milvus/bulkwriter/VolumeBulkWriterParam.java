@@ -31,7 +31,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Parameters for <code>volumeBulkWriter</code> interface.
+ * Zilliz Cloud only. Parameters for <code>volumeBulkWriter</code> interface.
+ *
+ * @zillizCloudOnly
  */
 
 

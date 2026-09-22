@@ -33,11 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * REST helper for managing Milvus data volumes used by the bulk writer.
+ * Zilliz Cloud only. REST helper for managing Milvus data volumes used by the bulk writer.
  *
  * <p>Provides methods to apply, list, create, describe, and delete data volumes through the
  * Milvus {@code /v2/volumes} REST API. Volume operations let the bulk writer allocate and manage
- * the remote storage volume that holds the uploaded data files.
+ * the remote storage volume that holds the uploaded data files.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

@@ -555,10 +555,11 @@ public class MilvusClientV2 {
     }
 
     /**
-     * Creates a session bound to the given cluster ID for cluster-level operations.
+     * Zilliz Cloud only. Creates a session bound to the given cluster ID for cluster-level operations.
      *
      * @param clusterId the cluster ID to bind the session to
      * @return a new session bound to the given cluster
+     * @zillizCloudOnly
      */
 
 

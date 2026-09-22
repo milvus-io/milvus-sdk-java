@@ -32,10 +32,12 @@ import java.util.function.Consumer;
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
 /**
- * Periodically refreshes the global cluster topology and notifies listeners of changes.
+ * Zilliz Cloud only. Periodically refreshes the global cluster topology and notifies listeners of changes.
  * <p>
  * The refresher polls the global endpoint on a fixed interval. When the topology version
  * changes, the registered callback is invoked so the caller can reconnect to the new primary.
+ *
+ * @zillizCloudOnly
  */
 
 

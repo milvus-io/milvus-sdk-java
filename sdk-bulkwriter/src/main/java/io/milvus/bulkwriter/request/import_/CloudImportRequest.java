@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Request for importing data from a storage bucket into a Zilliz cloud instance.
+ * Zilliz Cloud only. Request for importing data from a storage bucket into a Zilliz cloud instance.
  *
  * <p>Supports multi-path, folder, or single-file import through object URLs. For project
  * database deployments, use projectId and regionId instead of clusterId.</p>
+ *
+ * @zillizCloudOnly
  */
 
 

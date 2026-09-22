@@ -20,10 +20,12 @@
 package io.milvus.bulkwriter.request.volume;
 
 /**
- * Request parameters for applying for a cloud storage volume used by the BulkWriter.
+ * Zilliz Cloud only. Request parameters for applying for a cloud storage volume used by the BulkWriter.
  *
  * <p>It specifies the volume to apply for and the path within it where files are uploaded,
  * and inherits the API key and options handling from {@link BaseVolumeRequest}.</p>
+ *
+ * @zillizCloudOnly
  */
 
 
