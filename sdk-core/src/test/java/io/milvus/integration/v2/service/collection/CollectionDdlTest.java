@@ -25,10 +25,12 @@ import io.milvus.grpc.AlterCollectionFunctionRequest;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.LoadCollectionRequest;
+import io.milvus.grpc.LoadState;
 import io.milvus.support.v2.BaseTest;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.collection.response.GetLoadStateResp;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -132,6 +134,37 @@ class CollectionDdlTest extends BaseTest {
         GetCollectionStatsResp resp = client_v2.getCollectionStats(req);
         Assertions.assertEquals(0L, resp.getNumOfEntities());
         Assertions.assertTrue(resp.getStats().containsKey("other_stat"));
+    }
+
+    @Test
+    void testGetLoadStateV2NotExist() {
+        when(blockingStub.getLoadState(any())).thenReturn(
+                io.milvus.grpc.GetLoadStateResponse.newBuilder()
+                        .setState(LoadState.LoadStateNotExist)
+                        .setStatus(io.milvus.grpc.Status.newBuilder().setCode(0).build())
+                        .build());
+
+        GetLoadStateReq req = GetLoadStateReq.builder()
+                .collectionName("test")
+                .build();
+        GetLoadStateResp resp = client_v2.getLoadStateV2(req);
+        Assertions.assertEquals(LoadState.LoadStateNotExist, resp.getState());
+    }
+
+    @Test
+    void testGetLoadStateLegacyThrowsOnNotExist() {
+        when(blockingStub.getLoadState(any())).thenReturn(
+                io.milvus.grpc.GetLoadStateResponse.newBuilder()
+                        .setState(LoadState.LoadStateNotExist)
+                        .setStatus(io.milvus.grpc.Status.newBuilder().setCode(0).build())
+                        .build());
+
+        GetLoadStateReq req = GetLoadStateReq.builder()
+                .collectionName("test")
+                .build();
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.getLoadState(req));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.SERVER_ERROR, exception.getErrorCode());
     }
 
     @Test
@@ -254,5 +287,30 @@ class CollectionDdlTest extends BaseTest {
                         .build()));
         Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
         verify(blockingStub, never()).alterCollectionFunction(any());
+    }
+
+    @Test
+    void testAlterCollectionFunctionWithExplicitFunctionName() {
+        when(blockingStub.alterCollectionFunction(any())).thenReturn(
+                io.milvus.grpc.Status.newBuilder().setCode(0).build());
+
+        CreateCollectionReq.Function function = CreateCollectionReq.Function.builder()
+                .name("bm25")
+                .functionType(io.milvus.common.clientenum.FunctionType.BM25)
+                .inputFieldNames(Arrays.asList("text"))
+                .outputFieldNames(Arrays.asList("sparse"))
+                .build();
+        AlterCollectionFunctionReq req = AlterCollectionFunctionReq.builder()
+                .collectionName("test")
+                .functionName("renamed_func")
+                .function(function)
+                .build();
+        client_v2.alterCollectionFunction(req);
+
+        ArgumentCaptor<AlterCollectionFunctionRequest> captor =
+                ArgumentCaptor.forClass(AlterCollectionFunctionRequest.class);
+        verify(blockingStub).alterCollectionFunction(captor.capture());
+        Assertions.assertEquals("renamed_func", captor.getValue().getFunctionName());
+        Assertions.assertEquals("bm25", captor.getValue().getFunctionSchema().getName());
     }
 }

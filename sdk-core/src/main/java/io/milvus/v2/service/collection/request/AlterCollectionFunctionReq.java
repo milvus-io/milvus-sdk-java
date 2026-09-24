@@ -27,11 +27,13 @@ package io.milvus.v2.service.collection.request;
 public class AlterCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
+    private String functionName;
     private CreateCollectionReq.Function function;
 
     private AlterCollectionFunctionReq(AlterCollectionFunctionReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
+        this.functionName = builder.functionName;
         this.function = builder.function;
     }
 
@@ -80,6 +82,28 @@ public class AlterCollectionFunctionReq {
     }
 
     /**
+     * Returns the name of the function to alter.
+     *
+     * @return the function name
+     */
+
+
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    /**
+     * Sets the name of the function to alter.
+     *
+     * @param functionName the function name
+     */
+
+
+    public void setFunctionName(String functionName) {
+        this.functionName = functionName;
+    }
+
+    /**
      * Returns the function with the updated definition.
      *
      * @return the function
@@ -95,6 +119,7 @@ public class AlterCollectionFunctionReq {
         return "AlterCollectionFunctionReq{" +
                 "collectionName='" + collectionName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
+                ", functionName='" + functionName + '\'' +
                 ", function= " + function +
                 '}';
     }
@@ -118,6 +143,7 @@ public class AlterCollectionFunctionReq {
     public static class AlterCollectionFunctionReqBuilder {
         private String collectionName = "";
         private String databaseName = "";
+        private String functionName = "";
         private CreateCollectionReq.Function function;
 
         private AlterCollectionFunctionReqBuilder() {
@@ -146,6 +172,19 @@ public class AlterCollectionFunctionReq {
 
         public AlterCollectionFunctionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
+         * Sets the name of the function to alter.
+         *
+         * @param functionName the function name
+         * @return this builder
+         */
+
+
+        public AlterCollectionFunctionReqBuilder functionName(String functionName) {
+            this.functionName = functionName;
             return this;
         }
 

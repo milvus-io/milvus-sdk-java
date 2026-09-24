@@ -24,10 +24,13 @@ import io.grpc.ClientCall;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.grpc.CompactionMergeInfo;
 import io.milvus.grpc.DescribeCollectionRequest;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.FlushAllRequest;
 import io.milvus.grpc.FlushAllResponse;
+import io.milvus.grpc.GetCompactionPlansRequest;
+import io.milvus.grpc.GetCompactionPlansResponse;
 import io.milvus.grpc.GetCompactionStateRequest;
 import io.milvus.grpc.GetCompactionStateResponse;
 import io.milvus.grpc.GetFlushAllStateRequest;
@@ -37,7 +40,11 @@ import io.milvus.grpc.ManualCompactionResponse;
 import io.milvus.grpc.Status;
 import io.milvus.support.v2.BaseTest;
 import io.milvus.v2.client.MilvusClientV2;
+import io.milvus.v2.common.CompactionPlan;
 import io.milvus.v2.common.CompactionState;
+import io.milvus.v2.common.CompactionTaskState;
+import io.milvus.v2.common.CompactionType;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.utility.OptimizeTask;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
@@ -126,6 +133,27 @@ class UtilityTest extends BaseTest {
 
     @Test
     void getCompactionPlans() {
+        Status success = Status.newBuilder().setCode(0).build();
+        when(blockingStub.getCompactionStateWithPlans(any(GetCompactionPlansRequest.class)))
+                .thenReturn(GetCompactionPlansResponse.newBuilder()
+                        .setStatus(success)
+                        .setState(io.milvus.grpc.CompactionState.Executing)
+                        .addMergeInfos(CompactionMergeInfo.newBuilder()
+                                .setPlanId(10L)
+                                .setTriggerId(20L)
+                                .setCollectionId(30L)
+                                .setPartitionId(40L)
+                                .setChannel("ch-0")
+                                .setType(io.milvus.grpc.CompactionType.CompactionTypeMerge)
+                                .setState(io.milvus.grpc.CompactionTaskState.CompactionTaskStateCompleted)
+                                .setFailureReason("")
+                                .setTarget(1L)
+                                .addTargets(1L)
+                                .addTargets(5L)
+                                .addSources(2L)
+                                .build())
+                        .build());
+
         GetCompactionPlansReq req = GetCompactionPlansReq.builder()
                 .compactionID(123L)
                 .build();
@@ -133,8 +161,77 @@ class UtilityTest extends BaseTest {
         assertEquals(123L, resp.getCompactionId());
         assertEquals(CompactionState.Executing, resp.getState());
         assertEquals(1, resp.getPlans().size());
-        assertEquals(1L, resp.getPlans().get(0).getTarget());
-        assertTrue(resp.getPlans().get(0).getSources().contains(2L));
+        CompactionPlan plan = resp.getPlans().get(0);
+        assertEquals(Long.valueOf(10L), plan.getPlanId());
+        assertEquals(Long.valueOf(20L), plan.getTriggerId());
+        assertEquals(Long.valueOf(30L), plan.getCollectionId());
+        assertEquals(Long.valueOf(40L), plan.getPartitionId());
+        assertEquals("ch-0", plan.getChannel());
+        assertEquals(CompactionType.Merge, plan.getCompactionType());
+        assertEquals(CompactionTaskState.Completed, plan.getState());
+        assertEquals("", plan.getFailureReason());
+        assertEquals(1L, plan.getTarget());
+        assertTrue(plan.getTargets().contains(1L));
+        assertTrue(plan.getTargets().contains(5L));
+        assertTrue(plan.getSources().contains(2L));
+    }
+
+    @Test
+    void testGetCompactionStateRejectsNullCompactionId() {
+        GetCompactionStateReq req = GetCompactionStateReq.builder().build();
+        assertThrows(MilvusClientException.class, () -> client_v2.getCompactionState(req));
+    }
+
+    @Test
+    void testGetCompactionPlansRejectsNullCompactionId() {
+        GetCompactionPlansReq req = GetCompactionPlansReq.builder().build();
+        assertThrows(MilvusClientException.class, () -> client_v2.getCompactionPlans(req));
+    }
+
+    @Test
+    void testListCompactionTasks() {
+        Status success = Status.newBuilder().setCode(0).build();
+        when(blockingStub.getCompactionStateWithPlans(any(GetCompactionPlansRequest.class)))
+                .thenReturn(GetCompactionPlansResponse.newBuilder()
+                        .setStatus(success)
+                        .setState(io.milvus.grpc.CompactionState.Completed)
+                        .addMergeInfos(CompactionMergeInfo.newBuilder()
+                                .setPlanId(10L)
+                                .setState(io.milvus.grpc.CompactionTaskState.CompactionTaskStateFailed)
+                                .setFailureReason("oom")
+                                .setTarget(1L)
+                                .addTargets(1L)
+                                .addSources(2L)
+                                .build())
+                        .build());
+
+        ListCompactionTasksReq req = ListCompactionTasksReq.builder()
+                .collectionName("test")
+                .build();
+        GetCompactionPlansResp resp = client_v2.listCompactionTasks(req);
+        assertEquals("test", resp.getCollectionName());
+        assertEquals(CompactionState.Completed, resp.getState());
+        assertEquals(1, resp.getPlans().size());
+        CompactionPlan plan = resp.getPlans().get(0);
+        assertEquals(Long.valueOf(10L), plan.getPlanId());
+        assertEquals(CompactionTaskState.Failed, plan.getState());
+        assertEquals("oom", plan.getFailureReason());
+        assertEquals(1L, plan.getTarget());
+        assertTrue(plan.getTargets().contains(1L));
+        assertTrue(plan.getSources().contains(2L));
+
+        ArgumentCaptor<GetCompactionPlansRequest> captor =
+                ArgumentCaptor.forClass(GetCompactionPlansRequest.class);
+        verify(blockingStub).getCompactionStateWithPlans(captor.capture());
+        assertEquals("test", captor.getValue().getCollectionName());
+    }
+
+    @Test
+    void testListCompactionTasksRejectsEmptyCollectionName() {
+        ListCompactionTasksReq req = ListCompactionTasksReq.builder()
+                .collectionName("")
+                .build();
+        assertThrows(MilvusClientException.class, () -> client_v2.listCompactionTasks(req));
     }
 
     @Test
@@ -186,6 +283,7 @@ class UtilityTest extends BaseTest {
                 ArgumentCaptor.forClass(ManualCompactionRequest.class);
         verify(blockingStub).manualCompaction(captor.capture());
         assertEquals(2048L, captor.getValue().getTargetSize());
+        assertEquals("test", captor.getValue().getCollectionName());
     }
 
     @Test

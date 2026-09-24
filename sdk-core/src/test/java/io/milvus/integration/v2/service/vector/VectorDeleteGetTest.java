@@ -160,6 +160,14 @@ class VectorDeleteGetTest extends BaseTest {
     }
 
     @Test
+    void testDeleteRejectsNeitherFilterNorIds() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.delete(DeleteReq.builder().collectionName("book").build()));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("can't be empty at the same time"));
+    }
+
+    @Test
     void testDeleteRejectsNestedIds() {
         MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
                 () -> client_v2.delete(DeleteReq.builder().collectionName("book")

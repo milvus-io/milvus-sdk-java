@@ -22,7 +22,7 @@ import java.util.Map;
 public class ResourceGroupService extends BaseService {
     private static ResourceGroupConfig convertResourceGroupConfig(io.milvus.common.resourcegroup.ResourceGroupConfig config) {
         if (config == null) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid resource group config");
+            return null;
         }
 
         ResourceGroupConfig.Builder builder = ResourceGroupConfig.newBuilder();
@@ -86,10 +86,12 @@ public class ResourceGroupService extends BaseService {
         String title = String.format("Create resource group: '%s'", request.getGroupName());
 
         ResourceGroupConfig rpcConfig = convertResourceGroupConfig(request.getConfig());
-        CreateResourceGroupRequest rpcRequest = CreateResourceGroupRequest.newBuilder()
-                .setResourceGroup(request.getGroupName())
-                .setConfig(rpcConfig)
-                .build();
+        CreateResourceGroupRequest.Builder requestBuilder = CreateResourceGroupRequest.newBuilder()
+                .setResourceGroup(request.getGroupName());
+        if (rpcConfig != null) {
+            requestBuilder.setConfig(rpcConfig);
+        }
+        CreateResourceGroupRequest rpcRequest = requestBuilder.build();
 
         Status status = blockingStub.createResourceGroup(rpcRequest);
         rpcUtils.handleResponse(title, status);
@@ -108,13 +110,14 @@ public class ResourceGroupService extends BaseService {
     public Void updateResourceGroups(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                      UpdateResourceGroupsReq request) {
         Map<String, io.milvus.common.resourcegroup.ResourceGroupConfig> resourceGroups = request.getResourceGroups();
-        if (resourceGroups.isEmpty()) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Resource group configurations cannot be empty");
-        }
 
         UpdateResourceGroupsRequest.Builder requestBuilder = UpdateResourceGroupsRequest.newBuilder();
         resourceGroups.forEach((groupName, config) -> {
             ResourceGroupConfig rpcConfig = convertResourceGroupConfig(config);
+            if (rpcConfig == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        String.format("Invalid resource group config for group '%s'", groupName));
+            }
             requestBuilder.putResourceGroups(groupName, rpcConfig);
         });
 
