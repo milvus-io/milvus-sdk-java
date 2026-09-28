@@ -31,6 +31,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddCollectionFieldReq;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.AddFunctionFieldReq;
+import io.milvus.v2.service.collection.request.AlterCollectionFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionFieldReq;
@@ -146,6 +147,14 @@ public class AddFieldExample {
                     .maxLength(100)
                     .isNullable(true)
                     .build());
+
+            // Alter the max length of the added field
+            client.alterCollectionField(AlterCollectionFieldReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .fieldName("text")
+                    .property("max_length", "200")
+                    .build());
+            System.out.println("Field 'text' max_length altered to 200");
 
             describeCollection();
 

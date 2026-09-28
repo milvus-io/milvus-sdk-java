@@ -827,7 +827,11 @@ public class CollectionService extends BaseService {
 
 
     public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
-        return getLoadStateResponse(blockingStub, request).getState() == LoadState.LoadStateLoaded;
+        GetLoadStateResponse response = getLoadStateResponse(blockingStub, request);
+        if (response.getState() == LoadState.LoadStateNotExist) {
+            throwLoadStateNotExist(request);
+        }
+        return response.getState() == LoadState.LoadStateLoaded;
     }
 
     /**
@@ -867,15 +871,18 @@ public class CollectionService extends BaseService {
         }
         GetLoadStateResponse response = blockingStub.getLoadState(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
-        // throw error if cannot find the collection of partition
-        if (response.getState() == LoadState.LoadStateNotExist) {
-            String msg = String.format("collection: '%s' doesn't exist in database: '%s'", collectionName, dbName);
-            if (StringUtils.isNotEmpty(partitionName)) {
-                msg = String.format("partition: '%s' of %s", partitionName, msg);
-            }
-            throw new MilvusClientException(ErrorCode.SERVER_ERROR, msg);
-        }
         return response;
+    }
+
+    private void throwLoadStateNotExist(GetLoadStateReq request) {
+        String collectionName = request.getCollectionName();
+        String dbName = request.getDatabaseName();
+        String partitionName = request.getPartitionName();
+        String msg = String.format("collection: '%s' doesn't exist in database: '%s'", collectionName, dbName);
+        if (StringUtils.isNotEmpty(partitionName)) {
+            msg = String.format("partition: '%s' of %s", partitionName, msg);
+        }
+        throw new MilvusClientException(ErrorCode.SERVER_ERROR, msg);
     }
 
     private Long getLoadingProgress(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
@@ -1166,10 +1173,13 @@ public class CollectionService extends BaseService {
 
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
+        String functionName = StringUtils.isNotEmpty(request.getFunctionName())
+                ? request.getFunctionName()
+                : request.getFunction().getName();
         String title = String.format("Alter function of collection: '%s' in database: '%s'", collectionName, dbName);
         AlterCollectionFunctionRequest.Builder builder = AlterCollectionFunctionRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setFunctionName(request.getFunction().getName())
+                .setFunctionName(functionName)
                 .setFunctionSchema(SchemaUtils.convertToGrpcFunction(request.getFunction()));
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);

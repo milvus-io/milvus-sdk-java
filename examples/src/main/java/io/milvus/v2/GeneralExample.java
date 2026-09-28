@@ -32,10 +32,12 @@ import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.partition.request.CreatePartitionReq;
 import io.milvus.v2.service.partition.request.ListPartitionsReq;
+import io.milvus.v2.service.vector.request.DeleteReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.data.FloatVec;
+import io.milvus.v2.service.vector.response.DeleteResp;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
@@ -150,7 +152,7 @@ public class GeneralExample {
         System.out.println(partitions);
     }
 
-    private static void insertRows(String partitionName, int count) {
+    private static List<Object> insertRows(String partitionName, int count) {
         System.out.println("========== insertRows() ==========");
 
         List<JsonObject> rows = new ArrayList<>();
@@ -172,6 +174,56 @@ public class GeneralExample {
         // is equal to resp.getInsertCnt()
         List<Object> ids = resp.getPrimaryKeys();
         System.out.println("complete insertRows, insertCount:" + ids.size());
+        return ids;
+    }
+
+    private static void deleteByIds(List<Object> ids) {
+        System.out.println("========== deleteByIds() ==========");
+        DeleteResp resp = client.delete(DeleteReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .ids(ids)
+                .build());
+        System.out.println("Deleted " + resp.getDeleteCnt() + " rows by ids");
+    }
+
+    private static void deleteByFilter(String filter) {
+        System.out.println("========== deleteByFilter() ==========");
+        DeleteResp resp = client.delete(DeleteReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(filter)
+                .build());
+        System.out.println("Deleted " + resp.getDeleteCnt() + " rows by filter: " + filter);
+    }
+
+    private static void truncateCollection() {
+        System.out.println("========== truncateCollection() ==========");
+        client.truncateCollection(TruncateCollectionReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .build());
+        System.out.println("Collection '" + COLLECTION_NAME + "' truncated");
+    }
+
+    private static void renameCollection() {
+        System.out.println("========== renameCollection() ==========");
+        String newName = COLLECTION_NAME + "_renamed";
+        client.renameCollection(RenameCollectionReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .newCollectionName(newName)
+                .build());
+        System.out.println("Collection '" + COLLECTION_NAME + "' renamed to '" + newName + "'");
+
+        // Describe the collection under its new name to confirm the rename took effect.
+        DescribeCollectionResp resp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(newName)
+                .build());
+        System.out.println("Describe renamed collection: " + resp.getCollectionName());
+
+        // Rename it back so the rest of the example keeps using the original name.
+        client.renameCollection(RenameCollectionReq.builder()
+                .collectionName(newName)
+                .newCollectionName(COLLECTION_NAME)
+                .build());
+        System.out.println("Collection '" + newName + "' renamed back to '" + COLLECTION_NAME + "'");
     }
 
     private static void searchFace(String filter) {
@@ -220,15 +272,20 @@ public class GeneralExample {
         createPartition(partitionName);
         listPartitions();
 
-        final int row_count = 10000;
-        for (int i = 0; i < 100; ++i) {
-            insertRows(partitionName, row_count);
-        }
+        // Insert a small batch so the delete/truncate demos operate on a manageable row count.
+        List<Object> ids = insertRows(partitionName, 1000);
 
         loadCollection();
 
+        deleteByIds(ids.subList(0, 100));
+        deleteByFilter(AGE_FIELD + " > 90");
+
         String searchExpr = AGE_FIELD + " > 50";
         searchFace(searchExpr);
+
+        truncateCollection();
+
+        renameCollection();
 
         releaseCollection();
     }

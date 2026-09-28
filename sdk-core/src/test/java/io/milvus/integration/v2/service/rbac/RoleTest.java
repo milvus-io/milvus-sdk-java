@@ -101,6 +101,7 @@ class RoleTest extends BaseTest {
         DescribeRoleResp resp = client_v2.describeRole(describeRoleReq);
         assertEquals("role_test", resp.getRoleName());
         assertEquals("role description", resp.getDescription());
+        assertEquals("role_test", resp.getGrantInfos().get(0).getRoleName());
 
         ArgumentCaptor<SelectRoleRequest> roleCaptor = ArgumentCaptor.forClass(SelectRoleRequest.class);
         verify(blockingStub).selectRole(roleCaptor.capture());

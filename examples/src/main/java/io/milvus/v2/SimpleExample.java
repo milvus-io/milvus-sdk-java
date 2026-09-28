@@ -101,7 +101,7 @@ public class SimpleExample {
                 .outputFields(Collections.singletonList("*"))
                 .build());
         System.out.println("\nRetrieve results:");
-        for (QueryResp.QueryResult result : getR.getGetResults()) {
+        for (QueryResp.QueryResult result : getR.getQueryResults()) {
             System.out.println(result.getEntity());
         }
 

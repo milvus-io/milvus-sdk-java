@@ -19,11 +19,14 @@
 
 package io.milvus.integration.v2.service.partition;
 
+import io.milvus.grpc.GetPartitionStatisticsResponse;
 import io.milvus.support.v2.BaseTest;
 import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.partition.response.GetPartitionStatsResp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -93,6 +96,19 @@ class PartitionTest extends BaseTest {
         GetPartitionStatsResp resp = client_v2.getPartitionStats(req);
         assertEquals(10L, resp.getNumOfEntities());
         assertEquals("10", resp.getStats().get("row_count"));
+    }
+
+    @Test
+    void testGetPartitionStatsWithoutRowCount() {
+        when(blockingStub.getPartitionStatistics(any())).thenReturn(GetPartitionStatisticsResponse.newBuilder()
+                .setStatus(io.milvus.grpc.Status.newBuilder().setCode(0).build())
+                .build());
+        GetPartitionStatsReq req = GetPartitionStatsReq.builder()
+                .collectionName("test")
+                .partitionName("test")
+                .build();
+        GetPartitionStatsResp resp = client_v2.getPartitionStats(req);
+        assertEquals(0L, resp.getNumOfEntities());
     }
 
     @Test

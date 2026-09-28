@@ -17,29 +17,35 @@
  * under the License.
  */
 
-package io.milvus.v2.service.collection.request;
+package io.milvus.v2.service.utility.request;
 
 /**
- * Deprecated request parameters for the {@code addCollectionFunction} API.
- * Use {@link AddFunctionFieldReq} instead.
- *
- * @deprecated since SDK v3.0.10, replaced by {@code addFunctionField} to match
- *             the pymilvus deprecation.
+ * Request parameters for the {@code listCompactionTasks} API.
  */
-@Deprecated
-public class AddCollectionFunctionReq {
+
+
+public class ListCompactionTasksReq {
     private String collectionName;
     private String databaseName;
-    private CreateCollectionReq.Function function;
 
-    private AddCollectionFunctionReq(AddCollectionFunctionReqBuilder builder) {
+    private ListCompactionTasksReq(ListCompactionTasksReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
-        this.function = builder.function;
     }
 
     /**
-     * Returns the collection name.
+     * Creates a new builder for {@code ListCompactionTasksReq}.
+     *
+     * @return the builder
+     */
+
+
+    public static ListCompactionTasksReqBuilder builder() {
+        return new ListCompactionTasksReqBuilder();
+    }
+
+    /**
+     * Returns the name of the collection whose retained compaction tasks are to be listed.
      *
      * @return the collection name
      */
@@ -50,7 +56,7 @@ public class AddCollectionFunctionReq {
     }
 
     /**
-     * Sets the collection name.
+     * Sets the name of the collection whose retained compaction tasks are to be listed.
      *
      * @param collectionName the collection name
      */
@@ -61,7 +67,7 @@ public class AddCollectionFunctionReq {
     }
 
     /**
-     * Returns the database name.
+     * Returns the name of the database holding the collection.
      *
      * @return the database name
      */
@@ -72,7 +78,7 @@ public class AddCollectionFunctionReq {
     }
 
     /**
-     * Sets the database name.
+     * Sets the name of the database holding the collection.
      *
      * @param databaseName the database name
      */
@@ -82,98 +88,58 @@ public class AddCollectionFunctionReq {
         this.databaseName = databaseName;
     }
 
-    /**
-     * Returns the function to add to the collection.
-     *
-     * @return the function
-     */
-
-
-    public CreateCollectionReq.Function getFunction() {
-        return function;
-    }
-
     @Override
     public String toString() {
-        return "AddCollectionFunctionReq{" +
+        return "ListCompactionTasksReq{" +
                 "collectionName='" + collectionName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
-                ", function= " + function +
                 '}';
     }
 
     /**
-     * Creates a new builder for {@link AddCollectionFunctionReq}.
-     *
-     * @return the builder
+     * Builder for {@link ListCompactionTasksReq} class.
      */
 
 
-    public static AddCollectionFunctionReqBuilder builder() {
-        return new AddCollectionFunctionReqBuilder();
-    }
-
-    /**
-     * Builder for {@link AddCollectionFunctionReq} class.
-     */
-
-
-    public static class AddCollectionFunctionReqBuilder {
-        private String collectionName = "";
-        private String databaseName = "";
-        private CreateCollectionReq.Function function;
-
-        private AddCollectionFunctionReqBuilder() {
-        }
+    public static class ListCompactionTasksReqBuilder {
+        private String collectionName;
+        private String databaseName;
 
         /**
-         * Sets the collection name.
+         * Sets the name of the collection whose retained compaction tasks are to be listed.
          *
          * @param collectionName the collection name
          * @return this builder
          */
 
 
-        public AddCollectionFunctionReqBuilder collectionName(String collectionName) {
+        public ListCompactionTasksReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
         /**
-         * Sets the database name.
+         * Sets the name of the database holding the collection.
          *
          * @param databaseName the database name
          * @return this builder
          */
 
 
-        public AddCollectionFunctionReqBuilder databaseName(String databaseName) {
+        public ListCompactionTasksReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
         /**
-         * Sets the function to add to the collection.
+         * Builds the {@code ListCompactionTasksReq}.
          *
-         * @param function the function
-         * @return this builder
+         * @return the constructed {@code ListCompactionTasksReq}
          */
 
 
-        public AddCollectionFunctionReqBuilder function(CreateCollectionReq.Function function) {
-            this.function = function;
-            return this;
-        }
-
-        /**
-         * Builds an {@link AddCollectionFunctionReq} with the configured parameters.
-         *
-         * @return the request
-         */
-
-
-        public AddCollectionFunctionReq build() {
-            return new AddCollectionFunctionReq(this);
+        public ListCompactionTasksReq build() {
+            return new ListCompactionTasksReq(this);
         }
     }
 }
