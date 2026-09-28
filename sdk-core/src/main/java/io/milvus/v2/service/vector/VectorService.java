@@ -937,6 +937,10 @@ public class VectorService extends BaseService {
         validateDeleteIds(request.getIds());
 
         if (request.getFilter() == null) {
+            if (CollectionUtils.isEmpty(request.getIds())) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "filter and ids can't be empty at the same time");
+            }
             DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
             DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));

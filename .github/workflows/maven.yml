@@ -9,7 +9,6 @@ on:
       - '**/*.md'
       - 'doc/**'
       - 'benchmark/**'
-      - 'examples/**'
       - '**/OWNERS'
       - 'LICENSE'
 
@@ -43,6 +42,15 @@ jobs:
       # the ubuntu job.
       - name: BulkWriter unit tests (ut)
         run: mvn -pl sdk-bulkwriter -Pcoverage "-Djacoco.destFile=target/jacoco-ut-bulk.exec" "-Djacoco.reportDir=target/site/jacoco-ut-bulk" --batch-mode --update-snapshots verify
+      # The examples project depends on milvus-sdk-java-bulkwriter from the local repository,
+      # and the bulkwriter verify step above does not install the artifact. Install it (without
+      # re-running its unit tests) so the examples can compile against the version under
+      # development; the examples module is not part of the Maven reactor, so this explicit step
+      # is the only check that new examples stay compilable.
+      - name: Install sdk-bulkwriter
+        run: mvn -pl sdk-bulkwriter install "-Dmaven.test.skip=true" --batch-mode
+      - name: Examples compile
+        run: mvn -f examples/pom.xml compile --batch-mode
       - name: System tests (st)
         run: mvn -Pcoverage -Psystem "-Dtest.groups=system" "-Djacoco.destFile=target/jacoco-st.exec" "-Djacoco.reportDir=target/site/jacoco-st" --batch-mode --update-snapshots verify
       - name: Upload coverage

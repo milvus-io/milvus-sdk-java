@@ -1153,13 +1153,14 @@ public class MilvusClientV2 {
     /**
      * Adds a function to existing fields.
      *
-     * Milvus 3.0 and later do not support this operation. Use
-     * {@link #addFunctionField(AddFunctionFieldReq)} with these versions.
+     * Deprecated: Milvus 3.0 and later do not support adding a function separately. Use
+     * {@link #addFunctionField(AddFunctionFieldReq)} instead, which adds the function together
+     * with its output field and index.
      *
      * @param request add function request
+     * @deprecated since SDK v3.0.10, replaced by {@link #addFunctionField(AddFunctionFieldReq)}
      */
-
-
+    @Deprecated
     public void addCollectionFunction(AddCollectionFunctionReq request) {
         rpcUtils.retry(() -> collectionService.addCollectionFunction(this.getRpcStub(), request));
     }
@@ -1193,13 +1194,14 @@ public class MilvusClientV2 {
     /**
      * Drops only the function definition and keeps its output field(s).
      *
-     * Milvus 3.0 and later do not support this operation. Use
-     * {@link #dropFunctionField(DropFunctionFieldReq)} with these versions.
+     * Deprecated: Milvus 3.0 and later do not support dropping a function separately. Use
+     * {@link #dropFunctionField(DropFunctionFieldReq)} instead, which also removes the
+     * function's output field and its index.
      *
      * @param request drop function request
+     * @deprecated since SDK v3.0.10, replaced by {@link #dropFunctionField(DropFunctionFieldReq)}
      */
-
-
+    @Deprecated
     public void dropCollectionFunction(DropCollectionFunctionReq request) {
         rpcUtils.retry(() -> collectionService.dropCollectionFunction(this.getRpcStub(), request));
     }
@@ -2340,6 +2342,21 @@ public class MilvusClientV2 {
 
     public GetCompactionPlansResp getCompactionPlans(GetCompactionPlansReq request) {
         return rpcUtils.retry(() -> utilityService.getCompactionPlans(this.getRpcStub(), request));
+    }
+
+    /**
+     * Lists all compaction tasks still retained for a collection, whether automatically
+     * or manually triggered.
+     *
+     * <p>Terminal tasks are subject to server-side garbage collection and are not an audit log.</p>
+     *
+     * @param request the list compaction tasks request
+     * @return the compaction plans response
+     */
+
+
+    public GetCompactionPlansResp listCompactionTasks(ListCompactionTasksReq request) {
+        return rpcUtils.retry(() -> utilityService.listCompactionTasks(this.getRpcStub(), request));
     }
 
     /**

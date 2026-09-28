@@ -173,7 +173,7 @@ public class PartitionService extends BaseService {
         response.getStatsList().forEach(stat -> stats.put(stat.getKey(), stat.getValue()));
         GetPartitionStatsResp getPartitionStatsResp = GetPartitionStatsResp.builder()
                 .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count"))
-                        .map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
+                        .map(stat -> Long.parseLong(stat.getValue())).findFirst().orElse(0L))
                 .stats(stats)
                 .build();
         return getPartitionStatsResp;

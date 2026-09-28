@@ -142,6 +142,7 @@ public class RBACService extends BaseService {
                 .roleName(returnedRoleName)
                 .description(description)
                 .grantInfos(response.getEntitiesList().stream().map(entity -> DescribeRoleResp.GrantInfo.builder()
+                        .roleName(returnedRoleName)
                         .dbName(entity.getDbName())
                         .objectName(entity.getObjectName())
                         .objectType(entity.getObject().getName())

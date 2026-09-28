@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -87,10 +88,18 @@ class ResourceGroupServiceTest extends BaseTest {
 
     @Test
     void testCreateResourceGroupWithoutConfig() {
+        Status successStatus = Status.newBuilder().setCode(0).build();
+        when(blockingStub.createResourceGroup(any())).thenReturn(successStatus);
+
         CreateResourceGroupReq request = CreateResourceGroupReq.builder()
                 .groupName("rg_1")
                 .build();
-        assertThrows(MilvusClientException.class, () -> client_v2.createResourceGroup(request));
+        client_v2.createResourceGroup(request);
+
+        ArgumentCaptor<CreateResourceGroupRequest> captor = ArgumentCaptor.forClass(CreateResourceGroupRequest.class);
+        verify(blockingStub).createResourceGroup(captor.capture());
+        assertEquals("rg_1", captor.getValue().getResourceGroup());
+        assertFalse(captor.getValue().hasConfig());
     }
 
     @Test
@@ -116,9 +125,14 @@ class ResourceGroupServiceTest extends BaseTest {
 
     @Test
     void testUpdateResourceGroupsEmpty() {
+        Status successStatus = Status.newBuilder().setCode(0).build();
+        when(blockingStub.updateResourceGroups(any())).thenReturn(successStatus);
+
         UpdateResourceGroupsReq request = UpdateResourceGroupsReq.builder()
                 .build();
-        assertThrows(MilvusClientException.class, () -> client_v2.updateResourceGroups(request));
+        client_v2.updateResourceGroups(request);
+
+        verify(blockingStub).updateResourceGroups(any());
     }
 
     @Test
