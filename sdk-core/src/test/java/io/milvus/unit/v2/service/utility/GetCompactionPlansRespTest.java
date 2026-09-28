@@ -76,6 +76,6 @@ class GetCompactionPlansRespTest {
                 .build();
 
         String text = response.toString();
-        assertEquals("GetCompactionPlansResp{compactionId=1, state=Completed, plans=[]}", text);
+        assertEquals("GetCompactionPlansResp{compactionId=1, collectionName='null', state=Completed, plans=[]}", text);
     }
 }

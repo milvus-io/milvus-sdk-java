@@ -32,11 +32,13 @@ import java.util.List;
 
 public class GetCompactionPlansResp {
     private Long compactionId;
+    private String collectionName;
     private CompactionState state;
     private List<CompactionPlan> plans;
 
     private GetCompactionPlansResp(GetCompactionPlansRespBuilder builder) {
         this.compactionId = builder.compactionId;
+        this.collectionName = builder.collectionName;
         this.state = builder.state;
         this.plans = builder.plans;
     }
@@ -75,6 +77,28 @@ public class GetCompactionPlansResp {
     }
 
     /**
+     * Returns the name of the collection the compaction plans belong to.
+     *
+     * @return the collection name
+     */
+
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    /**
+     * Sets the name of the collection the compaction plans belong to.
+     *
+     * @param collectionName the collection name
+     */
+
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    /**
      * Returns the compaction state.
      *
      * @return the compaction state
@@ -101,6 +125,7 @@ public class GetCompactionPlansResp {
     public String toString() {
         return "GetCompactionPlansResp{" +
                 "compactionId=" + compactionId +
+                ", collectionName='" + collectionName + '\'' +
                 ", state=" + state +
                 ", plans=" + plans +
                 '}';
@@ -113,6 +138,7 @@ public class GetCompactionPlansResp {
 
     public static class GetCompactionPlansRespBuilder {
         private Long compactionId;
+        private String collectionName;
         private CompactionState state = CompactionState.UndefiedState;
         private List<CompactionPlan> plans = new ArrayList<>();
 
@@ -126,6 +152,19 @@ public class GetCompactionPlansResp {
 
         public GetCompactionPlansRespBuilder compactionId(Long compactionId) {
             this.compactionId = compactionId;
+            return this;
+        }
+
+        /**
+         * Sets the name of the collection the compaction plans belong to.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
+
+
+        public GetCompactionPlansRespBuilder collectionName(String collectionName) {
+            this.collectionName = collectionName;
             return this;
         }
 

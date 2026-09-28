@@ -20,10 +20,13 @@
 package io.milvus.v2.service.collection.request;
 
 /**
- * Request parameters for the {@code dropCollectionFunction} API.
+ * Deprecated request parameters for the {@code dropCollectionFunction} API.
+ * Use {@link DropFunctionFieldReq} instead.
+ *
+ * @deprecated since SDK v3.0.10, replaced by {@code dropFunctionField} to match
+ *             the pymilvus deprecation.
  */
-
-
+@Deprecated
 public class DropCollectionFunctionReq {
     private String collectionName;
     private String databaseName;
