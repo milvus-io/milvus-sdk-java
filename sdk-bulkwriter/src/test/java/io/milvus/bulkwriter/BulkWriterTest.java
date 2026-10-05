@@ -1320,4 +1320,54 @@ public class BulkWriterTest {
             Assertions.fail();
         }
     }
+
+    @Test
+    void testAppendLockReleasedWhenCommitThrows() throws Exception {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        schema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+
+        LocalBulkWriter writer = new LocalBulkWriter(schema, 1, BulkFileType.JSON,
+                "/tmp/bulk_writer_lock_release", new HashMap<>()) {
+            @Override
+            protected List<String> commitIfFileReady(boolean createNewFile) {
+                if (createNewFile) {
+                    throw new IllegalStateException("chunk upload failed");
+                }
+                return super.commitIfFileReady(false);
+            }
+        };
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+
+        Throwable first = appendRowOnNewThread(writer, row);
+        Assertions.assertInstanceOf(IllegalStateException.class, first);
+        Assertions.assertEquals("chunk upload failed", first.getMessage());
+        Assertions.assertFalse(writer.appendLock.isLocked());
+
+        Throwable second = appendRowOnNewThread(writer, row);
+        Assertions.assertInstanceOf(IllegalStateException.class, second);
+        Assertions.assertEquals("chunk upload failed", second.getMessage());
+        Assertions.assertFalse(writer.appendLock.isLocked());
+
+        writer.close();
+    }
+
+    private static Throwable appendRowOnNewThread(BulkWriter writer, JsonObject row) throws InterruptedException {
+        Throwable[] thrown = new Throwable[1];
+        Thread thread = new Thread(() -> {
+            try {
+                writer.appendRow(row);
+            } catch (Throwable t) {
+                thrown[0] = t;
+            }
+        });
+        thread.start();
+        thread.join();
+        return thrown[0];
+    }
 }
