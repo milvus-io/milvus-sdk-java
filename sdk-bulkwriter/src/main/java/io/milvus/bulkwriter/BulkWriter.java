@@ -148,8 +148,11 @@ public abstract class BulkWriter implements AutoCloseable {
         FormatFileWriter oldFileWriter = fileWriter;
 
         fileWriteLock.lock();
-        createWriterByType();
-        fileWriteLock.unlock();
+        try {
+            createWriterByType();
+        } finally {
+            fileWriteLock.unlock();
+        }
         return oldFileWriter;
     }
 
@@ -206,12 +209,15 @@ public abstract class BulkWriter implements AutoCloseable {
         List<String> filePaths = Lists.newArrayList();
 
         appendLock.lock();
-        fileWriter.appendRow(rowValues, firstWrite);
-        firstWrite = false;
-        if (getTotalSize() > getChunkSize()) {
-            filePaths = commitIfFileReady(true);
+        try {
+            fileWriter.appendRow(rowValues, firstWrite);
+            firstWrite = false;
+            if (getTotalSize() > getChunkSize()) {
+                filePaths = commitIfFileReady(true);
+            }
+        } finally {
+            appendLock.unlock();
         }
-        appendLock.unlock();
 
         if (CollectionUtils.isNotEmpty(filePaths)) {
             callBackIfCommitReady(filePaths);
@@ -229,9 +235,12 @@ public abstract class BulkWriter implements AutoCloseable {
     */
     protected void commit() {
         appendLock.lock();
-        totalSize = 0;
-        totalRowCount = 0;
-        appendLock.unlock();
+        try {
+            totalSize = 0;
+            totalRowCount = 0;
+        } finally {
+            appendLock.unlock();
+        }
     }
 
     /**
@@ -410,9 +419,12 @@ public abstract class BulkWriter implements AutoCloseable {
         }
 
         appendLock.lock();
-        totalSize += rowSize;
-        totalRowCount += 1;
-        appendLock.unlock();
+        try {
+            totalSize += rowSize;
+            totalRowCount += 1;
+        } finally {
+            appendLock.unlock();
+        }
 
         return rowValues;
     }

@@ -104,8 +104,11 @@ public class LocalBulkWriter extends BulkWriter {
 //        in async mode, the flush thread is asynchronously, other threads can
 //        continue to append if the new buffer size is less than target size
         workingThreadLock.lock();
-        callBack(true, filePaths);
-        workingThreadLock.unlock();
+        try {
+            callBack(true, filePaths);
+        } finally {
+            workingThreadLock.unlock();
+        }
     }
 
     /**
@@ -230,10 +233,12 @@ public class LocalBulkWriter extends BulkWriter {
     protected void exit() throws InterruptedException {
         // if still has data in memory, default commit
         workingThreadLock.lock();
-
-        List<String> filePath = commitIfFileReady(false);
-        callBack(true, filePath);
-        workingThreadLock.unlock();
+        try {
+            List<String> filePath = commitIfFileReady(false);
+            callBack(true, filePath);
+        } finally {
+            workingThreadLock.unlock();
+        }
 
         // wait flush thread
         if (!workingThread.isEmpty()) {
