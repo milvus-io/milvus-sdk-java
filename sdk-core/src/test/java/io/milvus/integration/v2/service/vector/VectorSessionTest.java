@@ -223,6 +223,8 @@ class VectorSessionTest extends BaseTest {
         SearchResults iteratorResponse = SearchResults.newBuilder()
                 .setStatus(Status.newBuilder().setCode(0).build())
                 .setResults(SearchResultData.newBuilder()
+                        .setNumQueries(1)
+                        .addTopks(0)
                         .setSearchIteratorV2Results(SearchIteratorV2Results.newBuilder().setToken("token").build())
                         .build())
                 .build();

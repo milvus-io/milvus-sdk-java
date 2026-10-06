@@ -177,7 +177,7 @@ public class ConvertUtils {
                         .entity(idScore.getFieldValues())
                         .score(idScore.getScore())
                         .primaryKey(idScore.getPrimaryKey())
-                        .id(idScore.getStrID().isEmpty() ? idScore.getLongID() : idScore.getStrID())
+                        .id(response.getResults().getIds().hasStrId() ? idScore.getStrID() : idScore.getLongID())
                         .build());
             }
 
