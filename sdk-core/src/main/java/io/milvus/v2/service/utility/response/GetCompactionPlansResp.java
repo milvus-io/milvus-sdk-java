@@ -139,7 +139,7 @@ public class GetCompactionPlansResp {
     public static class GetCompactionPlansRespBuilder {
         private Long compactionId;
         private String collectionName;
-        private CompactionState state = CompactionState.UndefiedState;
+        private CompactionState state = CompactionState.UndefinedState;
         private List<CompactionPlan> plans = new ArrayList<>();
 
         /**
