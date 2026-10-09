@@ -154,7 +154,7 @@ public class GetCompactionStateResp {
 
 
     public static class GetCompactionStateRespBuilder {
-        private CompactionState state = CompactionState.UndefiedState;
+        private CompactionState state = CompactionState.UndefinedState;
         private Long executingPlanNo = 0L;
         private Long timeoutPlanNo = 0L;
         private Long completedPlanNo = 0L;

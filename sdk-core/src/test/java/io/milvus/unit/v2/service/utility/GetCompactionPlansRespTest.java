@@ -55,7 +55,7 @@ class GetCompactionPlansRespTest {
         GetCompactionPlansResp response = GetCompactionPlansResp.builder().build();
 
         assertNull(response.getCompactionId());
-        assertEquals(CompactionState.UndefiedState, response.getState());
+        assertEquals(CompactionState.UndefinedState, response.getState());
         assertEquals(0, response.getPlans().size());
     }
 

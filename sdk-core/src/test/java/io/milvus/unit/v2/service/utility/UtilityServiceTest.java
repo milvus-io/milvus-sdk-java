@@ -296,6 +296,20 @@ class UtilityServiceTest {
     }
 
     @Test
+    void getCompactionStateCanonicalizesUndefinedState() {
+        GetCompactionStateResponse response = GetCompactionStateResponse.newBuilder()
+                .setStatus(success())
+                .setState(CompactionState.UndefiedState)
+                .build();
+        when(stub.getCompactionState(any())).thenReturn(response);
+
+        GetCompactionStateResp result = service.getCompactionState(stub,
+                GetCompactionStateReq.builder().compactionID(1L).build());
+
+        assertEquals(io.milvus.v2.common.CompactionState.UndefinedState, result.getState());
+    }
+
+    @Test
     void getCompactionPlansMapsPlans() {
         GetCompactionPlansResponse response = GetCompactionPlansResponse.newBuilder()
                 .setStatus(success())
