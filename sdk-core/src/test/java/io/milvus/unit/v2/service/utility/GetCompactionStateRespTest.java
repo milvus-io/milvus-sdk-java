@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
 class GetCompactionStateRespTest {
@@ -47,7 +48,7 @@ class GetCompactionStateRespTest {
     void unsetFieldsUseBuilderDefaults() {
         GetCompactionStateResp response = GetCompactionStateResp.builder().build();
 
-        assertEquals(CompactionState.UndefiedState, response.getState());
+        assertEquals(CompactionState.UndefinedState, response.getState());
         assertEquals(Long.valueOf(0L), response.getExecutingPlanNo());
         assertEquals(Long.valueOf(0L), response.getTimeoutPlanNo());
         assertEquals(Long.valueOf(0L), response.getCompletedPlanNo());
@@ -70,9 +71,17 @@ class GetCompactionStateRespTest {
 
     @Test
     void coversAllCompactionStates() {
-        assertEquals(CompactionState.UndefiedState.getCode(), 0);
+        assertEquals(CompactionState.UndefinedState.getCode(), 0);
         assertEquals(CompactionState.Executing.getCode(), 1);
         assertEquals(CompactionState.Completed.getCode(), 2);
+    }
+
+    @Test
+    void forNumberCanonicalizesUndefinedState() {
+        assertEquals(CompactionState.UndefinedState, CompactionState.forNumber(0));
+        assertEquals(CompactionState.Executing, CompactionState.forNumber(1));
+        assertEquals(CompactionState.Completed, CompactionState.forNumber(2));
+        assertThrows(IllegalArgumentException.class, () -> CompactionState.forNumber(99));
     }
 
     @Test

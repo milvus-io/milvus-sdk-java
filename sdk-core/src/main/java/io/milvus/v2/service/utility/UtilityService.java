@@ -313,7 +313,7 @@ public class UtilityService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
 
         return GetCompactionStateResp.builder()
-                .state(CompactionState.valueOf(response.getState().name()))
+                .state(CompactionState.forNumber(response.getState().getNumber()))
                 .executingPlanNo(response.getExecutingPlanNo())
                 .timeoutPlanNo(response.getTimeoutPlanNo())
                 .completedPlanNo(response.getCompletedPlanNo())
@@ -343,7 +343,7 @@ public class UtilityService extends BaseService {
 
         return GetCompactionPlansResp.builder()
                 .compactionId(request.getCompactionID())
-                .state(CompactionState.valueOf(response.getState().name()))
+                .state(CompactionState.forNumber(response.getState().getNumber()))
                 .plans(toCompactionPlans(response.getMergeInfosList()))
                 .build();
     }
@@ -378,7 +378,7 @@ public class UtilityService extends BaseService {
 
         return GetCompactionPlansResp.builder()
                 .collectionName(collectionName)
-                .state(CompactionState.valueOf(response.getState().name()))
+                .state(CompactionState.forNumber(response.getState().getNumber()))
                 .plans(toCompactionPlans(response.getMergeInfosList()))
                 .build();
     }
