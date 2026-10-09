@@ -163,7 +163,7 @@ public class TimestampExample {
     }
 
     private static void hybridSearch(String timezone) {
-        // this is a single-route hybrid search, just demo the timezone paramter
+        // this is a single-route hybrid search, just demo the timezone parameter
         List<AnnSearchReq> searchRequests = new ArrayList<>();
         searchRequests.add(AnnSearchReq.builder()
                 .vectorFieldName(FLOAT_VECTOR_FIELD)
