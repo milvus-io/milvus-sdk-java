@@ -4146,6 +4146,10 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
         DescribeCollectionResp descCollResp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .build());
