@@ -41,6 +41,7 @@ import io.milvus.grpc.ScalarField;
 import io.milvus.grpc.SearchResultData;
 import io.milvus.grpc.SearchResults;
 import io.milvus.grpc.Status;
+import io.milvus.grpc.StringArray;
 import io.milvus.grpc.StructArrayFieldSchema;
 import io.milvus.param.Constant;
 import io.milvus.v2.common.IndexParam;
@@ -105,6 +106,44 @@ public class ConvertUtilsTest {
         Assertions.assertEquals(2, entities.size());
         Assertions.assertEquals(1L, entities.get(0).getEntity().get("id"));
         Assertions.assertEquals(2L, entities.get(1).getEntity().get("id"));
+    }
+
+    @Test
+    void testGetEntitiesFromGroupedCountQueryResults() {
+        ConvertUtils convertUtils = new ConvertUtils();
+
+        FieldData categoryField = FieldData.newBuilder()
+                .setFieldName("category")
+                .setType(DataType.VarChar)
+                .setScalars(ScalarField.newBuilder()
+                        .setStringData(StringArray.newBuilder()
+                                .addData("book")
+                                .addData("game")
+                                .addData("movie")
+                                .build())
+                        .build())
+                .build();
+        FieldData countField = FieldData.newBuilder()
+                .setFieldName("count(*)")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(10L).addData(20L).addData(30L).build())
+                        .build())
+                .build();
+        QueryResults groupedResponse = QueryResults.newBuilder()
+                .addOutputFields("category")
+                .addOutputFields("count(*)")
+                .addFieldsData(categoryField)
+                .addFieldsData(countField)
+                .build();
+        List<QueryResp.QueryResult> groupedEntities = convertUtils.getEntities(groupedResponse);
+        Assertions.assertEquals(3, groupedEntities.size());
+        Assertions.assertEquals("book", groupedEntities.get(0).getEntity().get("category"));
+        Assertions.assertEquals(10L, groupedEntities.get(0).getEntity().get("count(*)"));
+        Assertions.assertEquals("game", groupedEntities.get(1).getEntity().get("category"));
+        Assertions.assertEquals(20L, groupedEntities.get(1).getEntity().get("count(*)"));
+        Assertions.assertEquals("movie", groupedEntities.get(2).getEntity().get("category"));
+        Assertions.assertEquals(30L, groupedEntities.get(2).getEntity().get("count(*)"));
     }
 
     @Test
