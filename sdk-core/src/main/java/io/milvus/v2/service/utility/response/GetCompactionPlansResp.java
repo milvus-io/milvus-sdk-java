@@ -56,7 +56,7 @@ public class GetCompactionPlansResp {
     }
 
     public static class GetCompactionPlansRespBuilder {
-        private CompactionState state = CompactionState.UndefiedState;
+        private CompactionState state = CompactionState.UndefinedState;
         private List<CompactionPlan> plans = new ArrayList<>();
 
         public GetCompactionPlansRespBuilder state(CompactionState state) {

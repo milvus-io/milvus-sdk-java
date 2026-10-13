@@ -72,7 +72,7 @@ public class SearchIteratorV2 {
 
         checkParams();
         setupCollectionID();
-        probeForCompability();
+        probeForCompatibility();
     }
 
     private void checkParams() {
@@ -141,7 +141,7 @@ public class SearchIteratorV2 {
         return response;
     }
 
-    private void probeForCompability() {
+    private void probeForCompatibility() {
         searchParams.put("collection_id", this.collectionID);
         searchParams.put("iterator", true);
         searchParams.put("search_iter_v2", true);

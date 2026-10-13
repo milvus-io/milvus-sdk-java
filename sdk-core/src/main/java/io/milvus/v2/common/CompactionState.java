@@ -20,6 +20,8 @@
 package io.milvus.v2.common;
 
 public enum CompactionState {
+    UndefinedState(0),
+    @Deprecated
     UndefiedState(0),
     Executing(1),
     Completed(2);
@@ -32,5 +34,14 @@ public enum CompactionState {
 
     public int getCode() {
         return code;
+    }
+
+    public static CompactionState forNumber(int code) {
+        for (CompactionState state : values()) {
+            if (state.code == code) {
+                return state;
+            }
+        }
+        throw new IllegalArgumentException("Unknown CompactionState code: " + code);
     }
 }
