@@ -143,6 +143,28 @@ class VectorUtilsTest {
     }
 
     @Test
+    void queryConversionAddsGroupByFieldsParam() {
+        QueryRequest request = new VectorUtils().ConvertToGrpcQueryRequest(QueryReq.builder()
+                .collectionName("coll")
+                .groupByFields(Arrays.asList("city", "region"))
+                .build());
+
+        String groupByValue = null;
+        for (io.milvus.grpc.KeyValuePair kv : request.getQueryParamsList()) {
+            if ("group_by_fields".equals(kv.getKey())) {
+                groupByValue = kv.getValue();
+            }
+        }
+        assertEquals("city,region", groupByValue);
+
+        QueryRequest withoutGroupBy = new VectorUtils().ConvertToGrpcQueryRequest(QueryReq.builder()
+                .collectionName("coll")
+                .build());
+        assertTrue(withoutGroupBy.getQueryParamsList().stream()
+                .noneMatch(kv -> "group_by_fields".equals(kv.getKey())));
+    }
+
+    @Test
     void convertsFunctionWithNullParamsAsEmptyMap() {
         CreateCollectionReq.Function function = CreateCollectionReq.Function.builder()
                 .name("reranker")
