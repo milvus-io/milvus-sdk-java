@@ -18,8 +18,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
-    name: Build and test
+  ubuntu:
+    name: Build and test on ubuntu
     runs-on: ubuntu-latest
 
     steps:
@@ -30,10 +30,10 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Update submodule
         run: git submodule update --init
+      # Full reactor build: sdk-core, sdk-bulkwriter, and the Testcontainers-backed
+      # Docker tests (available on this runner).
       - name: Build with Maven
         run: mvn -Pcoverage --batch-mode --update-snapshots verify
       - name: Upload coverage
@@ -41,5 +41,32 @@ jobs:
         with:
           files: ./sdk-core/target/site/jacoco/jacoco.xml,./sdk-bulkwriter/target/site/jacoco/jacoco.xml
           name: ubuntu-jacoco-coverage
+          disable_safe_directory: true
+          verbose: true
+
+  windows:
+    name: Build and test on windows
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: maven
+      - name: Update submodule
+        run: git submodule update --init
+      # sdk-core only: the bulkwriter tests write Parquet locally and need Hadoop's
+      # native WinUtils (linux-only), and the Testcontainers Docker tests cannot start a
+      # Milvus standalone reliably on this runner, so run them only on the ubuntu job.
+      - name: Build sdk-core
+        run: mvn -pl sdk-core -Pcoverage --batch-mode --update-snapshots "-Dtest=!*DockerTest" verify
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./sdk-core/target/site/jacoco/jacoco.xml
+          name: windows-jacoco-coverage
           disable_safe_directory: true
           verbose: true
