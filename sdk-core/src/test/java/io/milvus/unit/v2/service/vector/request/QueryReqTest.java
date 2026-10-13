@@ -63,6 +63,7 @@ class QueryReqTest {
                 .orderByFields(Collections.singletonList(orderBy))
                 .queryParams(queryParams)
                 .filterTemplateValues(templateValues)
+                .groupByFields(Arrays.asList("city", "region"))
                 .build();
 
         assertEquals("db", req.getDatabaseName());
@@ -80,6 +81,7 @@ class QueryReqTest {
         assertEquals(Collections.singletonList(orderBy), req.getOrderByFields());
         assertEquals(queryParams, req.getQueryParams());
         assertEquals(templateValues, req.getFilterTemplateValues());
+        assertEquals(Arrays.asList("city", "region"), req.getGroupByFields());
     }
 
     @Test
@@ -101,6 +103,7 @@ class QueryReqTest {
         assertTrue(req.getOrderByFields().isEmpty());
         assertTrue(req.getQueryParams().isEmpty());
         assertTrue(req.getFilterTemplateValues().isEmpty());
+        assertTrue(req.getGroupByFields().isEmpty());
     }
 
     @Test
@@ -122,6 +125,7 @@ class QueryReqTest {
                 OrderByField.builder().fieldName("score").build()));
         req.setQueryParams(Collections.singletonMap("k", "10"));
         req.setFilterTemplateValues(Collections.singletonMap("city", Arrays.asList("a", "b")));
+        req.setGroupByFields(Arrays.asList("category"));
 
         assertEquals("db2", req.getDatabaseName());
         assertEquals("col2", req.getCollectionName());
@@ -137,6 +141,7 @@ class QueryReqTest {
         assertEquals(1, req.getOrderByFields().size());
         assertEquals("10", req.getQueryParams().get("k"));
         assertEquals(2, ((java.util.List<?>) req.getFilterTemplateValues().get("city")).size());
+        assertEquals(Collections.singletonList("category"), req.getGroupByFields());
     }
 
     @Test
