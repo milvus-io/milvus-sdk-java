@@ -108,9 +108,14 @@ public class ConvertUtils {
     public List<QueryResp.QueryResult> getEntities(QueryResults response) {
         List<QueryResp.QueryResult> entities = new ArrayList<>();
         // count(*) ?
-        if (response.getFieldsDataList().stream().anyMatch(fieldData -> fieldData.getFieldName().equals("count(*)"))) {
+        // A lone count(*) field is a scalar ungrouped count. When the group-by feature
+        // (group_by_fields) is used, the response also carries the group-by columns and
+        // one count(*) value per group; those rows fall through to the normal conversion.
+        List<FieldData> fieldsDataList = response.getFieldsDataList();
+        if (fieldsDataList.size() == 1
+                && fieldsDataList.get(0).getFieldName().equals("count(*)")) {
             Map<String, Object> countField = new HashMap<>();
-            long numOfEntities = response.getFieldsDataList().stream().filter(fieldData -> fieldData.getFieldName().equals("count(*)")).map(FieldData::getScalars).collect(Collectors.toList()).get(0).getLongData().getData(0);
+            long numOfEntities = fieldsDataList.get(0).getScalars().getLongData().getData(0);
             countField.put("count(*)", numOfEntities);
 
             QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()

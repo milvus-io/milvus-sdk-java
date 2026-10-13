@@ -64,6 +64,9 @@ public class QueryReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     private Map<String, Object> filterTemplateValues;
 
+    // Scalar fields to group the query results by.
+    private List<String> groupByFields = new ArrayList<>();
+
     private QueryReq(QueryReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -80,6 +83,7 @@ public class QueryReq {
         this.queryParams = builder.queryParams;
         this.filterTemplateValues = builder.filterTemplateValues;
         this.timezone = builder.timezone;
+        this.groupByFields = builder.groupByFields;
     }
 
     /**
@@ -409,6 +413,28 @@ public class QueryReq {
         this.filterTemplateValues = filterTemplateValues;
     }
 
+    /**
+     * Returns the scalar fields used to group the query results by.
+     *
+     * @return the group-by fields
+     */
+
+
+    public List<String> getGroupByFields() {
+        return groupByFields;
+    }
+
+    /**
+     * Sets the scalar fields used to group the query results by.
+     *
+     * @param groupByFields the group-by fields
+     */
+
+
+    public void setGroupByFields(List<String> groupByFields) {
+        this.groupByFields = groupByFields;
+    }
+
     @Override
     public String toString() {
         return "QueryReq{" +
@@ -426,6 +452,7 @@ public class QueryReq {
                 ", timezone='" + timezone + '\'' +
                 ", orderByFields=" + orderByFields +
                 ", queryParams=" + queryParams +
+                ", groupByFields=" + groupByFields +
 //                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
@@ -451,6 +478,7 @@ public class QueryReq {
         private List<OrderByField> orderByFields = new ArrayList<>();
         private Map<String, Object> queryParams = new HashMap<>();
         private Map<String, Object> filterTemplateValues = new HashMap<>();
+        private List<String> groupByFields = new ArrayList<>();
 
         /**
          * Sets the database name.
@@ -642,6 +670,19 @@ public class QueryReq {
 
         public QueryReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
+            return this;
+        }
+
+        /**
+         * Sets the scalar fields used to group the query results by.
+         *
+         * @param groupByFields the group-by fields
+         * @return this builder
+         */
+
+
+        public QueryReqBuilder groupByFields(List<String> groupByFields) {
+            this.groupByFields = groupByFields;
             return this;
         }
 

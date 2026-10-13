@@ -187,6 +187,14 @@ public class VectorUtils {
                     .build());
         }
 
+        // group-by fields, sent as a comma-separated list like the pymilvus client
+        if (CollectionUtils.isNotEmpty(request.getGroupByFields())) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.GROUP_BY_FIELDS)
+                    .setValue(String.join(",", request.getGroupByFields()))
+                    .build());
+        }
+
         return builder.build();
 
     }
