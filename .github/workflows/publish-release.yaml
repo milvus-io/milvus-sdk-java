@@ -165,6 +165,33 @@ jobs:
           -Dmaven.test.skip=true
           clean deploy
 
+      # The Spring Boot starter requires Java 17, so the Java 8 deploy above does not include it (its
+      # module is only in the reactor on JDK 17+). Publish it separately; it resolves milvus-sdk-java
+      # from the local repository, where the deploy above installed it.
+      - name: Set up Java 17 for the Spring Boot starter
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Publish Spring Boot starter to Maven Central
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: >-
+          mvn --batch-mode --no-transfer-progress
+          -Prelease
+          -Dmaven.test.skip=true
+          -pl sdk-spring-boot-starter
+          clean deploy
+
   release:
     name: Create GitHub release
     needs: publish
