@@ -76,6 +76,8 @@ To use BulkWriter, import milvus-sdk-java-bulkwriter to your project.
      implementation("io.milvus:milvus-sdk-java-bulkwriter:3.0.10")
      ```     
 
+For Spring Boot applications (Java 17+), the `milvus-sdk-java-spring-boot-starter` package auto-configures a `MilvusClientV2` from `milvus.*` properties. See [sdk-spring-boot-starter](sdk-spring-boot-starter/README.md).
+
 ### Examples
 
 Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.
