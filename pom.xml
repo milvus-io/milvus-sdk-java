@@ -180,6 +180,17 @@
     </properties>
 
     <profiles>
+        <!-- Spring Boot 3+ requires Java 17, so the starter is only built on JDK 17 or later.
+             Builds on older JDKs (including the Java 8 release flow) are unaffected. -->
+        <profile>
+            <id>spring-boot-starter</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <modules>
+                <module>sdk-spring-boot-starter</module>
+            </modules>
+        </profile>
         <profile>
             <id>release</id>
             <build>
