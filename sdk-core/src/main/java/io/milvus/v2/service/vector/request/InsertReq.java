@@ -60,11 +60,17 @@ public class InsertReq {
     private String collectionName;
     private String partitionName;
 
+    private String rlsPrincipal;
+    private Boolean skipRls;
+
     private InsertReq(InsertReqBuilder builder) {
         this.data = builder.data;
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
+
     }
 
     /**
@@ -166,6 +172,49 @@ public class InsertReq {
         this.partitionName = partitionName;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the operation.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the operation.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
     @Override
     public String toString() {
         return "InsertReq{" +
@@ -173,6 +222,8 @@ public class InsertReq {
                 ", databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -186,6 +237,9 @@ public class InsertReq {
         private String databaseName = "";
         private String collectionName;
         private String partitionName = "";
+
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         /**
          * Sets the row data to insert.
@@ -236,6 +290,32 @@ public class InsertReq {
 
         public InsertReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the operation.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public InsertReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the operation should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public InsertReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

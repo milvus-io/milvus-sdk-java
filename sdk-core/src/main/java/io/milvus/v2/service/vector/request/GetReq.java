@@ -39,6 +39,8 @@ public class GetReq {
     private List<String> partitionNames;
     private List<Object> ids;
     private List<String> outputFields;
+    private String rlsPrincipal;
+    private Boolean skipRls;
 
     private GetReq(GetReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -48,6 +50,8 @@ public class GetReq {
         this.partitionNames = builder.partitionNames;
         this.ids = builder.ids;
         this.outputFields = builder.outputFields;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
     }
 
     /**
@@ -213,6 +217,50 @@ public class GetReq {
         this.outputFields = outputFields;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the get operation.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the get operation.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the get operation should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the get operation should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
+
     @Override
     public String toString() {
         return "GetReq{" +
@@ -223,6 +271,8 @@ public class GetReq {
                 ", partitionNames=" + partitionNames +
                 ", ids=" + ids +
                 ", outputFields=" + outputFields +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -239,6 +289,8 @@ public class GetReq {
         private List<String> partitionNames;
         private List<Object> ids;
         private List<String> outputFields;
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         /**
          * Sets the database name.
@@ -327,6 +379,32 @@ public class GetReq {
 
         public GetReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the get operation.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public GetReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the get operation should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public GetReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

@@ -60,6 +60,9 @@ public class UpsertReq {
     private boolean partialUpdate;
     private List<FieldPartialUpdateOp> fieldOps;
 
+    private String rlsPrincipal;
+    private Boolean skipRls;
+
     private UpsertReq(UpsertReqBuilder builder) {
         this.data = builder.data;
         this.databaseName = builder.databaseName;
@@ -67,6 +70,9 @@ public class UpsertReq {
         this.partitionName = builder.partitionName;
         this.partialUpdate = builder.partialUpdate;
         this.fieldOps = builder.fieldOps;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
+
     }
 
     /**
@@ -221,6 +227,49 @@ public class UpsertReq {
         this.fieldOps = fieldOps;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the operation.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the operation.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
     @Override
     public String toString() {
         return "UpsertReq{" +
@@ -230,6 +279,8 @@ public class UpsertReq {
                 ", partitionName='" + partitionName + '\'' +
                 ", partialUpdate=" + isPartialUpdate() +
                 ", fieldOps=" + fieldOps +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -245,6 +296,9 @@ public class UpsertReq {
         private String partitionName = "";
         private boolean partialUpdate = false; // default value
         private List<FieldPartialUpdateOp> fieldOps = null;
+
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         /**
          * Sets the row data to upsert.
@@ -321,6 +375,32 @@ public class UpsertReq {
 
         public UpsertReqBuilder fieldOps(List<FieldPartialUpdateOp> fieldOps) {
             this.fieldOps = fieldOps;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the operation.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public UpsertReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the operation should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public UpsertReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

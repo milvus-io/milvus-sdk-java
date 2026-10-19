@@ -369,6 +369,8 @@ public class QueryIterator {
                 .ignoreGrowing(queryIteratorReq.isIgnoreGrowing())
                 .timezone(queryIteratorReq.getTimezone())
                 .filterTemplateValues(queryIteratorReq.getFilterTemplateValues())
+                .rlsPrincipal(queryIteratorReq.getRlsPrincipal())
+                .skipRls(queryIteratorReq.getSkipRls())
                 .build();
 
         QueryRequest queryRequest = vectorUtils.ConvertToGrpcQueryRequest(queryReq);
