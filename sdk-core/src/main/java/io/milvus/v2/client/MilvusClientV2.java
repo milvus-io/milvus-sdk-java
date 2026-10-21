@@ -68,6 +68,11 @@ import io.milvus.v2.service.resourcegroup.ResourceGroupService;
 import io.milvus.v2.service.resourcegroup.request.*;
 import io.milvus.v2.service.resourcegroup.response.DescribeResourceGroupResp;
 import io.milvus.v2.service.resourcegroup.response.ListResourceGroupsResp;
+import io.milvus.v2.service.rls.RLSService;
+import io.milvus.v2.service.rls.request.*;
+import io.milvus.v2.service.rls.response.GetRLSPrincipalTagsResp;
+import io.milvus.v2.service.rls.response.ListRLSPrincipalsResp;
+import io.milvus.v2.service.rls.response.ListRowPoliciesResp;
 import io.milvus.v2.service.snapshot.SnapshotService;
 import io.milvus.v2.service.snapshot.request.*;
 import io.milvus.v2.service.snapshot.response.*;
@@ -136,6 +141,7 @@ public class MilvusClientV2 {
     private final SnapshotService snapshotService = new SnapshotService();
     private final UtilityService utilityService = new UtilityService();
     private final CDCService cdcService = new CDCService();
+    private final RLSService rlsService = new RLSService();
     private RpcUtils rpcUtils = new RpcUtils();
     private ConnectConfig connectConfig;
     private GlobalStub globalStub;
@@ -194,6 +200,7 @@ public class MilvusClientV2 {
         this.snapshotService.setEndpoint(endpoint);
         this.utilityService.setEndpoint(endpoint);
         this.cdcService.setEndpoint(endpoint);
+        this.rlsService.setEndpoint(endpoint);
         this.databaseService.setCurrentDbName(dbName);
         this.collectionService.setCurrentDbName(dbName);
         this.indexService.setCurrentDbName(dbName);
@@ -203,6 +210,7 @@ public class MilvusClientV2 {
         this.rgroupService.setCurrentDbName(dbName);
         this.snapshotService.setCurrentDbName(dbName);
         this.utilityService.setCurrentDbName(dbName);
+        this.rlsService.setCurrentDbName(dbName);
     }
 
     /**
@@ -1939,6 +1947,102 @@ public class MilvusClientV2 {
 
     public void revokePrivilegeV2(RevokePrivilegeReqV2 request) {
         rpcUtils.retry(() -> rbacService.revokePrivilegeV2(this.getRpcStub(), request));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Row Level Security Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a row policy for the specified collection. An existing policy name is an error.
+     *
+     * <p>The policy type accepts permissive or restrictive, and the actions control which
+     * operations the policy applies to. The expressions are validated by Milvus.</p>
+     *
+     * @param request the create row policy request
+     */
+
+    public void createRowPolicy(CreateRowPolicyReq request) {
+        rpcUtils.retry(() -> rlsService.createRowPolicy(this.getRpcStub(), request));
+    }
+
+    /**
+     * Replaces the definition of the named policy, preserving its server-side identity.
+     *
+     * <p>The policy must exist. All definition fields replace their old values; omitted
+     * expressions and description become empty strings.</p>
+     *
+     * @param request the update row policy request
+     */
+
+    public void updateRowPolicy(UpdateRowPolicyReq request) {
+        rpcUtils.retry(() -> rlsService.updateRowPolicy(this.getRpcStub(), request));
+    }
+
+    /**
+     * Drops a row policy by name. Dropping a missing policy succeeds.
+     *
+     * @param request the drop row policy request
+     */
+
+    public void dropRowPolicy(DropRowPolicyReq request) {
+        rpcUtils.retry(() -> rlsService.dropRowPolicy(this.getRpcStub(), request));
+    }
+
+    /**
+     * Lists the row policies of the specified collection.
+     *
+     * @param request the list row policies request
+     * @return the row policy definitions
+     */
+
+    public ListRowPoliciesResp listRowPolicies(ListRowPoliciesReq request) {
+        return rpcUtils.retry(() -> rlsService.listRowPolicies(this.getRpcStub(), request));
+    }
+
+    /**
+     * Incrementally upserts a non-empty mapping of principal tags.
+     *
+     * <p>Values may be strings, finite numbers, or one-dimensional arrays of strings or
+     * numbers. Keys omitted from this call retain their values.</p>
+     *
+     * @param request the set RLS principal tags request
+     */
+
+    public void setRLSPrincipalTags(SetRLSPrincipalTagsReq request) {
+        rpcUtils.retry(() -> rlsService.setRLSPrincipalTags(this.getRpcStub(), request));
+    }
+
+    /**
+     * Returns the decoded tags of the specified principal.
+     *
+     * @param request the get RLS principal tags request
+     * @return the principal tags
+     */
+
+    public GetRLSPrincipalTagsResp getRLSPrincipalTags(GetRLSPrincipalTagsReq request) {
+        return rpcUtils.retry(() -> rlsService.getRLSPrincipalTags(this.getRpcStub(), request));
+    }
+
+    /**
+     * Lists the application principal names with stored tags in the specified collection.
+     *
+     * @param request the list RLS principals request
+     * @return the principal names
+     */
+
+    public ListRLSPrincipalsResp listRLSPrincipals(ListRLSPrincipalsReq request) {
+        return rpcUtils.retry(() -> rlsService.listRLSPrincipals(this.getRpcStub(), request));
+    }
+
+    /**
+     * Deletes the selected tag keys of a principal, or all tags when the tag key list is empty.
+     *
+     * @param request the delete RLS principal tags request
+     */
+
+    public void deleteRLSPrincipalTags(DeleteRLSPrincipalTagsReq request) {
+        rpcUtils.retry(() -> rlsService.deleteRLSPrincipalTags(this.getRpcStub(), request));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////

@@ -67,6 +67,9 @@ public class QueryReq {
     // Scalar fields to group the query results by.
     private List<String> groupByFields = new ArrayList<>();
 
+    private String rlsPrincipal;
+    private Boolean skipRls;
+
     private QueryReq(QueryReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -84,6 +87,9 @@ public class QueryReq {
         this.filterTemplateValues = builder.filterTemplateValues;
         this.timezone = builder.timezone;
         this.groupByFields = builder.groupByFields;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
+
     }
 
     /**
@@ -435,6 +441,49 @@ public class QueryReq {
         this.groupByFields = groupByFields;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the operation.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the operation.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
     @Override
     public String toString() {
         return "QueryReq{" +
@@ -454,6 +503,8 @@ public class QueryReq {
                 ", queryParams=" + queryParams +
                 ", groupByFields=" + groupByFields +
 //                ", filterTemplateValues=" + filterTemplateValues +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -479,6 +530,9 @@ public class QueryReq {
         private Map<String, Object> queryParams = new HashMap<>();
         private Map<String, Object> filterTemplateValues = new HashMap<>();
         private List<String> groupByFields = new ArrayList<>();
+
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         /**
          * Sets the database name.
@@ -683,6 +737,32 @@ public class QueryReq {
 
         public QueryReqBuilder groupByFields(List<String> groupByFields) {
             this.groupByFields = groupByFields;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the operation.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public QueryReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the operation should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public QueryReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

@@ -359,6 +359,12 @@ public class SearchIterator {
         SearchRequest searchRequest = ParamUtils.convertSearchParam(
                 searchParamBuilder.build(), blockingStub.getEndpoint(), blockingStub.getDatabaseName());
         SearchRequest.Builder builder = searchRequest.toBuilder();
+        if (StringUtils.isNotEmpty(searchIteratorParam.getRlsPrincipal())) {
+            builder.setRlsPrincipal(searchIteratorParam.getRlsPrincipal());
+        }
+        if (searchIteratorParam.getSkipRls() != null) {
+            builder.setSkipRls(searchIteratorParam.getSkipRls());
+        }
         // iterator
         builder.addSearchParams(
                 KeyValuePair.newBuilder()
