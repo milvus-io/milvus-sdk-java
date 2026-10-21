@@ -93,6 +93,9 @@ public class SearchReq {
 
     private SearchAggregation searchAggregation;
 
+    private String rlsPrincipal;
+    private Boolean skipRls;
+
     private SearchReq(SearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -124,6 +127,9 @@ public class SearchReq {
         this.timezone = builder.timezone;
         this.highlighter = builder.highlighter;
         this.searchAggregation = builder.searchAggregation;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
+
     }
 
     // Getters and Setters
@@ -757,6 +763,49 @@ public class SearchReq {
         this.searchAggregation = searchAggregation;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the operation.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the operation.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the operation should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
     @Override
     public String toString() {
         return "SearchReq{" +
@@ -789,6 +838,8 @@ public class SearchReq {
                 ", functionScore=" + functionScore +
                 ", functionChains=" + functionChains +
 //                ", filterTemplateValues=" + filterTemplateValues +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -839,6 +890,9 @@ public class SearchReq {
         private Map<String, Object> filterTemplateValues = new HashMap<>(); // default value
         private Highlighter highlighter;
         private SearchAggregation searchAggregation;
+
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         private SearchReqBuilder() {
         }
@@ -1261,6 +1315,32 @@ public class SearchReq {
 
         public SearchReqBuilder searchAggregation(SearchAggregation searchAggregation) {
             this.searchAggregation = searchAggregation;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the operation.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public SearchReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the operation should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public SearchReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

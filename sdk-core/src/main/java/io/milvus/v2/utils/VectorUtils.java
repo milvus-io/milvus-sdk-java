@@ -124,6 +124,13 @@ public class VectorUtils {
             builder.setDbName(dbName);
         }
 
+        if (StringUtils.isNotEmpty(request.getRlsPrincipal())) {
+            builder.setRlsPrincipal(request.getRlsPrincipal());
+        }
+        if (request.getSkipRls() != null) {
+            builder.setSkipRls(request.getSkipRls());
+        }
+
         if (StringUtils.isNotEmpty(request.getFilter())) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
             filterTemplateValues.forEach((key, value) -> {
@@ -343,6 +350,13 @@ public class VectorUtils {
 
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
+        }
+
+        if (StringUtils.isNotEmpty(request.getRlsPrincipal())) {
+            builder.setRlsPrincipal(request.getRlsPrincipal());
+        }
+        if (request.getSkipRls() != null) {
+            builder.setSkipRls(request.getSkipRls());
         }
 
         // target vectors or ids
@@ -780,6 +794,13 @@ public class VectorUtils {
         }
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
+        }
+
+        if (StringUtils.isNotEmpty(request.getRlsPrincipal())) {
+            builder.setRlsPrincipal(request.getRlsPrincipal());
+        }
+        if (request.getSkipRls() != null) {
+            builder.setSkipRls(request.getSkipRls());
         }
 
         if (request.getSearchRequests() == null || request.getSearchRequests().isEmpty()) {
