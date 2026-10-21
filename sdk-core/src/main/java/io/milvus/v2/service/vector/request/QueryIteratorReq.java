@@ -32,6 +32,8 @@ public class QueryIteratorReq {
     private String timezone;
     private long batchSize;
     private boolean reduceStopForBest;
+    private String rlsPrincipal;
+    private Boolean skipRls;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
@@ -64,6 +66,8 @@ public class QueryIteratorReq {
         this.reduceStopForBest = builder.reduceStopForBest;
         this.filterTemplateValues = builder.filterTemplateValues;
         this.cursor = builder.cursor;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
     }
 
     /**
@@ -383,6 +387,50 @@ public class QueryIteratorReq {
         this.cursor = cursor;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the query.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the query.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the query should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the query should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
+
     @Override
     public String toString() {
         return "QueryIteratorReq{" +
@@ -400,6 +448,8 @@ public class QueryIteratorReq {
                 ", batchSize=" + batchSize +
                 ", reduceStopForBest=" + reduceStopForBest +
                 ", cursor=" + cursor +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -424,6 +474,8 @@ public class QueryIteratorReq {
         private boolean reduceStopForBest = true;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
         private QueryIteratorCursor cursor;
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         /**
          * Sets the database name.
@@ -616,6 +668,32 @@ public class QueryIteratorReq {
 
         public QueryIteratorReqBuilder cursor(QueryIteratorCursor cursor) {
             this.cursor = cursor;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the query.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public QueryIteratorReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the query should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public QueryIteratorReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

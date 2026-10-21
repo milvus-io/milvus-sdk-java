@@ -135,7 +135,9 @@ public class IteratorAdapterV2 {
                 .withParams(searchIteratorReq.getParams())
                 .withGroupByFieldName(searchIteratorReq.getGroupByFieldName())
                 .withIgnoreGrowing(searchIteratorReq.isIgnoreGrowing())
-                .withBatchSize(searchIteratorReq.getBatchSize());
+                .withBatchSize(searchIteratorReq.getBatchSize())
+                .withRlsPrincipal(searchIteratorReq.getRlsPrincipal())
+                .withSkipRls(searchIteratorReq.getSkipRls());
 
         if (searchIteratorReq.getConsistencyLevel() != null) {
             builder.withConsistencyLevel(ConsistencyLevelEnum.valueOf(searchIteratorReq.getConsistencyLevel().name()));

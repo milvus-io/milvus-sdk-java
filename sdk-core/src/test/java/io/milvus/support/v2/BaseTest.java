@@ -185,6 +185,42 @@ public class BaseTest {
         when(blockingStub.operatePrivilege(any())).thenReturn(successStatus);
         when(blockingStub.operateUserRole(any())).thenReturn(successStatus);
 
+        // row level security api
+        RowPolicy rowPolicy = RowPolicy.newBuilder()
+                .setPolicyName("policy_test")
+                .setPolicyType(RowPolicyType.RowPolicyTypePermissive)
+                .addActions(RowPolicyAction.Query)
+                .addActions(RowPolicyAction.Search)
+                .setUsingExpr("user_id == 1")
+                .setCheckExpr("user_id == 1")
+                .setDescription("test row policy")
+                .build();
+        when(blockingStub.createRowPolicy(any())).thenReturn(successStatus);
+        when(blockingStub.updateRowPolicy(any())).thenReturn(successStatus);
+        when(blockingStub.dropRowPolicy(any())).thenReturn(successStatus);
+        when(blockingStub.listRowPolicies(any())).thenReturn(ListRowPoliciesResponse.newBuilder()
+                .setStatus(successStatus)
+                .setDbName("default")
+                .setCollectionName("test")
+                .addPolicies(rowPolicy)
+                .build());
+        when(blockingStub.setRLSPrincipalTags(any())).thenReturn(successStatus);
+        when(blockingStub.getRLSPrincipalTags(any())).thenReturn(GetRLSPrincipalTagsResponse.newBuilder()
+                .setStatus(successStatus)
+                .setDbName("default")
+                .setCollectionName("test")
+                .setPrincipalName("alice")
+                .setTags("{\"team\":\"a\",\"level\":1}")
+                .build());
+        when(blockingStub.listRLSPrincipals(any())).thenReturn(ListRLSPrincipalsResponse.newBuilder()
+                .setStatus(successStatus)
+                .setDbName("default")
+                .setCollectionName("test")
+                .addPrincipalNames("alice")
+                .addPrincipalNames("bob")
+                .build());
+        when(blockingStub.deleteRLSPrincipalTags(any())).thenReturn(successStatus);
+
         // user api
         when(blockingStub.listCredUsers(any())).thenReturn(ListCredUsersResponse.newBuilder().addUsernames("user_test").build());
         when(blockingStub.createCredential(any())).thenReturn(successStatus);
