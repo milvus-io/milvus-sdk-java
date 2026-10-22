@@ -31,6 +31,9 @@ import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ConvertUtilsTest {
     @Test
     void testConvertDescCollectionRespFieldNamesIncludeStructFields() {
@@ -82,5 +85,59 @@ public class ConvertUtilsTest {
         Assertions.assertTrue(resp.getFieldNames().contains("clips"));
         Assertions.assertTrue(resp.getVectorFieldNames().contains("vector"));
         Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[vec]"));
+    }
+
+    @Test
+    public void testStructFieldTypeParamsRoundTrip() {
+        // builder: typeParam(key, value). The server reads mmap/warmup from sub-field
+        // FieldSchema.type_params; struct-level type_params are persisted and round-tripped.
+        CreateCollectionReq.StructFieldSchema structFieldSchema = CreateCollectionReq.StructFieldSchema.builder()
+                .name("clips")
+                .maxCapacity(10)
+                .typeParam("mmap.enabled", "true")
+                .typeParam("warmup", "true")
+                .build();
+        structFieldSchema.addField(AddFieldReq.builder()
+                .fieldName("vec")
+                .dataType(io.milvus.v2.common.DataType.FloatVector)
+                .dimension(8)
+                .build());
+
+        StructArrayFieldSchema rpcStructFieldSchema = SchemaUtils.convertToGrpcStructFieldSchema(structFieldSchema);
+
+        // struct-level type_params (mmap.enabled/warmup) reach the proto wire
+        Assertions.assertEquals(2, rpcStructFieldSchema.getTypeParamsCount());
+        Assertions.assertEquals("true",
+                rpcStructFieldSchema.getTypeParamsList().stream()
+                        .filter(kv -> kv.getKey().equals("mmap.enabled")).findFirst().get().getValue());
+        Assertions.assertEquals("true",
+                rpcStructFieldSchema.getTypeParamsList().stream()
+                        .filter(kv -> kv.getKey().equals("warmup")).findFirst().get().getValue());
+
+        // describe round-trip reads them back into the V2 struct field schema
+        CreateCollectionReq.StructFieldSchema back = SchemaUtils.convertFromGrpcStructFieldSchema(rpcStructFieldSchema);
+        Assertions.assertEquals("true", back.getTypeParams().get("mmap.enabled"));
+        Assertions.assertEquals("true", back.getTypeParams().get("warmup"));
+
+        // builder: typeParams(map) and setter: setTypeParams(map)
+        Map<String, String> map = new HashMap<>();
+        map.put("mmap.enabled", "false");
+        map.put("warmup", "sync");
+        CreateCollectionReq.StructFieldSchema viaMap = CreateCollectionReq.StructFieldSchema.builder()
+                .name("meta")
+                .maxCapacity(5)
+                .typeParams(map)
+                .build();
+        viaMap.setTypeParams(new HashMap<>());
+        viaMap.setTypeParams(map);
+
+        StructArrayFieldSchema rpcViaMap = SchemaUtils.convertToGrpcStructFieldSchema(viaMap);
+        Assertions.assertEquals(2, rpcViaMap.getTypeParamsCount());
+        Assertions.assertEquals("false",
+                rpcViaMap.getTypeParamsList().stream()
+                        .filter(kv -> kv.getKey().equals("mmap.enabled")).findFirst().get().getValue());
+        Assertions.assertEquals("sync",
+                rpcViaMap.getTypeParamsList().stream()
+                        .filter(kv -> kv.getKey().equals("warmup")).findFirst().get().getValue());
     }
 }
