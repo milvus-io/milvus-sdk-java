@@ -33,6 +33,8 @@ volumes/
 .flattened-pom.xml
 dependency-reduced-pom.xml
 META-INF/
+# Spring Boot discovers auto-configurations from META-INF/spring/*.imports
+!sdk-spring-boot-starter/src/main/resources/META-INF/
 
 # Example files
 examples/bulk_writer

@@ -4,18 +4,22 @@ Repository guidance for AI agents and contributors working in `milvus-sdk-java`.
 
 ## Repository layout
 
-The repo builds two Maven artifacts plus standalone projects:
+The repo builds three Maven artifacts plus standalone projects:
 
 | Module | Artifact | Status | Location |
 |---|---|---|---|
 | sdk-core | `milvus-sdk-java` | Current development | `sdk-core/` |
 | sdk-bulkwriter | `milvus-sdk-java-bulkwriter` | Current development | `sdk-bulkwriter/` |
+| sdk-spring-boot-starter | `milvus-sdk-java-spring-boot-starter` | Current development (Java 17+) | `sdk-spring-boot-starter/` |
 | examples | standalone Maven project | docs/examples | `examples/` |
 | benchmark | standalone Maven project | bench | `benchmark/` |
 | tests | standalone legacy/TestNG projects | not in reactor | `tests/` |
 
-Only `sdk-core` and `sdk-bulkwriter` are root reactor modules. Since v2.5.2, BulkWriter ships as a
-separate artifact because it pulls in heavy Hadoop/Parquet/MinIO dependencies.
+Only `sdk-core`, `sdk-bulkwriter` and `sdk-spring-boot-starter` are root reactor modules. Since v2.5.2,
+BulkWriter ships as a separate artifact because it pulls in heavy Hadoop/Parquet/MinIO dependencies.
+`sdk-spring-boot-starter` auto-configures a `MilvusClientV2` for Spring Boot. Spring Boot 3+ requires Java 17, so
+the module targets Java 17 and is only added to the reactor by the `spring-boot-starter` profile, which activates
+automatically on JDK 17+. Builds on older JDKs skip it.
 
 ## Examples
 
@@ -155,7 +159,8 @@ mvn -pl sdk-core -Psystem test       # unit + integration + system (Docker)
 ## CI and coverage
 
 - `.github/workflows/maven.yml` splits into two jobs:
-  - `Build and test on ubuntu` (`ubuntu-latest`): bulkwriter unit tests + system tests (`-Psystem`).
+  - `Build and test on ubuntu` (`ubuntu-latest`): bulkwriter unit tests + system tests (`-Psystem`), then
+    Spring Boot starter unit tests on JDK 17.
   - `Build and test on windows` (`windows-2022`): tutorials compile + sdk-core unit + integration
     tests (`-Pintegration`).
 - Coverage is collected with JaCoCo (`-Pcoverage`); each step writes a per-step exec/report via
@@ -165,7 +170,8 @@ mvn -pl sdk-core -Psystem test       # unit + integration + system (Docker)
 - `.github/mergify.yml` labels `ci-passed` when both `Build and test on ubuntu` and
   `Build and test on windows` succeed; the PR must pass DCO.
 - `.github/workflows/publish-release.yaml` is the tag-driven release flow (Temurin 8, signs and publishes to
-  Maven Central, then creates the GitHub release).
+  Maven Central, then publishes `sdk-spring-boot-starter` in a separate Temurin 17 step, then creates the GitHub
+  release).
 
 ## Git / PR conventions
 
