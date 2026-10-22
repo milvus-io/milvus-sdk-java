@@ -1115,12 +1115,14 @@ public class CreateCollectionReq {
         private String description = "";
         private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
         private Integer maxCapacity;
+        private Map<String, String> typeParams = new HashMap<>();
 
         private StructFieldSchema(StructFieldSchemaBuilder builder) {
             this.name = builder.name;
             this.description = builder.description;
             this.fields = builder.fields;
             this.maxCapacity = builder.maxCapacity;
+            this.typeParams = builder.typeParams;
         }
 
         public StructFieldSchema addField(AddFieldReq addFieldReq) {
@@ -1172,6 +1174,14 @@ public class CreateCollectionReq {
             this.maxCapacity = maxCapacity;
         }
 
+        public Map<String, String> getTypeParams() {
+            return typeParams;
+        }
+
+        public void setTypeParams(Map<String, String> typeParams) {
+            this.typeParams = typeParams;
+        }
+
         @Override
         public String toString() {
             return "StructFieldSchema{" +
@@ -1179,6 +1189,7 @@ public class CreateCollectionReq {
                     ", description='" + description + '\'' +
                     ", fields=" + fields +
                     ", maxCapacity=" + maxCapacity +
+                    ", typeParams=" + typeParams +
                     '}';
         }
 
@@ -1191,6 +1202,7 @@ public class CreateCollectionReq {
             private String description = "";
             private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
             private Integer maxCapacity;
+            private Map<String, String> typeParams = new HashMap<>();
 
             private StructFieldSchemaBuilder() {
             }
@@ -1212,6 +1224,19 @@ public class CreateCollectionReq {
 
             public StructFieldSchemaBuilder maxCapacity(Integer maxCapacity) {
                 this.maxCapacity = maxCapacity;
+                return this;
+            }
+
+            public StructFieldSchemaBuilder typeParams(Map<String, String> typeParams) {
+                this.typeParams = typeParams;
+                return this;
+            }
+
+            public StructFieldSchemaBuilder typeParam(String key, String value) {
+                if (this.typeParams == null) {
+                    this.typeParams = new HashMap<>();
+                }
+                this.typeParams.put(key, value);
                 return this;
             }
 
