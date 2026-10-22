@@ -53,6 +53,16 @@ jobs:
         run: mvn -f examples/pom.xml compile --batch-mode
       - name: System tests (st)
         run: mvn -Pcoverage -Psystem "-Dtest.groups=system" "-Djacoco.destFile=target/jacoco-st.exec" "-Djacoco.reportDir=target/site/jacoco-st" --batch-mode --update-snapshots verify
+      # The Spring Boot starter requires Java 17 and is only part of the reactor on JDK 17+, so
+      # switch JDKs for this step. It resolves sdk-core from the local repository installed above.
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: maven
+      - name: Spring Boot starter unit tests (ut)
+        run: mvn -pl sdk-spring-boot-starter --batch-mode verify
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
