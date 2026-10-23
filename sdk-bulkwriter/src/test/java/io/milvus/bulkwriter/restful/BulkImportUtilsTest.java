@@ -52,9 +52,10 @@ public class BulkImportUtilsTest {
     void testBulkImport() throws IOException {
         AtomicReference<String> requestPath = new AtomicReference<>("");
         AtomicReference<String> requestBody = new AtomicReference<>("");
+        AtomicReference<String> requestAuthHeader = new AtomicReference<>("");
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v2/vectordb/jobs/import/create", exchange ->
-                handleRequest(exchange, requestPath, requestBody));
+                handleRequest(exchange, requestPath, requestBody, requestAuthHeader));
         server.start();
 
         try {
@@ -75,7 +76,8 @@ public class BulkImportUtilsTest {
             Assertions.assertEquals("/v2/vectordb/jobs/import/create", requestPath.get());
 
             JsonObject body = JsonUtils.parseFromString(requestBody.get());
-            Assertions.assertEquals("user:password", body.get("apiKey").getAsString());
+            Assertions.assertFalse(body.has("apiKey"));
+            Assertions.assertEquals("Bearer user:password", requestAuthHeader.get());
             Assertions.assertEquals("db1", body.get("dbName").getAsString());
             Assertions.assertEquals("coll1", body.get("collectionName").getAsString());
             Assertions.assertEquals("part1", body.get("partitionName").getAsString());
@@ -92,9 +94,10 @@ public class BulkImportUtilsTest {
     void testGetImportProgress() throws IOException {
         AtomicReference<String> requestPath = new AtomicReference<>("");
         AtomicReference<String> requestBody = new AtomicReference<>("");
+        AtomicReference<String> requestAuthHeader = new AtomicReference<>("");
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v2/vectordb/jobs/import/describe", exchange ->
-                handleRequest(exchange, requestPath, requestBody));
+                handleRequest(exchange, requestPath, requestBody, requestAuthHeader));
         server.start();
 
         try {
@@ -112,6 +115,8 @@ public class BulkImportUtilsTest {
             Assertions.assertEquals("/v2/vectordb/jobs/import/describe", requestPath.get());
 
             JsonObject body = JsonUtils.parseFromString(requestBody.get());
+            Assertions.assertFalse(body.has("apiKey"));
+            Assertions.assertEquals("Bearer token", requestAuthHeader.get());
             Assertions.assertEquals("cluster-0", body.get("clusterId").getAsString());
             Assertions.assertEquals("project-0", body.get("projectId").getAsString());
             Assertions.assertEquals("region-0", body.get("regionId").getAsString());
@@ -125,9 +130,10 @@ public class BulkImportUtilsTest {
     void testListImportJobs() throws IOException {
         AtomicReference<String> requestPath = new AtomicReference<>("");
         AtomicReference<String> requestBody = new AtomicReference<>("");
+        AtomicReference<String> requestAuthHeader = new AtomicReference<>("");
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v2/vectordb/jobs/import/list", exchange ->
-                handleRequest(exchange, requestPath, requestBody));
+                handleRequest(exchange, requestPath, requestBody, requestAuthHeader));
         server.start();
 
         try {
@@ -146,6 +152,8 @@ public class BulkImportUtilsTest {
             Assertions.assertEquals("/v2/vectordb/jobs/import/list", requestPath.get());
 
             JsonObject body = JsonUtils.parseFromString(requestBody.get());
+            Assertions.assertFalse(body.has("apiKey"));
+            Assertions.assertEquals("Bearer token", requestAuthHeader.get());
             Assertions.assertEquals("cluster-2", body.get("clusterId").getAsString());
             Assertions.assertEquals("project-2", body.get("projectId").getAsString());
             Assertions.assertEquals("region-2", body.get("regionId").getAsString());
@@ -162,9 +170,10 @@ public class BulkImportUtilsTest {
     void testCommitImport() throws IOException {
         AtomicReference<String> requestPath = new AtomicReference<>("");
         AtomicReference<String> requestBody = new AtomicReference<>("");
+        AtomicReference<String> requestAuthHeader = new AtomicReference<>("");
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v2/vectordb/jobs/import/commit", exchange ->
-                handleRequest(exchange, requestPath, requestBody));
+                handleRequest(exchange, requestPath, requestBody, requestAuthHeader));
         server.start();
 
         try {
@@ -182,7 +191,8 @@ public class BulkImportUtilsTest {
             Assertions.assertEquals("/v2/vectordb/jobs/import/commit", requestPath.get());
 
             JsonObject body = JsonUtils.parseFromString(requestBody.get());
-            Assertions.assertEquals("token", body.get("apiKey").getAsString());
+            Assertions.assertFalse(body.has("apiKey"));
+            Assertions.assertEquals("Bearer token", requestAuthHeader.get());
             Assertions.assertEquals("cluster-1", body.get("clusterId").getAsString());
             Assertions.assertEquals("project-1", body.get("projectId").getAsString());
             Assertions.assertEquals("region-1", body.get("regionId").getAsString());
@@ -198,9 +208,10 @@ public class BulkImportUtilsTest {
     void testAbortImport() throws IOException {
         AtomicReference<String> requestPath = new AtomicReference<>("");
         AtomicReference<String> requestBody = new AtomicReference<>("");
+        AtomicReference<String> requestAuthHeader = new AtomicReference<>("");
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/v2/vectordb/jobs/import/abort", exchange ->
-                handleRequest(exchange, requestPath, requestBody));
+                handleRequest(exchange, requestPath, requestBody, requestAuthHeader));
         server.start();
 
         try {
@@ -215,7 +226,8 @@ public class BulkImportUtilsTest {
             Assertions.assertEquals("/v2/vectordb/jobs/import/abort", requestPath.get());
 
             JsonObject body = JsonUtils.parseFromString(requestBody.get());
-            Assertions.assertEquals("user:password", body.get("apiKey").getAsString());
+            Assertions.assertFalse(body.has("apiKey"));
+            Assertions.assertEquals("Bearer user:password", requestAuthHeader.get());
             Assertions.assertEquals("job-2", body.get("jobId").getAsString());
             Assertions.assertEquals("java", body.getAsJsonObject("options").get("sdk").getAsString());
             Assertions.assertEquals("bulkWriter", body.getAsJsonObject("options").get("scene").getAsString());
@@ -226,9 +238,11 @@ public class BulkImportUtilsTest {
 
     private static void handleRequest(HttpExchange exchange,
                                       AtomicReference<String> requestPath,
-                                      AtomicReference<String> requestBody) throws IOException {
+                                      AtomicReference<String> requestBody,
+                                      AtomicReference<String> requestAuthHeader) throws IOException {
         requestPath.set(exchange.getRequestURI().getPath());
         requestBody.set(readAll(exchange.getRequestBody()));
+        requestAuthHeader.set(exchange.getRequestHeaders().getFirst("Authorization"));
         byte[] response = "{\"code\":0,\"message\":\"success\",\"data\":{}}".getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "application/json");
         exchange.sendResponseHeaders(200, response.length);

@@ -19,6 +19,7 @@
 
 package io.milvus.bulkwriter.connect;
 
+import io.milvus.common.utils.RedactCredential;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.minio.credentials.Provider;
@@ -151,9 +152,9 @@ public class S3ConnectParam extends StorageConnectParam {
         return "S3ConnectParam{" +
                 "bucketName='" + bucketName + '\'' +
                 ", endpoint='" + endpoint + '\'' +
-                ", accessKey='" + accessKey + '\'' +
-                ", secretKey='" + secretKey + '\'' +
-                ", sessionToken='" + sessionToken + '\'' +
+                ", accessKey='" + RedactCredential.redactCredential(accessKey) + '\'' +
+                ", secretKey='" + RedactCredential.redactCredential(secretKey) + '\'' +
+                ", sessionToken='" + RedactCredential.redactCredential(sessionToken) + '\'' +
                 ", region='" + region + '\'' +
                 ", cloudName='" + cloudName + '\'' +
                 '}';

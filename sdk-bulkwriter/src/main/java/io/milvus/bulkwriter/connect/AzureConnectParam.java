@@ -20,6 +20,7 @@
 package io.milvus.bulkwriter.connect;
 
 import com.azure.core.credential.TokenCredential;
+import io.milvus.common.utils.RedactCredential;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import org.jetbrains.annotations.NotNull;
@@ -86,7 +87,7 @@ public class AzureConnectParam extends StorageConnectParam {
     public String toString() {
         return "AzureConnectParam{" +
                 "containerName='" + containerName + '\'' +
-                ", connStr='" + connStr + '\'' +
+                ", connStr='" + RedactCredential.redactCredential(connStr) + '\'' +
                 ", accountUrl='" + accountUrl + '\'' +
                 '}';
     }
