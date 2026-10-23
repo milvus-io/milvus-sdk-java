@@ -50,6 +50,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
                 .token("root:Milvus")
                 .secure(false)
                 .connectTimeoutMs(5000L)
+                .rpcDeadlineMs(120000L)
                 .build());
         logger.info("**************************************************BeforeSuit**********************");
         cleanAllData();
