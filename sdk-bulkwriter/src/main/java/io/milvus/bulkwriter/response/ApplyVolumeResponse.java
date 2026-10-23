@@ -1,5 +1,7 @@
 package io.milvus.bulkwriter.response;
 
+import io.milvus.common.utils.RedactCredential;
+
 import java.io.Serializable;
 
 
@@ -265,7 +267,7 @@ public class ApplyVolumeResponse implements Serializable {
         @Override
         public String toString() {
             return "Credentials{" +
-                    ", tmpAK='" + tmpAK + '\'' +
+                    ", tmpAK='" + RedactCredential.redactCredential(tmpAK) + '\'' +
                     ", expireTime='" + expireTime + '\'' +
                     '}';
         }

@@ -19,6 +19,8 @@
 
 package io.milvus.bulkwriter.request.import_;
 
+import io.milvus.common.utils.RedactCredential;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -248,9 +250,9 @@ public class CloudImportRequest extends BaseImportRequest {
                 ", partitionName='" + partitionName + '\'' +
                 ", objectUrls=" + objectUrls +
                 ", objectUrl='" + objectUrl + '\'' +
-                ", accessKey='" + accessKey + '\'' +
-                ", secretKey='" + secretKey + '\'' +
-                ", token='" + token + '\'' +
+                ", accessKey='" + RedactCredential.redactCredential(accessKey) + '\'' +
+                ", secretKey='" + RedactCredential.redactCredential(secretKey) + '\'' +
+                ", token='" + RedactCredential.redactCredential(token) + '\'' +
                 '}';
     }
 

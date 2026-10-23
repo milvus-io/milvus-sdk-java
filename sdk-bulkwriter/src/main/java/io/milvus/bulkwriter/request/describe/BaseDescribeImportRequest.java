@@ -19,6 +19,8 @@
 
 package io.milvus.bulkwriter.request.describe;
 
+import io.milvus.common.utils.RedactCredential;
+
 import java.io.Serializable;
 
 public class BaseDescribeImportRequest implements Serializable {
@@ -27,8 +29,14 @@ public class BaseDescribeImportRequest implements Serializable {
     /**
      * If you are calling the cloud API, this parameter should be set to your API_KEY.
      * If you are using Milvus directly, this parameter should be set to your userName:password.
+     *
+     * transient: the credential must not be serialized into the JSON request body; it is carried
+     * only in the {@code Authorization: Bearer} header (consistent with all other Milvus SDKs).
      */
-    private String apiKey;
+    private transient String apiKey;
+    /**
+     * Creates a new BaseDescribeImportRequest.
+     */
 
     public BaseDescribeImportRequest() {
     }
@@ -52,7 +60,7 @@ public class BaseDescribeImportRequest implements Serializable {
     @Override
     public String toString() {
         return "BaseDescribeImportRequest{" +
-                "apiKey='" + apiKey + '\'' +
+                "apiKey='" + RedactCredential.redactCredential(apiKey) + '\'' +
                 '}';
     }
 
