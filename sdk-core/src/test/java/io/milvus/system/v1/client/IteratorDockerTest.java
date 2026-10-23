@@ -171,5 +171,10 @@ class IteratorDockerTest extends MilvusV1DockerTestBase {
             }
         }
         Assertions.assertEquals(50, counter);
+
+        R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 }

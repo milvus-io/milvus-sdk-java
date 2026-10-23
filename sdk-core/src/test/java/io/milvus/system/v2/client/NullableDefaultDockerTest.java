@@ -185,6 +185,10 @@ class NullableDefaultDockerTest extends MilvusV2DockerTestBase {
             checkFunc.apply(entity);
 //            System.out.println(result);
         }
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
 }
