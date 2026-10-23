@@ -82,6 +82,10 @@ class PartitionDockerTest extends MilvusV2DockerTestBase {
                 .build());
         Assertions.assertEquals(2, partitions.size());
         Assertions.assertFalse(partitions.contains("P1"));
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
 }

@@ -107,5 +107,15 @@ class AliasDockerTest extends MilvusV1DockerTestBase {
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), has.getStatus().intValue());
         Assertions.assertEquals(has.getData(), false);
+
+        // drop collections
+        response = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName("coll_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
+        response = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName("coll_B")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
     }
 }
