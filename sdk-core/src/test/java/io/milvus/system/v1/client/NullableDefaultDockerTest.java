@@ -204,5 +204,10 @@ class NullableDefaultDockerTest extends MilvusV1DockerTestBase {
             }
 //            System.out.println(score);
         }
+
+        R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 }

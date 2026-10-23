@@ -87,6 +87,10 @@ class ReplicaDockerTest extends MilvusV2DockerTestBase {
         Assertions.assertFalse(replica.getChannelName().isEmpty());
         Assertions.assertFalse(replica.getLeaderAddress().isEmpty());
         Assertions.assertNotEquals(0L, replica.getLeaderID());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
 }

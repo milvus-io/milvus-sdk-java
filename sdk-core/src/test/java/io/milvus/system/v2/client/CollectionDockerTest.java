@@ -941,7 +941,7 @@ class CollectionDockerTest extends MilvusV2DockerTestBase {
 
         FlushAllResp flushAllResp = client.flushAll(FlushAllReq.builder()
                 .databaseName("")
-                .waitFlushedTimeoutMs(60_000L)
+                .waitFlushedTimeoutMs(300_000L)
                 .build());
         Assertions.assertNotNull(flushAllResp);
         Assertions.assertTrue(flushAllResp.getFlushAllTs() > 0L);

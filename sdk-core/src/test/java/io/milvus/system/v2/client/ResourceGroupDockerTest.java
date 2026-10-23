@@ -110,6 +110,10 @@ class ResourceGroupDockerTest extends MilvusV2DockerTestBase {
                 .collectionName(collectionName)
                 .dimension(DIMENSION)
                 .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
     }
 
 }
