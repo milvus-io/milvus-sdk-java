@@ -1800,12 +1800,13 @@ public class CommonFunction {
             row.addProperty(fieldName, countIndex % 2 == 0);
         }
         if (dataType == DataType.VarChar) {
-            int i = random.nextInt(dimOrLength / 2);
+            // varchar 长度按字节校验，中文字符占 3 字节，按 maxLength/4 生成避免超长
+            int i = random.nextInt(dimOrLength / 4);
             String s = MathUtil.genRandomStringAndChinese(i);
             row.addProperty(fieldName, s);
         }
         if (dataType == DataType.String) {
-            int i = random.nextInt(dimOrLength / 2);
+            int i = random.nextInt(dimOrLength / 4);
             String s = MathUtil.genRandomStringAndChinese(i);
             row.addProperty(fieldName, s);
         }
