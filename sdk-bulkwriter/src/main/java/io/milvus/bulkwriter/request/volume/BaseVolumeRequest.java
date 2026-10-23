@@ -19,6 +19,8 @@
 
 package io.milvus.bulkwriter.request.volume;
 
+import io.milvus.common.utils.RedactCredential;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +29,11 @@ public class BaseVolumeRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
      * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
+     *
+     * transient: the credential must not be serialized into the JSON request body; it is carried
+     * only in the {@code Authorization: Bearer} header (consistent with all other Milvus SDKs).
      */
-    private String apiKey;
+    private transient String apiKey;
     private Map<String, Object> options;
 
     protected BaseVolumeRequest() {
@@ -63,7 +68,7 @@ public class BaseVolumeRequest implements Serializable {
     @Override
     public String toString() {
         return "BaseVolumeRequest{" +
-                "apiKey='" + apiKey + '\'' +
+                "apiKey='" + RedactCredential.redactCredential(apiKey) + '\'' +
                 "options=" + options +
                 '}';
     }
