@@ -2386,6 +2386,10 @@ class MilvusClientV2DockerTest {
         Assertions.assertThrows(MilvusClientException.class, () -> client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName("CCC")
                 .build()));
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName("AAA")
+                .build());
     }
 
     @Test
@@ -2441,6 +2445,10 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(2, partitions.size());
         Assertions.assertFalse(partitions.contains("P1"));
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     @Test
@@ -2646,6 +2654,10 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("8", extraParams.get("M"));
         Assertions.assertTrue(extraParams.containsKey("efConstruction"));
         Assertions.assertEquals("64", extraParams.get("efConstruction"));
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     private static void createSimpleCollection(MilvusClientV2 client, String dbName, String collName, String pkName, boolean autoID,
@@ -3263,7 +3275,7 @@ class MilvusClientV2DockerTest {
         client.flush(FlushReq.builder()
                 .databaseName(tempDatabaseName)
                 .collectionNames(Collections.singletonList(randomCollectionName))
-                .waitFlushedTimeoutMs(5000L)
+                .waitFlushedTimeoutMs(60_000L)
                 .build());
 
         // specify the temp database name to compact collection
@@ -3518,6 +3530,14 @@ class MilvusClientV2DockerTest {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
         }
+
+        client.dropCollection(DropCollectionReq.builder()
+                .databaseName(dummyDb)
+                .collectionName(collectionName)
+                .build());
+        client.dropDatabase(DropDatabaseReq.builder()
+                .databaseName(dummyDb)
+                .build());
     }
 
     @Test
@@ -3645,6 +3665,10 @@ class MilvusClientV2DockerTest {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
         }
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     @Test
@@ -3792,6 +3816,10 @@ class MilvusClientV2DockerTest {
             checkFunc.apply(entity);
 //            System.out.println(result);
         }
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     @Test
@@ -3925,6 +3953,10 @@ class MilvusClientV2DockerTest {
         for (SearchResp.SearchResult result : firstResults) {
             System.out.println(result);
         }
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     @Test
@@ -4013,6 +4045,10 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(DataType.VarChar, field.getDataType());
         Assertions.assertEquals(100, field.getMaxLength());
         Assertions.assertTrue(field.getIsNullable());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
     }
 
     @Test
@@ -4110,6 +4146,10 @@ class MilvusClientV2DockerTest {
                 .collectionName(collectionName)
                 .dimension(DIMENSION)
                 .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
     }
 
     @Test
@@ -4168,6 +4208,10 @@ class MilvusClientV2DockerTest {
         Assertions.assertFalse(replica.getChannelName().isEmpty());
         Assertions.assertFalse(replica.getLeaderAddress().isEmpty());
         Assertions.assertNotEquals(0L, replica.getLeaderID());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     @Test

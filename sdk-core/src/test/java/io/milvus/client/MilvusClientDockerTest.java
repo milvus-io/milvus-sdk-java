@@ -2558,6 +2558,16 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), has.getStatus().intValue());
         Assertions.assertEquals(has.getData(), false);
+
+        // drop collections
+        response = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName("coll_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
+        response = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName("coll_B")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
     }
 
     @Test
@@ -2871,6 +2881,11 @@ class MilvusClientDockerTest {
             }
         }
         Assertions.assertEquals(50, counter);
+
+        R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 
     @Test
@@ -3357,6 +3372,11 @@ class MilvusClientDockerTest {
             }
 //            System.out.println(score);
         }
+
+        R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 
     @Test
