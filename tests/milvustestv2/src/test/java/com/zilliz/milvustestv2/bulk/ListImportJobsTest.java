@@ -6,7 +6,7 @@ import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
-import io.milvus.bulkwriter.BulkImport;
+import io.milvus.bulkwriter.restful.BulkImportUtils;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.request.import_.MilvusImportRequest;
 import io.milvus.bulkwriter.request.list.MilvusListImportJobsRequest;
@@ -31,7 +31,7 @@ public class ListImportJobsTest extends BaseTest {
                 .collectionName(collectionName)
                 .files(batchFiles)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(
+        String bulkImportResult = BulkImportUtils.bulkImport(
                 System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
                 milvusImportRequest);
         JsonObject bulkImportJO = JsonParser.parseString(bulkImportResult).getAsJsonObject();
@@ -47,7 +47,7 @@ public class ListImportJobsTest extends BaseTest {
 
     @Test(description = "list import jobs", groups = {"L2"})
     public void listImportJobs() {
-        String s = BulkImport.listImportJobs(System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
+        String s = BulkImportUtils.listImportJobs(System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
                 MilvusListImportJobsRequest.builder().collectionName(collectionName).build());
         System.out.println(s);
         JsonObject asJsonObject = JsonParser.parseString(s).getAsJsonObject();

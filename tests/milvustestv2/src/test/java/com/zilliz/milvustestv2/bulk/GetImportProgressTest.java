@@ -6,7 +6,7 @@ import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
-import io.milvus.bulkwriter.BulkImport;
+import io.milvus.bulkwriter.restful.BulkImportUtils;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.request.describe.MilvusDescribeImportRequest;
 import io.milvus.bulkwriter.request.import_.MilvusImportRequest;
@@ -31,7 +31,7 @@ public class GetImportProgressTest extends BaseTest {
                 .collectionName(collectionName)
                 .files(batchFiles)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(
+        String bulkImportResult = BulkImportUtils.bulkImport(
                 System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
                 milvusImportRequest);
         JsonObject bulkImportJO = JsonParser.parseString(bulkImportResult).getAsJsonObject();
@@ -49,7 +49,7 @@ public class GetImportProgressTest extends BaseTest {
         MilvusDescribeImportRequest request = MilvusDescribeImportRequest.builder()
                 .jobId(jobId)
                 .build();
-        String importProgress = BulkImport.getImportProgress(System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
+        String importProgress = BulkImportUtils.getImportProgress(System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
                 request);
         JsonObject jsonObject = JsonParser.parseString(importProgress).getAsJsonObject();
         Assert.assertEquals(jsonObject.get("code").getAsInt(), 0);
