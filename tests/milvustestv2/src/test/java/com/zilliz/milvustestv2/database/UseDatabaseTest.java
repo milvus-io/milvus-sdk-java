@@ -75,8 +75,13 @@ public class UseDatabaseTest extends BaseTest {
     public void testUseNonexistentDatabase(){
         try {
             milvusClientV2.useDatabase("NonexistentDB");
+            Assert.fail("use nonexistent database should throw exception");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("not exist"));
+            // 2.6: "not exist"；3.0 实测: "Failed to initialize connection. Error: database not found[database=xxx]"
+            System.out.println("testUseNonexistentDatabase actual exception: " + e.getMessage());
+            Assert.assertTrue(e.getMessage() != null && (e.getMessage().contains("not exist")
+                            || e.getMessage().contains("database") || e.getMessage().contains("not found")),
+                    "unexpected exception message: " + e.getMessage());
         }
     }
 
