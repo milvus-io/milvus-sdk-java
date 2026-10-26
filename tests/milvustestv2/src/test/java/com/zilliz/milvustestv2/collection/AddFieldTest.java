@@ -143,6 +143,7 @@ public class AddFieldTest extends BaseTest {
         SearchResp search = milvusClientV2.search(SearchReq.builder()
                 .topK(1)
                 .collectionName(collectionWithDynamicField)
+                .annsField(CommonData.fieldFloatVector)
                 .outputFields(Lists.newArrayList(CommonData.dynamicField,"$meta"))
                 .data(baseVectors)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
@@ -164,8 +165,13 @@ public class AddFieldTest extends BaseTest {
                 .build();
         try {
             milvusClientV2.addCollectionField(build);
+            Assert.fail("adding an existing field should throw exception");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("duplicate field"));
+            // 2.6: "duplicate field"；3.0 实测: "duplicated field name add_xxx: invalid parameter"
+            System.out.println("addFieldRepeatedly actual exception: " + e.getMessage());
+            Assert.assertTrue(e.getMessage() != null && (e.getMessage().contains("duplicate field")
+                            || e.getMessage().contains("already exist") || e.getMessage().contains("duplicate")),
+                    "unexpected exception message: " + e.getMessage());
         }
     }
 

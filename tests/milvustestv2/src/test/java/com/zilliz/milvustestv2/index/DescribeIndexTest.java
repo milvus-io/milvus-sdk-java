@@ -53,7 +53,12 @@ public class DescribeIndexTest extends BaseTest {
                 .collectionName(newCollectionName)
                 .fieldName("xxxxxx")
                 .build());
-        Assert.assertEquals(describeIndexResp.getIndexDescriptions().get(0).getIndexName(),CommonData.fieldFloatVector);
+        // 3.0 服务端对不存在的 fieldName 返回空列表（2.6 返回该字段索引），两种行为都接受
+        if (!describeIndexResp.getIndexDescriptions().isEmpty()) {
+            Assert.assertEquals(describeIndexResp.getIndexDescriptions().get(0).getIndexName(),CommonData.fieldFloatVector);
+        } else {
+            logger.info("describeIndex by non-exist fieldName returns empty list (3.0 behavior)");
+        }
         logger.info(describeIndexResp);
     }
 
