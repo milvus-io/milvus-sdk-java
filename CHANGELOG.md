@@ -1,5 +1,17 @@
 # Changelog
 
+## milvus-sdk-java 2.6.26 (2026-10-26)
+
+### Feature
+- Support struct field type_params (mmap_enabled/warmup)
+- Add scalable Volume upload policies and expired credential recovery
+
+### Improvement
+- Harden BulkWriter credential handling: redact credentials in logs and keep the API key header-only
+
+### Bug
+- Return null for null rows of nullable JSON fields in query and search results
+
 ## milvus-sdk-java 2.6.25 (2026-09-03)
 
 ### Improvement
