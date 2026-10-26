@@ -19,6 +19,7 @@
 
 package io.milvus.unit.v1.response;
 
+import com.google.gson.JsonObject;
 import com.google.protobuf.ByteString;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
@@ -434,6 +435,60 @@ public class ResponseWrapperTest {
         assertEquals(2, records.size());
         assertNotNull(records.get(0).get("metadata"));
         assertNull(records.get(1).get("metadata"));
+    }
+
+    @Test
+    void testResultsWrapperWithNullJsonField() {
+        // the server fills null rows of a nullable JSON field with empty bytes and marks them in valid_data
+        FieldData jsonField = FieldData.newBuilder()
+                .setFieldName("info")
+                .setType(DataType.JSON)
+                .setScalars(ScalarField.newBuilder()
+                        .setJsonData(JSONArray.newBuilder()
+                                .addData(ByteString.copyFromUtf8("{\"a\":1}"))
+                                .addData(ByteString.EMPTY)
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).build())
+                        .build())
+                .build();
+
+        FieldDataWrapper fieldWrapper = new FieldDataWrapper(jsonField);
+        assertEquals(Arrays.asList("{\"a\":1}", null), fieldWrapper.getFieldData());
+
+        QueryResults queryResults = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(jsonField)
+                .addOutputFields("id")
+                .addOutputFields("info")
+                .build();
+        List<QueryResultsWrapper.RowRecord> records = new QueryResultsWrapper(queryResults).getRowRecords();
+        assertEquals(2, records.size());
+        assertEquals(1, ((JsonObject) records.get(0).get("info")).get("a").getAsInt());
+        assertNull(records.get(1).get("info"));
+
+        SearchResultData searchResults = SearchResultData.newBuilder()
+                .setTopK(2)
+                .addTopks(2)
+                .setNumQueries(1)
+                .setIds(IDs.newBuilder()
+                        .setIntId(LongArray.newBuilder().addData(1L).addData(2L).build()))
+                .addScores(0.9f)
+                .addScores(0.8f)
+                .addFieldsData(jsonField)
+                .addOutputFields("info")
+                .build();
+        List<SearchResultsWrapper.IDScore> idScores = new SearchResultsWrapper(searchResults).getIDScore(0);
+        assertEquals(2, idScores.size());
+        assertEquals(1, ((JsonObject) idScores.get(0).get("info")).get("a").getAsInt());
+        assertNull(idScores.get(1).get("info"));
     }
 
     @Test
