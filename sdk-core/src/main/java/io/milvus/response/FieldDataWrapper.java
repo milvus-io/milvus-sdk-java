@@ -440,7 +440,7 @@ public class FieldDataWrapper {
             }
             case JSON: {
                 List<ByteString> dataList = scalar.getJsonData().getDataList();
-                return dataList.stream().map(ByteString::toStringUtf8).collect(Collectors.toList());
+                return setNoneData(dataList.stream().map(ByteString::toStringUtf8).collect(Collectors.toList()), validData);
             }
             case Array: {
                 List<List<?>> array = new ArrayList<>();
