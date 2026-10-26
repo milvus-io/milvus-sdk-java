@@ -19,6 +19,10 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <xmlFileName>testng.xml</xmlFileName>
+        <!-- Spring Boot 2.6.7 parent 把 gson 管在 2.8.x，而 milvus-sdk-java(bulkwriter) 3.0.10 需要
+             gson >= 2.10（JsonArray.asList 是 2.10 新增），此处覆盖为与 SDK 3.0.10 一致的 2.13.1，
+             否则 BulkWriterV3Test 运行时报 NoSuchMethodError: JsonArray.asList() -->
+        <gson.version>2.13.1</gson.version>
     </properties>
     <dependencies>
         <dependency>
@@ -70,7 +74,7 @@
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>2.6.25</version>
+            <version>3.0.10</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -101,7 +105,7 @@
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java-bulkwriter</artifactId>
-            <version>2.6.25</version>
+            <version>3.0.10</version>
         </dependency>
     </dependencies>
     <build>

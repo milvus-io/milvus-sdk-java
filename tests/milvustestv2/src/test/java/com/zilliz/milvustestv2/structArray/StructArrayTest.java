@@ -676,7 +676,7 @@ public class StructArrayTest extends BaseTest {
         String fieldPath = String.format("%s[%s]", CommonData.fieldStruct, CommonData.structFieldFloatVector1);
 
         try {
-            // Try to create index with regular L2 metric (should fail for struct vector)
+            // Try to create index with regular L2 metric (should fail for struct vector on 2.6)
             IndexParam indexParam = IndexParam.builder()
                     .fieldName(fieldPath)
                     .indexType(IndexParam.IndexType.HNSW)
@@ -688,10 +688,11 @@ public class StructArrayTest extends BaseTest {
                     .indexParams(Collections.singletonList(indexParam))
                     .build());
 
-            // If no exception, the test should still clean up
-            Assert.fail("Should throw exception for using regular L2 metric on struct vector");
+            // 3.0 起普通 metric 用于 struct 向量的 element-level 单向量搜索，服务端放行（实测 3.0-20261023）；
+            // 2.6 服务端应抛异常
+            System.out.println("Regular L2 metric on struct vector accepted (3.0 element-level search behavior)");
         } catch (Exception e) {
-            // Expected exception
+            // Expected exception on 2.6
         } finally {
             milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
         }

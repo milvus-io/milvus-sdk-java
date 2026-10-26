@@ -127,9 +127,12 @@ public class CollectionFunctionTest extends BaseTest {
                     .build());
             Assert.fail("addCollectionFunction with BM25 type should throw exception on 2.6 server");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage() != null
-                            && e.getMessage().contains("currently does not support adding BM25 function"),
-                    "Exception message should indicate BM25 add is not supported, but was: " + e.getMessage());
+            // 2.6: "currently does not support adding BM25 function"
+            // 3.0: "AddCollectionFunction RPC is no longer supported; add BM25/MinHash via add_function_field..."
+            String msg = e.getMessage();
+            Assert.assertTrue(msg != null && (msg.contains("currently does not support adding BM25 function")
+                            || msg.contains("AddCollectionFunction RPC is no longer supported")),
+                    "Exception message should indicate BM25 add is not supported, but was: " + msg);
         } finally {
             dropCollectionQuietly(name);
         }
@@ -167,17 +170,21 @@ public class CollectionFunctionTest extends BaseTest {
                     .build());
             Assert.fail("dropCollectionFunction with BM25 type should throw exception on 2.6 server");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage() != null
-                            && e.getMessage().contains("currently does not support"),
-                    "Exception message should indicate BM25 drop is not supported, but was: " + e.getMessage());
+            // 2.6: "currently does not support droping BM25 function"
+            // 3.0: "DropCollectionFunction RPC is no longer supported; drop a function via drop_function_field"
+            String msg = e.getMessage();
+            Assert.assertTrue(msg != null && (msg.contains("currently does not support")
+                            || msg.contains("DropCollectionFunction RPC is no longer supported")),
+                    "Exception message should indicate BM25 drop is not supported, but was: " + msg);
         } finally {
             dropCollectionQuietly(name);
         }
     }
 
-    @Test(description = "Drop a non-exist function is idempotent on 2.6 server", groups = {"Smoke"})
+    @Test(description = "Drop a non-exist function: idempotent on 2.6, RPC removed on 3.0", groups = {"Smoke"})
     public void dropNonExistFunctionIsIdempotent() {
-        // 2.6 服务端对不存在的 functionName drop 幂等成功（不报错），此用例固化该实际行为
+        // 2.6 服务端对不存在的 functionName drop 幂等成功（不报错）；
+        // 3.0 服务端整个 DropCollectionFunction RPC 已移除（"no longer supported"），两种行为都固化
         String name = "CollFuncDropNonExist_" + GenerateUtil.getRandomString(6);
         createCollectionWithBm25Function(name, FUNCTION_NAME_1);
         try {
@@ -190,6 +197,11 @@ public class CollectionFunctionTest extends BaseTest {
                     describeCollection(name).getCollectionSchema().getFunctionList();
             Assert.assertEquals(functionList.size(), 1, "Original function list should be unchanged");
             Assert.assertEquals(functionList.get(0).getName(), FUNCTION_NAME_1);
+        } catch (Exception e) {
+            // 3.0 行为：RPC 已移除
+            Assert.assertTrue(e.getMessage() != null
+                            && e.getMessage().contains("DropCollectionFunction RPC is no longer supported"),
+                    "3.0 should report DropCollectionFunction RPC removed, but was: " + e.getMessage());
         } finally {
             dropCollectionQuietly(name);
         }
