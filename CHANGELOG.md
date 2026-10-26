@@ -1,5 +1,20 @@
 # Changelog
 
+## milvus-sdk-java 3.0.11 (2026-10-26)
+### Feature
+- Add a Spring Boot starter that auto-configures MilvusClientV2
+- Add row-level security (RLS) APIs to the V2 client
+- Support query group-by (group_by_fields)
+- Add scalable Volume upload policies and expired credential recovery
+
+### Improvement
+- Harden BulkWriter credential handling: redact credentials in logs and keep the API key header-only
+- Close Java-vs-pymilvus parity gaps and harden V2 APIs
+
+### Bug
+- Return null for null rows of nullable JSON fields in query and search results
+- Release BulkWriter locks in finally blocks
+
 ## milvus-sdk-java 3.0.10 (2026-09-16)
 ### Improvement
 - Trim redundant content from the published jar and make tests JDK 8 compatible
