@@ -48,12 +48,14 @@ import java.util.Set;
  * Data: 1000 rows, fieldInt64=fieldInt32=i, fieldDouble=i*0.5, fieldVarchar="brand_"+(i%5),
  * fieldBool=(i%2==0), so each brand owns exactly 200 rows.
  *
- * <p>Known server issue on Milvus 3.0 nightly build 3.0-20261023-6376134d4d (verified 2026-10-26
- * against http://10.102.9.106:19530): every aggregation bucket reports count=1 and COUNT(*)=1
- * regardless of the real group size — reproduced with search limit 10/100/1000, HNSW and FLAT
- * indexes, varchar and bool group keys. Expected behavior once fixed: brand buckets count=200,
- * brand/bool sub buckets count=100. The three cases below assert the actual (buggy) counts with
- * a TODO to restore the expected values.
+ * <p>Aggregation semantics (design #49046, verified 2026-10-26 against Milvus
+ * 3.0-20261023-6376134d4d): search aggregation is a proxy-only feature that amplifies the
+ * standard group_by search. Metrics and bucket counts are computed over the ANN-retrieved
+ * entities that are actually returned per group, NOT over the full collection. The number of
+ * docs returned per group is driven by topHits.size (default 1 when topHits is not set), so:
+ * no topHits -> every bucket count=1; topHits(size=10) -> count=10; topHits(size>=200) ->
+ * count=200 (all rows of the brand, since the search limit already covers the collection).
+ * Cases that assert exact counts/metrics therefore set topHits to cover the whole group.
  *
  * @Author yongpeng.li
  * @Date 2026/10/26
@@ -176,12 +178,16 @@ public class SearchAggregationTest extends BaseTest {
 
     // ==================== Positive Cases ====================
 
-    @Test(description = "Search aggregation group by fieldVarchar, expect 5 buckets of 200 rows each",
+    @Test(description = "Search aggregation group by fieldVarchar with topHits covering all rows, "
+            + "expect 5 buckets of 200 rows each",
             groups = {"Smoke", "V3"})
     public void searchAggregationGroupByVarchar() {
+        // count = number of docs returned per group, capped by topHits.size (see class javadoc);
+        // each brand owns 200 rows, so topHits size 200 makes the bucket count exact.
         SearchResp searchResp = searchWithAggregation(SearchAggregation.builder()
                 .fields(Collections.singletonList(CommonData.fieldVarchar))
                 .size(5)
+                .topHits(TopHitsSpec.builder().size(200).build())
                 .build());
 
         List<List<AggregationBucket>> perQueryBuckets = searchResp.getAggregationBuckets();
@@ -198,18 +204,46 @@ public class SearchAggregationTest extends BaseTest {
             Assert.assertEquals(keyEntry.getFieldName(), CommonData.fieldVarchar);
             String brand = String.valueOf(keyEntry.getValue());
             keys.add(brand);
-            // Server bug on Milvus 3.0-20261023-6376134d4d: every bucket reports count=1 instead
-            // of the real group size (verified 2026-10-26; see class javadoc). Assert the actual
-            // value so the test fails loudly once the server is fixed and this needs restoring.
-            // TODO: restore the expected count of 200 once the server-side aggregation is fixed.
-            Assert.assertEquals(bucket.getCount(), 1, "Actual buggy count=1 per bucket (expected 200): " + brand);
+            Assert.assertEquals(bucket.getCount(), 200, "Each brand should own 200 rows: " + brand);
         }
         Assert.assertEquals(keys, new HashSet<>(Arrays.asList("brand_0", "brand_1", "brand_2", "brand_3", "brand_4")));
+    }
+
+    @Test(description = "Semantics fixation (design #49046): without topHits each bucket count=1 "
+            + "(one representative doc per group); with topHits(size=10) count=10. Bucket count is "
+            + "the number of docs returned per group, not the real group size",
+            groups = {"Smoke", "V3"})
+    public void searchAggregationCountReflectsReturnedDocs() {
+        // no topHits: only 1 doc per group is returned, so every brand bucket counts 1
+        SearchResp noTopHits = searchWithAggregation(SearchAggregation.builder()
+                .fields(Collections.singletonList(CommonData.fieldVarchar))
+                .size(5)
+                .build());
+        List<AggregationBucket> buckets = noTopHits.getAggregationBuckets().get(0);
+        Assert.assertEquals(buckets.size(), 5, "Expect 5 brand buckets");
+        for (AggregationBucket bucket : buckets) {
+            Assert.assertEquals(bucket.getCount(), 1,
+                    "Without topHits only 1 doc per group is returned, count must be 1");
+        }
+
+        // topHits(size=10): 10 docs per group are returned, so every bucket counts 10
+        SearchResp topHits10 = searchWithAggregation(SearchAggregation.builder()
+                .fields(Collections.singletonList(CommonData.fieldVarchar))
+                .size(5)
+                .topHits(TopHitsSpec.builder().size(10).build())
+                .build());
+        for (AggregationBucket bucket : topHits10.getAggregationBuckets().get(0)) {
+            Assert.assertEquals(bucket.getCount(), 10,
+                    "topHits(size=10) returns 10 docs per group, count must be 10");
+            Assert.assertEquals(bucket.getHits().size(), 10, "10 hits should be returned per bucket");
+        }
     }
 
     @Test(description = "Search aggregation with metrics AVG(fieldDouble) and COUNT(*)",
             groups = {"Smoke", "V3"})
     public void searchAggregationWithMetrics() {
+        // topHits size 200 makes each bucket cover all 200 rows of the brand (see class javadoc),
+        // so COUNT(*)=200 and AVG(fieldDouble) matches the exact expected value.
         SearchResp searchResp = searchWithAggregation(SearchAggregation.builder()
                 .fields(Collections.singletonList(CommonData.fieldVarchar))
                 .size(5)
@@ -221,6 +255,7 @@ public class SearchAggregationTest extends BaseTest {
                         .op(MetricOps.COUNT)
                         .fieldName("*")
                         .build())
+                .topHits(TopHitsSpec.builder().size(200).build())
                 .build());
 
         List<AggregationBucket> buckets = searchResp.getAggregationBuckets().get(0);
@@ -228,18 +263,14 @@ public class SearchAggregationTest extends BaseTest {
         for (AggregationBucket bucket : buckets) {
             Map<String, Object> metrics = bucket.getMetrics();
             Assert.assertNotNull(metrics);
-            // Server bug on Milvus 3.0-20261023-6376134d4d: COUNT(*) reports 1 per bucket
-            // instead of 200 (see class javadoc). TODO: restore 200L once fixed.
-            Assert.assertEquals(((Number) metrics.get("doc_count")).longValue(), 1L,
-                    "Actual buggy COUNT(*)=1 per bucket (expected 200)");
-            // With the buggy count=1 per bucket, AVG(fieldDouble) degenerates to the single
-            // representative row of the bucket, so only presence and the data range are stable
-            // assertions. TODO: restore the exact expectation below once fixed:
-            //   brand_b holds i in {b, b+5, ..., b+995}; avg(fieldDouble) = (b + 497.5) * 0.5
-            Assert.assertTrue(metrics.containsKey("avg_double"), "AVG metric should be present");
+            Assert.assertEquals(((Number) metrics.get("doc_count")).longValue(), 200L,
+                    "COUNT(*) of each brand bucket should be 200");
+            // brand_b holds i in {b, b+5, ..., b+995}; avg(fieldDouble) = (b + 497.5) * 0.5
+            int b = Integer.parseInt(String.valueOf(bucket.getKey().get(0).getValue()).substring("brand_".length()));
+            double expectAvg = (b + 497.5) * 0.5;
             double actualAvg = ((Number) metrics.get("avg_double")).doubleValue();
-            Assert.assertTrue(actualAvg >= 0.0 && actualAvg <= 499.5,
-                    "AVG(fieldDouble) should fall inside the data range [0, 499.5], got " + actualAvg);
+            Assert.assertEquals(actualAvg, expectAvg, 0.5,
+                    "AVG(fieldDouble) of brand_" + b + " should be near " + expectAvg);
         }
     }
 
@@ -303,12 +334,16 @@ public class SearchAggregationTest extends BaseTest {
     @Test(description = "Nested sub aggregation: group by fieldVarchar then by fieldBool inside each brand",
             groups = {"Smoke", "V3"})
     public void searchAggregationNestedSubAggregation() {
+        // topHits drives how many docs per group are returned (see class javadoc): parent
+        // topHits(200) covers the whole brand, sub topHits(100) covers each bool half.
         SearchResp searchResp = searchWithAggregation(SearchAggregation.builder()
                 .fields(Collections.singletonList(CommonData.fieldVarchar))
                 .size(5)
+                .topHits(TopHitsSpec.builder().size(200).build())
                 .subAggregation(SearchAggregation.builder()
                         .fields(Collections.singletonList(CommonData.fieldBool))
                         .size(3)
+                        .topHits(TopHitsSpec.builder().size(100).build())
                         .build())
                 .build());
 
@@ -323,17 +358,10 @@ public class SearchAggregationTest extends BaseTest {
             long subTotal = 0;
             for (AggregationBucket sub : subGroups) {
                 Assert.assertEquals(sub.getKey().get(0).getFieldName(), CommonData.fieldBool);
-                // Server bug on Milvus 3.0-20261023-6376134d4d: sub buckets report count=1
-                // instead of 100 (see class javadoc). TODO: restore 100 once fixed.
-                Assert.assertEquals(sub.getCount(), 1, "Actual buggy sub group count=1 (expected 100)");
+                Assert.assertEquals(sub.getCount(), 100, "Each brand/bool sub group should own 100 rows");
                 subTotal += sub.getCount();
             }
-            // Under the bug subTotal=2 while bucket.getCount()=1, so the "sub counts add up to
-            // the parent" invariant does not hold. TODO: restore
-            //   Assert.assertEquals(subTotal, bucket.getCount())
-            // once the server-side aggregation is fixed.
-            log.info("brand bucket count={}, sub group total={} (buggy build: 1 vs 2)",
-                    bucket.getCount(), subTotal);
+            Assert.assertEquals(subTotal, bucket.getCount(), "Sub group counts should add up to the parent bucket");
         }
     }
 
