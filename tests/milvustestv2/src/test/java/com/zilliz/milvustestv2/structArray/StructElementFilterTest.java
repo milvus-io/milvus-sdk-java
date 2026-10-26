@@ -166,9 +166,13 @@ public class StructElementFilterTest extends BaseTest {
             Assert.assertTrue(searchResp.getSearchResults().get(0).size() <= TOP_K,
                     "result size should not exceed topK");
         } catch (Exception e) {
-            // 2.6 分支当前行为：parser 无 element_filter 产生式，报 cannot parse expression
-            Assert.assertTrue(e.getMessage().contains("cannot parse expression"),
-                    "2.6 branch should reject element_filter with parse error: " + e.getMessage());
+            // 2.6 分支：parser 无 element_filter 产生式，报 cannot parse expression；
+            // 3.0：EmbeddingList+element_filter 属 row-level，报 "element_filter is only supported
+            // for element-level search ..."；element-level 正向见 ElementFilterV3Test
+            String msg = e.getMessage();
+            Assert.assertTrue(msg != null && (msg.contains("cannot parse expression")
+                            || msg.contains("element_filter is only supported")),
+                    "element_filter should be rejected with known error, actual: " + msg);
         }
     }
 
@@ -194,9 +198,12 @@ public class StructElementFilterTest extends BaseTest {
             Assert.assertTrue(searchResp.getSearchResults().get(0).size() <= TOP_K,
                     "result size should not exceed topK");
         } catch (Exception e) {
-            // 2.6 分支当前行为：parser 无 element_filter 产生式，报 cannot parse expression
-            Assert.assertTrue(e.getMessage().contains("cannot parse expression"),
-                    "2.6 branch should reject element_filter with parse error: " + e.getMessage());
+            // 2.6 分支：parser 无 element_filter 产生式，报 cannot parse expression；
+            // 3.0：EmbeddingList+element_filter 属 row-level，报 "element_filter is only supported..."
+            String msg = e.getMessage();
+            Assert.assertTrue(msg != null && (msg.contains("cannot parse expression")
+                            || msg.contains("element_filter is only supported")),
+                    "element_filter should be rejected with known error, actual: " + msg);
         }
     }
 

@@ -194,14 +194,23 @@ public class AutoIdExplicitPkTest extends BaseTest {
                 .build());
         Assert.assertEquals(upsertResp.getUpsertCnt(), 1);
 
-        // 行为固化：autoID collection 上 upsert 会忽略显式主键、重新自动生成主键，显式 pk 不保留
-        // （2.6-20261022 nightly 实测：upsert 后按显式 pk 10000 查询返回 0 行，原 pk 行也不存在）
+        // 版本行为差异：
+        // 2.6-20261022 nightly：autoID collection 上 upsert 忽略显式主键、重新自动生成，按显式 pk 查返回 0 行；
+        // 3.0-20261023 nightly：upsert 保留显式主键并就地更新（按显式 pk 查返回 1 行且 fieldInt32 已更新）。
         QueryResp queryResp = milvusClientV2.query(QueryReq.builder()
                 .collectionName(autoIdCollection)
                 .filter(CommonData.fieldInt64 + " == " + EXPLICIT_PK_START)
                 .outputFields(Arrays.asList(CommonData.fieldInt32))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
+        if (queryResp.getQueryResults().size() == 1) {
+            // 3.0 行为：显式 pk 保留，值被更新
+            Object int32Val = queryResp.getQueryResults().get(0).getEntity().get(CommonData.fieldInt32);
+            Assert.assertEquals(((Number) int32Val).intValue(), 777777,
+                    "3.0 keeps explicit pk on upsert and updates the row in place");
+            return;
+        }
+        // 2.6 行为：显式 pk 不保留
         Assert.assertEquals(queryResp.getQueryResults().size(), 0,
                 "Explicit pk should not be kept after upsert on autoID collection (2.6 nightly behavior)");
 
