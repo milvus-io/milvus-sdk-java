@@ -132,6 +132,36 @@
                 <artifactId>snappy-java</artifactId>
                 <version>${snappy.version}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core</artifactId>
+                <version>${azure-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-core-http-netty</artifactId>
+                <version>${azure-core-http-netty.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -175,13 +205,19 @@
 
         <!--for BulkWriter-->
         <hadoop.version>3.3.6</hadoop.version>
-        <parquet.version>1.13.1</parquet.version>
+        <parquet.version>1.15.2</parquet.version>
+        <commons-io.version>2.22.0</commons-io.version>
+        <commons-compress.version>1.28.0</commons-compress.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-codec.version>1.19.0</commons-codec.version>
+        <azure-core.version>1.55.3</azure-core.version>
+        <azure-core-http-netty.version>1.15.11</azure-core-http-netty.version>
         <unirest.version>3.13.10</unirest.version>
-        <snappy.version>1.1.10.5</snappy.version>
+        <snappy.version>1.1.10.7</snappy.version>
         <aws-java-sdk-s3.version>1.12.687</aws-java-sdk-s3.version>
-        <minio-java-sdk.version>8.5.7</minio-java-sdk.version>
+        <minio-java-sdk.version>8.6.0</minio-java-sdk.version>
         <azure-java-blob-sdk.version>12.25.3</azure-java-blob-sdk.version>
-        <azure-java-identity-sdk.version>1.10.1</azure-java-identity-sdk.version>
+        <azure-java-identity-sdk.version>1.16.1</azure-java-identity-sdk.version>
     </properties>
 
     <profiles>
