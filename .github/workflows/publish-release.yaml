@@ -130,6 +130,22 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+      # GitHub ubuntu runners now default to Maven 3.10.0, which writes maven-metadata-local.xml
+      # into the file:// staging repository. central-publishing-maven-plugin (as configured) only
+      # deletes maven-metadata-central-staging.xml, so the stray file ends up in the bundle and
+      # Sonatype Central rejects the deployment ("Bundle has content that does NOT have a .pom
+      # file"). Pin Maven 3.9.x until the plugin handles maven-metadata-local.xml.
+      # See https://github.com/mavenplugins/central-publishing-maven-plugin/issues/79
+      - name: Set up Maven 3.9.x
+        shell: bash
+        run: |
+          set -euo pipefail
+          MVN_VERSION="3.9.16"
+          curl -fsSL -o "${RUNNER_TEMP}/apache-maven.tar.gz" \
+            "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MVN_VERSION}/apache-maven-${MVN_VERSION}-bin.tar.gz"
+          tar -xzf "${RUNNER_TEMP}/apache-maven.tar.gz" -C "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/apache-maven-${MVN_VERSION}/bin" >> "${GITHUB_PATH}"
+
       - name: Validate release tag and project version
         shell: bash
         run: |
