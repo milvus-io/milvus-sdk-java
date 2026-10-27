@@ -1,0 +1,66 @@
+name: Notify runner-agent SDK docs
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact Java SDK release tag to dispatch
+        required: true
+        type: string
+      commit:
+        description: Full commit SHA associated with the tag
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    name: notify runner-agent
+    if: github.repository == 'milvus-io/milvus-sdk-java'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      GH_TOKEN: ${{ secrets.PRIVATE_DISPATCH_TOKEN }}
+      TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+      COMMIT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.commit || github.sha }}
+      SOURCE_REPO: milvus-io/milvus-sdk-java
+
+    steps:
+      - name: Send SDK release dispatch
+        run: |
+          set -euo pipefail
+
+          if [ -z "$GH_TOKEN" ]; then
+            echo "PRIVATE_DISPATCH_TOKEN is not configured" >&2
+            exit 1
+          fi
+
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "Unsupported tag format: $TAG" >&2
+            exit 1
+          fi
+
+          if ! [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Expected a full commit SHA, got: $COMMIT" >&2
+            exit 1
+          fi
+
+          gh api repos/yhmo/runner-agent/dispatches \
+            --method POST \
+            --input - <<EOF
+          {
+            "event_type": "sdk-release",
+            "client_payload": {
+              "sdk": "java",
+              "tag": "${TAG}",
+              "commit": "${COMMIT}",
+              "source_repo": "${SOURCE_REPO}"
+            }
+          }
+          EOF
