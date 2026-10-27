@@ -283,7 +283,7 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
 
     @Override
     // Considering MinIO's compatibility with S3, some adjustments have been made here.
-    protected CompletableFuture<ObjectWriteResponse> completeMultipartUploadAsync(String bucketName, String region, String objectName, String uploadId, Part[] parts, Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) throws InsufficientDataException, InternalException, InvalidKeyException, IOException, NoSuchAlgorithmException, XmlParserException {
+    public CompletableFuture<ObjectWriteResponse> completeMultipartUploadAsync(String bucketName, String region, String objectName, String uploadId, Part[] parts, Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) throws InsufficientDataException, InternalException, InvalidKeyException, IOException, NoSuchAlgorithmException, XmlParserException {
         Multimap<String, String> queryParams = newMultimap(extraQueryParams);
         queryParams.put(UPLOAD_ID, uploadId);
         return getRegionAsync(bucketName, region)
