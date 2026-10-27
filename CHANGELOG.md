@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.6.27 (2026-10-27)
+
+### Improvement
+- Upgrade grpc-java to 1.77.0 to fix CVE-2025-55163 (Netty MadeYouReset)
+- Upgrade BulkWriter dependencies to fix multiple CVEs
+
 ## milvus-sdk-java 2.6.26 (2026-10-26)
 
 ### Feature
