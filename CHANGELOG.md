@@ -1,5 +1,10 @@
 # Changelog
 
+## milvus-sdk-java 3.0.12 (2026-10-27)
+### Improvement
+- Upgrade grpc-java to 1.77.0 to fix CVE-2025-55163 (Netty MadeYouReset)
+- Upgrade BulkWriter dependencies to fix multiple CVEs
+
 ## milvus-sdk-java 3.0.11 (2026-10-26)
 ### Feature
 - Add a Spring Boot starter that auto-configures MilvusClientV2
