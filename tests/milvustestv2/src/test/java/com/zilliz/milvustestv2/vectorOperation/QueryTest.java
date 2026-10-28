@@ -486,7 +486,10 @@ public class QueryTest extends BaseTest {
     }
 
 
-    @Test(description = "sampling test with multi segment", groups = {"L2"}, dataProvider = "samplingValue")
+    // 注意：该用例的数据准备（samplingCollectionWithMultiSegment 的创建与 100k 条数据灌入）在 @BeforeClass 中
+    // 被注释掉了（见上文），直接跑会报 collectionName cannot be null。因数据量过大且历史上被有意停用，
+    // 这里禁用该用例；如需恢复请先取消 @BeforeClass 中对应代码块的注释。
+    @Test(description = "sampling test with multi segment", groups = {"L2"}, dataProvider = "samplingValue", enabled = false)
     public void samplingWithMultiSegment(double samplingValue) {
 
         // 查询collection的segment数量
