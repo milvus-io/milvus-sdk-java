@@ -25,12 +25,18 @@ import java.util.List;
 import static io.milvus.common.utils.RedactCredential.redactCredential;
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
+/**
+ * A Milvus cluster participating in a replication task.
+ */
 public class MilvusCluster {
     private String clusterId;
     private String uri;
     private String token;
     private List<String> pchannels;
 
+    /**
+     * Converts a gRPC {@code MilvusCluster} to this class.
+     */
     public static MilvusCluster fromGRPC(io.milvus.grpc.MilvusCluster cluster) {
         io.milvus.grpc.ConnectionParam connectionParam = cluster.getConnectionParam();
         return MilvusCluster.builder()
@@ -41,6 +47,9 @@ public class MilvusCluster {
                 .build();
     }
 
+    /**
+     * Converts this class to a gRPC {@code MilvusCluster}.
+     */
     public io.milvus.grpc.MilvusCluster toGRPC() {
         io.milvus.grpc.ConnectionParam.Builder connectionParamBuilder = io.milvus.grpc.ConnectionParam.newBuilder()
                 .setUri(this.uri);
@@ -64,34 +73,58 @@ public class MilvusCluster {
         this.pchannels = builder.pchannels;
     }
 
+    /**
+     * Returns the ID of the cluster.
+     */
     public String getClusterId() {
         return clusterId;
     }
 
+    /**
+     * Sets the ID of the cluster.
+     */
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
 
+    /**
+     * Returns the connection URI of the cluster.
+     */
     public String getUri() {
         return uri;
     }
 
+    /**
+     * Sets the connection URI of the cluster.
+     */
     public void setUri(String uri) {
         this.uri = uri;
     }
 
+    /**
+     * Returns the access token used to authenticate against the cluster.
+     */
     public String getToken() {
         return token;
     }
 
+    /**
+     * Sets the access token used to authenticate against the cluster.
+     */
     public void setToken(String token) {
         this.token = token;
     }
 
+    /**
+     * Returns the physical channels of the cluster that participate in the replication.
+     */
     public List<String> getPchannels() {
         return pchannels;
     }
 
+    /**
+     * Sets the physical channels of the cluster that participate in the replication.
+     */
     public void setPchannels(List<String> pchannels) {
         this.pchannels = pchannels;
     }
@@ -106,36 +139,57 @@ public class MilvusCluster {
                 '}';
     }
 
+    /**
+     * Creates a new {@code MilvusCluster} builder.
+     */
     public static MilvusClusterBuilder builder() {
         return new MilvusClusterBuilder();
     }
 
+    /**
+     * Builder for {@link MilvusCluster}.
+     */
     public static class MilvusClusterBuilder {
         private String clusterId;
         private String uri;
         private String token;
         private List<String> pchannels;
 
+        /**
+         * Sets the ID of the cluster.
+         */
         public MilvusClusterBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
         }
 
+        /**
+         * Sets the connection URI of the cluster.
+         */
         public MilvusClusterBuilder uri(String uri) {
             this.uri = uri;
             return this;
         }
 
+        /**
+         * Sets the access token used to authenticate against the cluster.
+         */
         public MilvusClusterBuilder token(String token) {
             this.token = token;
             return this;
         }
 
+        /**
+         * Sets the physical channels of the cluster that participate in the replication.
+         */
         public MilvusClusterBuilder pchannels(List<String> pchannels) {
             this.pchannels = pchannels;
             return this;
         }
 
+        /**
+         * Builds the {@link MilvusCluster}.
+         */
         public MilvusCluster build() {
             return new MilvusCluster(this);
         }

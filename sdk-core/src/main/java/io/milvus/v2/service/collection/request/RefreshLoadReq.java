@@ -23,7 +23,7 @@ public class RefreshLoadReq {
     private String databaseName;
     private String collectionName;
     private Boolean async = Boolean.TRUE;
-    private Boolean sync = Boolean.TRUE; // wait the collection to be fully loaded. "async" is deprecated, use "sync" instead
+    private Boolean sync = Boolean.TRUE; // wait the collection to be fully loaded
     private Long timeout = 60000L; // timeout value for waiting the collection to be fully loaded
 
     private RefreshLoadReq(RefreshLoadReqBuilder builder) {

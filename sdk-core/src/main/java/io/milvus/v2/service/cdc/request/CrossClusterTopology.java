@@ -20,10 +20,16 @@
 package io.milvus.v2.service.cdc.request;
 
 
+/**
+ * A cross-cluster topology describing the replication relation between a source cluster and a target cluster.
+ */
 public class CrossClusterTopology {
     private String sourceClusterId;
     private String targetClusterId;
 
+    /**
+     * Converts a gRPC {@code CrossClusterTopology} to this class.
+     */
     public static CrossClusterTopology fromGRPC(io.milvus.grpc.CrossClusterTopology topology) {
         return CrossClusterTopology.builder()
                 .sourceClusterId(topology.getSourceClusterId())
@@ -31,6 +37,9 @@ public class CrossClusterTopology {
                 .build();
     }
 
+    /**
+     * Converts this class to a gRPC {@code CrossClusterTopology}.
+     */
     public io.milvus.grpc.CrossClusterTopology toGRPC() {
         return io.milvus.grpc.CrossClusterTopology.newBuilder()
                 .setSourceClusterId(this.sourceClusterId)
@@ -38,18 +47,30 @@ public class CrossClusterTopology {
                 .build();
     }
 
+    /**
+     * Returns the ID of the source cluster.
+     */
     public String getSourceClusterId() {
         return sourceClusterId;
     }
 
+    /**
+     * Sets the ID of the source cluster.
+     */
     public void setSourceClusterId(String sourceClusterId) {
         this.sourceClusterId = sourceClusterId;
     }
 
+    /**
+     * Returns the ID of the target cluster.
+     */
     public String getTargetClusterId() {
         return targetClusterId;
     }
 
+    /**
+     * Sets the ID of the target cluster.
+     */
     public void setTargetClusterId(String targetClusterId) {
         this.targetClusterId = targetClusterId;
     }
@@ -67,24 +88,39 @@ public class CrossClusterTopology {
         this.targetClusterId = builder.targetClusterId;
     }
 
+    /**
+     * Creates a new {@code CrossClusterTopology} builder.
+     */
     public static CrossClusterTopologyBuilder builder() {
         return new CrossClusterTopologyBuilder();
     }
 
+    /**
+     * Builder for {@link CrossClusterTopology}.
+     */
     public static class CrossClusterTopologyBuilder {
         private String sourceClusterId;
         private String targetClusterId;
 
+        /**
+         * Sets the ID of the source cluster.
+         */
         public CrossClusterTopologyBuilder sourceClusterId(String sourceClusterId) {
             this.sourceClusterId = sourceClusterId;
             return this;
         }
 
+        /**
+         * Sets the ID of the target cluster.
+         */
         public CrossClusterTopologyBuilder targetClusterId(String targetClusterId) {
             this.targetClusterId = targetClusterId;
             return this;
         }
 
+        /**
+         * Builds the {@link CrossClusterTopology}.
+         */
         public CrossClusterTopology build() {
             return new CrossClusterTopology(this);
         }

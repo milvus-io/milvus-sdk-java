@@ -49,7 +49,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Service for CDC (change data capture) operations, such as querying replication information,
+ * managing the replication configuration, and dumping messages from a WAL range for data salvage.
+ */
 public class CDCService extends BaseService {
+    /**
+     * Returns the replication information for the given source cluster and physical channel.
+     * The targetPchannel of the request identifies the physical channel belonging to the source cluster.
+     */
     public GetReplicateInfoResp getReplicateInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReplicateInfoReq requestParam) {
         if (StringUtils.isEmpty(requestParam.getSourceClusterId())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "sourceClusterId cannot be null or empty");
@@ -70,6 +78,9 @@ public class CDCService extends BaseService {
                 .build();
     }
 
+    /**
+     * Returns the current replication configuration.
+     */
     public GetReplicateConfigurationResp getReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         GetReplicateConfigurationRequest request = GetReplicateConfigurationRequest.newBuilder().build();
 
@@ -82,6 +93,10 @@ public class CDCService extends BaseService {
                 .build();
     }
 
+    /**
+     * Updates the replication configuration, optionally promoting the current cluster to primary
+     * forcefully for failover scenarios.
+     */
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateReplicateConfigurationReq requestParam) {
         UpdateReplicateConfigurationRequest request = UpdateReplicateConfigurationRequest.newBuilder()
                 .setReplicateConfiguration(requestParam.getReplicateConfiguration().toGRPC())
@@ -95,6 +110,11 @@ public class CDCService extends BaseService {
         return UpdateReplicateConfigurationResp.builder().build();
     }
 
+    /**
+     * Dumps messages from the given physical channel, optionally bounded by a start/end timetick,
+     * returning an iterable stream of messages. Typically used after a force failover to salvage
+     * unsynchronized messages from the old primary using the salvage checkpoint.
+     */
     public DumpMessagesResp dumpMessages(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                          DumpMessagesReq request) {
         if (StringUtils.isEmpty(request.getPchannel())) {

@@ -21,6 +21,9 @@ package io.milvus.v2.service.cdc.request;
 
 import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 
+/**
+ * Request parameters for the {@code dumpMessages} CDC API.
+ */
 public class DumpMessagesReq {
     private final String pchannel;
     private final GetReplicateInfoResp.MessageID startMessageID;
@@ -34,10 +37,16 @@ public class DumpMessagesReq {
         this.endTimetick = builder.endTimetick;
     }
 
+    /**
+     * Creates a new {@code DumpMessagesReq} builder.
+     */
     public static DumpMessagesReqBuilder builder() {
         return new DumpMessagesReqBuilder();
     }
 
+    /**
+     * Returns the physical channel to dump messages from.
+     */
     public String getPchannel() {
         return pchannel;
     }
@@ -49,10 +58,16 @@ public class DumpMessagesReq {
         return startMessageID;
     }
 
+    /**
+     * Returns the start timetick filter; only messages with timetick >= startTimetick are dumped.
+     */
     public Long getStartTimetick() {
         return startTimetick;
     }
 
+    /**
+     * Returns the end timetick filter; only messages with timetick <= endTimetick are dumped. 0 means no limit.
+     */
     public Long getEndTimetick() {
         return endTimetick;
     }
@@ -67,32 +82,50 @@ public class DumpMessagesReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DumpMessagesReq}.
+     */
     public static class DumpMessagesReqBuilder {
         private String pchannel;
         private GetReplicateInfoResp.MessageID startMessageID;
         private Long startTimetick = 0L;
         private Long endTimetick = 0L;
 
+        /**
+         * Sets the physical channel to dump messages from.
+         */
         public DumpMessagesReqBuilder pchannel(String pchannel) {
             this.pchannel = pchannel;
             return this;
         }
 
+        /**
+         * Sets the start position in WAL.
+         */
         public DumpMessagesReqBuilder startMessageID(GetReplicateInfoResp.MessageID startMessageID) {
             this.startMessageID = startMessageID;
             return this;
         }
 
+        /**
+         * Sets the start timetick filter; only messages with timetick >= startTimetick are dumped.
+         */
         public DumpMessagesReqBuilder startTimetick(Long startTimetick) {
             this.startTimetick = startTimetick;
             return this;
         }
 
+        /**
+         * Sets the end timetick filter; only messages with timetick <= endTimetick are dumped. 0 means no limit.
+         */
         public DumpMessagesReqBuilder endTimetick(Long endTimetick) {
             this.endTimetick = endTimetick;
             return this;
         }
 
+        /**
+         * Builds the {@link DumpMessagesReq}.
+         */
         public DumpMessagesReq build() {
             return new DumpMessagesReq(this);
         }

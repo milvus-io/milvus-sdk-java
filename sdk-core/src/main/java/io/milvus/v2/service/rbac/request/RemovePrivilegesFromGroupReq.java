@@ -22,6 +22,9 @@ package io.milvus.v2.service.rbac.request;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Request parameters for the {@code removePrivilegesFromGroup} API.
+ */
 public class RemovePrivilegesFromGroupReq {
     private String groupName;
     private List<String> privileges = new ArrayList<>();
@@ -31,18 +34,38 @@ public class RemovePrivilegesFromGroupReq {
         this.privileges = builder.privileges;
     }
 
+    /**
+     * Returns the name of the privilege group.
+     *
+     * @return the privilege group name
+     */
     public String getGroupName() {
         return groupName;
     }
 
+    /**
+     * Sets the name of the privilege group.
+     *
+     * @param groupName the privilege group name
+     */
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
 
+    /**
+     * Returns the privileges to remove from the group.
+     *
+     * @return the privileges to remove from the group
+     */
     public List<String> getPrivileges() {
         return privileges;
     }
 
+    /**
+     * Sets the privileges to remove from the group.
+     *
+     * @param privileges the privileges to remove from the group
+     */
     public void setPrivileges(List<String> privileges) {
         this.privileges = privileges;
     }
@@ -55,10 +78,18 @@ public class RemovePrivilegesFromGroupReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link RemovePrivilegesFromGroupReq}.
+     *
+     * @return a new {@link RemovePrivilegesFromGroupReqBuilder}
+     */
     public static RemovePrivilegesFromGroupReqBuilder builder() {
         return new RemovePrivilegesFromGroupReqBuilder();
     }
 
+    /**
+     * Builder for {@link RemovePrivilegesFromGroupReq} class.
+     */
     public static class RemovePrivilegesFromGroupReqBuilder {
         private String groupName;
         private List<String> privileges = new ArrayList<>();
@@ -66,16 +97,33 @@ public class RemovePrivilegesFromGroupReq {
         private RemovePrivilegesFromGroupReqBuilder() {
         }
 
+        /**
+         * Sets the name of the privilege group.
+         *
+         * @param groupName the privilege group name
+         * @return this builder
+         */
         public RemovePrivilegesFromGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
+        /**
+         * Sets the privileges to remove from the group.
+         *
+         * @param privileges the privileges to remove from the group
+         * @return this builder
+         */
         public RemovePrivilegesFromGroupReqBuilder privileges(List<String> privileges) {
             this.privileges = privileges;
             return this;
         }
 
+        /**
+         * Builds the {@link RemovePrivilegesFromGroupReq}.
+         *
+         * @return the built request
+         */
         public RemovePrivilegesFromGroupReq build() {
             return new RemovePrivilegesFromGroupReq(this);
         }

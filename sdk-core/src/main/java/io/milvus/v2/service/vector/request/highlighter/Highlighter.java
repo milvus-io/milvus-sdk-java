@@ -21,8 +21,23 @@ package io.milvus.v2.service.vector.request.highlighter;
 
 import java.util.Map;
 
+/**
+ * A highlighter used by the {@code search} API to mark the matched terms in the returned
+ * text fields. Implementations include the {@link LexicalHighlighter} and the
+ * {@link SemanticHighlighter}.
+ */
 public interface Highlighter {
+    /**
+     * Returns the highlight type name, for example {@code Lexical} or {@code Semantic}.
+     *
+     * @return the highlight type name
+     */
     String highlightType();
 
+    /**
+     * Returns the highlight parameters as a map of parameter name to value.
+     *
+     * @return the highlight parameters
+     */
     Map<String, String> getParams();
 }

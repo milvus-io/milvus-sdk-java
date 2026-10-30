@@ -20,12 +20,33 @@
 package io.milvus.v2.exception;
 
 public enum ErrorCode {
+    /**
+     * The operation completed successfully.
+     */
     SUCCESS(0),
+    /**
+     * The specified collection could not be found.
+     */
     COLLECTION_NOT_FOUND(1),
+    /**
+     * An error occurred on the Milvus server.
+     */
     SERVER_ERROR(2),
+    /**
+     * The request contained invalid parameters.
+     */
     INVALID_PARAMS(3),
+    /**
+     * An error occurred on the client side.
+     */
     CLIENT_ERROR(4),
+    /**
+     * A gRPC communication error occurred.
+     */
     RPC_ERROR(5),
+    /**
+     * The operation exceeded its timeout.
+     */
     TIMEOUT(6);
 
     private final int code;

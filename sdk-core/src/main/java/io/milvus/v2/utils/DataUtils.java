@@ -41,10 +41,21 @@ import java.util.*;
 
 public class DataUtils {
 
+    /**
+     * Wrapper holding the gRPC insert/upsert request builders while converting V2 row data.
+     */
     public static class InsertBuilderWrapper {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
 
+        /**
+         * Converts the given V2 insert request into a gRPC insert request, validating the row
+         * data against the collection schema.
+         *
+         * @param requestParam the V2 insert request
+         * @param descColl     the described collection schema
+         * @return the built gRPC insert request
+         */
         public InsertRequest convertGrpcInsertRequest(InsertReq requestParam, DescribeCollectionResp descColl) {
             String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
@@ -63,6 +74,14 @@ public class DataUtils {
             return insertBuilder.build();
         }
 
+        /**
+         * Converts the given V2 upsert request into a gRPC upsert request, validating the row
+         * data against the collection schema.
+         *
+         * @param requestParam the V2 upsert request
+         * @param descColl     the described collection schema
+         * @return the built gRPC upsert request
+         */
         public UpsertRequest convertGrpcUpsertRequest(UpsertReq requestParam, DescribeCollectionResp descColl) {
             String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
@@ -532,8 +551,17 @@ public class DataUtils {
         }
     }
 
+    /**
+     * Holds the field schema and the values collected for that field across a batch of rows.
+     */
     public static class InsertDataInfo {
+        /**
+         * The field schema the collected values belong to.
+         */
         public CreateCollectionReq.FieldSchema field;
+        /**
+         * The values collected for the field across rows.
+         */
         public LinkedList<Object> data;
 
         public InsertDataInfo(CreateCollectionReq.FieldSchema field, LinkedList<Object> data) {
@@ -577,6 +605,15 @@ public class DataUtils {
         }
     }
 
+    /**
+     * Generates a gRPC vector array for struct field data.
+     *
+     * @param dataType the vector data type
+     * @param objects  the vector values to encode
+     * @param dim      the expected vector dimension
+     * @return the built gRPC vector array
+     * @throws MilvusClientException if the data type is unsupported or the dimension mismatches
+     */
     @SuppressWarnings("unchecked")
     public static VectorArray genVectorArray(DataType dataType, List<?> objects, int dim) {
         VectorArray.Builder builder = VectorArray.newBuilder().setElementType(dataType).setDim(dim);
@@ -624,6 +661,12 @@ public class DataUtils {
         }
     }
 
+    /**
+     * Converts the given V2 delete request into a gRPC delete request.
+     *
+     * @param request the V2 delete request
+     * @return the built gRPC delete request
+     */
     public DeleteRequest ConvertToGrpcDeleteRequest(DeleteReq request) {
         DeleteRequest.Builder builder = DeleteRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -656,6 +699,13 @@ public class DataUtils {
                 fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, dimension);
     }
 
+    /**
+     * Validates and converts a field value against the field schema.
+     *
+     * @param field     the field schema
+     * @param fieldData the field value to check
+     * @return the validated and converted field value
+     */
     public static Object checkFieldValue(CreateCollectionReq.FieldSchema field, JsonElement fieldData) {
         DataType dataType = ConvertUtils.toProtoDataType(field.getDataType());
         DataType elementType = ConvertUtils.toProtoDataType(field.getElementType());
