@@ -35,7 +35,7 @@ import java.util.Map;
  * https://milvus.io/docs/model-ranker-overview.md
  * So we have to inherit the BaseRanker from Function, this change will lead to uncomfortable issues with
  * RRFRanker/WeightedRanker in some users client code. We will mention it in release note.
- * * In old client code, to declare a WeightedRanker:
+ * * In old client code, to declare a RRFRanker:
  * *   RRFRanker ranker = new RRFRanker(20)
  * * After this change, the client code should be changed accordingly:
  * *   RRFRanker ranker = RRFRanker.builder().k(20).build()
@@ -52,7 +52,7 @@ import java.util.Map;
 public class RRFRanker extends CreateCollectionReq.Function {
     private int k;
 
-    // This constructor is to compatible with the old client code like:
+    // This constructor is to be compatible with the old client code like:
     //  new RRFRanker(10)
     // Now it is deprecated, user should create a RRFRanker by builder style:
     //  RRFRanker.builder().k(10).build()

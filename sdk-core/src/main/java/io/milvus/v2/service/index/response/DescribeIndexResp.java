@@ -178,7 +178,7 @@ public class DescribeIndexResp {
         // In 2.4/2.5, properties only contains one item "mmap.enabled".
         // To keep consistence with other SDKs, we intend to remove this member from IndexDesc,
         // and put "mmap.enabled" into the "extraParams", the reasons:
-        //  (1) when createIndex() is call, "mmap.enabled" is passed by the IndexParam.extraParams
+        //  (1) when createIndex() is called, "mmap.enabled" is passed by the IndexParam.extraParams
         //  (2) other SDKs don't have a "properties" member for describeIndex()
         //  (3) now the "mmap.enabled" is dispatched to "properties" by ConvertUtils.convertToDescribeIndexResp(),
         //      once there are new property available, the new property will be dispatched to "extraParams",

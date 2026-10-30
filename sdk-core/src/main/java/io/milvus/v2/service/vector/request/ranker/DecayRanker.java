@@ -26,7 +26,7 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 import java.util.Map;
 
 /**
- * The Decay reranking strategy, which by adjusting search rankings based on numeric field values.
+ * The Decay reranking strategy, which adjusts search rankings based on numeric field values.
  * Read the doc for more info: https://milvus.io/docs/decay-ranker-overview.md
  * <p>
  * Example:

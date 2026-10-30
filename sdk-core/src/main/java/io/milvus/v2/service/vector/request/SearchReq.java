@@ -81,7 +81,7 @@ public class SearchReq {
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
     // The long list of city will increase the time cost to parse this expression.
-    // So, we provide exprTemplateValues for this purpose, user can set filter like this:
+    // So, we provide filterTemplateValues for this purpose, user can set filter like this:
     //     filter = "pk > {age} and city in {city}"
     //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
     // Valid value of this map can be:
@@ -352,7 +352,7 @@ public class SearchReq {
     }
 
     /**
-     * Returns the primary key values of the entities to search.
+     * Returns the primary key values used as search targets for ID-based search.
      *
      * @return the primary key values
      */
@@ -975,15 +975,6 @@ public class SearchReq {
         }
 
         /**
-         * Sets the maximum number of results to return.
-         *
-         * @deprecated replaced by {@link #limit(long)}. {@code topK} and {@code limit} must be the
-         * same value.
-         * @param topK the topK value
-         * @return this builder
-         */
-        // topK is deprecated, topK and limit must be the same value
-        /**
          * Sets the top-k value, keeping it in sync with the limit.
          *
          * @param topK the top-k value
@@ -1037,7 +1028,7 @@ public class SearchReq {
         }
 
         /**
-         * Sets the primary key values of the entities to search.
+         * Sets the primary key values used as search targets for ID-based search.
          *
          * @param ids the primary key values
          * @return this builder

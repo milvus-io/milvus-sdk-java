@@ -55,6 +55,14 @@ public class GlobalStub {
     private volatile GlobalTopology topology;
     private TopologyRefresher refresher;
 
+    /**
+     * Creates a {@code GlobalStub} for the given global cluster endpoint, fetching the initial
+     * topology, connecting to the current primary cluster, and starting the background refresher.
+     *
+     * @param globalEndpoint the global cluster endpoint
+     * @param originalConfig the original connection configuration
+     * @param onPrimaryChange the consumer notified when the primary cluster changes
+     */
     public GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
                       Consumer<MilvusClientV2> onPrimaryChange) {
         this.globalEndpoint = globalEndpoint;

@@ -50,7 +50,7 @@ import java.util.*;
 public class DataUtils {
 
     /**
-     * Data class for {@link DataUtils}.
+     * Wrapper holding the gRPC insert/upsert request builders while converting V2 row data.
      */
 
 
@@ -604,7 +604,13 @@ public class DataUtils {
 
 
     public static class InsertDataInfo {
+        /**
+         * The field schema the collected values belong to.
+         */
         public CreateCollectionReq.FieldSchema field;
+        /**
+         * The values collected for the field across rows.
+         */
         public LinkedList<Object> data;
 
         /**

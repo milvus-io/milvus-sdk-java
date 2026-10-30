@@ -29,8 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The Decay reranking strategy, which by adjusting search rankings based on numeric field values.
- * Read the doc for more info: https://milvus.io/docs/decay-ranker-overview.md
+ * The Boost reranking strategy, which adjusts search rankings by boosting the scores of the
+ * results that match an optional filter expression by a specified weight.
+ * Read the doc for more info: https://milvus.io/docs/boost-ranker.md
  * <p>
  * Example:
  * BoostRanker boost = BoostRanker.builder()
@@ -42,7 +43,7 @@ import java.util.Map;
  * .randomScoreField("id")
  * .build()
  * <p>
- * You also can declare a decay ranker by Function
+ * You also can declare a boost ranker by Function
  * CreateCollectionReq.Function boost = CreateCollectionReq.Function.builder()
  * .functionType(FunctionType.RERANK)
  * .name("xxx_boost")

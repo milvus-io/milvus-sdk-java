@@ -30,7 +30,7 @@ import java.util.List;
 public class FlushReq {
     private String databaseName;
     private List<String> collectionNames;
-    private Long waitFlushedTimeoutMs; // 0 - waiting util flush task is done
+    private Long waitFlushedTimeoutMs; // 0 - waiting until flush task is done
 
     private FlushReq(FlushReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -132,7 +132,7 @@ public class FlushReq {
     public static class FlushReqBuilder {
         private String databaseName;
         private List<String> collectionNames = new ArrayList<>();
-        private Long waitFlushedTimeoutMs = 0L; // 0 - waiting util flush task is done
+        private Long waitFlushedTimeoutMs = 0L; // 0 - waiting until flush task is done
 
         /**
          * Sets the database name.
