@@ -91,7 +91,7 @@ public class UtilityService extends BaseService {
         List<String> collectionNames = request.getCollectionNames();
         String title = String.format("Flush collections: '%s' in database: '%s'", collectionNames, dbName);
         if (collectionNames.isEmpty()) {
-            // consistent with python sdk behavior, throw an error if collection names list is null or empty
+            // consistent with python sdk behavior, throw an error if the collection names list is empty
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Collection name list can not be null or empty");
         }
 

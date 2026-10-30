@@ -398,6 +398,7 @@ public class OptimizeTask {
      *
      * @param targetSize size string like "512MB", "1GB", "1.5gb", or null
      * @return size in MB, or null if targetSize is null
+     * @throws MilvusClientException if the target size string is invalid or smaller than 1MB
      */
 
 

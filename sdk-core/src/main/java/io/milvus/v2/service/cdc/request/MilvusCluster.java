@@ -151,7 +151,7 @@ public class MilvusCluster {
     }
 
     /**
-     * Returns the physical channels that are replicated from the cluster.
+     * Returns the physical channels of the cluster that participate in the replication task.
      *
      * @return the physical channels
      */
@@ -162,7 +162,7 @@ public class MilvusCluster {
     }
 
     /**
-     * Sets the physical channels that are replicated from the cluster.
+     * Sets the physical channels of the cluster that participate in the replication task.
      *
      * @param pchannels the physical channels
      */
@@ -244,7 +244,7 @@ public class MilvusCluster {
         }
 
         /**
-         * Sets the physical channels that are replicated from the cluster.
+         * Sets the physical channels of the cluster that participate in the replication task.
          *
          * @param pchannels the physical channels
          * @return this builder

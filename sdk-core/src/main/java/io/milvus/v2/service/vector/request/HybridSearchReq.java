@@ -631,15 +631,6 @@ public class HybridSearchReq {
         }
 
         /**
-         * Sets the maximum number of results to return.
-         *
-         * @deprecated replaced by {@link #limit(long)}. {@code topK} and {@code limit} must be the
-         * same value.
-         * @param topK the topK value
-         * @return this builder
-         */
-        // topK is deprecated, topK and limit must be the same value
-        /**
          * Sets the top-k value, keeping it in sync with the limit.
          *
          * @param topK the top-k value

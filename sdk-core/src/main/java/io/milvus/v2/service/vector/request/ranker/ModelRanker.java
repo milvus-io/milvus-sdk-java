@@ -143,7 +143,7 @@ public class ModelRanker extends CreateCollectionReq.Function {
      */
     @Override
     public Map<String, String> getParams() {
-        // the parent params might contain "offset" and "decay"
+        // the parent params might contain additional parameters set on the base Function
         Map<String, String> props = super.getParams();
         props.put("reranker", "model");
         props.put("provider", provider); // "tei" or "vllm"

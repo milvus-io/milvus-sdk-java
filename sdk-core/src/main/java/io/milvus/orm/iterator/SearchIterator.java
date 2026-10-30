@@ -524,7 +524,7 @@ public class SearchIterator {
         coefficient = Math.max(1, coefficient);
 
         // Note: params is a Map<String, Object> to store the original parameters, we must not change the params.
-        // here we make a new object nextParams, to ensure is it a deep copy, we convert it to JSON string and
+        // here we make a new object nextParams, to ensure it is a deep copy, we convert it to JSON string and
         // convert back to a Map<String, Object>.
         Map<String, Object> nextParams = JsonUtils.fromJson(JsonUtils.toJson(params),
                 new TypeToken<Map<String, Object>>() {

@@ -1125,10 +1125,6 @@ public class ConnectConfig {
         }
 
         /**
-         * Builds the connection and telemetry stub without starting the telemetry worker.
-         * Used only while a global-cluster replacement is prepared for an atomic handoff.
-         */
-        /**
         * Sets whether to defer starting the telemetry worker.
         *
         * @param deferTelemetryStart whether to defer starting the telemetry worker

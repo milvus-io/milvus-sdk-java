@@ -56,7 +56,7 @@ public class DescribeRoleReq {
     }
 
     /**
-     * Returns the name of the database that the role applies to.
+     * Returns the name of the database in which the role's privileges are described.
      *
      * @return the database name
      */
@@ -67,7 +67,7 @@ public class DescribeRoleReq {
     }
 
     /**
-     * Sets the name of the database that the role applies to.
+     * Sets the name of the database in which the role's privileges are described.
      *
      * @param dbName the database name
      */
@@ -122,7 +122,7 @@ public class DescribeRoleReq {
         }
 
         /**
-         * Sets the name of the database that the role applies to.
+         * Sets the name of the database in which the role's privileges are described.
          *
          * @param dbName the database name
          * @return this builder

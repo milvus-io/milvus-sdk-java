@@ -269,7 +269,7 @@ public class IndexService extends BaseService {
 
     private void WaitForIndexComplete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName,
                                       String collectionName, String fieldName, String indexName, long timeoutMs) {
-        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
+        long startTime = System.currentTimeMillis(); // capture the start time; the timeout is in milliseconds
 
         // alloc a timestamp from the server, the DescribeIndex() will use this timestamp to check the segments
         // which are generated before this timestamp.

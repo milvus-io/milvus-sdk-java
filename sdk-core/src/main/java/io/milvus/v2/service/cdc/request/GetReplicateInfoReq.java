@@ -67,9 +67,10 @@ public class GetReplicateInfoReq {
     }
 
     /**
-     * Returns the target physical channel.
+     * Returns the source cluster's pchannel to query. The field name is historical
+     * and misleading; the value belongs to the source cluster.
      *
-     * @return the target physical channel
+     * @return the source cluster's pchannel
      */
 
 
@@ -78,9 +79,10 @@ public class GetReplicateInfoReq {
     }
 
     /**
-     * Sets the target physical channel.
+     * Sets the source cluster's pchannel to query. The field name is historical
+     * and misleading; the value belongs to the source cluster.
      *
-     * @param targetPchannel the target physical channel
+     * @param targetPchannel the source cluster's pchannel
      */
 
 
@@ -119,9 +121,10 @@ public class GetReplicateInfoReq {
         }
 
         /**
-         * Sets the target physical channel.
+         * Sets the source cluster's pchannel to query. The field name is historical
+         * and misleading; the value belongs to the source cluster.
          *
-         * @param targetPchannel the target physical channel
+         * @param targetPchannel the source cluster's pchannel
          * @return this builder
          */
 

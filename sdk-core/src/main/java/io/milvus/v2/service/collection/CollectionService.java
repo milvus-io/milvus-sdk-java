@@ -58,12 +58,17 @@ import java.util.concurrent.TimeUnit;
 public class CollectionService extends BaseService {
     private static final String ALLOW_INSERT_AUTO_ID = "allow_insert_auto_id";
 
+    /**
+     * Index service used to create indices on collections.
+     */
+
     public IndexService indexService = new IndexService();
 
     /**
      * Creates a collection. When a {@code collectionSchema} is provided the collection is
      * created from the schema; otherwise a simple schema is built from the request parameters.
-     * An index is created on the vector field and the collection is loaded afterwards.
+     * When created without a schema, an index is created on the vector field and the
+     * collection is loaded afterwards.
      *
      * @param blockingStub the gRPC blocking stub
      * @param request the create collection request
@@ -168,7 +173,8 @@ public class CollectionService extends BaseService {
 
     /**
      * Creates a collection with the provided {@code CreateCollectionReq.CollectionSchema}.
-     * Indices are created for the given index parameters and the collection is loaded afterwards.
+     * When index parameters are provided, indices are created for them and the collection
+     * is loaded afterwards.
      *
      * @param blockingStub the gRPC blocking stub
      * @param request the create collection request
@@ -239,7 +245,7 @@ public class CollectionService extends BaseService {
                         .build();
                 indexService.createIndex(blockingStub, createIndexReq);
             }
-            //load collection, set sync to true since no need to wait loading progress
+            //load collection, set sync to false since no need to wait loading progress
             loadCollection(blockingStub, LoadCollectionReq.builder()
                     .databaseName(dbName)
                     .collectionName(collectionName)
@@ -823,6 +829,7 @@ public class CollectionService extends BaseService {
      * @param blockingStub the gRPC blocking stub
      * @param request the get load state request
      * @return {@code true} when the collection is loaded, otherwise {@code false}
+     * @throws MilvusClientException if the collection or partition does not exist
      */
 
 
@@ -948,7 +955,7 @@ public class CollectionService extends BaseService {
     }
 
     /**
-     * Creates an empty {@code CollectionSchema} builder result for use with the create collection API.
+     * Creates an empty {@code CollectionSchema} for use with the create collection API.
      *
      * @return an empty collection schema
      */
