@@ -24,6 +24,11 @@ import io.milvus.common.resourcegroup.ResourceGroupConfig;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Request parameters for the {@code updateResourceGroups} API.
+ */
+
+
 public class UpdateResourceGroupsReq {
     private Map<String, ResourceGroupConfig> resourceGroups;
 
@@ -31,13 +36,34 @@ public class UpdateResourceGroupsReq {
         this.resourceGroups = builder.resourceGroups;
     }
 
+    /**
+     * Creates a new builder for {@code UpdateResourceGroupsReq}.
+     *
+     * @return the builder
+     */
+
+
     public static UpdateResourceGroupsReqBuilder builder() {
         return new UpdateResourceGroupsReqBuilder();
     }
 
+    /**
+     * Returns the resource groups to be updated.
+     *
+     * @return a map of resource group name to its config
+     */
+
+
     public Map<String, ResourceGroupConfig> getResourceGroups() {
         return resourceGroups;
     }
+
+    /**
+     * Sets the resource groups to be updated.
+     *
+     * @param resourceGroups a map of resource group name to its config
+     */
+
 
     public void setResourceGroups(Map<String, ResourceGroupConfig> resourceGroups) {
         this.resourceGroups = resourceGroups;
@@ -50,13 +76,33 @@ public class UpdateResourceGroupsReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link UpdateResourceGroupsReq} class.
+     */
+
+
     public static class UpdateResourceGroupsReqBuilder {
         private Map<String, ResourceGroupConfig> resourceGroups = new HashMap<>();
+
+        /**
+         * Sets the resource groups to be updated.
+         *
+         * @param resourceGroups a map of resource group name to its config
+         * @return this builder
+         */
+
 
         public UpdateResourceGroupsReqBuilder resourceGroups(Map<String, ResourceGroupConfig> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
         }
+
+        /**
+         * Builds the {@code UpdateResourceGroupsReq}.
+         *
+         * @return the built request
+         */
+
 
         public UpdateResourceGroupsReq build() {
             return new UpdateResourceGroupsReq(this);

@@ -22,6 +22,11 @@ package io.milvus.v2.service.database.response;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Response returned by the {@code describeDatabase} API.
+ */
+
+
 public class DescribeDatabaseResp {
     private String databaseName;
     private Map<String, String> properties;
@@ -31,17 +36,45 @@ public class DescribeDatabaseResp {
         this.properties = builder.properties;
     }
 
+    /**
+     * Returns the name of the database.
+     *
+     * @return the database name
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Sets the name of the database.
+     *
+     * @param databaseName the database name
+     */
+
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the properties of the database.
+     *
+     * @return the database properties
+     */
+
+
     public Map<String, String> getProperties() {
         return properties;
     }
+
+    /**
+     * Sets the properties of the database.
+     *
+     * @param properties the database properties
+     */
+
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
@@ -55,9 +88,21 @@ public class DescribeDatabaseResp {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link DescribeDatabaseResp}.
+     *
+     * @return a new {@link DescribeDatabaseRespBuilder}
+     */
+
+
     public static DescribeDatabaseRespBuilder builder() {
         return new DescribeDatabaseRespBuilder();
     }
+
+    /**
+     * Builder for {@link DescribeDatabaseResp} class.
+     */
+
 
     public static class DescribeDatabaseRespBuilder {
         private String databaseName;
@@ -66,15 +111,38 @@ public class DescribeDatabaseResp {
         private DescribeDatabaseRespBuilder() {
         }
 
+        /**
+         * Sets the name of the database.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
+
+
         public DescribeDatabaseRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
+        /**
+         * Sets the properties of the database.
+         *
+         * @param properties the database properties
+         * @return this builder
+         */
+
+
         public DescribeDatabaseRespBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
+
+        /**
+         * Builds the {@link DescribeDatabaseResp}.
+         *
+         * @return the built response
+         */
+
 
         public DescribeDatabaseResp build() {
             return new DescribeDatabaseResp(this);

@@ -21,6 +21,9 @@ package io.milvus.v2.service.rbac.request;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+/**
+ * Request parameters for the {@code listPrivilegeGroups} API.
+ */
 public class ListPrivilegeGroupsReq {
     private ListPrivilegeGroupsReq(ListPrivilegeGroupsReqBuilder builder) {
     }
@@ -31,15 +34,28 @@ public class ListPrivilegeGroupsReq {
                 .toString();
     }
 
+    /**
+     * Creates a new builder for {@link ListPrivilegeGroupsReq}.
+     *
+     * @return a new {@link ListPrivilegeGroupsReqBuilder}
+     */
     public static ListPrivilegeGroupsReqBuilder builder() {
         return new ListPrivilegeGroupsReqBuilder();
     }
 
+    /**
+     * Builder for {@link ListPrivilegeGroupsReq} class.
+     */
     public static class ListPrivilegeGroupsReqBuilder {
 
         private ListPrivilegeGroupsReqBuilder() {
         }
 
+        /**
+         * Builds the {@link ListPrivilegeGroupsReq}.
+         *
+         * @return the built request
+         */
         public ListPrivilegeGroupsReq build() {
             return new ListPrivilegeGroupsReq(this);
         }

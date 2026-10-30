@@ -19,6 +19,11 @@
 
 package io.milvus.v2.service.partition.request;
 
+/**
+ * Request parameters for the {@code createPartition} API.
+ */
+
+
 public class CreatePartitionReq {
     private String databaseName;
     private String collectionName;
@@ -30,25 +35,67 @@ public class CreatePartitionReq {
         this.partitionName = builder.partitionName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
+
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
+
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the name of the partition to be created.
+     *
+     * @return the partition name
+     */
+
+
     public String getPartitionName() {
         return partitionName;
     }
+
+    /**
+     * Sets the name of the partition to be created.
+     *
+     * @param partitionName the partition name
+     */
+
 
     public void setPartitionName(String partitionName) {
         this.partitionName = partitionName;
@@ -63,9 +110,21 @@ public class CreatePartitionReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code CreatePartitionReq}.
+     *
+     * @return the builder
+     */
+
+
     public static CreatePartitionReqBuilder builder() {
         return new CreatePartitionReqBuilder();
     }
+
+    /**
+     * Builder for {@link CreatePartitionReq} class.
+     */
+
 
     public static class CreatePartitionReqBuilder {
         private String databaseName;
@@ -75,20 +134,51 @@ public class CreatePartitionReq {
         private CreatePartitionReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
+
+
         public CreatePartitionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
+
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
+
 
         public CreatePartitionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the name of the partition to be created.
+         *
+         * @param partitionName the partition name
+         * @return this builder
+         */
+
+
         public CreatePartitionReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
+
+        /**
+         * Builds the {@code CreatePartitionReq}.
+         *
+         * @return the built request
+         */
+
 
         public CreatePartitionReq build() {
             return new CreatePartitionReq(this);

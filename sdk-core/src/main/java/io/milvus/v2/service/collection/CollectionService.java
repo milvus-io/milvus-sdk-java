@@ -195,7 +195,7 @@ public class CollectionService extends BaseService {
                         .build();
                 indexService.createIndex(blockingStub, createIndexReq);
             }
-            //load collection, set sync to true since no need to wait loading progress
+            //load collection, set sync to false since no need to wait loading progress
             loadCollection(blockingStub, LoadCollectionReq.builder()
                     .databaseName(dbName)
                     .collectionName(collectionName)

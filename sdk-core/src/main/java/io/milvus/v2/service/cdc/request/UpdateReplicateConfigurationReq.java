@@ -19,10 +19,16 @@
 
 package io.milvus.v2.service.cdc.request;
 
+/**
+ * Request parameters for the {@code updateReplicateConfiguration} CDC API.
+ */
 public class UpdateReplicateConfigurationReq {
     private ReplicateConfiguration replicateConfiguration;
     private boolean forcePromote;
 
+    /**
+     * Creates a new {@code UpdateReplicateConfigurationReq} builder.
+     */
     public static UpdateReplicateConfigurationReqBuilder builder() {
         return new UpdateReplicateConfigurationReqBuilder();
     }
@@ -32,18 +38,30 @@ public class UpdateReplicateConfigurationReq {
         this.forcePromote = builder.forcePromote;
     }
 
+    /**
+     * Returns the replicate configuration.
+     */
     public ReplicateConfiguration getReplicateConfiguration() {
         return replicateConfiguration;
     }
 
+    /**
+     * Sets the replicate configuration.
+     */
     public void setReplicateConfiguration(ReplicateConfiguration replicateConfiguration) {
         this.replicateConfiguration = replicateConfiguration;
     }
 
+    /**
+     * Returns whether the current cluster is promoted to primary forcefully. Intended for failover scenarios.
+     */
     public boolean isForcePromote() {
         return forcePromote;
     }
 
+    /**
+     * Sets whether the current cluster is promoted to primary forcefully. Intended for failover scenarios.
+     */
     public void setForcePromote(boolean forcePromote) {
         this.forcePromote = forcePromote;
     }
@@ -56,20 +74,32 @@ public class UpdateReplicateConfigurationReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link UpdateReplicateConfigurationReq}.
+     */
     public static class UpdateReplicateConfigurationReqBuilder {
         private ReplicateConfiguration replicateConfiguration;
         private boolean forcePromote;
 
+        /**
+         * Sets the replicate configuration.
+         */
         public UpdateReplicateConfigurationReqBuilder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
             this.replicateConfiguration = replicateConfiguration;
             return this;
         }
 
+        /**
+         * Sets whether the current cluster is promoted to primary forcefully. Intended for failover scenarios.
+         */
         public UpdateReplicateConfigurationReqBuilder forcePromote(boolean forcePromote) {
             this.forcePromote = forcePromote;
             return this;
         }
 
+        /**
+         * Builds the {@link UpdateReplicateConfigurationReq}.
+         */
         public UpdateReplicateConfigurationReq build() {
             return new UpdateReplicateConfigurationReq(this);
         }

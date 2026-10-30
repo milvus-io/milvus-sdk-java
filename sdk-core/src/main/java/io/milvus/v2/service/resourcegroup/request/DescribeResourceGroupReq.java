@@ -19,6 +19,11 @@
 
 package io.milvus.v2.service.resourcegroup.request;
 
+/**
+ * Request parameters for the {@code describeResourceGroup} API.
+ */
+
+
 public class DescribeResourceGroupReq {
     private String groupName;
 
@@ -26,13 +31,34 @@ public class DescribeResourceGroupReq {
         this.groupName = builder.groupName;
     }
 
+    /**
+     * Creates a new builder for {@code DescribeResourceGroupReq}.
+     *
+     * @return the builder
+     */
+
+
     public static DescribeResourceGroupReqBuilder builder() {
         return new DescribeResourceGroupReqBuilder();
     }
 
+    /**
+     * Returns the name of the resource group to be described.
+     *
+     * @return the resource group name
+     */
+
+
     public String getGroupName() {
         return groupName;
     }
+
+    /**
+     * Sets the name of the resource group to be described.
+     *
+     * @param groupName the resource group name
+     */
+
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
@@ -45,13 +71,33 @@ public class DescribeResourceGroupReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DescribeResourceGroupReq} class.
+     */
+
+
     public static class DescribeResourceGroupReqBuilder {
         private String groupName;
+
+        /**
+         * Sets the name of the resource group to be described.
+         *
+         * @param groupName the resource group name
+         * @return this builder
+         */
+
 
         public DescribeResourceGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
+
+        /**
+         * Builds the {@code DescribeResourceGroupReq}.
+         *
+         * @return the built request
+         */
+
 
         public DescribeResourceGroupReq build() {
             return new DescribeResourceGroupReq(this);

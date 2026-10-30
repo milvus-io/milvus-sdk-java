@@ -68,6 +68,17 @@ public class IteratorCache {
         return cached.size();
     }
 
+    /**
+     * Drains the given number of rows from the cache, marking them as consumed.
+     *
+     * <p>Once all rows of a cache entry are drained, the entry is removed from the cache.
+     *
+     * @param cacheId the cache ID to drain from
+     * @param count   the number of rows to drain
+     * @return the drained rows
+     * @throws io.milvus.exception.ParamException if {@code count} is negative, the cache ID is not
+     *         present, or {@code count} exceeds the number of cached rows
+     */
     public synchronized List<QueryResultsWrapper.RowRecord> drain(int cacheId, int count) {
         if (count == 0) {
             return new ArrayList<>();

@@ -22,6 +22,10 @@ package io.milvus.v2.common;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A compaction plan describing which source segments are compacted into a target segment, as
+ * returned by the {@code getCompactionPlans} API.
+ */
 public class CompactionPlan {
     private Long target;
     private List<Long> sources;
@@ -31,14 +35,29 @@ public class CompactionPlan {
         this.sources = builder.sources;
     }
 
+    /**
+     * Creates a new {@code CompactionPlan} builder.
+     *
+     * @return the builder
+     */
     public static CompactionPlanBuilder builder() {
         return new CompactionPlanBuilder();
     }
 
+    /**
+     * Returns the ID of the target segment produced by the compaction.
+     *
+     * @return the target segment ID
+     */
     public Long getTarget() {
         return this.target;
     }
 
+    /**
+     * Returns the IDs of the source segments that are compacted.
+     *
+     * @return the source segment IDs
+     */
     public List<Long> getSources() {
         return this.sources;
     }
@@ -55,16 +74,33 @@ public class CompactionPlan {
         private Long target = 0L;
         private List<Long> sources = new ArrayList<>();
 
+        /**
+         * Sets the ID of the target segment produced by the compaction.
+         *
+         * @param target the target segment ID
+         * @return this builder
+         */
         public CompactionPlanBuilder target(long target) {
             this.target = target;
             return this;
         }
 
+        /**
+         * Sets the IDs of the source segments to compact.
+         *
+         * @param sources the source segment IDs
+         * @return this builder
+         */
         public CompactionPlanBuilder sources(List<Long> sources) {
             this.sources = sources;
             return this;
         }
 
+        /**
+         * Builds the {@link CompactionPlan}.
+         *
+         * @return the compaction plan
+         */
         public CompactionPlan build() {
             return new CompactionPlan(this);
         }
