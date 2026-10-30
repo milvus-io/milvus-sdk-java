@@ -106,7 +106,7 @@ public class FunctionChainExpr {
     }
 
     /**
-     * Builder for {@link FunctionChainExpr} class.
+     * Builder for {@link FunctionChainExpr}.
      */
 
 

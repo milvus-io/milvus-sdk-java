@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Zilliz Cloud only. A session scoped to a specific cluster of a global cluster deployment.
  * <p>
- * All DML and DQL operations issued through a session are routed to the bound cluster. The session
+ * All DQL operations issued through a session are routed to the bound cluster. The session
  * becomes unusable once {@link #close()} is called.
  *
  * @zillizCloudOnly

@@ -74,7 +74,7 @@ public class QueryIterator {
      * Constructs a new QueryIterator.
      *
      * @param queryIteratorParam the query iterator parameters
-     * @param blockingStub the gRPC blocking stub
+     * @param blockingStub the gRPC stub wrapper used to issue queries
      * @param primaryField the primary field of the collection
      * @param collectionId the collection id
      */
@@ -109,7 +109,7 @@ public class QueryIterator {
      * Constructs a new QueryIterator.
      *
      * @param queryIteratorReq the query iterator request
-     * @param blockingStub the gRPC blocking stub
+     * @param blockingStub the gRPC stub wrapper used to issue queries
      * @param primaryField the primary field of the collection
      * @param collectionId the collection id
      */
@@ -126,7 +126,7 @@ public class QueryIterator {
      * Constructs a new QueryIterator.
      *
      * @param queryIteratorReq the query iterator request
-     * @param blockingStub the gRPC blocking stub
+     * @param blockingStub the gRPC stub wrapper used to issue queries
      * @param primaryField the primary field of the collection
      * @param collectionId the collection id
      * @param clusterId the cluster id
@@ -204,7 +204,10 @@ public class QueryIterator {
     /**
      * Returns the next batch of rows.
      *
-     * @return the next batch of rows
+     * <p>Returns an empty list when the configured limit is reached or the server has no more
+     * matching rows to return.
+     *
+     * @return the next batch of rows, or an empty list if the iteration is finished
      */
 
 
@@ -245,7 +248,7 @@ public class QueryIterator {
     }
 
     /**
-     * Capture the current iterator position as a resumable cursor. The cursor holds the
+     * Captures the current iterator position as a resumable cursor. The cursor holds the
      * session timestamp, the last primary key returned, and (for element-filter iterators)
      * the last matched element offset, so pagination can continue in a new iterator.
      *

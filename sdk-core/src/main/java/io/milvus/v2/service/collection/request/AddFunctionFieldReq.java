@@ -23,7 +23,7 @@ import io.milvus.v2.common.IndexParam;
 
 /**
  * Request parameters for the {@code addFunctionField} API, which adds a function
- * and its output field together with an optional index on the output field.
+ * and its output field together with the index bound to its output field.
  */
 
 

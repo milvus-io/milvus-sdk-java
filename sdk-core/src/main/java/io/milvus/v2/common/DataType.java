@@ -62,9 +62,12 @@ public enum DataType {
     Double(11),
 
     /**
-     * A variable-length string data type, alias of {@code VarChar}.
+     * A string data type, distinct from {@code VarChar} in that it does not require a maximum length.
      */
     String(20),
+    /**
+     * A variable-length string with a specified maximum length.
+     */
     VarChar(21), // variable-length strings with a specified maximum length
     /**
      * An array whose elements share a scalar data type.

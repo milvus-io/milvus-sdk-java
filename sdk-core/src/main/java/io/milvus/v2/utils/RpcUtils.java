@@ -198,6 +198,7 @@ public class RpcUtils {
      * @param callable the operation to execute
      * @param <T> the return type of the operation
      * @return the result of the operation
+     * @throws MilvusClientException if the call fails, times out, or exhausts the retry budget
      */
 
 
@@ -277,7 +278,7 @@ public class RpcUtils {
             }
 
             if (k >= maxRetryTimes) {
-                // finish retry loop, return the response of the last retry
+                // finish retry loop, stop retrying
                 String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
                 logger.warn(msg);
                 throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exceed max time, exit retry
@@ -319,7 +320,7 @@ public class RpcUtils {
 
     /**
      * Executes an asynchronous RPC with the same retry policy used by {@link #retry(Callable)}.
-     * Validation failures are returned as exceptionally completed futures, retry backoff never
+     * Failures are returned as exceptionally completed futures, retry backoff never
      * blocks a caller thread, and cancellation is propagated to the active RPC or scheduled retry.
      *
      * @param supplier the supplier of the asynchronous operation to execute

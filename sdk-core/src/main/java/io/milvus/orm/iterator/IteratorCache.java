@@ -122,7 +122,7 @@ public class IteratorCache {
     }
 
     /**
-     * Drains up to the given number of rows from the cache, marking them as consumed.
+     * Drains the given number of rows from the cache, marking them as consumed.
      *
      * <p>Once all rows of a cache entry are drained, the entry is removed from the cache.
      *

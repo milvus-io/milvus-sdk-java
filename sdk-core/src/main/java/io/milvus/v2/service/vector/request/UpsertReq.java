@@ -30,11 +30,11 @@ import java.util.List;
 
 public class UpsertReq {
     /**
-     * Sets the row data to insert. The rows list cannot be empty.
+     * Sets the row data to upsert.
      * <p>
-     * Internal class for insert data.
+     * Internal class for upsert data.
      * If dataType is Bool/Int8/Int16/Int32/Int64/Float/Double/Varchar/Text/Geometry/Timestamptz, use JsonObject.addProperty(key, value) to input;
-     * If dataType is FloatVector, use JsonObject.add(key, gson.toJsonTree(List[Float]) to input;
+     * If dataType is FloatVector, use JsonObject.add(key, gson.toJsonTree(List[Float])) to input;
      * If dataType is BinaryVector/Float16Vector/BFloat16Vector, use JsonObject.add(key, gson.toJsonTree(byte[])) to input;
      * If dataType is SparseFloatVector, use JsonObject.add(key, gson.toJsonTree(SortedMap[Long, Float])) to input;
      * If dataType is Array, use JsonObject.add(key, gson.toJsonTree(List of Boolean/Integer/Short/Long/Float/Double/String)) to input;
@@ -50,7 +50,7 @@ public class UpsertReq {
      * 2. String value can be parsed to numeric/boolean type if the value is valid.
      * For example:
      * A Bool field named "XX", you set the value to be "TRUE" by JsonObject.add("XX", "TRUE"), the string "TRUE" is parsed as true.
-     * A Float field named "XX", you set the value to be "3.5" by JsonObject.add("XX", "3.5", the string "3.5" is parsed as 3.5.
+     * A Float field named "XX", you set the value to be "3.5" by JsonObject.add("XX", "3.5"), the string "3.5" is parsed as 3.5.
      *
      */
     private List<JsonObject> data;

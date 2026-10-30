@@ -250,8 +250,7 @@ public class SnapshotService extends BaseService {
     }
 
     /**
-     * Pins the data of a snapshot for the given TTL so it is protected from compaction and
-     * garbage collection.
+     * Pins the data of a snapshot for the given TTL so it is protected from garbage collection.
      *
      * @param blockingStub the gRPC blocking stub
      * @param request the pin snapshot data request
