@@ -25,10 +25,29 @@ package io.milvus.v2.service.snapshot.response;
 
 
 public class RestoreSnapshotJobInfo {
+    /**
+     * The restore job is in an unknown state.
+     */
     public static final String STATE_NONE = "RestoreSnapshotNone";
+
+    /**
+     * The restore job has been created and is waiting to start.
+     */
     public static final String STATE_PENDING = "RestoreSnapshotPending";
+
+    /**
+     * The restore job is being executed.
+     */
     public static final String STATE_EXECUTING = "RestoreSnapshotExecuting";
+
+    /**
+     * The restore job has completed successfully.
+     */
     public static final String STATE_COMPLETED = "RestoreSnapshotCompleted";
+
+    /**
+     * The restore job has failed.
+     */
     public static final String STATE_FAILED = "RestoreSnapshotFailed";
 
     private Long jobId;

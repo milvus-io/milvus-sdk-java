@@ -44,7 +44,7 @@ import java.util.Map;
  * After this change, the client code should be changed accordingly:
  * WeightedRanker ranker = WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build()
  * <p>
- * You also can declare a weighter ranker by Function
+ * You also can declare a weighted ranker by Function
  * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
  * .functionType(FunctionType.RERANK)
  * .param("reranker", "weighted")
@@ -56,7 +56,7 @@ import java.util.Map;
 public class WeightedRanker extends CreateCollectionReq.Function {
     private List<Float> weights;
 
-    // This constructor is to compatible with the old client code like:
+    // This constructor is to be compatible with the old client code like:
     //  new WeightedRanker(weights)
     // Now it is deprecated, user should create a WeightedRanker by builder style:
     //  WeightedRanker.builder().weights(weights).build()

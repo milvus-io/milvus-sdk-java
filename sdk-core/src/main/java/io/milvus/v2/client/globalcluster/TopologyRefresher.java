@@ -52,6 +52,14 @@ public class TopologyRefresher {
     private final AtomicLong currentVersion;
     private final AtomicBoolean refreshing = new AtomicBoolean(false);
 
+    /**
+     * Creates a refresher that polls the given global cluster endpoint for topology changes.
+     *
+     * @param globalEndpoint the global cluster endpoint
+     * @param token the authentication token, or null
+     * @param initialVersion the topology version to start from
+     * @param onTopologyChange the consumer invoked when the topology version changes
+     */
     public TopologyRefresher(String globalEndpoint, String token, long initialVersion,
                              Consumer<GlobalTopology> onTopologyChange) {
         this.globalEndpoint = globalEndpoint;

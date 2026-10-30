@@ -36,9 +36,9 @@ import java.util.concurrent.TimeUnit;
 public class RpcStubWrapper {
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
-    // rpcTimeoutMs of MilvusServiceBlockingStub.withDeadlineAfter() is "end of using time", not "timeout of per call",
-    // we have to reset this value for each time QueryIterator calls the query() interface.
-    // the rpcDeadlineMs value is passed from MilvusClient
+    // The deadline set by MilvusServiceBlockingStub.withDeadlineAfter() is an absolute deadline
+    // ("end of using time"), not a per-call timeout, so it must be reset before each iterator call.
+    // The rpcDeadlineMs value is passed from MilvusClient.
     private final long rpcDeadlineMs;
     private final String endpoint;
     private final String databaseName;

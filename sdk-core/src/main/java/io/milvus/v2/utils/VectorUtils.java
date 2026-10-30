@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
  * Utility class used internally by the Milvus Java SDK v2 to convert query, search, and hybrid
  * search requests into the gRPC protobuf requests sent to the Milvus server.
  *
- * <p>Also provides helpers for building filter expression templates and primary key filter
+ * <p>Also provides helpers for building filter expression template values and primary key filter
  * expressions.</p>
  */
 
@@ -99,11 +99,13 @@ public class VectorUtils {
      * Converts an SDK v2 {@link QueryReq} into a gRPC {@link QueryRequest}.
      *
      * <p>Maps the filter expression, partition names, output fields, consistency level, query
-     * parameters, offset, limit, and timezone onto the gRPC request.</p>
+     * parameters, offset, limit, order-by and group-by fields, and timezone onto the gRPC request.
+     * A null consistency level enables the server default.</p>
      *
      * @param request the SDK v2 query request
      * @return the gRPC query request
      * @throws NullPointerException if {@code request} is null
+     * @throws MilvusClientException if a filter expression template value has an unsupported type
      */
 
 
@@ -324,10 +326,12 @@ public class VectorUtils {
      *
      * <p>Maps the search targets (vectors or IDs), filter expression, search parameters, output
      * fields, consistency level, ranker/function score, function chains, and highlighter onto the
-     * gRPC request.</p>
+     * gRPC request. A null consistency level enables the server default.</p>
      *
      * @param request the SDK v2 search request
      * @return the gRPC search request
+     * @throws MilvusClientException if the limit is not positive, round_decimal is out of range,
+     *                               or the search targets are invalid
      */
 
 
@@ -670,13 +674,15 @@ public class VectorUtils {
     /**
      * Converts an {@link AnnSearchReq} into a gRPC {@link SearchRequest}.
      *
-     * <p>Maps the target vectors, search parameters, filter expression, and consistency level onto
-     * the gRPC request.</p>
+     * <p>Maps the target vectors, search parameters, filter expression, metric type, and
+     * consistency level onto the gRPC request. A null consistency level enables the server
+     * default.</p>
      *
      * @param annSearchReq     the ANN search request
      * @param consistencyLevel the consistency level to apply, may be {@code null}
      * @return the gRPC search request
      * @throws NullPointerException if {@code annSearchReq} is null
+     * @throws MilvusClientException if the target vector list is empty or mixes vector types
      */
 
 
@@ -766,11 +772,12 @@ public class VectorUtils {
      *
      * <p>Converts each sub-request via {@link #convertAnnSearchParam(AnnSearchReq, ConsistencyLevel)}
      * and maps the ranker/function score, group-by settings, output fields, and consistency level
-     * onto the gRPC request.</p>
+     * onto the gRPC request. A null consistency level enables the server default.</p>
      *
      * @param request the SDK v2 hybrid search request
      * @return the gRPC hybrid search request
-     * @throws MilvusClientException if the sub-request list is empty or both a ranker and a function
+     * @throws MilvusClientException if the limit is not positive, round_decimal is out of range,
+     *                               the sub-request list is empty, or both a ranker and a function
      *                               score are set
      */
 

@@ -67,7 +67,8 @@ public class GetReplicateInfoResp {
     }
 
     /**
-     * Returns the salvage checkpoint used for replication recovery.
+     * Returns the salvage checkpoint captured during a force promote, representing
+     * the last synced position from the old primary.
      *
      * @return the salvage checkpoint
      */
@@ -78,7 +79,8 @@ public class GetReplicateInfoResp {
     }
 
     /**
-     * Sets the salvage checkpoint used for replication recovery.
+     * Sets the salvage checkpoint captured during a force promote, representing
+     * the last synced position from the old primary.
      *
      * @param salvageCheckpoint the salvage checkpoint
      */
@@ -119,7 +121,8 @@ public class GetReplicateInfoResp {
         }
 
         /**
-         * Sets the salvage checkpoint used for replication recovery.
+         * Sets the salvage checkpoint captured during a force promote, representing
+         * the last synced position from the old primary.
          *
          * @param salvageCheckpoint the salvage checkpoint
          * @return this builder
