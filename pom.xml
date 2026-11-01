@@ -205,7 +205,7 @@
         <azure-core.version>1.55.3</azure-core.version>
         <azure-core-http-netty.version>1.15.11</azure-core-http-netty.version>
         <unirest.version>3.13.10</unirest.version>
-        <snappy.version>1.1.10.7</snappy.version>
+        <snappy.version>1.1.10.9</snappy.version>
         <aws-java-sdk-s3.version>1.12.687</aws-java-sdk-s3.version>
         <minio-java-sdk.version>8.6.0</minio-java-sdk.version>
         <azure-java-blob-sdk.version>12.25.3</azure-java-blob-sdk.version>
