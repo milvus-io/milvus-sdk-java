@@ -19,6 +19,9 @@
 
 package io.milvus.v2.service.rbac.request;
 
+/**
+ * Request parameters for the {@code revokePrivilegeV2} API.
+ */
 public class RevokePrivilegeReqV2 {
     private String roleName;
     private String privilege;
@@ -32,34 +35,74 @@ public class RevokePrivilegeReqV2 {
         this.collectionName = builder.collectionName;
     }
 
+    /**
+     * Returns the name of the role from which the privilege is revoked.
+     *
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Sets the name of the role from which the privilege is revoked.
+     *
+     * @param roleName the role name
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
 
+    /**
+     * Returns the privilege to revoke.
+     *
+     * @return the privilege to revoke
+     */
     public String getPrivilege() {
         return privilege;
     }
 
+    /**
+     * Sets the privilege to revoke.
+     *
+     * @param privilege the privilege to revoke
+     */
     public void setPrivilege(String privilege) {
         this.privilege = privilege;
     }
 
+    /**
+     * Returns the name of the database to which the privilege applies.
+     *
+     * @return the database name
+     */
     public String getDbName() {
         return dbName;
     }
 
+    /**
+     * Sets the name of the database to which the privilege applies.
+     *
+     * @param dbName the database name
+     */
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
 
+    /**
+     * Returns the name of the collection to which the privilege applies.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Sets the name of the collection to which the privilege applies.
+     *
+     * @param collectionName the collection name
+     */
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -74,10 +117,18 @@ public class RevokePrivilegeReqV2 {
                 '}';
     }
 
+    /**
+     * Creates a new {@code RevokePrivilegeReqV2} builder.
+     *
+     * @return the builder
+     */
     public static RevokePrivilegeReqV2Builder builder() {
         return new RevokePrivilegeReqV2Builder();
     }
 
+    /**
+     * Builder for {@link RevokePrivilegeReqV2}.
+     */
     public static class RevokePrivilegeReqV2Builder {
         private String roleName;
         private String privilege;
@@ -87,26 +138,55 @@ public class RevokePrivilegeReqV2 {
         private RevokePrivilegeReqV2Builder() {
         }
 
+        /**
+         * Sets the name of the role from which the privilege is revoked.
+         *
+         * @param roleName the role name
+         * @return this builder
+         */
         public RevokePrivilegeReqV2Builder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
+        /**
+         * Sets the privilege to revoke.
+         *
+         * @param privilege the privilege to revoke
+         * @return this builder
+         */
         public RevokePrivilegeReqV2Builder privilege(String privilege) {
             this.privilege = privilege;
             return this;
         }
 
+        /**
+         * Sets the name of the database to which the privilege applies.
+         *
+         * @param dbName the database name
+         * @return this builder
+         */
         public RevokePrivilegeReqV2Builder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
 
+        /**
+         * Sets the name of the collection to which the privilege applies.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
         public RevokePrivilegeReqV2Builder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Builds the {@link RevokePrivilegeReqV2}.
+         *
+         * @return the request
+         */
         public RevokePrivilegeReqV2 build() {
             return new RevokePrivilegeReqV2(this);
         }

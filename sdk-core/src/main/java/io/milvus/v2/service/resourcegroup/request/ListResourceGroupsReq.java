@@ -19,11 +19,23 @@
 
 package io.milvus.v2.service.resourcegroup.request;
 
+/**
+ * Request parameters for the {@code listResourceGroups} API.
+ */
+
+
 public class ListResourceGroupsReq {
 
     private ListResourceGroupsReq(ListResourceGroupsReqBuilder builder) {
         // No fields to initialize
     }
+
+    /**
+     * Creates a new builder for {@code ListResourceGroupsReq}.
+     *
+     * @return the builder
+     */
+
 
     public static ListResourceGroupsReqBuilder builder() {
         return new ListResourceGroupsReqBuilder();
@@ -34,7 +46,19 @@ public class ListResourceGroupsReq {
         return "ListResourceGroupsReq{}";
     }
 
+    /**
+     * Builder for {@link ListResourceGroupsReq} class.
+     */
+
+
     public static class ListResourceGroupsReqBuilder {
+
+        /**
+         * Builds the {@code ListResourceGroupsReq}.
+         *
+         * @return the built request
+         */
+
 
         public ListResourceGroupsReq build() {
             return new ListResourceGroupsReq(this);

@@ -19,11 +19,26 @@
 
 package io.milvus.v2.exception;
 
+/**
+ * Runtime exception thrown when the data provided to a Milvus Java SDK v2 API does not match the
+ * expected format or schema, such as mismatched field values or types.
+ */
 public class DataNotMatchException extends MilvusClientException {
+    /**
+     * Constructs a {@code DataNotMatchException} with the given message.
+     *
+     * @param message the detail message
+     */
     public DataNotMatchException(String message) {
         super(ErrorCode.INVALID_PARAMS, message);
     }
 
+    /**
+     * Constructs a {@code DataNotMatchException} with the given message and cause.
+     *
+     * @param message the detail message
+     * @param cause   the underlying cause of this exception
+     */
     public DataNotMatchException(String message, Throwable cause) {
         super(ErrorCode.INVALID_PARAMS, message);
         initCause(cause);

@@ -42,7 +42,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Utility class providing conversion methods between Milvus gRPC protobuf types and the Milvus
+ * Java SDK v2 model types.
+ *
+ * <p>Used internally by the SDK service implementations to translate query, search, index, and
+ * collection responses.</p>
+ */
 public class ConvertUtils {
+    /**
+     * Converts an SDK v2 data type to the corresponding gRPC {@link DataType}.
+     *
+     * @param dt the SDK v2 data type to convert, may be {@code null}
+     * @return the corresponding gRPC data type, or {@link DataType#None} if {@code dt} is null
+     * @throws MilvusClientException if the data type cannot be converted
+     */
     public static DataType toProtoDataType(io.milvus.v2.common.DataType dt) {
         if (dt == null) {
             return DataType.None;
@@ -54,6 +68,13 @@ public class ConvertUtils {
         }
     }
 
+    /**
+     * Converts a gRPC {@link DataType} to the corresponding SDK v2 data type.
+     *
+     * @param dt the gRPC data type to convert, may be {@code null}
+     * @return the corresponding SDK v2 data type, or {@code DataType.None} if {@code dt} is null
+     * @throws MilvusClientException if the data type cannot be converted
+     */
     public static io.milvus.v2.common.DataType toSdkDataType(DataType dt) {
         if (dt == null) {
             return io.milvus.v2.common.DataType.None;
@@ -65,6 +86,15 @@ public class ConvertUtils {
         }
     }
 
+    /**
+     * Converts a gRPC {@link QueryResults} response into a list of SDK v2 query results.
+     *
+     * <p>Handles {@code count(*)} aggregation responses; otherwise each row record is returned as
+     * one query result.
+     *
+     * @param response the gRPC query results response
+     * @return a list of SDK v2 query results
+     */
     public List<QueryResp.QueryResult> getEntities(QueryResults response) {
         List<QueryResp.QueryResult> entities = new ArrayList<>();
         // count(*) ?
@@ -92,6 +122,15 @@ public class ConvertUtils {
         return entities;
     }
 
+    /**
+     * Converts a gRPC {@link SearchResults} response into a list of search results grouped by query.
+     *
+     * <p>Each inner list contains the search results for one query, including entity fields, score,
+     * primary key, ID, highlight results, and element offsets where applicable.
+     *
+     * @param response the gRPC search results response
+     * @return a list of search result lists, one per query
+     */
     public List<List<SearchResp.SearchResult>> getEntities(SearchResults response) {
         SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getResults());
         long numQueries = response.getResults().getNumQueries();
@@ -141,6 +180,16 @@ public class ConvertUtils {
         return searchResults;
     }
 
+    /**
+     * Converts a list of gRPC {@link IndexDescription} responses into a single SDK v2
+     * {@link DescribeIndexResp}.
+     *
+     * <p>Parses the index parameters (index type, metric type, mmap settings, and extra parameters)
+     * from the gRPC key-value pairs.
+     *
+     * @param response the list of gRPC index descriptions
+     * @return the SDK v2 describe index response
+     */
     public DescribeIndexResp convertToDescribeIndexResp(List<IndexDescription> response) {
         List<DescribeIndexResp.IndexDesc> descs = new ArrayList<>();
         for (IndexDescription description : response) {
@@ -200,6 +249,13 @@ public class ConvertUtils {
         return DescribeIndexResp.builder().indexDescriptions(descs).build();
     }
 
+    /**
+     * Converts a gRPC {@link BatchDescribeCollectionResponse} into a list of SDK v2
+     * {@link DescribeCollectionResp}.
+     *
+     * @param response the gRPC batch describe collection response
+     * @return a list of SDK v2 describe collection responses
+     */
     public List<DescribeCollectionResp> convertDescCollectionsResp(BatchDescribeCollectionResponse response) {
         List<DescribeCollectionResp> result = new ArrayList<>();
         List<DescribeCollectionResponse> responsesList = response.getResponsesList();
@@ -210,6 +266,15 @@ public class ConvertUtils {
         return result;
     }
 
+    /**
+     * Converts a gRPC {@link DescribeCollectionResponse} into an SDK v2 {@link DescribeCollectionResp}.
+     *
+     * <p>Maps the collection schema, vector field names, primary field name, consistency level, and
+     * other collection metadata to the SDK v2 model.
+     *
+     * @param response the gRPC describe collection response
+     * @return the SDK v2 describe collection response
+     */
     public DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
         Map<String, String> properties = new HashMap<>();
         response.getPropertiesList().forEach(prop -> properties.put(prop.getKey(), prop.getValue()));

@@ -37,7 +37,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Service for index-related operations, such as creating, dropping, and describing indexes.
+ */
+
+
 public class IndexService extends BaseService {
+
+    /**
+     * Creates indexes for the specified index parameters. When {@code sync} is enabled, waits
+     * until the index build completes.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the create index request
+     * @return {@code null}
+     */
+
 
     public Void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
         if (CollectionUtils.isEmpty(request.getIndexParams())) {
@@ -102,6 +117,15 @@ public class IndexService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the index identified by field name or index name from the specified collection.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop index request
+     * @return {@code null}
+     */
+
+
     public Void dropIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -122,6 +146,15 @@ public class IndexService extends BaseService {
 
         return null;
     }
+
+    /**
+     * Alters the properties of the specified index.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the alter index properties request
+     * @return {@code null}
+     */
+
 
     public Void alterIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexPropertiesReq request) {
         String dbName = request.getDatabaseName();
@@ -150,6 +183,15 @@ public class IndexService extends BaseService {
         return null;
     }
 
+    /**
+     * Drops the specified properties from the index.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the drop index properties request
+     * @return {@code null}
+     */
+
+
     public Void dropIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -169,6 +211,15 @@ public class IndexService extends BaseService {
 
         return null;
     }
+
+    /**
+     * Describes the index matching the given field name or index name.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the describe index request
+     * @return the describe index response
+     */
+
 
     public DescribeIndexResp describeIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeIndexReq request) {
         String dbName = request.getDatabaseName();
@@ -192,6 +243,16 @@ public class IndexService extends BaseService {
         List<IndexDescription> indexes = response.getIndexDescriptionsList().stream().filter(index -> index.getIndexName().equals(request.getIndexName()) || index.getFieldName().equals(request.getFieldName())).collect(Collectors.toList());
         return convertUtils.convertToDescribeIndexResp(indexes);
     }
+
+    /**
+     * Lists the index names of the specified collection, optionally filtered by field name.
+     * Returns an empty list when the collection has no index.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the list indexes request
+     * @return the list of index names
+     */
+
 
     public List<String> listIndexes(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListIndexesReq request) {
         String dbName = request.getDatabaseName();
@@ -232,7 +293,7 @@ public class IndexService extends BaseService {
 
     private void WaitForIndexComplete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName,
                                       String collectionName, String fieldName, String indexName, long timeoutMs) {
-        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
+        long startTime = System.currentTimeMillis(); // capture the start time; the timeout is in milliseconds
 
         // alloc a timestamp from the server, the DescribeIndex() will use this timestamp to check the segments
         // which are generated before this timestamp.

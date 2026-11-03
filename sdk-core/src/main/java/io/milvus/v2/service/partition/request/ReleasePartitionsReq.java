@@ -21,6 +21,11 @@ package io.milvus.v2.service.partition.request;
 
 import java.util.List;
 
+/**
+ * Request parameters for the {@code releasePartitions} API.
+ */
+
+
 public class ReleasePartitionsReq {
     private String databaseName;
     private String collectionName;
@@ -32,25 +37,67 @@ public class ReleasePartitionsReq {
         this.partitionNames = builder.partitionNames;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
+
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     */
+
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the names of the partitions to be released.
+     *
+     * @return the list of partition names
+     */
+
+
     public List<String> getPartitionNames() {
         return partitionNames;
     }
+
+    /**
+     * Sets the names of the partitions to be released.
+     *
+     * @param partitionNames the list of partition names
+     */
+
 
     public void setPartitionNames(List<String> partitionNames) {
         this.partitionNames = partitionNames;
@@ -65,9 +112,21 @@ public class ReleasePartitionsReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code ReleasePartitionsReq}.
+     *
+     * @return the builder
+     */
+
+
     public static ReleasePartitionsReqBuilder builder() {
         return new ReleasePartitionsReqBuilder();
     }
+
+    /**
+     * Builder for {@link ReleasePartitionsReq} class.
+     */
+
 
     public static class ReleasePartitionsReqBuilder {
         private String databaseName;
@@ -77,20 +136,51 @@ public class ReleasePartitionsReq {
         private ReleasePartitionsReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
+
+
         public ReleasePartitionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
+
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         */
+
 
         public ReleasePartitionsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the names of the partitions to be released.
+         *
+         * @param partitionNames the list of partition names
+         * @return this builder
+         */
+
+
         public ReleasePartitionsReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
+
+        /**
+         * Builds the {@code ReleasePartitionsReq}.
+         *
+         * @return the built request
+         */
+
 
         public ReleasePartitionsReq build() {
             return new ReleasePartitionsReq(this);

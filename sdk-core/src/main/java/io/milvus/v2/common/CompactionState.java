@@ -19,11 +19,28 @@
 
 package io.milvus.v2.common;
 
+/**
+ * State of a compaction job as reported by the {@code getCompactionState} API.
+ */
 public enum CompactionState {
+    /**
+     * The compaction state is undefined.
+     */
     UndefinedState(0),
+    /**
+     * Deprecated alias of {@link #UndefinedState}, kept for backward compatibility.
+     *
+     * @deprecated use {@link #UndefinedState} instead.
+     */
     @Deprecated
     UndefiedState(0),
+    /**
+     * The compaction job is being executed.
+     */
     Executing(1),
+    /**
+     * The compaction job has completed.
+     */
     Completed(2);
 
     private final int code;
@@ -32,10 +49,25 @@ public enum CompactionState {
         this.code = code;
     }
 
+    /**
+     * Returns the numeric code of the compaction state.
+     *
+     * @return the numeric code
+     */
     public int getCode() {
         return code;
     }
 
+    /**
+     * Returns the canonical compaction state for the given numeric code.
+     *
+     * <p>The proto enum spells the undefined value {@code UndefiedState}; this lookup maps it to
+     * {@link #UndefinedState} so consumers comparing against the corrected constant always match.
+     *
+     * @param code the numeric code
+     * @return the canonical compaction state
+     * @throws IllegalArgumentException if the code is unknown
+     */
     public static CompactionState forNumber(int code) {
         for (CompactionState state : values()) {
             if (state.code == code) {

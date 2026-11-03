@@ -19,6 +19,11 @@
 
 package io.milvus.v2.service.resourcegroup.request;
 
+/**
+ * Request parameters for the {@code dropResourceGroup} API.
+ */
+
+
 public class DropResourceGroupReq {
     private String groupName;
 
@@ -26,13 +31,34 @@ public class DropResourceGroupReq {
         this.groupName = builder.groupName;
     }
 
+    /**
+     * Creates a new builder for {@code DropResourceGroupReq}.
+     *
+     * @return the builder
+     */
+
+
     public static DropResourceGroupReqBuilder builder() {
         return new DropResourceGroupReqBuilder();
     }
 
+    /**
+     * Returns the name of the resource group to be dropped.
+     *
+     * @return the resource group name
+     */
+
+
     public String getGroupName() {
         return groupName;
     }
+
+    /**
+     * Sets the name of the resource group to be dropped.
+     *
+     * @param groupName the resource group name
+     */
+
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
@@ -45,13 +71,33 @@ public class DropResourceGroupReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link DropResourceGroupReq} class.
+     */
+
+
     public static class DropResourceGroupReqBuilder {
         private String groupName;
+
+        /**
+         * Sets the name of the resource group to be dropped.
+         *
+         * @param groupName the resource group name
+         * @return this builder
+         */
+
 
         public DropResourceGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
+
+        /**
+         * Builds the {@code DropResourceGroupReq}.
+         *
+         * @return the built request
+         */
+
 
         public DropResourceGroupReq build() {
             return new DropResourceGroupReq(this);

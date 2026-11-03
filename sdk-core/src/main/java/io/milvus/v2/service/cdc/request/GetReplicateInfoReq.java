@@ -19,10 +19,16 @@
 
 package io.milvus.v2.service.cdc.request;
 
+/**
+ * Request parameters for the {@code getReplicateInfo} CDC API.
+ */
 public class GetReplicateInfoReq {
     private String sourceClusterId;
     private String targetPchannel;
 
+    /**
+     * Creates a new {@code GetReplicateInfoReq} builder.
+     */
     public static GetReplicateInfoReqBuilder builder() {
         return new GetReplicateInfoReqBuilder();
     }
@@ -32,18 +38,32 @@ public class GetReplicateInfoReq {
         this.targetPchannel = builder.targetPchannel;
     }
 
+    /**
+     * Returns the ID of the source cluster.
+     */
     public String getSourceClusterId() {
         return sourceClusterId;
     }
 
+    /**
+     * Sets the ID of the source cluster.
+     */
     public void setSourceClusterId(String sourceClusterId) {
         this.sourceClusterId = sourceClusterId;
     }
 
+    /**
+     * Returns the physical channel (pchannel) to query replication info for. Despite the field name,
+     * the value is the pchannel belonging to the source cluster.
+     */
     public String getTargetPchannel() {
         return targetPchannel;
     }
 
+    /**
+     * Sets the physical channel (pchannel) to query replication info for. Despite the field name,
+     * the value is the pchannel belonging to the source cluster.
+     */
     public void setTargetPchannel(String targetPchannel) {
         this.targetPchannel = targetPchannel;
     }
@@ -56,20 +76,33 @@ public class GetReplicateInfoReq {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetReplicateInfoReq}.
+     */
     public static class GetReplicateInfoReqBuilder {
         private String sourceClusterId;
         private String targetPchannel;
 
+        /**
+         * Sets the ID of the source cluster.
+         */
         public GetReplicateInfoReqBuilder sourceClusterId(String sourceClusterId) {
             this.sourceClusterId = sourceClusterId;
             return this;
         }
 
+        /**
+         * Sets the physical channel (pchannel) to query replication info for. Despite the field name,
+         * the value is the pchannel belonging to the source cluster.
+         */
         public GetReplicateInfoReqBuilder targetPchannel(String targetPchannel) {
             this.targetPchannel = targetPchannel;
             return this;
         }
 
+        /**
+         * Builds the {@link GetReplicateInfoReq}.
+         */
         public GetReplicateInfoReq build() {
             return new GetReplicateInfoReq(this);
         }

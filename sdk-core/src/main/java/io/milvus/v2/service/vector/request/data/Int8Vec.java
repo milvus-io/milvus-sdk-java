@@ -23,22 +23,46 @@ import io.milvus.grpc.PlaceholderType;
 
 import java.nio.ByteBuffer;
 
+/**
+ * An int8 vector used in search and insert requests, where each byte represents one
+ * dimension of the vector.
+ */
 public class Int8Vec implements BaseVector {
     private final ByteBuffer data;
 
+    /**
+     * Constructs an int8 vector from a {@link ByteBuffer}.
+     *
+     * @param data the int8 vector data
+     */
     public Int8Vec(ByteBuffer data) {
         this.data = data;
     }
 
+    /**
+     * Constructs an int8 vector from a byte array.
+     *
+     * @param data the int8 vector data
+     */
     public Int8Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }
 
+    /**
+     * Returns the placeholder type of an int8 vector.
+     *
+     * @return the {@link PlaceholderType#Int8Vector} placeholder type
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.Int8Vector;
     }
 
+    /**
+     * Returns the int8 vector data.
+     *
+     * @return the vector data as a {@link ByteBuffer}
+     */
     @Override
     public Object getData() {
         return this.data;

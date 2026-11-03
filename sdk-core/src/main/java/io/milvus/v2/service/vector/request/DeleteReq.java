@@ -36,7 +36,7 @@ public class DeleteReq {
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
     // The long list of city will increase the time cost to parse this expression.
-    // So, we provide exprTemplateValues for this purpose, user can set filter like this:
+    // So, we provide filterTemplateValues for this purpose, user can set filter like this:
     //     filter = "pk > {age} and city in {city}"
     //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
     // Valid value of this map can be:

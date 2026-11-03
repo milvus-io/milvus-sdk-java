@@ -19,6 +19,11 @@
 
 package io.milvus.v2.service.index.request;
 
+/**
+ * Request parameters for the {@code dropIndex} API.
+ */
+
+
 public class DropIndexReq {
     private String databaseName;
     private String collectionName;
@@ -35,17 +40,46 @@ public class DropIndexReq {
         this.indexName = builder.indexName;
     }
 
+    /**
+     * Returns the database name.
+     *
+     * @return the database name
+     */
+
+
     public String getDatabaseName() {
         return databaseName;
     }
+
+    /**
+     * Sets the database name.
+     *
+     * @param databaseName the database name
+     */
+
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
     }
 
+    /**
+     * Returns the collection name.
+     *
+     * @return the collection name
+     */
+
+
     public String getCollectionName() {
         return collectionName;
     }
+
+    /**
+     * Sets the collection name.
+     *
+     * @param collectionName the collection name
+     * @throws IllegalArgumentException if the collection name is null
+     */
+
 
     public void setCollectionName(String collectionName) {
         if (collectionName == null) {
@@ -54,17 +88,45 @@ public class DropIndexReq {
         this.collectionName = collectionName;
     }
 
+    /**
+     * Returns the field name.
+     *
+     * @return the field name
+     */
+
+
     public String getFieldName() {
         return fieldName;
     }
+
+    /**
+     * Sets the field name.
+     *
+     * @param fieldName the field name
+     */
+
 
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
 
+    /**
+     * Returns the index name.
+     *
+     * @return the index name
+     */
+
+
     public String getIndexName() {
         return indexName;
     }
+
+    /**
+     * Sets the index name.
+     *
+     * @param indexName the index name
+     */
+
 
     public void setIndexName(String indexName) {
         this.indexName = indexName;
@@ -80,9 +142,21 @@ public class DropIndexReq {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@code DropIndexReq}.
+     *
+     * @return the builder
+     */
+
+
     public static DropIndexReqBuilder builder() {
         return new DropIndexReqBuilder();
     }
+
+    /**
+     * Builder for {@link DropIndexReq} class.
+     */
+
 
     public static class DropIndexReqBuilder {
         private String databaseName;
@@ -93,10 +167,27 @@ public class DropIndexReq {
         private DropIndexReqBuilder() {
         }
 
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName the database name
+         * @return this builder
+         */
+
+
         public DropIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
+
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return this builder
+         * @throws IllegalArgumentException if the collection name is null
+         */
+
 
         public DropIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
@@ -106,15 +197,38 @@ public class DropIndexReq {
             return this;
         }
 
+        /**
+         * Sets the field name.
+         *
+         * @param fieldName the field name
+         * @return this builder
+         */
+
+
         public DropIndexReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Sets the index name.
+         *
+         * @param indexName the index name
+         * @return this builder
+         */
+
+
         public DropIndexReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
+
+        /**
+         * Builds the {@code DropIndexReq}.
+         *
+         * @return the built request
+         */
+
 
         public DropIndexReq build() {
             return new DropIndexReq(this);

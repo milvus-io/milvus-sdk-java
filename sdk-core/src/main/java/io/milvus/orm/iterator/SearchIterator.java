@@ -54,6 +54,18 @@ import java.util.SortedMap;
 
 import static io.milvus.param.Constant.*;
 
+/**
+ * Iterator that paginates through the results of a vector search.
+ *
+ * <p>The iterator performs the initial search on construction and then probes with a growing radius
+ * window, using the {@code radius}/{@code range_filter} search parameters, until it has collected a
+ * batch of results. Already returned rows are tracked through their primary keys and excluded from
+ * subsequent probes, so each call to {@link #next()} returns the next {@code batchSize} rows without
+ * duplication.
+ *
+ * <p>Results are internally staged in an {@link IteratorCache}. The iterator supports a
+ * {@code limit} (topK); when the limit is reached, {@link #next()} returns an empty list.
+ */
 public class SearchIterator {
     private static final Logger logger = LoggerFactory.getLogger(SearchIterator.class);
     private final IteratorCache iteratorCache;
@@ -78,6 +90,15 @@ public class SearchIterator {
     private final RpcUtils rpcUtils;
     private long sessionTs = 0;
 
+    /**
+     * Creates a search iterator from a v1 search iterator parameter.
+     *
+     * <p>The first page is searched during construction.
+     *
+     * @param searchIteratorParam the search iterator parameters
+     * @param blockingStub        the gRPC stub wrapper used to perform searches
+     * @param primaryField        the primary key field schema of the collection
+     */
     public SearchIterator(SearchIteratorParam searchIteratorParam,
                           RpcStubWrapper blockingStub,
                           FieldType primaryField) {
@@ -98,7 +119,15 @@ public class SearchIterator {
         initSearchIterator();
     }
 
-    // to support V2
+    /**
+     * Creates a search iterator from a v2 search iterator request.
+     *
+     * <p>The first page is searched during construction.
+     *
+     * @param searchIteratorReq the v2 search iterator request
+     * @param blockingStub      the gRPC stub wrapper used to perform searches
+     * @param primaryField      the primary key field schema of the collection
+     */
     public SearchIterator(SearchIteratorReq searchIteratorReq,
                           RpcStubWrapper blockingStub,
                           CreateCollectionReq.FieldSchema primaryField) {
@@ -120,6 +149,15 @@ public class SearchIterator {
         initSearchIterator();
     }
 
+    /**
+     * Returns the next batch of search results.
+     *
+     * <p>The returned list contains up to {@code batchSize} rows. When the configured limit (topK)
+     * is reached, or the iterator was not initialized, an empty list is returned. If the cached page
+     * is not sufficient, the iterator probes with a widened radius window to fill the batch.
+     *
+     * @return the next batch of rows, or an empty list if the iteration is finished
+     */
     public List<QueryResultsWrapper.RowRecord> next() {
         // 0. check reached limit
         if (!initSuccess || checkReachedLimit()) {
@@ -155,6 +193,9 @@ public class SearchIterator {
         return retPage;
     }
 
+    /**
+     * Releases the cached results and clears the internal filtered-ID list of the iterator.
+     */
     public void close() {
         iteratorCache.releaseCache(cacheId);
         if (filteredIds != null) {
@@ -439,7 +480,7 @@ public class SearchIterator {
         coefficient = Math.max(1, coefficient);
 
         // Note: params is a Map<String, Object> to store the original parameters, we must not change the params.
-        // here we make a new object nextParams, to ensure is it a deep copy, we convert it to JSON string and
+        // here we make a new object nextParams, to ensure it is a deep copy, we convert it to JSON string and
         // convert back to a Map<String, Object>.
         Map<String, Object> nextParams = JsonUtils.fromJson(JsonUtils.toJson(params),
                 new TypeToken<Map<String, Object>>() {

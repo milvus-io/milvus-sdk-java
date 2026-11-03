@@ -23,18 +23,37 @@ import io.milvus.grpc.PlaceholderType;
 
 import java.util.SortedMap;
 
+/**
+ * A sparse float vector used in search and insert requests, stored as a sorted map of
+ * dimension index to value so that only the non-zero dimensions need to be provided.
+ */
 public class SparseFloatVec implements BaseVector {
     private final SortedMap<Long, Float> data;
 
+    /**
+     * Constructs a sparse float vector from a sorted map of dimension index to value.
+     *
+     * @param data the sparse vector data
+     */
     public SparseFloatVec(SortedMap<Long, Float> data) {
         this.data = data;
     }
 
+    /**
+     * Returns the placeholder type of a sparse float vector.
+     *
+     * @return the {@link PlaceholderType#SparseFloatVector} placeholder type
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.SparseFloatVector;
     }
 
+    /**
+     * Returns the sparse float vector data.
+     *
+     * @return the vector data as a map of dimension index to value
+     */
     @Override
     public Object getData() {
         return this.data;

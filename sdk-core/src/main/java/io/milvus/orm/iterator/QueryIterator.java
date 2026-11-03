@@ -41,6 +41,10 @@ import java.util.List;
 
 import static io.milvus.param.Constant.*;
 
+/**
+ * Iterates over query results in batches using a session timestamp and a primary-key based cursor,
+ * supporting offset seeking.
+ */
 public class QueryIterator {
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private final IteratorCache iteratorCache;
@@ -60,6 +64,14 @@ public class QueryIterator {
     private final VectorUtils vectorUtils;
     private long sessionTs = 0;
 
+    /**
+     * Constructs a new QueryIterator.
+     *
+     * @param queryIteratorParam the query iterator parameters
+     * @param blockingStub       the gRPC stub wrapper used to issue queries
+     * @param primaryField       the primary field of the collection
+     * @param collectionId       the collection id
+     */
     public QueryIterator(QueryIteratorParam queryIteratorParam,
                          RpcStubWrapper blockingStub,
                          FieldType primaryField,
@@ -83,6 +95,14 @@ public class QueryIterator {
         seek();
     }
 
+    /**
+     * Constructs a new QueryIterator.
+     *
+     * @param queryIteratorReq the query iterator request
+     * @param blockingStub     the gRPC stub wrapper used to issue queries
+     * @param primaryField     the primary field of the collection
+     * @param collectionId     the collection id
+     */
     public QueryIterator(QueryIteratorReq queryIteratorReq,
                          RpcStubWrapper blockingStub,
                          CreateCollectionReq.FieldSchema primaryField,
@@ -143,6 +163,14 @@ public class QueryIterator {
         offset = 0;
     }
 
+    /**
+     * Returns the next batch of rows.
+     *
+     * <p>Returns an empty list when the configured limit is reached or the server has no more
+     * matching rows to return.
+     *
+     * @return the next batch of rows, or an empty list if the iteration is finished
+     */
     public List<QueryResultsWrapper.RowRecord> next() {
         if (limit != UNLIMITED && returnedCount >= limit) {
             iteratorCache.releaseCache(cacheIdInUse);
@@ -171,6 +199,9 @@ public class QueryIterator {
         return ret;
     }
 
+    /**
+     * Closes the query iterator and releases its resources.
+     */
     public void close() {
         iteratorCache.releaseCache(cacheIdInUse);
     }

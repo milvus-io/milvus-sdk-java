@@ -33,8 +33,18 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A background task that runs the collection optimize workflow: wait for index build,
+ * force-merge compaction, wait for compaction and index rebuild, and refresh collection load.
+ *
+ * <p>Created by {@link io.milvus.v2.client.MilvusClientV2#optimize}. When the optimize request
+ * is synchronous, the task is already finished by the time this object is returned.</p>
+ */
 public class OptimizeTask {
 
+    /**
+     * Progress stages of an {@link OptimizeTask}, reported via {@link OptimizeTask#getProgress()}.
+     */
     public enum ProgressStage {
         INITIALIZING("initializing"),
         WAITING_FOR_INDEXES("waiting for indexes"),
@@ -109,6 +119,9 @@ public class OptimizeTask {
         this.thread.setDaemon(true);
     }
 
+    /**
+     * Starts the optimize workflow on a background daemon thread.
+     */
     public void start() {
         thread.start();
     }
@@ -126,6 +139,12 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns whether the task has finished, either with a result, with an exception,
+     * or after being cancelled.
+     *
+     * @return true if the task has finished
+     */
     public boolean isDone() {
         lock.lock();
         try {
@@ -135,6 +154,11 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns whether the task has been cancelled via {@link #cancel()}.
+     *
+     * @return true if the task was cancelled
+     */
     public boolean isCancelled() {
         lock.lock();
         try {
@@ -144,6 +168,11 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns the current progress stage of the task.
+     *
+     * @return the current progress stage
+     */
     public ProgressStage getProgress() {
         lock.lock();
         try {
@@ -153,6 +182,11 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns a snapshot of all progress stages the task has gone through, in order.
+     *
+     * @return list of progress stages
+     */
     public List<ProgressStage> getProgressHistory() {
         lock.lock();
         try {
@@ -162,6 +196,11 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Returns the progress history as their string descriptions, in order.
+     *
+     * @return list of progress stage descriptions
+     */
     public List<String> getProgressHistoryAsStrings() {
         lock.lock();
         try {
@@ -175,6 +214,13 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Cancels the task. A cancellation is final: it aborts the remaining workflow steps
+     * and marks the task done with a cancellation exception.
+     *
+     * @return true if the task was cancelled (including when it was already cancelled),
+     *         false if the task had already finished
+     */
     public boolean cancel() {
         lock.lock();
         try {
@@ -196,6 +242,12 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Throws {@link MilvusClientException} if the task was cancelled.
+     * Used by the workflow steps to abort early when cancellation is requested.
+     *
+     * @throws MilvusClientException if the task was cancelled
+     */
     public void checkCancelled() {
         lock.lock();
         try {
@@ -207,6 +259,14 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Waits until the task finishes and returns the optimize result.
+     *
+     * @param timeoutMs max time to wait in milliseconds, or null to wait indefinitely
+     * @return the optimize result once the task has completed
+     * @throws MilvusClientException if the wait times out, the task failed, the task was
+     *                               cancelled, or the thread was interrupted
+     */
     public OptimizeResp getResult(Long timeoutMs) {
         lock.lock();
         try {
@@ -246,6 +306,12 @@ public class OptimizeTask {
         }
     }
 
+    /**
+     * Records a progress stage, appending it to the progress history. Ignored once the
+     * task has been cancelled.
+     *
+     * @param stage the progress stage to record
+     */
     public void setProgress(ProgressStage stage) {
         lock.lock();
         try {

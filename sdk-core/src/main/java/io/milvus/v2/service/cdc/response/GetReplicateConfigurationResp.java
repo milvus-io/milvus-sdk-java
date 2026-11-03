@@ -21,6 +21,9 @@ package io.milvus.v2.service.cdc.response;
 
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 
+/**
+ * Response returned by the {@code getReplicateConfiguration} CDC API.
+ */
 public class GetReplicateConfigurationResp {
     private ReplicateConfiguration replicateConfiguration;
 
@@ -28,14 +31,23 @@ public class GetReplicateConfigurationResp {
         this.replicateConfiguration = builder.replicateConfiguration;
     }
 
+    /**
+     * Creates a new {@code GetReplicateConfigurationResp} builder.
+     */
     public static GetReplicateConfigurationRespBuilder builder() {
         return new GetReplicateConfigurationRespBuilder();
     }
 
+    /**
+     * Returns the replicate configuration.
+     */
     public ReplicateConfiguration getReplicateConfiguration() {
         return replicateConfiguration;
     }
 
+    /**
+     * Sets the replicate configuration.
+     */
     public void setReplicateConfiguration(ReplicateConfiguration replicateConfiguration) {
         this.replicateConfiguration = replicateConfiguration;
     }
@@ -47,14 +59,23 @@ public class GetReplicateConfigurationResp {
                 '}';
     }
 
+    /**
+     * Builder for {@link GetReplicateConfigurationResp}.
+     */
     public static class GetReplicateConfigurationRespBuilder {
         private ReplicateConfiguration replicateConfiguration;
 
+        /**
+         * Sets the replicate configuration.
+         */
         public GetReplicateConfigurationRespBuilder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
             this.replicateConfiguration = replicateConfiguration;
             return this;
         }
 
+        /**
+         * Builds the {@link GetReplicateConfigurationResp}.
+         */
         public GetReplicateConfigurationResp build() {
             return new GetReplicateConfigurationResp(this);
         }

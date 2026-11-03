@@ -23,22 +23,46 @@ import io.milvus.grpc.PlaceholderType;
 
 import java.nio.ByteBuffer;
 
+/**
+ * A binary vector used in search and insert requests, where each bit of the raw bytes
+ * represents one dimension of the vector.
+ */
 public class BinaryVec implements BaseVector {
     private final ByteBuffer data;
 
+    /**
+     * Constructs a binary vector from a {@link ByteBuffer}.
+     *
+     * @param data the binary vector data
+     */
     public BinaryVec(ByteBuffer data) {
         this.data = data;
     }
 
+    /**
+     * Constructs a binary vector from a byte array.
+     *
+     * @param data the binary vector data
+     */
     public BinaryVec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }
 
+    /**
+     * Returns the placeholder type of a binary vector.
+     *
+     * @return the {@link PlaceholderType#BinaryVector} placeholder type
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.BinaryVector;
     }
 
+    /**
+     * Returns the binary vector data.
+     *
+     * @return the vector data as a {@link ByteBuffer}
+     */
     @Override
     public Object getData() {
         return this.data;

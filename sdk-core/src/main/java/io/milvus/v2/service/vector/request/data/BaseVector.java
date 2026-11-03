@@ -21,8 +21,23 @@ package io.milvus.v2.service.vector.request.data;
 
 import io.milvus.grpc.PlaceholderType;
 
+/**
+ * The base interface for all vector data types that can be used in search and insert
+ * requests, such as float, binary, sparse float, int8, float16, and bfloat16 vectors.
+ */
 public interface BaseVector {
+    /**
+     * Returns the placeholder type of the vector, which describes how the vector data is
+     * packed in the request.
+     *
+     * @return the placeholder type
+     */
     PlaceholderType getPlaceholderType();
 
+    /**
+     * Returns the vector data.
+     *
+     * @return the vector data
+     */
     Object getData();
 }

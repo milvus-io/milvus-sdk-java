@@ -29,8 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The Decay reranking strategy, which by adjusting search rankings based on numeric field values.
- * Read the doc for more info: https://milvus.io/docs/decay-ranker-overview.md
+ * The Boost reranking strategy, which adjusts search rankings by boosting the scores of the
+ * results that match an optional filter expression by a specified weight.
+ * Read the doc for more info: https://milvus.io/docs/boost-ranker.md
  * <p>
  * Example:
  * BoostRanker boost = BoostRanker.builder()
@@ -42,7 +43,7 @@ import java.util.Map;
  * .randomScoreField("id")
  * .build()
  * <p>
- * You also can declare a decay ranker by Function
+ * You also can declare a boost ranker by Function
  * CreateCollectionReq.Function boost = CreateCollectionReq.Function.builder()
  * .functionType(FunctionType.RERANK)
  * .name("xxx_boost")
@@ -67,10 +68,21 @@ public class BoostRanker extends CreateCollectionReq.Function {
         this.randomScoreField = builder.randomScoreField;
     }
 
+    /**
+     * Returns the function type of this ranker.
+     *
+     * @return {@link FunctionType#RERANK}
+     */
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    /**
+     * Returns the ranker parameters as a map of parameter name to value, including the
+     * filter expression, weight, and random score settings.
+     *
+     * @return the ranker parameters
+     */
     public Map<String, String> getParams() {
         Map<String, String> props = super.getParams();
         props.put("reranker", "boost");
@@ -95,26 +107,54 @@ public class BoostRanker extends CreateCollectionReq.Function {
     }
 
     // Getters
+    /**
+     * Returns the filter expression that selects the entities to boost.
+     *
+     * @return the boost filter expression
+     */
     public String getFilter() {
         return filter;
     }
 
+    /**
+     * Returns the weight applied to the scores of the boosted entities.
+     *
+     * @return the boost weight
+     */
     public Float getWeight() {
         return weight;
     }
 
+    /**
+     * Returns the seed used for the random score when random boosting is enabled.
+     *
+     * @return the random score seed
+     */
     public Long getRandomScoreSeed() {
         return randomScoreSeed;
     }
 
+    /**
+     * Returns the field used as the basis of the random score.
+     *
+     * @return the random score field
+     */
     public String getRandomScoreField() {
         return randomScoreField;
     }
 
+    /**
+     * Creates a new builder for {@link BoostRanker}.
+     *
+     * @return a new builder
+     */
     public static BoostRankerBuilder builder() {
         return new BoostRankerBuilder();
     }
 
+    /**
+     * Builder for {@link BoostRanker}.
+     */
     public static class BoostRankerBuilder extends Function.FunctionBuilder<BoostRankerBuilder> {
         private String filter;
         private Float weight;
@@ -125,26 +165,55 @@ public class BoostRanker extends CreateCollectionReq.Function {
             super();
         }
 
+        /**
+         * Sets the filter expression that selects the entities to boost.
+         *
+         * @param filter the boost filter expression
+         * @return this builder
+         */
         public BoostRankerBuilder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
+        /**
+         * Sets the weight applied to the scores of the boosted entities.
+         *
+         * @param weight the boost weight
+         * @return this builder
+         */
         public BoostRankerBuilder weight(Float weight) {
             this.weight = weight;
             return this;
         }
 
+        /**
+         * Sets the seed used for the random score when random boosting is enabled.
+         *
+         * @param randomScoreSeed the random score seed
+         * @return this builder
+         */
         public BoostRankerBuilder randomScoreSeed(Long randomScoreSeed) {
             this.randomScoreSeed = randomScoreSeed;
             return this;
         }
 
+        /**
+         * Sets the field used as the basis of the random score.
+         *
+         * @param randomScoreField the random score field
+         * @return this builder
+         */
         public BoostRankerBuilder randomScoreField(String randomScoreField) {
             this.randomScoreField = randomScoreField;
             return this;
         }
 
+        /**
+         * Builds the {@link BoostRanker}.
+         *
+         * @return the built ranker
+         */
         @Override
         public BoostRanker build() {
             return new BoostRanker(this);

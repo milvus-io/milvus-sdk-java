@@ -40,7 +40,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 
+/**
+ * Adapter that converts between the v2 iterator request classes ({@code QueryIteratorReq},
+ * {@code SearchIteratorReq}) and the legacy v1 iterator parameters used internally by the iterator
+ * implementations.
+ */
 public class IteratorAdapterV2 {
+    /**
+     * Converts a v2 query iterator request into a v1 query iterator parameter.
+     *
+     * @param queryIteratorReq the v2 query iterator request
+     * @return the equivalent v1 query iterator parameter
+     */
     public static QueryIteratorParam convertV2Req(QueryIteratorReq queryIteratorReq) {
         QueryIteratorParam.Builder builder = QueryIteratorParam.newBuilder()
                 .withDatabaseName(queryIteratorReq.getDatabaseName())
@@ -61,6 +72,12 @@ public class IteratorAdapterV2 {
         return builder.build();
     }
 
+    /**
+     * Converts a v1 query iterator parameter back into a v2 query iterator request.
+     *
+     * @param param the v1 query iterator parameter
+     * @return the equivalent v2 query iterator request
+     */
     public static QueryIteratorReq convertV1Param(QueryIteratorParam param) {
         ConsistencyLevel level = null;
         if (param.getConsistencyLevel() != null) {
@@ -82,6 +99,16 @@ public class IteratorAdapterV2 {
                 .build();
     }
 
+    /**
+     * Converts a v2 search iterator request into a v1 search iterator parameter.
+     *
+     * <p>All target vectors of the request must be of the same placeholder (vector) type.
+     *
+     * @param searchIteratorReq the v2 search iterator request
+     * @return the equivalent v1 search iterator parameter
+     * @throws io.milvus.exception.ParamException if the target vectors are of different types or of
+     *         an unsupported type
+     */
     public static SearchIteratorParam convertV2Req(SearchIteratorReq searchIteratorReq) {
         MetricType metricType = MetricType.None;
         if (searchIteratorReq.getMetricType() != IndexParam.MetricType.INVALID) {
@@ -153,6 +180,17 @@ public class IteratorAdapterV2 {
         return builder.build();
     }
 
+    /**
+     * Converts a v1 search iterator parameter back into a v2 search iterator request.
+     *
+     * <p>The target vectors are wrapped into the corresponding v2 vector data classes according to
+     * the placeholder type of the parameter.
+     *
+     * @param param the v1 search iterator parameter
+     * @return the equivalent v2 search iterator request
+     * @throws io.milvus.exception.ParamException if the placeholder type of the parameter is
+     *         unsupported
+     */
     public static SearchIteratorReq convertV1Param(SearchIteratorParam param) {
         ConsistencyLevel level = null;
         if (param.getConsistencyLevel() != null) {
@@ -214,6 +252,12 @@ public class IteratorAdapterV2 {
                 .build();
     }
 
+    /**
+     * Converts a v2 field schema into a v1 field type.
+     *
+     * @param schema the v2 field schema, typically the primary key field of the collection
+     * @return the equivalent v1 field type
+     */
     public static FieldType convertV2Field(CreateCollectionReq.FieldSchema schema) {
         FieldType.Builder builder = FieldType.newBuilder()
                 .withName(schema.getName())

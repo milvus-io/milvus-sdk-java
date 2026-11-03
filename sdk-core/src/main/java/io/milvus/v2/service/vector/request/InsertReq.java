@@ -47,7 +47,7 @@ public class InsertReq {
      * 2. String value can be parsed to numeric/boolean type if the value is valid.
      * For example:
      * A Bool field named "XX", you set the value to be "TRUE" by JsonObject.add("XX", "TRUE"), the string "TRUE" is parsed as true.
-     * A Float field named "XX", you set the value to be "3.5" by JsonObject.add("XX", "3.5", the string "3.5" is parsed as 3.5.
+     * A Float field named "XX", you set the value to be "3.5" by JsonObject.add("XX", "3.5"), the string "3.5" is parsed as 3.5.
      *
      */
     private List<JsonObject> data;

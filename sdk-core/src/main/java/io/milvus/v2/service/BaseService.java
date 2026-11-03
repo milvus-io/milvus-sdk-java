@@ -34,6 +34,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Base service for the Milvus v2 clients. Provides shared utilities and cache management
+ * for the domain-specific service classes.
+ */
 public class BaseService {
     protected static final Logger logger = LoggerFactory.getLogger(BaseService.class);
     public RpcUtils rpcUtils = new RpcUtils();
@@ -43,11 +47,22 @@ public class BaseService {
     private String currentDbName;
     private String endpoint = "";
 
+    /**
+     * Sets the current database name. The name is propagated to the vector utilities so
+     * that schema and timestamp caches are keyed correctly.
+     *
+     * @param dbName the database name
+     */
     public void setCurrentDbName(String dbName) {
         currentDbName = dbName;
         this.vectorUtils.setCurrentDbName(dbName);
     }
 
+    /**
+     * Sets the server endpoint used to key schema and timestamp caches.
+     *
+     * @param endpoint the server endpoint
+     */
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint == null ? "" : endpoint;
         this.vectorUtils.setEndpoint(this.endpoint);

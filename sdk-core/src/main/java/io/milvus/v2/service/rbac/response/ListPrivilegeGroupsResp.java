@@ -24,6 +24,9 @@ import io.milvus.v2.service.rbac.PrivilegeGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response returned by the {@code listPrivilegeGroups} API.
+ */
 public class ListPrivilegeGroupsResp {
     private List<PrivilegeGroup> privilegeGroups;
 
@@ -31,10 +34,20 @@ public class ListPrivilegeGroupsResp {
         this.privilegeGroups = builder.privilegeGroups;
     }
 
+    /**
+     * Returns the privilege groups.
+     *
+     * @return the list of privilege groups
+     */
     public List<PrivilegeGroup> getPrivilegeGroups() {
         return privilegeGroups;
     }
 
+    /**
+     * Sets the privilege groups.
+     *
+     * @param privilegeGroups the list of privilege groups
+     */
     public void setPrivilegeGroups(List<PrivilegeGroup> privilegeGroups) {
         this.privilegeGroups = privilegeGroups;
     }
@@ -46,21 +59,40 @@ public class ListPrivilegeGroupsResp {
                 '}';
     }
 
+    /**
+     * Creates a new builder for {@link ListPrivilegeGroupsResp}.
+     *
+     * @return a new {@link ListPrivilegeGroupsRespBuilder}
+     */
     public static ListPrivilegeGroupsRespBuilder builder() {
         return new ListPrivilegeGroupsRespBuilder();
     }
 
+    /**
+     * Builder for {@link ListPrivilegeGroupsResp} class.
+     */
     public static class ListPrivilegeGroupsRespBuilder {
         private List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
 
         private ListPrivilegeGroupsRespBuilder() {
         }
 
+        /**
+         * Sets the privilege groups.
+         *
+         * @param privilegeGroups the list of privilege groups
+         * @return this builder
+         */
         public ListPrivilegeGroupsRespBuilder privilegeGroups(List<PrivilegeGroup> privilegeGroups) {
             this.privilegeGroups = privilegeGroups;
             return this;
         }
 
+        /**
+         * Builds the {@link ListPrivilegeGroupsResp}.
+         *
+         * @return the built response
+         */
         public ListPrivilegeGroupsResp build() {
             return new ListPrivilegeGroupsResp(this);
         }

@@ -25,13 +25,27 @@ import io.milvus.grpc.PlaceholderType;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A float vector used in search and insert requests, where each element represents one
+ * dimension of the vector.
+ */
 public class FloatVec implements BaseVector {
     private final List<Float> data;
 
+    /**
+     * Constructs a float vector from a list of float values.
+     *
+     * @param data the vector values
+     */
     public FloatVec(List<Float> data) {
         this.data = data;
     }
 
+    /**
+     * Constructs a float vector from a float array.
+     *
+     * @param data the vector values
+     */
     public FloatVec(float[] data) {
         this.data = new ArrayList<>();
         for (float f : data) {
@@ -39,11 +53,21 @@ public class FloatVec implements BaseVector {
         }
     }
 
+    /**
+     * Returns the placeholder type of a float vector.
+     *
+     * @return the {@link PlaceholderType#FloatVector} placeholder type
+     */
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.FloatVector;
     }
 
+    /**
+     * Returns the float vector data.
+     *
+     * @return the vector data as a list of float values
+     */
     @Override
     public Object getData() {
         return this.data;
