@@ -38,7 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static io.milvus.param.Constant.*;
 
@@ -63,6 +65,8 @@ public class QueryIterator {
     private Object nextId;
     private Object nextElementOffset;
     private final boolean elementFilterIterator;
+    private String elementOffsetColumn = Constant.OFFSET;
+    private boolean expandedElementRows;
     private int cacheIdInUse;
     private long returnedCount;
     private final RpcUtils rpcUtils;
@@ -285,12 +289,18 @@ public class QueryIterator {
             return;
         }
         nextId = res.get(res.size() - 1).get(primaryField.getName());
-        nextElementOffset = res.get(res.size() - 1).get(Constant.OFFSET);
+        // only track the element position when the page was genuinely expanded; a mis-detected
+        // element_filter expression returns no element_indices, so a real "offset" field value
+        // must not be mistaken for the matched element position
+        if (expandedElementRows) {
+            nextElementOffset = res.get(res.size() - 1).get(elementOffsetColumn);
+        }
     }
 
     private List<QueryResultsWrapper.RowRecord> extractRowRecords(QueryResults response) {
         List<QueryResultsWrapper.RowRecord> records = new QueryResultsWrapper(response).getRowRecords();
         if (response.getElementIndicesCount() == 0) {
+            expandedElementRows = false;
             return records;
         }
         if (response.getElementIndicesCount() != records.size()) {
@@ -299,13 +309,28 @@ public class QueryIterator {
                     response.getElementIndicesCount(), records.size()));
         }
 
+        // Mirror the C++ SDK: the server may return a real "offset" column (a user-requested
+        // field or a dynamic field of that name), so store the matched element position under
+        // a collision-free alias instead of clobbering the real value. Dynamic fields are
+        // flattened per-row, so scan every record (a dynamic "offset" may appear only on some
+        // rows), not just the first.
+        Set<String> occupied = new HashSet<>();
+        for (QueryResultsWrapper.RowRecord record : records) {
+            occupied.addAll(record.getFieldValues().keySet());
+        }
+        elementOffsetColumn = Constant.OFFSET;
+        while (occupied.contains(elementOffsetColumn)) {
+            elementOffsetColumn = "_" + elementOffsetColumn;
+        }
+        expandedElementRows = true;
+
         List<QueryResultsWrapper.RowRecord> expandedRecords = new ArrayList<>();
         for (int i = 0; i < records.size(); i++) {
             QueryResultsWrapper.RowRecord record = records.get(i);
             for (Long elementOffset : response.getElementIndices(i).getIndices().getDataList()) {
                 QueryResultsWrapper.RowRecord expandedRecord = new QueryResultsWrapper.RowRecord();
                 expandedRecord.getFieldValues().putAll(record.getFieldValues());
-                expandedRecord.getFieldValues().put(Constant.OFFSET, elementOffset);
+                expandedRecord.getFieldValues().put(elementOffsetColumn, elementOffset);
                 expandedRecords.add(expandedRecord);
             }
         }
@@ -347,7 +372,12 @@ public class QueryIterator {
         if (StringUtils.isEmpty(currentExpr)) {
             return filteredPKStr;
         }
-        return filteredPKStr + " and (" + currentExpr + ")";
+        if (elementFilterIterator) {
+            // element_filter() must stay the right-most operand of a logical AND, so the pk
+            // cursor goes on the left
+            return filteredPKStr + " and (" + currentExpr + ")";
+        }
+        return "(" + currentExpr + ") and " + filteredPKStr;
     }
 
     private boolean hasElementCursor() {
@@ -384,7 +414,11 @@ public class QueryIterator {
                     .setValue(clusterId)
                     .build());
         }
-        boolean iterator = phase != QueryPhase.SEEK;
+        // An element-filter seek must run with iterator=true: the server interprets the offset
+        // of an element-filter query in matched-element terms and only accepts the
+        // query_iter_last_pk / query_iter_last_element_offset resume params when iterator=true
+        // (mirroring the C++ SDK). A plain seek stays a strict iterator=false query.
+        boolean iterator = phase != QueryPhase.SEEK || elementFilterIterator;
         boolean reduceStopForBest = phase == QueryPhase.SEEK
                 ? false
                 : queryIteratorReq.isReduceStopForBest();
