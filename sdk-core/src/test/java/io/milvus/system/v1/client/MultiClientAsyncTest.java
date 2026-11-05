@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @Tag("system")
@@ -188,14 +189,6 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
         // query async
         String expr = field1Name + " in " + distinctQueryIDs;
         List<String> outputFields = Arrays.asList(field1Name, field2Name);
-        QueryParam queryParam = QueryParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withExpr(expr)
-                .withOutFields(outputFields)
-                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
-                .build();
-
-        ListenableFuture<R<QueryResults>> queryFuture = client.queryAsync(queryParam);
 
         try {
             // get search results
@@ -211,15 +204,36 @@ class MultiClientAsyncTest extends MilvusMultiDockerTestBase {
 //                System.out.println(scores);
             }
 
-            // get query results
-            R<QueryResults> queryR = queryFuture.get();
-            assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+            // get query results. The collection is loaded synchronously, but the flushed
+            // segments may take a short moment to become fully visible on the query nodes,
+            // so retry the async query until all inserted rows are returned or the deadline
+            // is reached.
+            R<QueryResults> queryR = null;
+            long queryDeadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
+            while (System.currentTimeMillis() < queryDeadline) {
+                QueryParam queryParam = QueryParam.newBuilder()
+                        .withCollectionName(randomCollectionName)
+                        .withExpr(expr)
+                        .withOutFields(outputFields)
+                        .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                        .build();
+                queryR = client.queryAsync(queryParam).get();
+                assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+
+                QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
+                FieldDataWrapper idWrapper = queryResultsWrapper.getFieldWrapper(field1Name);
+                System.out.println("Query data of " + field1Name + ", row count: " + idWrapper.getRowCount());
+                if (idWrapper.getRowCount() == distinctQueryIDs.size()) {
+                    break;
+                }
+                Thread.sleep(1000L);
+            }
+            assertNotNull("query did not return all inserted rows within deadline", queryR);
 
             // verify query result
             QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
             for (String fieldName : outputFields) {
                 FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
-                System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
                 if (field1Name.equals(fieldName)) {
                     System.out.println("distinctQueryIDs: " + distinctQueryIDs);
                     System.out.println("query returned " + fieldName + " ids: " + wrapper.getFieldData());
