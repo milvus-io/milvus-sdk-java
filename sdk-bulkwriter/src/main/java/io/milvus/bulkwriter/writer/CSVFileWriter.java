@@ -70,11 +70,7 @@ public class CSVFileWriter implements FormatFileWriter {
                     strVal = val.toString();
                 }
 
-                // CSV format, all the single quotation should be replaced by double quotation
-                if (strVal.startsWith("\"") && strVal.endsWith("\"")) {
-                    strVal = strVal.substring(1, strVal.length() - 1);
-                }
-                strVal = strVal.replace("\\\"", "\"");
+                // CSV format, each double quotation inside a value is escaped by doubling it
                 strVal = strVal.replace("\"", "\"\"");
                 if (!strVal.isEmpty()) {
                     // some fields might be nullable, the strVal is empty, no need to add ""
