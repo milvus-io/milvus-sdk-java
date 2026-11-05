@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * Milvus 3.0 resumable QueryIterator cursor tests.
- * Facts (see IteratorExample.queryIteratorWithCursor):
+ * Facts (see IteratorQueryExample.queryIteratorWithCursor):
  * - QueryIteratorCursor cursor = queryIterator.getCursor() captures sessionTs / intPk / strPk /
  *   lastElementOffset (all final fields, builder available, no serialization API);
  * - resume with QueryIteratorReq.builder()....cursor(cursor).build();
