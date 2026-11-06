@@ -1,0 +1,49 @@
+name: Notify private PR reviewer
+
+run-name: "notify PR reviewer for PR #${{ github.event.pull_request.number }}"
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    name: send PR review dispatch
+    if: github.repository == 'milvus-io/milvus-sdk-java'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send repository_dispatch to runner-agent
+        env:
+          GH_TOKEN: ${{ secrets.PRIVATE_DISPATCH_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$GH_TOKEN" ]; then
+            echo "PRIVATE_DISPATCH_TOKEN is not configured" >&2
+            exit 1
+          fi
+
+          gh api repos/yhmo/runner-agent/dispatches \
+            --method POST \
+            --input - <<EOF
+          {
+            "event_type": "pr-review",
+            "client_payload": {
+              "pr_url": "${PR_URL}",
+              "repo": "${GITHUB_REPOSITORY}",
+              "pr_number": "${PR_NUMBER}",
+              "head_sha": "${HEAD_SHA}",
+              "base_sha": "${BASE_SHA}",
+              "action": "${ACTION}"
+            }
+          }
+          EOF
