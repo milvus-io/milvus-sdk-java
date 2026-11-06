@@ -35,6 +35,10 @@ import io.milvus.grpc.GetCompactionStateRequest;
 import io.milvus.grpc.GetCompactionStateResponse;
 import io.milvus.grpc.GetFlushAllStateRequest;
 import io.milvus.grpc.GetFlushAllStateResponse;
+import io.milvus.grpc.CancelRequestsRequest;
+import io.milvus.grpc.CancelRequestsResponse;
+import io.milvus.grpc.ListRunningRequestsRequest;
+import io.milvus.grpc.ListRunningRequestsResponse;
 import io.milvus.grpc.ManualCompactionRequest;
 import io.milvus.grpc.ManualCompactionResponse;
 import io.milvus.grpc.Status;
@@ -57,14 +61,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -511,5 +519,194 @@ class UtilityTest extends BaseTest {
         Field field = MilvusClientV2.class.getDeclaredField("channel");
         field.setAccessible(true);
         field.set(client, channel);
+    }
+
+    private static io.milvus.grpc.RunningRequestInfo grpcRunningRequest(String id, String state) {
+        return io.milvus.grpc.RunningRequestInfo.newBuilder()
+                .setRequestId(id)
+                .setProxyId(7L)
+                .setType("Search")
+                .setDbName("db")
+                .setCollectionName("coll")
+                .setUser("alice")
+                .setClientAddr("10.0.0.1:5000")
+                .setNq(4000L)
+                .setTopk(100L)
+                .setExpr("id > 0")
+                .setStartTimeMs(1700000000000L)
+                .setQueuedMs(3L)
+                .setElapsedMs(1500L)
+                .setState(state)
+                .addTaskIds(11L)
+                .addTaskIds(12L)
+                .setTraceId("trace-1")
+                .setCancellable(true)
+                .build();
+    }
+
+    @Test
+    void testListRunningRequests() {
+        Status success = Status.newBuilder().setCode(0).build();
+        when(blockingStub.listRunningRequests(any(ListRunningRequestsRequest.class)))
+                .thenReturn(ListRunningRequestsResponse.newBuilder()
+                        .setStatus(success)
+                        .addRequests(grpcRunningRequest("7-to03zu-1", "Running"))
+                        .addNodeResults(io.milvus.grpc.RunningRequestNodeResult.newBuilder()
+                                .setNodeId(7L).setStatus(success).build())
+                        .addNodeResults(io.milvus.grpc.RunningRequestNodeResult.newBuilder()
+                                .setNodeId(8L)
+                                .setStatus(Status.newBuilder().setCode(65535).setReason("node unreachable").build())
+                                .build())
+                        .addNodeResults(io.milvus.grpc.RunningRequestNodeResult.newBuilder()
+                                .setNodeId(9L)
+                                .setStatus(Status.newBuilder()
+                                        .setErrorCode(io.milvus.grpc.ErrorCode.UnexpectedError)
+                                        .setReason("unimplemented").build())
+                                .setUnimplemented(true)
+                                .build())
+                        .build());
+
+        ListRunningRequestsResp resp = client_v2.listRunningRequests(ListRunningRequestsReq.builder()
+                .databaseName("db")
+                .collectionName("coll")
+                .user("alice")
+                .minElapsedMs(1000L)
+                .build());
+
+        ArgumentCaptor<ListRunningRequestsRequest> captor = ArgumentCaptor.forClass(ListRunningRequestsRequest.class);
+        verify(blockingStub).listRunningRequests(captor.capture());
+        assertEquals("db", captor.getValue().getDbName());
+        assertEquals("coll", captor.getValue().getCollectionName());
+        assertEquals("alice", captor.getValue().getUser());
+        assertEquals(1000L, captor.getValue().getMinElapsedMs());
+
+        assertEquals(1, resp.getRequests().size());
+        RunningRequestInfo info = resp.getRequests().get(0);
+        assertEquals("7-to03zu-1", info.getRequestId());
+        assertEquals(Long.valueOf(7L), info.getProxyId());
+        assertEquals("Search", info.getType());
+        assertEquals("db", info.getDatabaseName());
+        assertEquals("coll", info.getCollectionName());
+        assertEquals("alice", info.getUser());
+        assertEquals("10.0.0.1:5000", info.getClientAddr());
+        assertEquals(Long.valueOf(4000L), info.getNq());
+        assertEquals(Long.valueOf(100L), info.getTopK());
+        assertEquals("id > 0", info.getExpr());
+        assertEquals(Long.valueOf(1700000000000L), info.getStartTimeMs());
+        assertEquals(Long.valueOf(3L), info.getQueuedMs());
+        assertEquals(Long.valueOf(1500L), info.getElapsedMs());
+        assertEquals("Running", info.getState());
+        assertEquals(Arrays.asList(11L, 12L), info.getTaskIds());
+        assertEquals("trace-1", info.getTraceId());
+        assertTrue(info.getCancellable());
+
+        assertEquals(3, resp.getNodeResults().size());
+        RunningRequestNodeResult answered = resp.getNodeResults().get(0);
+        assertEquals(Long.valueOf(7L), answered.getNodeId());
+        assertTrue(answered.isSuccess());
+        assertFalse(answered.getUnimplemented());
+        RunningRequestNodeResult silent = resp.getNodeResults().get(1);
+        assertEquals(Long.valueOf(8L), silent.getNodeId());
+        assertFalse(silent.isSuccess());
+        assertEquals(Integer.valueOf(65535), silent.getErrorCode());
+        assertEquals("node unreachable", silent.getReason());
+        RunningRequestNodeResult old = resp.getNodeResults().get(2);
+        assertFalse(old.isSuccess());
+        assertEquals(Integer.valueOf(io.milvus.grpc.ErrorCode.UnexpectedError.getNumber()), old.getErrorCode());
+        assertTrue(old.getUnimplemented());
+    }
+
+    @Test
+    void testListRunningRequestsWithoutFilters() {
+        when(blockingStub.listRunningRequests(any(ListRunningRequestsRequest.class)))
+                .thenReturn(ListRunningRequestsResponse.newBuilder()
+                        .setStatus(Status.newBuilder().setCode(0).build())
+                        .build());
+
+        ListRunningRequestsResp resp = client_v2.listRunningRequests(ListRunningRequestsReq.builder().build());
+
+        ArgumentCaptor<ListRunningRequestsRequest> captor = ArgumentCaptor.forClass(ListRunningRequestsRequest.class);
+        verify(blockingStub).listRunningRequests(captor.capture());
+        assertEquals(ListRunningRequestsRequest.getDefaultInstance(), captor.getValue());
+        assertTrue(resp.getRequests().isEmpty());
+        assertTrue(resp.getNodeResults().isEmpty());
+    }
+
+    @Test
+    void testListRunningRequestsServerError() {
+        when(blockingStub.listRunningRequests(any(ListRunningRequestsRequest.class)))
+                .thenReturn(ListRunningRequestsResponse.newBuilder()
+                        .setStatus(Status.newBuilder().setCode(1100).setReason("permission denied").build())
+                        .build());
+
+        MilvusClientException e = assertThrows(MilvusClientException.class,
+                () -> client_v2.listRunningRequests(ListRunningRequestsReq.builder().build()));
+        assertEquals(1100, e.getServerErrCode());
+    }
+
+    @Test
+    void testCancelRequests() {
+        Status success = Status.newBuilder().setCode(0).build();
+        when(blockingStub.cancelRequests(any(CancelRequestsRequest.class)))
+                .thenReturn(CancelRequestsResponse.newBuilder()
+                        .setStatus(success)
+                        .addCanceled(grpcRunningRequest("7-to03zu-1", "Running"))
+                        .addNotFound("7-to03zu-2")
+                        .addUndetermined("8-to03zv-3")
+                        .addNodeResults(io.milvus.grpc.RunningRequestNodeResult.newBuilder()
+                                .setNodeId(7L).setStatus(success).build())
+                        .addNodeResults(io.milvus.grpc.RunningRequestNodeResult.newBuilder()
+                                .setNodeId(8L)
+                                .setStatus(Status.newBuilder().setCode(65535).setReason("node unreachable").build())
+                                .build())
+                        .build());
+
+        CancelRequestsResp resp = client_v2.cancelRequests(CancelRequestsReq.builder()
+                .requestIds(Arrays.asList("7-to03zu-1", "7-to03zu-2", "8-to03zv-3"))
+                .reason("too heavy")
+                .user("alice")
+                .build());
+
+        ArgumentCaptor<CancelRequestsRequest> captor = ArgumentCaptor.forClass(CancelRequestsRequest.class);
+        verify(blockingStub).cancelRequests(captor.capture());
+        assertEquals(Arrays.asList("7-to03zu-1", "7-to03zu-2", "8-to03zv-3"), captor.getValue().getRequestIdsList());
+        assertEquals("too heavy", captor.getValue().getReason());
+        assertEquals("alice", captor.getValue().getUser());
+
+        assertEquals(1, resp.getCanceled().size());
+        assertEquals("7-to03zu-1", resp.getCanceled().get(0).getRequestId());
+        assertEquals("Running", resp.getCanceled().get(0).getState());
+        assertEquals(Collections.singletonList("7-to03zu-2"), resp.getNotFound());
+        assertEquals(Collections.singletonList("8-to03zv-3"), resp.getUndetermined());
+        assertEquals(2, resp.getNodeResults().size());
+        assertTrue(resp.getNodeResults().get(0).isSuccess());
+        assertFalse(resp.getNodeResults().get(1).isSuccess());
+    }
+
+    @Test
+    void testCancelRequestsRejectsEmptyIds() {
+        MilvusClientException empty = assertThrows(MilvusClientException.class,
+                () -> client_v2.cancelRequests(CancelRequestsReq.builder().build()));
+        assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, empty.getErrorCode());
+
+        MilvusClientException nullIds = assertThrows(MilvusClientException.class,
+                () -> client_v2.cancelRequests(CancelRequestsReq.builder().requestIds(null).build()));
+        assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, nullIds.getErrorCode());
+
+        verify(blockingStub, never()).cancelRequests(any(CancelRequestsRequest.class));
+    }
+
+    @Test
+    void testCancelRequestsServerError() {
+        when(blockingStub.cancelRequests(any(CancelRequestsRequest.class)))
+                .thenReturn(CancelRequestsResponse.newBuilder()
+                        .setStatus(Status.newBuilder().setCode(1100).setReason("permission denied").build())
+                        .build());
+
+        MilvusClientException e = assertThrows(MilvusClientException.class,
+                () -> client_v2.cancelRequests(CancelRequestsReq.builder()
+                        .requestIds(Collections.singletonList("7-to03zu-1"))
+                        .build()));
+        assertEquals(1100, e.getServerErrCode());
     }
 }
