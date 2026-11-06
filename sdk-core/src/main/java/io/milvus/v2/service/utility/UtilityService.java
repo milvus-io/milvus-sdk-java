@@ -848,4 +848,119 @@ public class UtilityService extends BaseService {
                 .resources(resources)
                 .build();
     }
+
+    /**
+     * Lists the Search, HybridSearch and Query requests running on every proxy.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the list running requests request
+     * @return the running requests and the outcome on each proxy
+     */
+    public ListRunningRequestsResp listRunningRequests(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                       ListRunningRequestsReq request) {
+        String title = "ListRunningRequests";
+
+        ListRunningRequestsRequest.Builder builder = ListRunningRequestsRequest.newBuilder();
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+        if (StringUtils.isNotEmpty(request.getCollectionName())) {
+            builder.setCollectionName(request.getCollectionName());
+        }
+        if (StringUtils.isNotEmpty(request.getUser())) {
+            builder.setUser(request.getUser());
+        }
+        if (request.getMinElapsedMs() != null && request.getMinElapsedMs() > 0L) {
+            builder.setMinElapsedMs(request.getMinElapsedMs());
+        }
+
+        ListRunningRequestsResponse response = blockingStub.listRunningRequests(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return ListRunningRequestsResp.builder()
+                .requests(convertRunningRequests(response.getRequestsList()))
+                .nodeResults(convertRunningRequestNodeResults(response.getNodeResultsList()))
+                .build();
+    }
+
+    /**
+     * Cancels running requests by id.
+     *
+     * @param blockingStub the gRPC blocking stub
+     * @param request the cancel requests request
+     * @return the canceled requests, the ids not found or not settled, and the outcome on each proxy
+     */
+    public CancelRequestsResp cancelRequests(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                             CancelRequestsReq request) {
+        List<String> requestIds = request.getRequestIds();
+        if (requestIds == null || requestIds.isEmpty()) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Request ID list can not be null or empty");
+        }
+        String title = String.format("CancelRequests %s", requestIds);
+
+        CancelRequestsRequest.Builder builder = CancelRequestsRequest.newBuilder()
+                .addAllRequestIds(requestIds);
+        if (StringUtils.isNotEmpty(request.getReason())) {
+            builder.setReason(request.getReason());
+        }
+        if (StringUtils.isNotEmpty(request.getUser())) {
+            builder.setUser(request.getUser());
+        }
+
+        CancelRequestsResponse response = blockingStub.cancelRequests(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return CancelRequestsResp.builder()
+                .canceled(convertRunningRequests(response.getCanceledList()))
+                .notFound(new ArrayList<>(response.getNotFoundList()))
+                .undetermined(new ArrayList<>(response.getUndeterminedList()))
+                .nodeResults(convertRunningRequestNodeResults(response.getNodeResultsList()))
+                .build();
+    }
+
+    private static List<io.milvus.v2.service.utility.response.RunningRequestInfo> convertRunningRequests(
+            List<io.milvus.grpc.RunningRequestInfo> infos) {
+        List<io.milvus.v2.service.utility.response.RunningRequestInfo> result = new ArrayList<>();
+        for (io.milvus.grpc.RunningRequestInfo info : infos) {
+            result.add(io.milvus.v2.service.utility.response.RunningRequestInfo.builder()
+                    .requestId(info.getRequestId())
+                    .proxyId(info.getProxyId())
+                    .type(info.getType())
+                    .databaseName(info.getDbName())
+                    .collectionName(info.getCollectionName())
+                    .user(info.getUser())
+                    .clientAddr(info.getClientAddr())
+                    .nq(info.getNq())
+                    .topK(info.getTopk())
+                    .expr(info.getExpr())
+                    .startTimeMs(info.getStartTimeMs())
+                    .queuedMs(info.getQueuedMs())
+                    .elapsedMs(info.getElapsedMs())
+                    .state(info.getState())
+                    .taskIds(new ArrayList<>(info.getTaskIdsList()))
+                    .traceId(info.getTraceId())
+                    .cancellable(info.getCancellable())
+                    .build());
+        }
+        return result;
+    }
+
+    private static List<io.milvus.v2.service.utility.response.RunningRequestNodeResult> convertRunningRequestNodeResults(
+            List<io.milvus.grpc.RunningRequestNodeResult> nodeResults) {
+        List<io.milvus.v2.service.utility.response.RunningRequestNodeResult> result = new ArrayList<>();
+        for (io.milvus.grpc.RunningRequestNodeResult nodeResult : nodeResults) {
+            Status status = nodeResult.getStatus();
+            int code = status.getCode();
+            if (code == 0 && status.getErrorCode() != io.milvus.grpc.ErrorCode.Success) {
+                code = status.getErrorCode().getNumber();
+            }
+            result.add(io.milvus.v2.service.utility.response.RunningRequestNodeResult.builder()
+                    .nodeId(nodeResult.getNodeId())
+                    .errorCode(code)
+                    .reason(status.getReason())
+                    .unimplemented(nodeResult.getUnimplemented())
+                    .build());
+        }
+        return result;
+    }
 }
