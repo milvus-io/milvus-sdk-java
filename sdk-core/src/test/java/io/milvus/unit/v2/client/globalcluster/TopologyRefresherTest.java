@@ -34,8 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TopologyRefresherTest {
 
     private static TopologyRefresher refresher() {
-        return new TopologyRefresher("https://host.global-cluster.example:443", "token", 1L,
-                (GlobalTopology topology) -> { });
+        return new TopologyRefresher("https://host.global-cluster.example:443", "token",
+                () -> null, (GlobalTopology topology) -> true);
     }
 
     private static AtomicBoolean refreshingField(TopologyRefresher refresher) throws Exception {
@@ -45,7 +45,7 @@ class TopologyRefresherTest {
     }
 
     @Test
-    void constructorAcceptsConsumerAndStartDoesNotThrow() {
+    void constructorAcceptsPredicateAndStartDoesNotThrow() {
         TopologyRefresher refresher = refresher();
 
         refresher.start();

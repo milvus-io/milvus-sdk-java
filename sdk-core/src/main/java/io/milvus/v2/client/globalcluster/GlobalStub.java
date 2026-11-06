@@ -25,6 +25,9 @@ import io.milvus.v2.client.MilvusClientV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -33,9 +36,10 @@ import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 /**
  * Zilliz Cloud only. Manages the client connection to the primary cluster of a global cluster deployment.
  * <p>
- * On construction the stub fetches the global topology, connects to the primary cluster, and
- * starts a background {@link TopologyRefresher}. When the topology changes, the stub swaps to a
- * new client for the new primary endpoint and notifies the registered primary-change callback.
+ * On construction the stub fetches the global topology and connects to the primary cluster.
+ * Background updates begin only after the owning client calls {@code activate()}. When the
+ * topology changes, the stub swaps to a new client for the new primary endpoint and notifies
+ * the registered primary-change callback.
  *
  * @zillizCloudOnly
  */
@@ -48,16 +52,20 @@ public class GlobalStub {
     private final ConnectConfig originalConfig;
     private volatile Consumer<MilvusClientV2> onPrimaryChange;
     private final ClientFactory clientFactory;
+    private final DeferredTopologyCallback initialTopologyCallback;
     private final ReentrantLock lock = new ReentrantLock();
 
     private volatile MilvusClientV2 innerClient;
     private volatile String primaryEndpoint;
     private volatile GlobalTopology topology;
-    private TopologyRefresher refresher;
+    private volatile boolean closed;
+    private volatile TopologyRefresher refresher;
+    private boolean activated;
 
     /**
      * Creates a {@code GlobalStub} for the given global cluster endpoint, fetching the initial
-     * topology, connecting to the current primary cluster, and starting the background refresher.
+     * topology and connecting to the current primary cluster. Background updates remain gated
+     * until the owning client completes initialization and activates the stub.
      *
      * @param globalEndpoint the global cluster endpoint
      * @param originalConfig the original connection configuration
@@ -65,26 +73,35 @@ public class GlobalStub {
      */
     public GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
                       Consumer<MilvusClientV2> onPrimaryChange) {
+        this(globalEndpoint, originalConfig, onPrimaryChange,
+                GlobalClusterUtils::fetchTopology, null);
+    }
+
+    GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
+               Consumer<MilvusClientV2> onPrimaryChange, TopologyFetcher topologyFetcher,
+               ClientFactory clientFactory) {
         this.globalEndpoint = globalEndpoint;
         this.originalConfig = originalConfig;
         this.onPrimaryChange = onPrimaryChange;
-        this.clientFactory = this::createClientForEndpoint;
+        this.clientFactory = clientFactory == null ? this::createClientForEndpoint : clientFactory;
+        this.initialTopologyCallback = new DeferredTopologyCallback();
 
-        // Fetch initial topology and connect to primary
         String authorization = originalConfig.getAuthorization();
-        this.topology = GlobalClusterUtils.fetchTopology(globalEndpoint, authorization);
-        ClusterInfo primary = this.topology.getPrimary();
-        this.primaryEndpoint = primary.getEndpoint();
-        logger.info("Global cluster: discovered primary endpoint: {}", redactUriUserInfo(primaryEndpoint));
-
-        this.innerClient = clientFactory.create(
-                primaryEndpoint, originalConfig.takeTelemetryRuntimeState(),
-                originalConfig.isDeferTelemetryStart());
-
-        // Start background refresher
-        this.refresher = new TopologyRefresher(globalEndpoint, authorization,
-                topology.getVersion(), this::onTopologyChange);
-        this.refresher.start();
+        try {
+            GlobalTopology first = topologyFetcher.fetch(globalEndpoint, authorization,
+                    null, initialTopologyCallback);
+            ClusterInfo primary = first.getPrimary();
+            this.topology = first;
+            this.primaryEndpoint = primary.getEndpoint();
+            logger.info("Global cluster: discovered primary endpoint: {}",
+                    redactUriUserInfo(primaryEndpoint));
+            this.innerClient = this.clientFactory.create(primaryEndpoint,
+                    originalConfig.takeTelemetryRuntimeState(),
+                    originalConfig.isDeferTelemetryStart());
+        } catch (RuntimeException | Error exception) {
+            initialTopologyCallback.close();
+            throw exception;
+        }
     }
 
     GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
@@ -97,6 +114,33 @@ public class GlobalStub {
         this.innerClient = innerClient;
         this.primaryEndpoint = topology.getPrimary().getEndpoint();
         this.clientFactory = clientFactory;
+        this.initialTopologyCallback = new DeferredTopologyCallback();
+    }
+
+    /**
+     * Starts background topology updates after the owning client has been fully published.
+     * This method is idempotent; calls after close are ignored.
+     */
+    public void activate() {
+        lock.lock();
+        try {
+            if (closed || activated) {
+                return;
+            }
+            TopologyRefresher created = new TopologyRefresher(globalEndpoint,
+                    originalConfig.getAuthorization(), this::getTopology, this::onTopologyChange);
+            try {
+                created.start();
+            } catch (RuntimeException | Error exception) {
+                created.stop();
+                throw exception;
+            }
+            this.refresher = created;
+            this.activated = true;
+            initialTopologyCallback.activate(this::onTopologyChange);
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -177,6 +221,8 @@ public class GlobalStub {
     public void close() {
         lock.lock();
         try {
+            closed = true;
+            initialTopologyCallback.close();
             if (refresher != null) {
                 refresher.stop();
                 refresher = null;
@@ -190,17 +236,44 @@ public class GlobalStub {
         }
     }
 
-    void onTopologyChange(GlobalTopology newTopology) {
+    /**
+     * Installs a candidate topology only if it strictly advances the version, swapping the
+     * primary client when the primary endpoint moved.
+     * <p>
+     * Every write to the shared topology funnels through this compare-and-set, so no update
+     * path (initial-fetch watcher, periodic refresh, UNAVAILABLE-triggered refresh) can roll
+     * the version back, however the threads interleave. A failed client swap rolls back to
+     * the previous topology, which the next refresh will retry.
+     *
+     * @param newTopology the candidate topology
+     * @return whether the candidate was accepted
+     */
+    boolean onTopologyChange(GlobalTopology newTopology) {
         lock.lock();
         try {
+            if (closed) {
+                logger.debug("Global cluster: ignoring topology update after close (version {})",
+                        newTopology.getVersion());
+                return false;
+            }
+            if (this.topology != null && newTopology.getVersion() <= this.topology.getVersion()) {
+                logger.debug("Global cluster: ignored stale topology version {} (current {})",
+                        newTopology.getVersion(), this.topology.getVersion());
+                return false;
+            }
+
             ClusterInfo newPrimary = newTopology.getPrimary();
             String newEndpoint = newPrimary.getEndpoint();
+            String newConnectionUri = normalizePrimaryUri(originalConfig, newEndpoint);
+            String currentConnectionUri = this.primaryEndpoint == null
+                    ? null : normalizePrimaryUri(originalConfig, this.primaryEndpoint);
 
-            if (newEndpoint.equals(this.primaryEndpoint)) {
+            if (newConnectionUri.equals(currentConnectionUri)) {
                 logger.info("Global cluster: topology version changed but primary endpoint unchanged: {}",
                         redactUriUserInfo(newEndpoint));
+                this.primaryEndpoint = newEndpoint;
                 this.topology = newTopology;
-                return;
+                return true;
             }
 
             logger.info("Global cluster: primary endpoint changed from {} to {}",
@@ -275,6 +348,7 @@ public class GlobalStub {
                     logger.warn("Failed to close old primary client: {}", e.getMessage());
                 }
             }
+            return true;
         } finally {
             lock.unlock();
         }
@@ -288,22 +362,41 @@ public class GlobalStub {
         return new MilvusClientV2(primaryConfig);
     }
 
+    private static String normalizePrimaryUri(ConnectConfig original, String endpoint) {
+        if (endpoint == null || endpoint.trim().isEmpty()) {
+            throw new IllegalArgumentException("Primary endpoint is required");
+        }
+        String value = endpoint.trim();
+        if (!value.matches("(?i)^https?://.*")) {
+            if (value.contains("://")) {
+                throw new IllegalArgumentException("Unsupported primary endpoint scheme: " + endpoint);
+            }
+            value = (original.isSecure() ? "https://" : "http://") + value;
+        }
+        try {
+            URI parsed = new URI(value);
+            String scheme = parsed.getScheme().toLowerCase(Locale.ROOT);
+            String host = parsed.getHost();
+            if (host == null || host.isEmpty()) {
+                throw new IllegalArgumentException("Invalid primary endpoint: " + endpoint);
+            }
+            int port = parsed.getPort();
+            if (port <= 0) {
+                port = "https".equals(scheme) ? 443 : 19530;
+            }
+            return new URI(scheme, null, host.toLowerCase(Locale.ROOT), port,
+                    null, null, null).toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid primary endpoint: " + endpoint, e);
+        }
+    }
+
     private static ConnectConfig cloneConfigWithNewUri(
             ConnectConfig original,
             String newUri,
             ClientTelemetryManager.RuntimeState telemetryRuntimeState,
             boolean deferTelemetryStart) {
-        // Construct the full URI for the primary endpoint
-        // The endpoint from topology is typically just a hostname or hostname:port
-        // We need to preserve the scheme (https) from the original URI
-        String uri = newUri;
-        if (!uri.startsWith("http://") && !uri.startsWith("https://")) {
-            if (original.isSecure()) {
-                uri = "https://" + uri;
-            } else {
-                uri = "http://" + uri;
-            }
-        }
+        String uri = normalizePrimaryUri(original, newUri);
 
         ConnectConfig.ConnectConfigBuilder builder = ConnectConfig.builder()
                 .uri(uri)
@@ -330,7 +423,7 @@ public class GlobalStub {
                 .serverPemPath(original.getServerPemPath())
                 .serverName(original.getServerName())
                 .proxyAddress(original.getProxyAddress())
-                .secure(original.getSecure())
+                .secure(uri.startsWith("https://"))
                 .idleTimeoutMs(original.getIdleTimeoutMs())
                 .sslContext(original.getSslContext())
                 .clientRequestId(original.getClientRequestId())
