@@ -790,6 +790,59 @@ public class BulkWriterTest {
         }
     }
 
+    @Test
+    void testWriteCSVKeepsQuotesInValues() {
+        try {
+            CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                    .build();
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("id")
+                    .dataType(DataType.Int64)
+                    .isPrimaryKey(true)
+                    .build());
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("text")
+                    .dataType(DataType.VarChar)
+                    .maxLength(64)
+                    .build());
+            schema.addField(AddFieldReq.builder()
+                    .fieldName("meta")
+                    .dataType(DataType.JSON)
+                    .build());
+
+            List<String> texts = Arrays.asList("\"quoted\"", "back\\\"slash", "\"");
+            List<JsonElement> metas = Arrays.asList(
+                    JsonParser.parseString("{\"key\":\"a\\\"b\"}"),
+                    new JsonPrimitive("plain"),
+                    new JsonPrimitive("\""));
+            LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                    .withCollectionSchema(schema)
+                    .withLocalPath("/tmp/bulk_writer_csv_quotes")
+                    .withFileType(BulkFileType.CSV)
+                    .withConfig("sep", "|")
+                    .build();
+            LocalBulkWriter writer = new LocalBulkWriter(param);
+            for (int i = 0; i < texts.size(); i++) {
+                JsonObject row = new JsonObject();
+                row.addProperty("id", i);
+                row.addProperty("text", texts.get(i));
+                row.add("meta", metas.get(i));
+                writer.appendRow(row);
+            }
+            writer.commit(false);
+
+            List<String> lines = Files.readAllLines(Paths.get(writer.getBatchFiles().get(0).get(0)), StandardCharsets.UTF_8);
+            Assertions.assertEquals(4, lines.size());
+            for (int i = 0; i < texts.size(); i++) {
+                Map<String, String> values = readPipeDelimitedRow(lines.get(0), lines.get(i + 1));
+                Assertions.assertEquals(texts.get(i), stripCsvQuotes(values.get("text")));
+                Assertions.assertEquals(metas.get(i), JsonParser.parseString(stripCsvQuotes(values.get("meta"))));
+            }
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
     private static LocalBulkWriter newNullableVectorCsvWriter(String nullKey) throws IOException {
         LocalBulkWriterParam.Builder builder = LocalBulkWriterParam.newBuilder()
                 .withCollectionSchema(buildNullableVectorSchema())
