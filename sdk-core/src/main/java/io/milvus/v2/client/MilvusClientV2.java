@@ -2552,6 +2552,36 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Lists the Search, HybridSearch and Query requests running on every proxy of the cluster.
+     *
+     * <p>The call succeeds as long as at least one proxy answered; a proxy that did not answer is
+     * reported in {@link ListRunningRequestsResp#getNodeResults()} and its requests are missing from the
+     * result. Listing other users' requests requires the ListRunningRequests privilege; any user may list
+     * their own.</p>
+     *
+     * @param request the list running requests request, with optional filters
+     * @return the running requests and the outcome on each proxy
+     */
+    public ListRunningRequestsResp listRunningRequests(ListRunningRequestsReq request) {
+        return rpcUtils.retry(() -> utilityService.listRunningRequests(this.getRpcStub(), request));
+    }
+
+    /**
+     * Cancels running requests by the ids returned by {@link #listRunningRequests(ListRunningRequestsReq)}.
+     *
+     * <p>Cancellation is asynchronous: a canceled request stops at its next cancellation check. The
+     * client of a canceled request gets a {@link io.milvus.v2.exception.MilvusClientException} whose
+     * {@code getServerErrCode()} is 3002 (request canceled), carrying the reason given here. Canceling
+     * other users' requests requires the CancelRequests privilege; any user may cancel their own.</p>
+     *
+     * @param request the cancel requests request; the id list must not be empty
+     * @return the canceled requests, the ids not found or not settled, and the outcome on each proxy
+     */
+    public CancelRequestsResp cancelRequests(CancelRequestsReq request) {
+        return rpcUtils.retry(() -> utilityService.cancelRequests(this.getRpcStub(), request));
+    }
+
+    /**
      * Dump messages from a WAL range for data salvage.
      *
      * @param request dump messages request
