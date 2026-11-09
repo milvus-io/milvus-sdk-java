@@ -85,8 +85,13 @@ public class RLSService extends BaseService {
             builder.setPolicyType(io.milvus.grpc.RowPolicyType.forNumber(request.getPolicyType().getCode()));
         }
         if (request.getActions() != null) {
-            request.getActions().forEach(action ->
-                    builder.addActions(io.milvus.grpc.RowPolicyAction.forNumber(action.getCode())));
+            for (RowPolicyAction action : request.getActions()) {
+                if (action == RowPolicyAction.UNKNOWN) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "RowPolicyAction.UNKNOWN is not a valid action for creating a row policy");
+                }
+                builder.addActions(io.milvus.grpc.RowPolicyAction.forNumber(action.getCode()));
+            }
         }
         Status status = blockingStub.createRowPolicy(builder.build());
         rpcUtils.handleResponse(title, status);
@@ -115,8 +120,13 @@ public class RLSService extends BaseService {
             builder.setPolicyType(io.milvus.grpc.RowPolicyType.forNumber(request.getPolicyType().getCode()));
         }
         if (request.getActions() != null) {
-            request.getActions().forEach(action ->
-                    builder.addActions(io.milvus.grpc.RowPolicyAction.forNumber(action.getCode())));
+            for (RowPolicyAction action : request.getActions()) {
+                if (action == RowPolicyAction.UNKNOWN) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "RowPolicyAction.UNKNOWN is not a valid action for updating a row policy");
+                }
+                builder.addActions(io.milvus.grpc.RowPolicyAction.forNumber(action.getCode()));
+            }
         }
         Status status = blockingStub.updateRowPolicy(builder.build());
         rpcUtils.handleResponse(title, status);
@@ -172,9 +182,10 @@ public class RLSService extends BaseService {
     }
 
     private RowPolicyInfo toRowPolicyInfo(RowPolicy policy) {
+        RowPolicyType type = RowPolicyType.fromCode(policy.getPolicyTypeValue());
         return RowPolicyInfo.builder()
                 .policyName(policy.getPolicyName())
-                .policyType(RowPolicyType.fromCode(policy.getPolicyTypeValue()))
+                .policyType(type == null ? RowPolicyType.UNKNOWN : type)
                 .actions(policy.getActionsValueList().stream()
                         .map(code -> {
                             RowPolicyAction mapped = RowPolicyAction.fromCode(code);
