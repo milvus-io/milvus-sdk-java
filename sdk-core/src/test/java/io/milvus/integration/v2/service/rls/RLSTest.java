@@ -412,6 +412,54 @@ class RLSTest extends BaseTest {
     }
 
     @Test
+    void testListRowPoliciesMapsUnknownPolicyTypeToUnknown() {
+        when(blockingStub.listRowPolicies(any())).thenReturn(
+                ListRowPoliciesResponse.newBuilder()
+                        .setStatus(Status.newBuilder().setCode(0).build())
+                        .setDbName("default")
+                        .setCollectionName("test")
+                        .addPolicies(RowPolicy.newBuilder()
+                                .setPolicyName("policy_unknown")
+                                .setPolicyTypeValue(99)
+                                .build())
+                        .build());
+
+        ListRowPoliciesResp resp = client_v2.listRowPolicies(ListRowPoliciesReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .build());
+
+        assertEquals(1, resp.getPolicies().size());
+        assertEquals(io.milvus.v2.common.RowPolicyType.UNKNOWN, resp.getPolicies().get(0).getPolicyType());
+    }
+
+    @Test
+    void testCreateRowPolicyRejectsUnknownAction() {
+        CreateRowPolicyReq request = CreateRowPolicyReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .policyName("policy_test")
+                .policyType(io.milvus.v2.common.RowPolicyType.PERMISSIVE)
+                .actions(Arrays.asList(RowPolicyAction.UNKNOWN))
+                .build();
+
+        assertThrows(MilvusClientException.class, () -> client_v2.createRowPolicy(request));
+    }
+
+    @Test
+    void testUpdateRowPolicyRejectsUnknownAction() {
+        UpdateRowPolicyReq request = UpdateRowPolicyReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .policyName("policy_test")
+                .policyType(io.milvus.v2.common.RowPolicyType.PERMISSIVE)
+                .actions(Arrays.asList(RowPolicyAction.QUERY, RowPolicyAction.UNKNOWN))
+                .build();
+
+        assertThrows(MilvusClientException.class, () -> client_v2.updateRowPolicy(request));
+    }
+
+    @Test
     void testSetRLSPrincipalTagsAcceptsArrayValue() {
         Map<String, Object> tags = new LinkedHashMap<>();
         tags.put("teams", new String[]{"a", "b"});
