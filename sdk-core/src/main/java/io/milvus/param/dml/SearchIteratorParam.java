@@ -58,6 +58,10 @@ public class SearchIteratorParam {
 
     private final long batchSize;
 
+    private final String rlsPrincipal;
+
+    private final Boolean skipRls;
+
     private SearchIteratorParam(Builder builder) {
         // Replace @NonNull logic with explicit null check
         if (builder == null) {
@@ -84,6 +88,8 @@ public class SearchIteratorParam {
         this.plType = builder.plType;
 
         this.batchSize = builder.batchSize;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
     }
 
     public static Builder newBuilder() {
@@ -171,6 +177,26 @@ public class SearchIteratorParam {
         return batchSize;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the search.
+     *
+     * @return the RLS principal
+     */
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the search should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
     // toString method to replace @ToString annotation
     @Override
     public String toString() {
@@ -194,6 +220,8 @@ public class SearchIteratorParam {
                 ", groupByFieldName='" + groupByFieldName + '\'' +
                 ", plType=" + plType +
                 ", batchSize=" + batchSize +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -226,6 +254,10 @@ public class SearchIteratorParam {
         private PlaceholderType plType = PlaceholderType.None;
 
         private Long batchSize = 1000L;
+
+        private String rlsPrincipal;
+
+        private Boolean skipRls;
 
         Builder() {
         }
@@ -585,6 +617,30 @@ public class SearchIteratorParam {
          */
         public Builder withBatchSize(@NotNull Long batchSize) {
             this.batchSize = batchSize;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the search.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return <code>Builder</code>
+         */
+
+        public Builder withRlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the search should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return <code>Builder</code>
+         */
+
+        public Builder withSkipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

@@ -42,6 +42,8 @@ public class SearchIteratorReqV2 {
     // Valid value of this map can be:
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     private Map<String, Object> filterTemplateValues;
+    private String rlsPrincipal;
+    private Boolean skipRls;
 
     private SearchIteratorReqV2(SearchIteratorReqV2Builder builder) {
         this.databaseName = builder.databaseName;
@@ -63,6 +65,8 @@ public class SearchIteratorReqV2 {
         this.batchSize = builder.batchSize;
         this.externalFilterFunc = builder.externalFilterFunc;
         this.filterTemplateValues = builder.filterTemplateValues;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
     }
 
     public static SearchIteratorReqV2Builder builder() {
@@ -217,6 +221,50 @@ public class SearchIteratorReqV2 {
         return filterTemplateValues;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the search.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the search.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the search should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the search should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
+
     @Override
     public String toString() {
         return "SearchIteratorReqV2{" +
@@ -238,6 +286,8 @@ public class SearchIteratorReqV2 {
                 ", groupByFieldName='" + groupByFieldName + '\'' +
                 ", batchSize=" + batchSize +
                 ", externalFilterFunc=" + externalFilterFunc +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -261,6 +311,8 @@ public class SearchIteratorReqV2 {
         private long batchSize = 1000L;
         private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = null;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         public SearchIteratorReqV2Builder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -358,6 +410,32 @@ public class SearchIteratorReqV2 {
 
         public SearchIteratorReqV2Builder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the search.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public SearchIteratorReqV2Builder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the search should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public SearchIteratorReqV2Builder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

@@ -606,6 +606,12 @@ public class VectorService extends BaseService {
         if (request.getOutputFields() != null) {
             queryReq.setOutputFields(request.getOutputFields());
         }
+        if (request.getRlsPrincipal() != null) {
+            queryReq.setRlsPrincipal(request.getRlsPrincipal());
+        }
+        if (request.getSkipRls() != null) {
+            queryReq.setSkipRls(request.getSkipRls());
+        }
         return queryReq;
     }
 

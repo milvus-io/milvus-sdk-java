@@ -38,6 +38,13 @@ public class BaseImportRequest implements Serializable {
 
     private Map<String, Object> options;
 
+    // transient: RLS context is injected into the request options (rls_principal/skip_rls) by
+    // BulkImportUtils, mirroring pymilvus' gRPC ImportRequest.options; it must not be serialized
+    // as top-level request keys.
+    private transient String rlsPrincipal;
+
+    private transient Boolean skipRls;
+
     public BaseImportRequest() {
     }
 
@@ -49,6 +56,8 @@ public class BaseImportRequest implements Serializable {
     protected BaseImportRequest(BaseImportRequestBuilder<?> builder) {
         this.apiKey = builder.apiKey;
         this.options = builder.options;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
     }
 
     public String getApiKey() {
@@ -67,11 +76,57 @@ public class BaseImportRequest implements Serializable {
         this.options = options;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the import.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the import.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the import should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the import should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
+
     @Override
     public String toString() {
         return "BaseImportRequest{" +
                 "apiKey='" + RedactCredential.redactCredential(apiKey) + '\'' +
                 "options=" + options +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -82,6 +137,8 @@ public class BaseImportRequest implements Serializable {
     public static class BaseImportRequestBuilder<T extends BaseImportRequestBuilder<T>> {
         private String apiKey = "";
         private Map<String, Object> options;
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         protected BaseImportRequestBuilder() {
             this.apiKey = "";
@@ -95,6 +152,32 @@ public class BaseImportRequest implements Serializable {
 
         public T options(Map<String, Object> options) {
             this.options = options;
+            return (T) this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the import.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public T rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return (T) this;
+        }
+
+        /**
+         * Sets whether the import should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public T skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return (T) this;
         }
 

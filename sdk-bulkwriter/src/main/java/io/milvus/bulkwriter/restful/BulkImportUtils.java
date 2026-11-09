@@ -26,6 +26,7 @@ import io.milvus.bulkwriter.request.list.BaseListImportJobsRequest;
 import io.milvus.bulkwriter.response.RestfulResponse;
 import io.milvus.common.utils.JsonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class BulkImportUtils extends BaseRestful {
@@ -35,11 +36,28 @@ public class BulkImportUtils extends BaseRestful {
 
         Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
         }.getType());
+        addRlsOptions(params, request);
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
         RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
         }.getType());
         handleResponse(requestURL, response);
         return body;
+    }
+
+    // Row-level security context for the import is carried in the request options,
+    // mirroring pymilvus' gRPC ImportRequest.options key-value pairs.
+    static void addRlsOptions(Map<String, Object> params, BaseImportRequest request) {
+        Map<String, Object> options = (Map<String, Object>) params.get("options");
+        if (options == null) {
+            options = new HashMap<>();
+            params.put("options", options);
+        }
+        if (request.getRlsPrincipal() != null) {
+            options.put("rls_principal", request.getRlsPrincipal());
+        }
+        if (request.getSkipRls() != null) {
+            options.put("skip_rls", String.valueOf(request.getSkipRls()).toLowerCase());
+        }
     }
 
     public static String getImportProgress(String url, BaseDescribeImportRequest request) {

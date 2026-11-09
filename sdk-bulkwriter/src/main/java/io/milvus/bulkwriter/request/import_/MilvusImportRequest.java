@@ -118,6 +118,8 @@ public class MilvusImportRequest extends BaseImportRequest {
                 ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 ", files=" + files +
+                ", rlsPrincipal='" + getRlsPrincipal() + '\'' +
+                ", skipRls=" + getSkipRls() +
                 '}';
     }
 
