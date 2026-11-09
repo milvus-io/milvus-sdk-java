@@ -69,6 +69,12 @@ public class DataUtils {
             if (StringUtils.isNotEmpty(dbName)) {
                 insertBuilder.setDbName(dbName);
             }
+            if (StringUtils.isNotEmpty(requestParam.getRlsPrincipal())) {
+                insertBuilder.setRlsPrincipal(requestParam.getRlsPrincipal());
+            }
+            if (requestParam.getSkipRls() != null) {
+                insertBuilder.setSkipRls(requestParam.getSkipRls());
+            }
             upsertBuilder = null;
             fillFieldsData(requestParam, descColl);
             return insertBuilder.build();
@@ -98,6 +104,12 @@ public class DataUtils {
                     .setNumRows(requestParam.getData().size());
             if (StringUtils.isNotEmpty(dbName)) {
                 upsertBuilder.setDbName(dbName);
+            }
+            if (StringUtils.isNotEmpty(requestParam.getRlsPrincipal())) {
+                upsertBuilder.setRlsPrincipal(requestParam.getRlsPrincipal());
+            }
+            if (requestParam.getSkipRls() != null) {
+                upsertBuilder.setSkipRls(requestParam.getSkipRls());
             }
             insertBuilder = null;
             fillFieldsData(requestParam, descColl);
@@ -674,6 +686,12 @@ public class DataUtils {
                 .setExpr(request.getFilter());
         if (request.getConsistencyLevel() != null) {
             builder.setConsistencyLevelValue(request.getConsistencyLevel().getCode());
+        }
+        if (StringUtils.isNotEmpty(request.getRlsPrincipal())) {
+            builder.setRlsPrincipal(request.getRlsPrincipal());
+        }
+        if (request.getSkipRls() != null) {
+            builder.setSkipRls(request.getSkipRls());
         }
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();

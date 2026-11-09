@@ -150,6 +150,8 @@ public class SearchIteratorV2 {
                 .ignoreGrowing(searchIteratorReq.isIgnoreGrowing())
                 .groupByFieldName(searchIteratorReq.getGroupByFieldName())
                 .filterTemplateValues(searchIteratorReq.getFilterTemplateValues())
+                .rlsPrincipal(searchIteratorReq.getRlsPrincipal())
+                .skipRls(searchIteratorReq.getSkipRls())
                 .build();
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
         SearchResults response = rpcUtils.retry(() -> blockingStub.get().search(searchRequest));

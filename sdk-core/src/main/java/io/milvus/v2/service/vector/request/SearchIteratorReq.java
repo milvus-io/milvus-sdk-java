@@ -26,6 +26,8 @@ public class SearchIteratorReq {
     private boolean ignoreGrowing;
     private String groupByFieldName;
     private long batchSize;
+    private String rlsPrincipal;
+    private Boolean skipRls;
 
     private SearchIteratorReq(SearchIteratorReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -44,6 +46,8 @@ public class SearchIteratorReq {
         this.ignoreGrowing = builder.ignoreGrowing;
         this.groupByFieldName = builder.groupByFieldName;
         this.batchSize = builder.batchSize;
+        this.rlsPrincipal = builder.rlsPrincipal;
+        this.skipRls = builder.skipRls;
     }
 
     public static SearchIteratorReqBuilder builder() {
@@ -182,6 +186,50 @@ public class SearchIteratorReq {
         this.batchSize = batchSize;
     }
 
+    /**
+     * Returns the row-level security (RLS) principal for the search.
+     *
+     * @return the RLS principal
+     */
+
+
+    public String getRlsPrincipal() {
+        return rlsPrincipal;
+    }
+
+    /**
+     * Sets the row-level security (RLS) principal for the search.
+     *
+     * @param rlsPrincipal the RLS principal
+     */
+
+
+    public void setRlsPrincipal(String rlsPrincipal) {
+        this.rlsPrincipal = rlsPrincipal;
+    }
+
+    /**
+     * Returns whether the search should skip row-level security (RLS) enforcement.
+     *
+     * @return {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public Boolean getSkipRls() {
+        return skipRls;
+    }
+
+    /**
+     * Sets whether the search should skip row-level security (RLS) enforcement.
+     *
+     * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+     */
+
+
+    public void setSkipRls(Boolean skipRls) {
+        this.skipRls = skipRls;
+    }
+
     @Override
     public String toString() {
         return "SearchIteratorReq{" +
@@ -201,6 +249,8 @@ public class SearchIteratorReq {
                 ", ignoreGrowing=" + ignoreGrowing +
                 ", groupByFieldName='" + groupByFieldName + '\'' +
                 ", batchSize=" + batchSize +
+                ", rlsPrincipal='" + rlsPrincipal + '\'' +
+                ", skipRls=" + skipRls +
                 '}';
     }
 
@@ -221,6 +271,9 @@ public class SearchIteratorReq {
         private boolean ignoreGrowing = false;
         private String groupByFieldName = "";
         private long batchSize = 1000L;
+
+        private String rlsPrincipal;
+        private Boolean skipRls;
 
         public SearchIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -303,6 +356,32 @@ public class SearchIteratorReq {
 
         public SearchIteratorReqBuilder batchSize(long batchSize) {
             this.batchSize = batchSize;
+            return this;
+        }
+
+        /**
+         * Sets the row-level security (RLS) principal for the search.
+         *
+         * @param rlsPrincipal the RLS principal
+         * @return this builder
+         */
+
+
+        public SearchIteratorReqBuilder rlsPrincipal(String rlsPrincipal) {
+            this.rlsPrincipal = rlsPrincipal;
+            return this;
+        }
+
+        /**
+         * Sets whether the search should skip row-level security (RLS) enforcement.
+         *
+         * @param skipRls {@code true} to skip RLS, {@code null} for the server default
+         * @return this builder
+         */
+
+
+        public SearchIteratorReqBuilder skipRls(Boolean skipRls) {
+            this.skipRls = skipRls;
             return this;
         }
 

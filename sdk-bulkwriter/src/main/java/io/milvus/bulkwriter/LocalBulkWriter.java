@@ -130,8 +130,13 @@ public class LocalBulkWriter extends BulkWriter {
         Runnable runnable = () -> commitIfFileReady(fileList);
         Thread thread = new Thread(runnable);
         logger.info("CallBack thread begin, name: {}", thread.getName());
-        workingThread.put(thread.getName(), thread);
-        thread.start();
+        workingThreadLock.lock();
+        try {
+            workingThread.put(thread.getName(), thread);
+            thread.start();
+        } finally {
+            workingThreadLock.unlock();
+        }
 
         if (!async) {
             logger.info("Wait callBack to finish");
@@ -145,7 +150,12 @@ public class LocalBulkWriter extends BulkWriter {
         if (CollectionUtils.isNotEmpty(fileList)) {
             callBack(fileList);
         }
-        workingThread.remove(Thread.currentThread().getName());
+        workingThreadLock.lock();
+        try {
+            workingThread.remove(Thread.currentThread().getName());
+        } finally {
+            workingThreadLock.unlock();
+        }
         String msg = String.format("Flush thread done, name: %s", Thread.currentThread().getName());
         logger.info(msg);
     }
@@ -171,14 +181,19 @@ public class LocalBulkWriter extends BulkWriter {
         workingThreadLock.unlock();
 
         // wait flush thread
-        if (!workingThread.isEmpty()) {
-            for (String key : workingThread.keySet()) {
-                logger.info("Wait flush thread '{}' to finish", key);
-                Thread thread = workingThread.get(key);
-                if (thread != null) {
-                    thread.join();
+        while (!workingThread.isEmpty()) {
+            Thread thread;
+            workingThreadLock.lock();
+            try {
+                if (workingThread.isEmpty()) {
+                    break;
                 }
+                thread = workingThread.values().iterator().next();
+            } finally {
+                workingThreadLock.unlock();
             }
+            logger.info("Wait flush thread '{}' to finish", thread.getName());
+            thread.join();
         }
 
         rmDir();
