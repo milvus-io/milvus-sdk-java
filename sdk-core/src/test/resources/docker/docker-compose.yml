@@ -34,7 +34,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-standalone
-    image: milvusdb/milvus:master-20260825-dd1ee671
+    image: milvusdb/milvus:master-20261109-ab928c5a
     user: "0:0"
     command: ["milvus", "run", "standalone"]
     security_opt:
