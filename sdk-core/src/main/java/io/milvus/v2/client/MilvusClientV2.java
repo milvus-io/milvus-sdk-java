@@ -156,10 +156,17 @@ public class MilvusClientV2 {
 
 
     public MilvusClientV2(ConnectConfig connectConfig) {
+        this(connectConfig, true);
+    }
+
+    private MilvusClientV2(ConnectConfig connectConfig, boolean activateGlobalStub) {
         if (connectConfig != null) {
             connect(connectConfig);
 
             initServices(connectConfig.getDbName());
+            if (activateGlobalStub && globalStub != null) {
+                globalStub.activate();
+            }
         }
     }
 
@@ -660,6 +667,9 @@ public class MilvusClientV2 {
             }
             this.connectConfig = oldConfig;
             candidate.connectConfig = oldConfig;
+            if (candidate.globalStub != null) {
+                candidate.globalStub.activate();
+            }
         } catch (RuntimeException | Error exception) {
             this.channel = oldChannel;
             this.blockingStub = oldBlockingStub;
@@ -715,7 +725,7 @@ public class MilvusClientV2 {
     }
 
     MilvusClientV2 createDatabaseCandidate(ConnectConfig config) {
-        return new MilvusClientV2(config);
+        return new MilvusClientV2(config, false);
     }
 
     private static ConnectConfig copyConnectConfigForDatabase(
