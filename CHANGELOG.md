@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+### Improvement
+- Resolve global cluster topology through DNS SRV records with bounded concurrent probing,
+  strict no-rollback recovery, and safe deferred background activation
+
 ## milvus-sdk-java 3.0.12 (2026-10-27)
 ### Improvement
 - Upgrade grpc-java to 1.77.0 to fix CVE-2025-55163 (Netty MadeYouReset)

@@ -19,6 +19,7 @@
 
 package io.milvus.unit.v2.client.globalcluster;
 
+import io.milvus.telemetry.ClientTelemetryManager;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.client.globalcluster.ClusterCapability;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -37,9 +39,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -92,10 +96,23 @@ class GlobalStubTest {
         });
     }
 
-    private static void onTopologyChange(GlobalStub stub, GlobalTopology newTopology) throws Exception {
+    private static boolean onTopologyChange(GlobalStub stub, GlobalTopology newTopology) throws Exception {
         Method method = GlobalStub.class.getDeclaredMethod("onTopologyChange", GlobalTopology.class);
         method.setAccessible(true);
-        method.invoke(stub, newTopology);
+        return (Boolean) method.invoke(stub, newTopology);
+    }
+
+    private static ConnectConfig clonePrimaryConfig(ConnectConfig original, String endpoint)
+            throws Exception {
+        Method method = GlobalStub.class.getDeclaredMethod("cloneConfigWithNewUri",
+                ConnectConfig.class, String.class, ClientTelemetryManager.RuntimeState.class,
+                boolean.class);
+        method.setAccessible(true);
+        try {
+            return (ConnectConfig) method.invoke(null, original, endpoint, null, false);
+        } catch (InvocationTargetException e) {
+            throw (RuntimeException) e.getCause();
+        }
     }
 
     @Test
@@ -158,11 +175,39 @@ class GlobalStubTest {
         GlobalStub stub = stub(topology(1L, "host1:19530"), inner,
                 clientFactoryReturning(mock(MilvusClientV2.class)));
 
-        onTopologyChange(stub, topology(2L, "host1:19530"));
+        assertTrue(onTopologyChange(stub, topology(2L, "host1:19530")));
 
         assertSame(inner, stub.getPrimaryClient());
         assertEquals(2L, stub.getTopology().getVersion());
         verify(inner, never()).close();
+    }
+
+    @Test
+    void staleTopologyVersionIsRejected() throws Exception {
+        MilvusClientV2 inner = mock(MilvusClientV2.class);
+        GlobalStub stub = stub(topology(2L, "host1:19530"), inner,
+                clientFactoryReturning(mock(MilvusClientV2.class)));
+
+        // Memory only advances: a lower (or equal) version must never roll the topology back,
+        // even when it points at a different primary.
+        assertFalse(onTopologyChange(stub, topology(1L, "host2:19530")));
+        assertFalse(onTopologyChange(stub, topology(2L, "host2:19530")));
+
+        assertSame(inner, stub.getPrimaryClient());
+        assertEquals("host1:19530", stub.getPrimaryEndpoint());
+        assertEquals(2L, stub.getTopology().getVersion());
+        verify(inner, never()).close();
+    }
+
+    @Test
+    void onTopologyChangeAfterCloseIsRejected() throws Exception {
+        MilvusClientV2 inner = mock(MilvusClientV2.class);
+        GlobalStub stub = stub(topology(1L, "host1:19530"), inner,
+                clientFactoryReturning(mock(MilvusClientV2.class)));
+        stub.close();
+
+        assertFalse(onTopologyChange(stub, topology(2L, "host2:19530")));
+        assertNull(stub.getPrimaryClient());
     }
 
     @Test
@@ -181,6 +226,58 @@ class GlobalStubTest {
         assertSame(newTopology, stub.getTopology());
         assertEquals(Collections.singletonList(newClient), published);
         verify(oldClient).close();
+    }
+
+    @Test
+    void equivalentPrimaryAddressDoesNotSwapClient() throws Exception {
+        MilvusClientV2 inner = mock(MilvusClientV2.class);
+        GlobalStub stub = stub(topology(1L, "https://PRIMARY.example.com"), inner,
+                clientFactoryReturning(mock(MilvusClientV2.class)));
+
+        GlobalTopology newer = topology(2L, "https://primary.example.com:443");
+        assertTrue(onTopologyChange(stub, newer));
+
+        assertSame(inner, stub.getPrimaryClient());
+        assertSame(newer, stub.getTopology());
+        verify(inner, never()).close();
+    }
+
+    @Test
+    void primaryConfigUsesSchemeAwareDefaultPorts() throws Exception {
+        ConnectConfig secureOriginal = ConnectConfig.builder().uri(GLOBAL_ENDPOINT).build();
+
+        ConnectConfig https = clonePrimaryConfig(secureOriginal, "primary.example.com");
+        assertEquals("https://primary.example.com:443", https.getUri());
+        assertEquals(443, https.getPort());
+        assertTrue(https.isSecure());
+
+        ConnectConfig explicit = clonePrimaryConfig(
+                secureOriginal, "https://primary.example.com:8443");
+        assertEquals("https://primary.example.com:8443", explicit.getUri());
+        assertEquals(8443, explicit.getPort());
+
+        ConnectConfig http = clonePrimaryConfig(secureOriginal, "http://primary.example.com");
+        assertEquals("http://primary.example.com:19530", http.getUri());
+        assertEquals(19530, http.getPort());
+        assertFalse(http.isSecure());
+
+        ConnectConfig insecureOriginal = ConnectConfig.builder()
+                .uri("http://host.global-cluster.example:19530")
+                .build();
+        ConnectConfig inherited = clonePrimaryConfig(insecureOriginal, "primary.example.com");
+        assertEquals("http://primary.example.com:19530", inherited.getUri());
+        assertFalse(inherited.isSecure());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> clonePrimaryConfig(secureOriginal, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> clonePrimaryConfig(secureOriginal, "  "));
+        assertThrows(IllegalArgumentException.class,
+                () -> clonePrimaryConfig(secureOriginal, "ftp://primary.example.com"));
+        assertThrows(IllegalArgumentException.class,
+                () -> clonePrimaryConfig(secureOriginal, "https://"));
+        assertThrows(IllegalArgumentException.class,
+                () -> clonePrimaryConfig(secureOriginal, "https://bad host"));
     }
 
     @Test
