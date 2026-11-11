@@ -799,16 +799,40 @@ class CreateCollectionReqTest {
                 .build()));
 
         assertThrows(ParamException.class, () -> struct.addField(AddFieldReq.builder()
-                .fieldName("null")
-                .dataType(DataType.VarChar)
-                .isNullable(true)
-                .build()));
-
-        assertThrows(ParamException.class, () -> struct.addField(AddFieldReq.builder()
                 .fieldName("dv")
                 .dataType(DataType.VarChar)
                 .defaultValue("x")
                 .build()));
+    }
+
+    @Test
+    void structFieldSchemaAddFieldAcceptsNullableAndNestedArray() {
+        CreateCollectionReq.StructFieldSchema struct = CreateCollectionReq.StructFieldSchema.builder()
+                .name("chunks")
+                .build();
+
+        CreateCollectionReq.StructFieldSchema withNullable = struct.addField(AddFieldReq.builder()
+                .fieldName("lang")
+                .dataType(DataType.VarChar)
+                .maxLength(16)
+                .isNullable(true)
+                .build());
+        assertEquals(1, withNullable.getFields().size());
+        assertTrue(withNullable.getFields().get(0).getIsNullable());
+
+        CreateCollectionReq.StructFieldSchema withNestedArray = withNullable.addField(AddFieldReq.builder()
+                .fieldName("tags")
+                .dataType(DataType.Array)
+                .elementType(DataType.Int64)
+                .maxCapacity(8)
+                .elementNullable(true)
+                .build());
+        assertEquals(2, withNestedArray.getFields().size());
+        CreateCollectionReq.FieldSchema tags = withNestedArray.getFields().get(1);
+        assertEquals(DataType.Array, tags.getDataType());
+        assertEquals(DataType.Int64, tags.getElementType());
+        assertEquals(Integer.valueOf(8), tags.getMaxCapacity());
+        assertTrue(tags.getElementNullable());
     }
 
     @Test

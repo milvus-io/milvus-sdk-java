@@ -20,6 +20,7 @@
 package io.milvus.unit.v2.utils;
 import io.milvus.v2.utils.DataUtils;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
@@ -249,6 +250,319 @@ class DataUtilsUpsertValidationTest {
         FieldData score = metadataField.getStructArrays().getFields(0);
         Assertions.assertEquals(Collections.singletonList(false), score.getValidDataList());
         Assertions.assertFalse(score.hasScalars());
+    }
+
+    @Test
+    void testPathReplaceChildStructSubField() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject();
+        operand.add("tags", JsonUtils.toJsonTree(Arrays.asList(1, 2)));
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        UpsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                UpsertReq.builder()
+                        .collectionName("test")
+                        .data(Collections.singletonList(row))
+                        .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                .fieldName("metadata")
+                                .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                                .path("[1][tags]")
+                                .build()))
+                        .build(),
+                collection);
+
+        // PATH_REPLACE auto-promotes partial update and forwards the op with its path
+        Assertions.assertTrue(request.getPartialUpdate());
+        Assertions.assertEquals(1, request.getFieldOpsCount());
+        io.milvus.grpc.FieldPartialUpdateOp op = request.getFieldOps(0);
+        Assertions.assertEquals("metadata", op.getFieldName());
+        Assertions.assertEquals(io.milvus.grpc.FieldPartialUpdateOp.OpType.PATH_REPLACE, op.getOp());
+        Assertions.assertEquals("[1][tags]", op.getPath());
+
+        // only the targeted child sub-field is emitted in the struct array
+        FieldData metadataField = request.getFieldsDataList().stream()
+                .filter(field -> field.getFieldName().equals("metadata"))
+                .findFirst()
+                .orElse(null);
+        Assertions.assertNotNull(metadataField);
+        Assertions.assertEquals(1, metadataField.getStructArrays().getFieldsCount());
+        Assertions.assertEquals("tags", metadataField.getStructArrays().getFields(0).getFieldName());
+        // the outer array_data holds per-row cells; the row cell is a nested ArrayArray
+        // whose first leaf cell carries the operand inner-array values
+        ScalarField rowCell = metadataField.getStructArrays().getFields(0).getScalars().getArrayData().getData(0);
+        Assertions.assertEquals(io.milvus.grpc.DataType.Int64, rowCell.getArrayData().getElementType());
+        Assertions.assertEquals(1, rowCell.getArrayData().getDataCount());
+        Assertions.assertEquals(Arrays.asList(1L, 2L),
+                rowCell.getArrayData().getData(0).getLongData().getDataList());
+    }
+
+    @Test
+    void testPathReplaceWholeElementStructSubField() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject();
+        operand.addProperty("score", 22.0f);
+        operand.add("tags", JsonUtils.toJsonTree(Arrays.asList(7)));
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        UpsertRequest request = new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                UpsertReq.builder()
+                        .collectionName("test")
+                        .data(Collections.singletonList(row))
+                        .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                .fieldName("metadata")
+                                .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                                .path("[1]")
+                                .build()))
+                        .build(),
+                collection);
+
+        // whole-element path emits all sub-fields
+        FieldData metadataField = request.getFieldsDataList().stream()
+                .filter(field -> field.getFieldName().equals("metadata"))
+                .findFirst()
+                .orElse(null);
+        Assertions.assertNotNull(metadataField);
+        Assertions.assertEquals(2, metadataField.getStructArrays().getFieldsCount());
+    }
+
+    @Test
+    void testPathReplaceRejectsMissingChildKey() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject(); // child "tags" missing
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        DataNotMatchException exception = Assertions.assertThrows(DataNotMatchException.class,
+                () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                        UpsertReq.builder()
+                                .collectionName("test")
+                                .data(Collections.singletonList(row))
+                                .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                        .fieldName("metadata")
+                                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                                        .path("[1][tags]")
+                                        .build()))
+                                .build(),
+                        collection));
+
+        Assertions.assertTrue(exception.getMessage().contains("must explicitly contain child"));
+    }
+
+    @Test
+    void testPathReplaceRejectsMoreThanOneElement() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand1 = new JsonObject();
+        operand1.addProperty("score", 22.0f);
+        metadataArray.add(operand1);
+        JsonObject operand2 = new JsonObject();
+        operand2.addProperty("score", 33.0f);
+        metadataArray.add(operand2);
+        row.add("metadata", metadataArray);
+
+        DataNotMatchException exception = Assertions.assertThrows(DataNotMatchException.class,
+                () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                        UpsertReq.builder()
+                                .collectionName("test")
+                                .data(Collections.singletonList(row))
+                                .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                        .fieldName("metadata")
+                                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                                        .path("[1]")
+                                        .build()))
+                                .build(),
+                        collection));
+
+        Assertions.assertTrue(exception.getMessage().contains("exactly one element"));
+    }
+
+    @Test
+    void testPathReplaceRejectsMalformedPath() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject();
+        operand.addProperty("score", 22.0f);
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        for (String malformed : new String[]{"tags", "[1]abc[tags]", "[", "abc"}) {
+            MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                    () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                            UpsertReq.builder()
+                                    .collectionName("test")
+                                    .data(Collections.singletonList(row))
+                                    .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                            .fieldName("metadata")
+                                            .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                                            .path(malformed)
+                                            .build()))
+                                    .build(),
+                            collection));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+            Assertions.assertTrue(exception.getMessage().contains("requires [index] or [index][child]"),
+                    "malformed path '" + malformed + "' should be rejected: " + exception.getMessage());
+        }
+    }
+
+    @Test
+    void testRejectsPathOnNonPathReplaceOp() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject();
+        operand.addProperty("score", 22.0f);
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        // a path on a non-PATH_REPLACE op must be rejected (pymilvus normalize_field_ops
+        // raises ParamError; the proto contract requires an empty path for other ops)
+        for (UpsertReq.FieldPartialUpdateOp.OpType opType : new UpsertReq.FieldPartialUpdateOp.OpType[]{
+                UpsertReq.FieldPartialUpdateOp.OpType.REPLACE,
+                UpsertReq.FieldPartialUpdateOp.OpType.ARRAY_APPEND,
+                UpsertReq.FieldPartialUpdateOp.OpType.ARRAY_REMOVE}) {
+            MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                    () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                            UpsertReq.builder()
+                                    .collectionName("test")
+                                    .data(Collections.singletonList(row))
+                                    .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                            .fieldName("metadata")
+                                            .opType(opType)
+                                            .path("[1]")
+                                            .build()))
+                                    .build(),
+                            collection));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+            Assertions.assertTrue(exception.getMessage().contains("path is only supported for PATH_REPLACE"),
+                    "op " + opType + " with a path should be rejected: " + exception.getMessage());
+        }
+    }
+
+    @Test
+    void testPathReplaceRejectsNullParentOperand() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        row.add("metadata", JsonNull.INSTANCE);
+
+        DataNotMatchException exception = Assertions.assertThrows(DataNotMatchException.class,
+                () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                        UpsertReq.builder()
+                                .collectionName("test")
+                                .data(Collections.singletonList(row))
+                                .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                                        .fieldName("metadata")
+                                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                                        .path("[1][tags]")
+                                        .build()))
+                                .build(),
+                        collection));
+
+        Assertions.assertTrue(exception.getMessage().contains("requires an operand")
+                || exception.getMessage().contains("null or missing"));
+    }
+
+    @Test
+    void testPathReplaceRejectsMultipleOpsOnSameStructField() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject();
+        operand.addProperty("score", 22.0f);
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        List<UpsertReq.FieldPartialUpdateOp> fieldOps = Arrays.asList(
+                UpsertReq.FieldPartialUpdateOp.builder()
+                        .fieldName("metadata")
+                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                        .path("[1][score]")
+                        .build(),
+                UpsertReq.FieldPartialUpdateOp.builder()
+                        .fieldName("metadata")
+                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                        .path("[1][tags]")
+                        .build());
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                        UpsertReq.builder()
+                                .collectionName("test")
+                                .data(Collections.singletonList(row))
+                                .fieldOps(fieldOps)
+                                .build(),
+                        collection));
+
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("Only one PATH_REPLACE op is supported per field"));
+        Assertions.assertTrue(exception.getMessage().contains("metadata"));
+    }
+
+    @Test
+    void testPathReplaceRejectsCombinedWithOtherOpOnSameField() {
+        DescribeCollectionResp collection = describeCollectionWithTwoSubFieldStruct();
+        JsonObject row = row(1L, true, false);
+        JsonArray metadataArray = new JsonArray();
+        JsonObject operand = new JsonObject();
+        operand.addProperty("score", 22.0f);
+        metadataArray.add(operand);
+        row.add("metadata", metadataArray);
+
+        // REPLACE and PATH_REPLACE on the same struct field: only the PATH_REPLACE child is
+        // encoded, so the forwarded REPLACE op would receive row data it cannot consume
+        List<UpsertReq.FieldPartialUpdateOp> fieldOps = Arrays.asList(
+                UpsertReq.FieldPartialUpdateOp.builder()
+                        .fieldName("metadata")
+                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.REPLACE)
+                        .build(),
+                UpsertReq.FieldPartialUpdateOp.builder()
+                        .fieldName("metadata")
+                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE)
+                        .path("[1][score]")
+                        .build());
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                        UpsertReq.builder()
+                                .collectionName("test")
+                                .data(Collections.singletonList(row))
+                                .fieldOps(fieldOps)
+                                .build(),
+                        collection));
+
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("PATH_REPLACE cannot be combined with another op"));
+        Assertions.assertTrue(exception.getMessage().contains("metadata"));
+    }
+
+    private static DescribeCollectionResp describeCollectionWithTwoSubFieldStruct() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.getFieldSchemaList().add(CreateCollectionReq.FieldSchema.builder()
+                .name("id").dataType(DataType.Int64).isPrimaryKey(true).build());
+        schema.getFieldSchemaList().add(CreateCollectionReq.FieldSchema.builder()
+                .name("vector").dataType(DataType.FloatVector).dimension(2).build());
+        CreateCollectionReq.FieldSchema score = CreateCollectionReq.FieldSchema.builder()
+                .name("score").dataType(DataType.Float)
+                .isNullable(true).build();
+        CreateCollectionReq.FieldSchema tags = CreateCollectionReq.FieldSchema.builder()
+                .name("tags").dataType(DataType.Array).elementType(DataType.Int64)
+                .maxCapacity(8).isNullable(true).elementNullable(true).build();
+        schema.getStructFields().add(CreateCollectionReq.StructFieldSchema.builder()
+                .name("metadata")
+                .fields(Arrays.asList(score, tags))
+                .maxCapacity(10)
+                .nullable(true)
+                .build());
+        return DescribeCollectionResp.builder().collectionName("test").collectionSchema(schema).build();
     }
 
     private static DescribeCollectionResp describeCollection(boolean autoId, boolean withFunctionOutput,

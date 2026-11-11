@@ -355,11 +355,22 @@ public abstract class BulkWriter implements AutoCloseable {
 
         for (CreateCollectionReq.StructFieldSchema struct : collectionSchema.getStructFields()) {
             String structName = struct.getName();
-            JsonArray structList = row.getAsJsonArray(structName);
-            if (structList == null) {
-                String msg = String.format("Value of struct field '%s' is not provided.", structName);
+            JsonElement structElement = row.get(structName);
+            boolean structNullable = Boolean.TRUE.equals(struct.getNullable());
+            if (structElement == null || structElement.isJsonNull()) {
+                // an omitted or null struct field is a null row; only allowed when nullable
+                if (!structNullable) {
+                    String msg = String.format("Value of struct field '%s' is not provided.", structName);
+                    ExceptionUtils.throwUnExpectedException(msg);
+                }
+                rowValues.put(structName, null);
+                continue;
+            }
+            if (!structElement.isJsonArray()) {
+                String msg = String.format("Value of struct field '%s' is not a JSON array.", structName);
                 ExceptionUtils.throwUnExpectedException(msg);
             }
+            JsonArray structList = structElement.getAsJsonArray();
 
             List<Map<String, Object>> validList = new ArrayList<>();
             for (JsonElement st : structList.asList()) {
@@ -380,16 +391,29 @@ public abstract class BulkWriter implements AutoCloseable {
                         ExceptionUtils.throwUnExpectedException(msg);
                     }
                     if (!isFunctionOutput && !provided) {
-                        String msg = String.format("Value of field '%s' is not provided.", combineName);
+                        // a nullable sub-field may be omitted (treated as a null element)
+                        if (!Boolean.TRUE.equals(subField.getIsNullable())) {
+                            String msg = String.format("Value of field '%s' is not provided.", combineName);
+                            ExceptionUtils.throwUnExpectedException(msg);
+                        }
+                        validStruct.put(subFieldName, null);
+                        continue;
+                    }
+
+                    // an explicit null is only allowed for a nullable sub-field
+                    JsonElement subValue = dict.get(subFieldName);
+                    if (subValue != null && subValue.isJsonNull() && !Boolean.TRUE.equals(subField.getIsNullable())) {
+                        String msg = String.format("The field '%s' is not nullable, not allow null value", combineName);
                         ExceptionUtils.throwUnExpectedException(msg);
                     }
 
-                    Pair<Object, Integer> objectAndSize = verifyByDatatype(subField, dict.get(subFieldName));
+                    Pair<Object, Integer> objectAndSize = verifyByDatatype(subField, subValue);
                     if (objectAndSize != null) {
                         validStruct.put(subFieldName, objectAndSize.getLeft());
                         rowSize += objectAndSize.getRight();
                     }
                 }
+                // ignore undeclared struct keys (aligned with pymilvus bulk writer)
                 validList.add(validStruct);
             }
 
@@ -527,11 +551,24 @@ public abstract class BulkWriter implements AutoCloseable {
 
         int rowSize = 0;
         DataType elementType = field.getElementType();
+        boolean elementNullable = Boolean.TRUE.equals(field.getElementNullable());
+        List<?> elements = (List<?>) array;
+        // null elements are only allowed when the array sub-field is element-nullable
+        if (!elementNullable) {
+            for (Object item : elements) {
+                if (item == null) {
+                    String msg = String.format("The array element of field '%s' is not nullable, not allow null value", field.getName());
+                    ExceptionUtils.throwUnExpectedException(msg);
+                }
+            }
+        }
         if (TypeSize.contains(elementType)) {
-            rowSize = TypeSize.getSize(elementType) * ((List<?>) array).size();
+            rowSize = TypeSize.getSize(elementType) * elements.size();
         } else if (elementType == DataType.VarChar) {
-            for (String str : (List<String>) array) {
-                rowSize += str.length();
+            for (Object item : elements) {
+                if (item != null) {
+                    rowSize += item.toString().length();
+                }
             }
         } else {
             String msg = String.format("Unsupported element type for array field '%s'", field.getName());

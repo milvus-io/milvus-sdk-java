@@ -79,6 +79,7 @@ class AddCollectionFieldReqTest {
         assertTrue(request.getIsClusteringKey());
         assertFalse(request.getAutoID());
         assertTrue(request.getIsNullable());
+        assertFalse(request.getElementNullable());
         assertEquals("dv", request.getDefaultValue());
         assertTrue(request.getEnableAnalyzer());
         assertFalse(request.getEnableMatch());

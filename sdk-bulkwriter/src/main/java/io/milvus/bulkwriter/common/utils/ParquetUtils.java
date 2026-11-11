@@ -227,11 +227,50 @@ public class ParquetUtils {
                     setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32,
                             LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, isSigned), subField, true);
                     break;
+                case Array:
+                    // nested Array sub-field: a list of leaf elements inside the struct group
+                    fillStructArrayType(groupBuilder, subField);
+                    break;
                 default:
                     break;
             }
         }
         groupBuilder.named(struct.getName());
+    }
+
+    private static void fillStructArrayType(Types.BaseListBuilder.GroupElementBuilder<?, ?> groupBuilder,
+                                            CreateCollectionReq.FieldSchema subField) {
+        switch (subField.getElementType()) {
+            case Bool:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, subField, true);
+                break;
+            case Int8:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                        LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true), subField, true);
+                break;
+            case Int16:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                        LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true), subField, true);
+                break;
+            case Int32:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, subField, true);
+                break;
+            case Int64:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, subField, true);
+                break;
+            case Float:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, subField, true);
+                break;
+            case Double:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, subField, true);
+                break;
+            case VarChar:
+                setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
+                        LogicalTypeAnnotation.stringType(), subField, true);
+                break;
+            default:
+                break;
+        }
     }
 
     /**

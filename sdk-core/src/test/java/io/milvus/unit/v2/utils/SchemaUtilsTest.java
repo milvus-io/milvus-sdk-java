@@ -187,6 +187,30 @@ public class SchemaUtilsTest {
     }
 
     @Test
+    void testConvertFromGrpcStructFieldSchemaStripsSubFieldPrefix() {
+        // a sub-field added via add_collection_field keeps the wire name "clips[note]";
+        // convertFromGrpcStructFieldSchema must strip it to the plain name "note"
+        StructArrayFieldSchema structField = StructArrayFieldSchema.newBuilder()
+                .setName("clips")
+                .addFields(FieldSchema.newBuilder()
+                        .setName("clips[note]")
+                        .setDataType(DataType.VarChar)
+                        .setElementNullable(true)
+                        .build())
+                .addFields(FieldSchema.newBuilder()
+                        .setName("score")
+                        .setDataType(DataType.Int32)
+                        .build())
+                .build();
+
+        CreateCollectionReq.StructFieldSchema sdkStruct =
+                SchemaUtils.convertFromGrpcStructFieldSchema(structField);
+        Assertions.assertEquals("note", sdkStruct.getFields().get(0).getName());
+        Assertions.assertEquals("score", sdkStruct.getFields().get(1).getName());
+        Assertions.assertTrue(sdkStruct.getFields().get(0).getIsNullable());
+    }
+
+    @Test
     void testConvertFieldReqToFieldSchemaAndStructFieldSchema() {
         AddFieldReq fieldReq = AddFieldReq.builder()
                 .fieldName("vec")
@@ -389,7 +413,10 @@ public class SchemaUtilsTest {
                 .build();
         StructArrayFieldSchema rpc = SchemaUtils.convertToGrpcStructFieldSchema(nullableStruct);
         Assertions.assertTrue(rpc.getNullable());
+        // row-level nullability is inherited by every sub-field on the wire
         Assertions.assertTrue(rpc.getFields(0).getNullable());
+        // the sub-field's own element-level nullability is mapped to element_nullable
+        Assertions.assertFalse(rpc.getFields(0).getElementNullable());
 
         CreateCollectionReq.StructFieldSchema nonNullableStruct = CreateCollectionReq.StructFieldSchema.builder()
                 .name("metadata")
@@ -404,21 +431,153 @@ public class SchemaUtilsTest {
         StructArrayFieldSchema rpc2 = SchemaUtils.convertToGrpcStructFieldSchema(nonNullableStruct);
         Assertions.assertFalse(rpc2.getNullable());
         Assertions.assertFalse(rpc2.getFields(0).getNullable());
+        // element-level nullability of the sub-field is preserved independently of the struct
+        Assertions.assertTrue(rpc2.getFields(0).getElementNullable());
     }
 
     @Test
-    void testStructFieldSchemaRejectsNullableSubField() {
+    void testStructFieldSchemaAcceptsNullableSubField() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        CreateCollectionReq.StructFieldSchema result = structField.addField(AddFieldReq.builder()
+                .fieldName("score")
+                .dataType(io.milvus.v2.common.DataType.Float)
+                .isNullable(Boolean.TRUE)
+                .build());
+        Assertions.assertEquals(1, result.getFields().size());
+        Assertions.assertTrue(result.getFields().get(0).getIsNullable());
+    }
+
+    @Test
+    void testStructFieldSchemaAcceptsNestedArraySubField() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        CreateCollectionReq.StructFieldSchema result = structField.addField(AddFieldReq.builder()
+                .fieldName("tags")
+                .dataType(io.milvus.v2.common.DataType.Array)
+                .elementType(io.milvus.v2.common.DataType.VarChar)
+                .maxCapacity(8)
+                .maxLength(16)
+                .isNullable(Boolean.TRUE)
+                .elementNullable(Boolean.TRUE)
+                .build());
+        Assertions.assertEquals(1, result.getFields().size());
+        CreateCollectionReq.FieldSchema tags = result.getFields().get(0);
+        Assertions.assertEquals(io.milvus.v2.common.DataType.Array, tags.getDataType());
+        Assertions.assertEquals(io.milvus.v2.common.DataType.VarChar, tags.getElementType());
+        Assertions.assertTrue(tags.getIsNullable());
+        Assertions.assertTrue(tags.getElementNullable());
+    }
+
+    @Test
+    void testStructFieldSchemaRejectsDirectStructSubField() {
         CreateCollectionReq.StructFieldSchema structField =
                 CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
 
         ParamException exception = Assertions.assertThrows(ParamException.class,
                 () -> structField.addField(AddFieldReq.builder()
-                        .fieldName("score")
-                        .dataType(io.milvus.v2.common.DataType.Float)
-                        .isNullable(Boolean.TRUE)
+                        .fieldName("sub")
+                        .dataType(io.milvus.v2.common.DataType.Struct)
                         .build()));
-        Assertions.assertTrue(exception.getMessage().contains("cannot be nullable individually"));
-        Assertions.assertTrue(exception.getMessage().contains("metadata"));
+        Assertions.assertTrue(exception.getMessage().contains("does not support Struct as a sub-field"),
+                "direct Struct sub-field should be rejected: " + exception.getMessage());
+    }
+
+    @Test
+    void testConvertFieldReqToStructFieldSchemaRejectsDirectStructSubField() {
+        AddFieldReq structReq = AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(io.milvus.v2.common.DataType.Array)
+                .elementType(io.milvus.v2.common.DataType.Struct)
+                .maxCapacity(100)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("sub")
+                        .dataType(io.milvus.v2.common.DataType.Struct)
+                        .build())
+                .build();
+        ParamException exception = Assertions.assertThrows(ParamException.class,
+                () -> SchemaUtils.convertFieldReqToStructFieldSchema(structReq));
+        Assertions.assertTrue(exception.getMessage().contains("does not support Struct as a sub-field"),
+                "direct Struct sub-field should be rejected: " + exception.getMessage());
+    }
+
+    @Test
+    void testStructFieldSchemaRejectsNonScalarArrayElementType() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        for (io.milvus.v2.common.DataType nonScalar : new io.milvus.v2.common.DataType[]{
+                io.milvus.v2.common.DataType.JSON,
+                io.milvus.v2.common.DataType.Geometry,
+                io.milvus.v2.common.DataType.Text,
+                io.milvus.v2.common.DataType.FloatVector}) {
+            ParamException exception = Assertions.assertThrows(ParamException.class,
+                    () -> structField.addField(AddFieldReq.builder()
+                            .fieldName("tags")
+                            .dataType(io.milvus.v2.common.DataType.Array)
+                            .elementType(nonScalar)
+                            .maxCapacity(8)
+                            .build()));
+            Assertions.assertTrue(exception.getMessage().contains("requires a scalar element_type"),
+                    "element type " + nonScalar + " should be rejected: " + exception.getMessage());
+        }
+    }
+
+    @Test
+    void testConvertFieldReqToStructFieldSchemaRejectsNonScalarArrayElementType() {
+        for (io.milvus.v2.common.DataType nonScalar : new io.milvus.v2.common.DataType[]{
+                io.milvus.v2.common.DataType.JSON,
+                io.milvus.v2.common.DataType.Geometry,
+                io.milvus.v2.common.DataType.FloatVector}) {
+            AddFieldReq structReq = AddFieldReq.builder()
+                    .fieldName("clips")
+                    .dataType(io.milvus.v2.common.DataType.Array)
+                    .elementType(io.milvus.v2.common.DataType.Struct)
+                    .maxCapacity(100)
+                    .addStructField(AddFieldReq.builder()
+                            .fieldName("tags")
+                            .dataType(io.milvus.v2.common.DataType.Array)
+                            .elementType(nonScalar)
+                            .maxCapacity(8)
+                            .build())
+                    .build();
+            ParamException exception = Assertions.assertThrows(ParamException.class,
+                    () -> SchemaUtils.convertFieldReqToStructFieldSchema(structReq));
+            Assertions.assertTrue(exception.getMessage().contains("requires a scalar element_type"),
+                    "element type " + nonScalar + " should be rejected: " + exception.getMessage());
+        }
+    }
+
+    @Test
+    void testStructFieldSchemaRejectsElementNullableOnNonArraySubField() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        ParamException exception = Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("lang")
+                        .dataType(io.milvus.v2.common.DataType.VarChar)
+                        .maxLength(16)
+                        .elementNullable(Boolean.TRUE)
+                        .build()));
+        Assertions.assertTrue(exception.getMessage().contains("elementNullable requires an Array sub-field"));
+    }
+
+    @Test
+    void testStructFieldSchemaRejectsNestedArrayOfArraySubField() {
+        CreateCollectionReq.StructFieldSchema structField =
+                CreateCollectionReq.StructFieldSchema.builder().name("metadata").build();
+
+        ParamException exception = Assertions.assertThrows(ParamException.class,
+                () -> structField.addField(AddFieldReq.builder()
+                        .fieldName("tags")
+                        .dataType(io.milvus.v2.common.DataType.Array)
+                        .elementType(io.milvus.v2.common.DataType.Array)
+                        .maxCapacity(8)
+                        .build()));
+        Assertions.assertTrue(exception.getMessage().contains("nested Array of Array"));
     }
 
     @Test
@@ -556,5 +715,146 @@ public class SchemaUtilsTest {
                 Assertions.assertEquals(newSchema.getMultiAnalyzerParams(), fieldSchema.getMultiAnalyzerParams());
             }
         }
+    }
+
+    @Test
+    void testGrpcStructFieldSchemaRoundTripPreservesElementNullableAndNestedArray() {
+        CreateCollectionReq.StructFieldSchema struct = CreateCollectionReq.StructFieldSchema.builder()
+                .name("clips")
+                .nullable(true)
+                .maxCapacity(100)
+                .build();
+        struct.addField(AddFieldReq.builder()
+                .fieldName("score")
+                .dataType(io.milvus.v2.common.DataType.Int64)
+                .isNullable(Boolean.FALSE)
+                .build());
+        struct.addField(AddFieldReq.builder()
+                .fieldName("lang")
+                .dataType(io.milvus.v2.common.DataType.VarChar)
+                .maxLength(16)
+                .isNullable(Boolean.TRUE)
+                .build());
+        struct.addField(AddFieldReq.builder()
+                .fieldName("tags")
+                .dataType(io.milvus.v2.common.DataType.Array)
+                .elementType(io.milvus.v2.common.DataType.VarChar)
+                .maxCapacity(8)
+                .maxLength(16)
+                .isNullable(Boolean.TRUE)
+                .elementNullable(Boolean.TRUE)
+                .build());
+
+        StructArrayFieldSchema rpc = SchemaUtils.convertToGrpcStructFieldSchema(struct);
+
+        // row-level nullable inherited by all sub-fields
+        Assertions.assertTrue(rpc.getNullable());
+        Assertions.assertEquals(3, rpc.getFieldsCount());
+
+        // non-nullable scalar sub-field
+        FieldSchema score = rpc.getFields(0);
+        Assertions.assertEquals(DataType.Array, score.getDataType());
+        Assertions.assertEquals(DataType.Int64, score.getElementType());
+        Assertions.assertTrue(score.getNullable());
+        Assertions.assertFalse(score.getElementNullable());
+        Assertions.assertEquals("100", getParam(score.getTypeParamsList(), "max_capacity"));
+
+        // element-nullable scalar sub-field
+        FieldSchema lang = rpc.getFields(1);
+        Assertions.assertEquals(DataType.Array, lang.getDataType());
+        Assertions.assertEquals(DataType.VarChar, lang.getElementType());
+        Assertions.assertTrue(lang.getNullable());
+        Assertions.assertTrue(lang.getElementNullable());
+        Assertions.assertEquals("16", getParam(lang.getTypeParamsList(), "max_length"));
+
+        // nested Array sub-field: recursive type_schema carries inner capacity and leaf nullability
+        FieldSchema tags = rpc.getFields(2);
+        Assertions.assertEquals(DataType.Array, tags.getDataType());
+        Assertions.assertEquals(DataType.Array, tags.getElementType());
+        Assertions.assertTrue(tags.getElementNullable());
+        Assertions.assertTrue(tags.hasTypeSchema());
+        TypeSchema root = tags.getTypeSchema();
+        Assertions.assertTrue(root.getNullable());
+        Assertions.assertEquals("100", getParam(root.getTypeParamsList(), "max_capacity"));
+        Assertions.assertTrue(root.hasArrayElement());
+        TypeSchema inner = root.getArrayElement();
+        Assertions.assertTrue(inner.getNullable());
+        Assertions.assertEquals("8", getParam(inner.getTypeParamsList(), "max_capacity"));
+        Assertions.assertTrue(inner.hasArrayElement());
+        TypeSchema leaf = inner.getArrayElement();
+        Assertions.assertEquals(DataType.VarChar, leaf.getLeafType());
+        Assertions.assertTrue(leaf.getNullable());
+        Assertions.assertEquals("16", getParam(leaf.getTypeParamsList(), "max_length"));
+
+        // describe-collection round trip
+        CreateCollectionReq.StructFieldSchema roundTripped =
+                SchemaUtils.convertFromGrpcStructFieldSchema(rpc);
+        Assertions.assertTrue(roundTripped.getNullable());
+        Assertions.assertEquals(Integer.valueOf(100), roundTripped.getMaxCapacity());
+        Assertions.assertEquals(3, roundTripped.getFields().size());
+
+        CreateCollectionReq.FieldSchema scoreRt = roundTripped.getFields().get(0);
+        Assertions.assertEquals(io.milvus.v2.common.DataType.Int64, scoreRt.getDataType());
+        Assertions.assertFalse(scoreRt.getIsNullable());
+        Assertions.assertEquals(0, scoreRt.getMaxCapacity());
+
+        CreateCollectionReq.FieldSchema langRt = roundTripped.getFields().get(1);
+        Assertions.assertEquals(io.milvus.v2.common.DataType.VarChar, langRt.getDataType());
+        Assertions.assertTrue(langRt.getIsNullable());
+        Assertions.assertEquals(Integer.valueOf(16), langRt.getMaxLength());
+
+        CreateCollectionReq.FieldSchema tagsRt = roundTripped.getFields().get(2);
+        Assertions.assertEquals(io.milvus.v2.common.DataType.Array, tagsRt.getDataType());
+        Assertions.assertEquals(io.milvus.v2.common.DataType.VarChar, tagsRt.getElementType());
+        Assertions.assertTrue(tagsRt.getIsNullable());
+        Assertions.assertTrue(tagsRt.getElementNullable());
+        Assertions.assertEquals(Integer.valueOf(8), tagsRt.getMaxCapacity());
+        Assertions.assertEquals(Integer.valueOf(16), tagsRt.getMaxLength());
+    }
+
+    @Test
+    void testBuildGrpcStructSubFieldSchemaForAddSubFieldPath() {
+        CreateCollectionReq.FieldSchema lang = CreateCollectionReq.FieldSchema.builder()
+                .name("clips[lang]")
+                .dataType(io.milvus.v2.common.DataType.VarChar)
+                .maxLength(16)
+                .isNullable(Boolean.TRUE)
+                .build();
+
+        FieldSchema rpc = SchemaUtils.buildGrpcStructSubFieldSchema(lang, false, null);
+        Assertions.assertEquals("clips[lang]", rpc.getName());
+        Assertions.assertEquals(DataType.Array, rpc.getDataType());
+        Assertions.assertEquals(DataType.VarChar, rpc.getElementType());
+        Assertions.assertFalse(rpc.getNullable());
+        Assertions.assertTrue(rpc.getElementNullable());
+        Assertions.assertEquals("16", getParam(rpc.getTypeParamsList(), "max_length"));
+        Assertions.assertNull(getParam(rpc.getTypeParamsList(), "max_capacity"));
+    }
+
+    @Test
+    void testBuildGrpcStructSubFieldSchemaPreservesTypeParams() {
+        CreateCollectionReq.FieldSchema emb = CreateCollectionReq.FieldSchema.builder()
+                .name("clips[emb]")
+                .dataType(io.milvus.v2.common.DataType.FloatVector)
+                .dimension(128)
+                .isNullable(Boolean.TRUE)
+                .typeParams(Collections.singletonMap("mmap.enabled", "true"))
+                .build();
+
+        FieldSchema rpc = SchemaUtils.buildGrpcStructSubFieldSchema(emb, false, null);
+        Assertions.assertEquals(DataType.ArrayOfVector, rpc.getDataType());
+        Assertions.assertEquals(DataType.FloatVector, rpc.getElementType());
+        // custom typeParams on the sub-field must survive the wrapper conversion
+        Assertions.assertEquals("true", getParam(rpc.getTypeParamsList(), "mmap.enabled"));
+        Assertions.assertEquals("128", getParam(rpc.getTypeParamsList(), "dim"));
+    }
+
+    private static String getParam(List<KeyValuePair> params, String key) {
+        for (KeyValuePair kv : params) {
+            if (kv.getKey().equals(key)) {
+                return kv.getValue();
+            }
+        }
+        return null;
     }
 }

@@ -1281,7 +1281,8 @@ public class CreateCollectionReq {
         private Boolean autoID = Boolean.FALSE;
         private DataType elementType;
         private Integer maxCapacity;
-        private Boolean isNullable = Boolean.FALSE; // only for scalar fields(not include Array fields)
+        private Boolean isNullable = Boolean.FALSE; // the value/element may be null
+        private Boolean elementNullable = Boolean.FALSE; // Array inner elements may be null (for Array/ArrayOfVector struct sub-fields)
         private Object defaultValue = null; // only for scalar fields
         private Boolean enableAnalyzer; // for BM25 tokenizer
         private Map<String, Object> analyzerParams; // for BM25 tokenizer
@@ -1309,6 +1310,7 @@ public class CreateCollectionReq {
             this.elementType = builder.elementType;
             this.maxCapacity = builder.maxCapacity;
             this.isNullable = builder.isNullable;
+            this.elementNullable = builder.elementNullable;
             this.defaultValue = builder.defaultValue;
             this.enableAnalyzer = builder.enableAnalyzer;
             this.analyzerParams = builder.analyzerParams;
@@ -1572,6 +1574,18 @@ public class CreateCollectionReq {
         }
 
         /**
+         * Returns whether the inner elements of an Array/ArrayOfVector struct sub-field
+         * can be null.
+         *
+         * @return {@code true} if the element values can be null
+         */
+
+
+        public Boolean getElementNullable() {
+            return elementNullable;
+        }
+
+        /**
          * Sets whether the scalar field is nullable.
          *
          * @param isNullable {@code true} to make the field nullable
@@ -1580,6 +1594,18 @@ public class CreateCollectionReq {
 
         public void setIsNullable(Boolean isNullable) {
             this.isNullable = isNullable;
+        }
+
+        /**
+         * Sets whether the inner elements of an Array/ArrayOfVector struct sub-field
+         * can be null.
+         *
+         * @param elementNullable {@code true} to allow null element values
+         */
+
+
+        public void setElementNullable(Boolean elementNullable) {
+            this.elementNullable = elementNullable;
         }
 
         /**
@@ -1835,6 +1861,7 @@ public class CreateCollectionReq {
                     ", elementType=" + elementType +
                     ", maxCapacity=" + maxCapacity +
                     ", isNullable=" + isNullable +
+                    ", elementNullable=" + elementNullable +
                     ", defaultValue=" + defaultValue +
                     ", enableAnalyzer=" + enableAnalyzer +
                     ", analyzerParams=" + analyzerParams +
@@ -1875,6 +1902,7 @@ public class CreateCollectionReq {
             private DataType elementType;
             private Integer maxCapacity;
             private Boolean isNullable = Boolean.FALSE;
+            private Boolean elementNullable = Boolean.FALSE;
             private Object defaultValue = null;
             private Boolean enableAnalyzer;
             private Map<String, Object> analyzerParams;
@@ -2039,6 +2067,20 @@ public class CreateCollectionReq {
 
             public FieldSchemaBuilder isNullable(Boolean isNullable) {
                 this.isNullable = isNullable;
+                return this;
+            }
+
+            /**
+             * Sets whether the inner elements of an Array/ArrayOfVector struct sub-field
+             * can be null.
+             *
+             * @param elementNullable {@code true} to allow null element values
+             * @return this builder
+             */
+
+
+            public FieldSchemaBuilder elementNullable(Boolean elementNullable) {
+                this.elementNullable = elementNullable;
                 return this;
             }
 
@@ -2541,14 +2583,15 @@ public class CreateCollectionReq {
         }
 
         /**
-         * Adds a sub-field to the struct field schema. Array, ArrayOfVector and Struct
-         * element types are not supported.
+         * Adds a sub-field to the struct field schema. Sub-fields can be scalar, vector,
+         * or nested Array types. A scalar/vector sub-field uses its own {@code nullable}
+         * to allow null element values; a nested Array sub-field additionally uses
+         * {@code elementNullable} to allow null inner elements, and its {@code maxCapacity}
+         * limits the inner array length. Nested Struct and nested-Array-of-Array types are
+         * not supported.
          *
-         * <p>A sub-field cannot be nullable or carry a primary/partition/clustering key,
-         * auto-id, or default value; the struct's {@code nullable} is applied to every
-         * sub-field on the wire, so a nullable sub-field set through
-         * {@link #fields(List)}/{@link #getFields()} is silently overridden by the struct's
-         * nullable.
+         * <p>A sub-field cannot carry a primary/partition/clustering key, auto-id, or
+         * default value.
          *
          * @param addFieldReq the sub-field to add
          * @return this schema
@@ -2557,8 +2600,14 @@ public class CreateCollectionReq {
 
 
         public StructFieldSchema addField(AddFieldReq addFieldReq) {
-            if (addFieldReq.getDataType() == DataType.Array || addFieldReq.getElementType() == DataType.Struct) {
-                throw new ParamException("Struct field schema does not support Array, ArrayOfVector or Struct");
+            if (addFieldReq.getDataType() == DataType.Struct) {
+                throw new ParamException("Struct field schema does not support Struct as a sub-field");
+            }
+            if (addFieldReq.getElementType() == DataType.Struct) {
+                throw new ParamException("Struct field schema does not support nested Struct");
+            }
+            if (addFieldReq.getDataType() == DataType.Array && addFieldReq.getElementType() == DataType.Array) {
+                throw new ParamException("Struct field schema does not support nested Array of Array");
             }
             String subFieldName = addFieldReq.getFieldName();
             if (Boolean.TRUE.equals(addFieldReq.getIsPrimaryKey())) {
@@ -2569,12 +2618,11 @@ public class CreateCollectionReq {
                 throw new ParamException(String.format("Field '%s' in struct '%s' cannot be clustering key", subFieldName, name));
             } else if (Boolean.TRUE.equals(addFieldReq.getAutoID())) {
                 throw new ParamException(String.format("Field '%s' in struct '%s' cannot be auto-id", subFieldName, name));
-            } else if (Boolean.TRUE.equals(addFieldReq.getIsNullable())) {
-                throw new ParamException(String.format("Field '%s' in struct '%s' cannot be nullable individually, "
-                        + "set nullable on the struct instead", subFieldName, name));
             } else if (addFieldReq.getDefaultValue() != null) {
                 throw new ParamException(String.format("Field '%s' in struct '%s' cannot have default value", subFieldName, name));
             }
+            SchemaUtils.checkStructArraySubField(addFieldReq.getDataType(), addFieldReq.getElementType(),
+                    addFieldReq.getMaxCapacity(), addFieldReq.getElementNullable(), subFieldName, name);
             fields.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
             return this;
         }
