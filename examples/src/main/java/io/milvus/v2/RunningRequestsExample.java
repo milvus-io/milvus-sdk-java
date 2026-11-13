@@ -24,8 +24,10 @@ import com.google.gson.JsonObject;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.utility.request.CancelRequestsReq;
@@ -87,7 +89,20 @@ public class RunningRequestsExample {
                 .build());
 
         // A FLAT index makes every search a brute-force scan, so a search with many query vectors
-        // runs long enough to be seen and canceled.
+        // runs long enough to be seen and canceled. The index parameters take effect only together
+        // with an explicit schema: without one, createCollection builds its own AUTOINDEX.
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        schema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("vector")
+                .dataType(DataType.FloatVector)
+                .dimension(DIM)
+                .build());
         IndexParam flat = IndexParam.builder()
                 .fieldName("vector")
                 .indexType(IndexParam.IndexType.FLAT)
@@ -95,8 +110,7 @@ public class RunningRequestsExample {
                 .build();
         client.createCollection(CreateCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
-                .dimension(DIM)
-                .metricType(IndexParam.MetricType.L2.name())
+                .collectionSchema(schema)
                 .indexParams(Collections.singletonList(flat))
                 .build());
 
