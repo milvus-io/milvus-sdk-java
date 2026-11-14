@@ -45,7 +45,8 @@ public class AddFieldReq {
     private Integer dimension;
     private DataType elementType;
     private Integer maxCapacity;
-    private Boolean isNullable; // only for scalar fields(not include Array fields)
+    private Boolean isNullable; // the value/element may be null
+    private Boolean elementNullable; // Array inner elements may be null (for Array/ArrayOfVector struct sub-fields)
     private Object defaultValue; // only for scalar fields
     private boolean enableDefaultValue; // a flag to pass the default value to server or not
     private Boolean enableAnalyzer; // for BM25 tokenizer
@@ -73,6 +74,7 @@ public class AddFieldReq {
         this.elementType = builder.elementType;
         this.maxCapacity = builder.maxCapacity;
         this.isNullable = builder.isNullable != null ? builder.isNullable : Boolean.FALSE;
+        this.elementNullable = builder.elementNullable != null ? builder.elementNullable : Boolean.FALSE;
         this.defaultValue = builder.defaultValue;
         this.enableDefaultValue = builder.enableDefaultValue;
         this.enableAnalyzer = builder.enableAnalyzer;
@@ -225,6 +227,18 @@ public class AddFieldReq {
 
     public Boolean getIsNullable() {
         return isNullable;
+    }
+
+    /**
+     * Returns whether the inner elements of an Array/ArrayOfVector struct sub-field
+     * can be null.
+     *
+     * @return {@code true} if the element values can be null
+     */
+
+
+    public Boolean getElementNullable() {
+        return elementNullable;
     }
 
     /**
@@ -459,6 +473,18 @@ public class AddFieldReq {
     }
 
     /**
+     * Sets whether the inner elements of an Array/ArrayOfVector struct sub-field
+     * can be null.
+     *
+     * @param elementNullable {@code true} to allow null element values
+     */
+
+
+    public void setElementNullable(Boolean elementNullable) {
+        this.elementNullable = elementNullable;
+    }
+
+    /**
      * Sets the default value of the scalar field.
      *
      * @param defaultValue the default value
@@ -572,6 +598,7 @@ public class AddFieldReq {
                 ", elementType=" + elementType +
                 ", maxCapacity=" + maxCapacity +
                 ", isNullable=" + isNullable +
+                ", elementNullable=" + elementNullable +
                 ", defaultValue=" + defaultValue +
                 ", enableDefaultValue=" + enableDefaultValue +
                 ", enableAnalyzer=" + enableAnalyzer +
@@ -602,6 +629,7 @@ public class AddFieldReq {
         private DataType elementType;
         private Integer maxCapacity;
         private Boolean isNullable;
+        private Boolean elementNullable;
         private Object defaultValue;
         private boolean enableDefaultValue = false;
         private Boolean enableAnalyzer;
@@ -765,6 +793,20 @@ public class AddFieldReq {
 
         public T isNullable(Boolean isNullable) {
             this.isNullable = isNullable;
+            return (T) this;
+        }
+
+        /**
+         * Sets whether the inner elements of an Array/ArrayOfVector struct sub-field
+         * can be null.
+         *
+         * @param elementNullable {@code true} to allow null element values
+         * @return this builder
+         */
+
+
+        public T elementNullable(Boolean elementNullable) {
+            this.elementNullable = elementNullable;
             return (T) this;
         }
 

@@ -137,7 +137,26 @@ class UpsertReqTest {
         assertEquals(OpType.ARRAY_REMOVE, op.getOpType());
 
         assertEquals(OpType.REPLACE, FieldPartialUpdateOp.builder().fieldName("x").build().getOpType());
-        assertEquals(3, OpType.values().length);
+        assertEquals(4, OpType.values().length);
+        assertTrue(Arrays.asList(OpType.values()).contains(OpType.PATH_REPLACE));
+    }
+
+    @Test
+    void fieldPartialUpdateOpPathReplace() {
+        FieldPartialUpdateOp op = FieldPartialUpdateOp.builder()
+                .fieldName("clips")
+                .opType(OpType.PATH_REPLACE)
+                .path("[1][tags]")
+                .build();
+        assertEquals(OpType.PATH_REPLACE, op.getOpType());
+        assertEquals("[1][tags]", op.getPath());
+
+        op.setPath("[0]");
+        assertEquals("[0]", op.getPath());
+        assertTrue(FieldPartialUpdateOp.builder()
+                .fieldName("clips")
+                .opType(OpType.PATH_REPLACE)
+                .build().getPath() == null);
     }
 
     @Test

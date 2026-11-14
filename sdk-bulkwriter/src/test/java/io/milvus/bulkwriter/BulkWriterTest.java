@@ -1374,6 +1374,163 @@ public class BulkWriterTest {
     }
 
     @Test
+    void testWriteParquetNullStructRowRoundTrip() {
+        // write a null struct row to Parquet and verify the file can be read back without
+        // corrupting the payload index; the null row is written as an absent list value
+        CreateCollectionReq.CollectionSchema schemaV2 = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(false)
+                .build();
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Int64)
+                        .build())
+                .build());
+        schemaV2.getStructFields().get(0).setNullable(true);
+
+        LocalBulkWriterParam writerParam = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schemaV2)
+                .withLocalPath("/tmp/bulk_writer_parquet_null_struct")
+                .withFileType(BulkFileType.PARQUET)
+                .build();
+
+        JsonObject nullRow = new JsonObject();
+        nullRow.addProperty("id", 1L);
+        nullRow.add("clips", JsonNull.INSTANCE);
+
+        List<List<String>> batchFiles = new ArrayList<>();
+        try (LocalBulkWriter bulkWriter = new LocalBulkWriter(writerParam)) {
+            bulkWriter.appendRow(nullRow);
+            bulkWriter.commit(false);
+            batchFiles.addAll(bulkWriter.getBatchFiles());
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+        Assertions.assertEquals(1, batchFiles.size());
+        Assertions.assertEquals(1, batchFiles.get(0).size());
+
+        // reading the Parquet file back must succeed and preserve the row
+        try {
+            final int[] counter = {0};
+            new ParquetReaderUtils() {
+                @Override
+                public void readRecord(GenericData.Record record) {
+                    counter[0]++;
+                    Assertions.assertEquals(1L, ((Long) record.get("id")));
+                    // the null struct row is written as an absent list value and must read
+                    // back as a null clips field
+                    Assertions.assertNull(record.get("clips"));
+                }
+            }.readParquet(batchFiles.get(0).get(0));
+            Assertions.assertEquals(1, counter[0]);
+        } catch (Exception e) {
+            Assertions.fail("read back failed: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testWriteParquetNullElementsAndNullableSubFieldRoundTrip() {
+        // a struct element with a null nullable sub-field and a nested array holding a null
+        // element ([1, null, 2]); the Parquet encoding must preserve the array length and
+        // element positions so the read-back matches the input
+        CreateCollectionReq.CollectionSchema schemaV2 = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(false)
+                .build();
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Int64)
+                        .isNullable(true)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("marks")
+                        .dataType(DataType.Array)
+                        .elementType(DataType.Int64)
+                        .maxCapacity(8)
+                        .isNullable(true)
+                        .elementNullable(true)
+                        .build())
+                .build());
+
+        LocalBulkWriterParam writerParam = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schemaV2)
+                .withLocalPath("/tmp/bulk_writer_parquet_null_elements")
+                .withFileType(BulkFileType.PARQUET)
+                .build();
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        JsonArray clipsArray = new JsonArray();
+        JsonObject struct = new JsonObject();
+        struct.add("score", JsonNull.INSTANCE);
+        JsonArray marks = new JsonArray();
+        marks.add(1L);
+        marks.add(JsonNull.INSTANCE);
+        marks.add(2L);
+        struct.add("marks", marks);
+        clipsArray.add(struct);
+        row.add("clips", clipsArray);
+
+        List<List<String>> batchFiles = new ArrayList<>();
+        try (LocalBulkWriter bulkWriter = new LocalBulkWriter(writerParam)) {
+            bulkWriter.appendRow(row);
+            bulkWriter.commit(false);
+            batchFiles.addAll(bulkWriter.getBatchFiles());
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+        Assertions.assertEquals(1, batchFiles.size());
+        Assertions.assertEquals(1, batchFiles.get(0).size());
+
+        try {
+            final int[] counter = {0};
+            new ParquetReaderUtils() {
+                @Override
+                public void readRecord(GenericData.Record record) {
+                    counter[0]++;
+                    Assertions.assertEquals(1L, ((Long) record.get("id")));
+                    List<?> clips = (List<?>) record.get("clips");
+                    Assertions.assertEquals(1, clips.size());
+                    GenericData.Record structRec =
+                            (GenericData.Record) ((GenericData.Record) clips.get(0)).get("element");
+                    // the nullable sub-field was explicit null and must read back as null
+                    Assertions.assertNull(structRec.get("score"));
+                    // [1, null, 2] must preserve length and the null element position; array
+                    // cells read back as records with an "element" field (SDK parquet convention)
+                    List<?> marks = (List<?>) structRec.get("marks");
+                    Assertions.assertEquals(3, marks.size());
+                    Assertions.assertEquals(1L, ((GenericData.Record) marks.get(0)).get("element"));
+                    Object marks1 = marks.get(1);
+                    Object marks1Value = marks1 == null ? null : ((GenericData.Record) marks1).get("element");
+                    Assertions.assertNull(marks1Value);
+                    Assertions.assertEquals(2L, ((GenericData.Record) marks.get(2)).get("element"));
+                }
+            }.readParquet(batchFiles.get(0).get(0));
+            Assertions.assertEquals(1, counter[0]);
+        } catch (Exception e) {
+            Assertions.fail("read back failed: " + e.getMessage());
+        }
+    }
+
+    @Test
     void testAppendLockReleasedWhenCommitThrows() throws Exception {
         CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
@@ -1421,5 +1578,269 @@ public class BulkWriterTest {
         thread.start();
         thread.join();
         return thrown[0];
+    }
+
+    @Test
+    void testWriteStructWithNullableSubFieldsAndNestedArray() {
+        CreateCollectionReq.CollectionSchema schemaV2 = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(false)
+                .build();
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Int64)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("lang")
+                        .dataType(DataType.VarChar)
+                        .maxLength(16)
+                        .isNullable(true)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("emb")
+                        .dataType(DataType.FloatVector)
+                        .dimension(2)
+                        .isNullable(true)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("tags")
+                        .dataType(DataType.Array)
+                        .elementType(DataType.VarChar)
+                        .maxCapacity(8)
+                        .maxLength(16)
+                        .isNullable(true)
+                        .elementNullable(true)
+                        .build())
+                .build());
+        schemaV2.getStructFields().get(0).setNullable(true);
+
+        LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schemaV2)
+                .withLocalPath("/tmp/bulk_writer_struct_null")
+                .withFileType(BulkFileType.JSON)
+                .build();
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        JsonArray clips = new JsonArray();
+        JsonObject s1 = new JsonObject();
+        s1.addProperty("score", 1L);
+        s1.add("lang", JsonNull.INSTANCE);
+        s1.add("emb", JsonNull.INSTANCE);
+        JsonArray tags1 = new JsonArray();
+        tags1.add("a");
+        tags1.add(JsonNull.INSTANCE);
+        s1.add("tags", tags1);
+        JsonObject s2 = new JsonObject();
+        s2.addProperty("score", 2L);
+        s2.add("tags", JsonNull.INSTANCE);
+        clips.add(s1);
+        clips.add(s2);
+        row.add("clips", clips);
+
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            writer.appendRow(row);
+            writer.commit(false);
+            String filePath = writer.getBatchFiles().get(0).get(0);
+            try (Reader reader = Files.newBufferedReader(Paths.get(filePath))) {
+                List<JsonObject> rows = new Gson().fromJson(reader,
+                        new TypeToken<List<JsonObject>>() {
+                        }.getType());
+                Assertions.assertEquals(1, rows.size());
+                JsonArray writtenClips = rows.get(0).getAsJsonArray("clips");
+                Assertions.assertEquals(2, writtenClips.size());
+                JsonObject w1 = writtenClips.get(0).getAsJsonObject();
+                Assertions.assertEquals(1L, w1.get("score").getAsLong());
+                Assertions.assertTrue(w1.get("lang").isJsonNull());
+                Assertions.assertTrue(w1.get("emb").isJsonNull());
+                JsonArray wTags1 = w1.getAsJsonArray("tags");
+                Assertions.assertEquals(2, wTags1.size());
+                Assertions.assertEquals("a", wTags1.get(0).getAsString());
+                Assertions.assertTrue(wTags1.get(1).isJsonNull());
+                JsonObject w2 = writtenClips.get(1).getAsJsonObject();
+                Assertions.assertEquals(2L, w2.get("score").getAsLong());
+                Assertions.assertTrue(w2.get("tags").isJsonNull());
+            }
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testWriteStructAcceptsOmittedNullableSubFieldAndNullStructRow() {
+        CreateCollectionReq.CollectionSchema schemaV2 = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(false)
+                .build();
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Int64)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("lang")
+                        .dataType(DataType.VarChar)
+                        .maxLength(16)
+                        .isNullable(true)
+                        .build())
+                .build());
+        schemaV2.getStructFields().get(0).setNullable(true);
+
+        LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schemaV2)
+                .withLocalPath("/tmp/bulk_writer_struct_omit")
+                .withFileType(BulkFileType.JSON)
+                .build();
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        JsonArray clips = new JsonArray();
+        JsonObject s1 = new JsonObject();
+        s1.addProperty("score", 1L); // lang omitted
+        clips.add(s1);
+        row.add("clips", clips);
+
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            writer.appendRow(row);
+            writer.commit(false);
+            String filePath = writer.getBatchFiles().get(0).get(0);
+            try (Reader reader = Files.newBufferedReader(Paths.get(filePath))) {
+                List<JsonObject> rows = new Gson().fromJson(reader,
+                        new TypeToken<List<JsonObject>>() {
+                        }.getType());
+                JsonArray writtenClips = rows.get(0).getAsJsonArray("clips");
+                Assertions.assertEquals(1, writtenClips.size());
+                Assertions.assertTrue(writtenClips.get(0).getAsJsonObject().get("lang").isJsonNull());
+            }
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+
+        // a null struct row is accepted when the struct is nullable
+        JsonObject nullRow = new JsonObject();
+        nullRow.addProperty("id", 2L);
+        nullRow.add("clips", JsonNull.INSTANCE);
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            writer.appendRow(nullRow);
+            writer.commit(false);
+            String filePath = writer.getBatchFiles().get(0).get(0);
+            try (Reader reader = Files.newBufferedReader(Paths.get(filePath))) {
+                List<JsonObject> rows = new Gson().fromJson(reader,
+                        new TypeToken<List<JsonObject>>() {
+                        }.getType());
+                Assertions.assertTrue(rows.get(0).get("clips").isJsonNull());
+            }
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testArrayStructSubFieldRejectsNullElementWhenElementNonNullable() {
+        CreateCollectionReq.CollectionSchema schemaV2 = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(false)
+                .build();
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("tags")
+                        .dataType(DataType.Array)
+                        .elementType(DataType.Int64)
+                        .maxCapacity(8)
+                        .isNullable(true)
+                        .elementNullable(false)
+                        .build())
+                .build());
+
+        LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schemaV2)
+                .withLocalPath("/tmp/bulk_writer_array_nonnullable_element")
+                .withFileType(BulkFileType.JSON)
+                .build();
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        JsonArray clips = new JsonArray();
+        JsonObject s1 = new JsonObject();
+        JsonArray tags = new JsonArray();
+        tags.add(1L);
+        tags.add(JsonNull.INSTANCE); // elementNullable=false must reject this
+        s1.add("tags", tags);
+        clips.add(s1);
+        row.add("clips", clips);
+
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            Assertions.assertThrows(MilvusException.class, () -> writer.appendRow(row));
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testNonNullableScalarStructSubFieldRejectsExplicitNull() {
+        CreateCollectionReq.CollectionSchema schemaV2 = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(false)
+                .build();
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("score")
+                        .dataType(DataType.Int64)
+                        .isNullable(false)
+                        .build())
+                .build());
+
+        LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schemaV2)
+                .withLocalPath("/tmp/bulk_writer_nonnullable_child_null")
+                .withFileType(BulkFileType.JSON)
+                .build();
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        JsonArray clips = new JsonArray();
+        JsonObject s1 = new JsonObject();
+        s1.add("score", JsonNull.INSTANCE); // explicit null on a non-nullable child
+        clips.add(s1);
+        row.add("clips", clips);
+
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            Assertions.assertThrows(MilvusException.class, () -> writer.appendRow(row));
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
     }
 }

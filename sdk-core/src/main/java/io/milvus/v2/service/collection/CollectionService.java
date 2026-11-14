@@ -392,8 +392,30 @@ public class CollectionService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Add field to collection: '%s' in database: '%s'", collectionName, dbName);
 
-        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
-        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true);
+        FieldSchema grpcFieldSchema;
+        String fieldName = request.getFieldName();
+        if (SchemaUtils.containsBracket(fieldName) && !SchemaUtils.isStructSubFieldPath(fieldName)) {
+            // a bracket-containing name that does not match the struct sub-field path pattern
+            // (e.g. "clips[note" or "clips[note][sub]") is rejected locally, aligned with
+            // pymilvus Prepare.struct_field_path
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Invalid struct sub-field path: " + fieldName);
+        }
+        if (SchemaUtils.isStructSubFieldPath(fieldName)) {
+            // adding a struct sub-field, e.g. "clips[note]"; the proto keeps the name
+            // "clips[note]" and the server resolves the parent struct. The sub-field must be
+            // element-level nullable, and its schema is wrapped as an Array/ArrayOfVector
+            // sub-field schema with the recursive type_schema for nested Array types.
+            if (!Boolean.TRUE.equals(request.getIsNullable())) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Adding a struct sub-field requires nullable=true, field name: " + request.getFieldName());
+            }
+            CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
+            grpcFieldSchema = SchemaUtils.buildGrpcStructSubFieldSchema(fieldSchema, false, null);
+        } else {
+            CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
+            grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true);
+        }
         AlterCollectionSchemaRequest.FieldInfo fieldInfo = AlterCollectionSchemaRequest.FieldInfo.newBuilder()
                 .setFieldSchema(grpcFieldSchema)
                 .build();
@@ -414,7 +436,10 @@ public class CollectionService extends BaseService {
             AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
             rpcUtils.handleResponse(title, response.getAlterStatus());
         } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode() != io.grpc.Status.Code.UNIMPLEMENTED) {
+            // a struct sub-field add is only supported by alterCollectionSchema; never
+            // fall back to the legacy addCollectionField RPC for a sub-field path (aligned
+            // with pymilvus), which would send "clips[note]" as an ordinary field name
+            if (SchemaUtils.isStructSubFieldPath(fieldName) || e.getStatus().getCode() != io.grpc.Status.Code.UNIMPLEMENTED) {
                 throw e;
             }
 

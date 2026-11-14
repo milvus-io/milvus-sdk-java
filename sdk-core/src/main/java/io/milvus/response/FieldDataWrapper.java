@@ -321,14 +321,28 @@ public class FieldDataWrapper {
     }
 
     private List<?> setNoneData(List<?> data, List<Boolean> validData) {
-        if (validData != null && validData.size() == data.size()) {
-            List<?> newData = new ArrayList<>(data); // copy the list since the data is come from grpc is not mutable
-            for (int i = 0; i < validData.size(); i++) {
-                if (validData.get(i) == Boolean.FALSE) {
-                    newData.set(i, null);
+        if (validData != null && !validData.isEmpty()) {
+            if (validData.size() == data.size()) {
+                List<?> newData = new ArrayList<>(data); // copy the list since the data is come from grpc is not mutable
+                for (int i = 0; i < validData.size(); i++) {
+                    if (validData.get(i) == Boolean.FALSE) {
+                        newData.set(i, null);
+                    }
+                }
+                return newData;
+            }
+            // compacted payload: only non-null values are stored, valid_data marks the
+            // logical positions so the dense array is reconstructed here
+            List<Object> expanded = new ArrayList<>();
+            int dataIdx = 0;
+            for (Boolean valid : validData) {
+                if (valid) {
+                    expanded.add(dataIdx < data.size() ? data.get(dataIdx++) : null);
+                } else {
+                    expanded.add(null);
                 }
             }
-            return newData;
+            return expanded;
         }
         return data;
     }
@@ -451,7 +465,13 @@ public class FieldDataWrapper {
                         array.add(null);
                     } else {
                         ScalarField rowData = arrArray.getData(i);
-                        array.add(getScalarData(arrArray.getElementType(), rowData, null));
+                        // nested Array sub-field: the cell's own validity describes which
+                        // inner arrays are null, and each inner ScalarField carries leaf validity
+                        if (arrArray.getElementType() == DataType.Array && rowData.hasArrayData()) {
+                            array.add(getStructNestedArrayData(arrArray.getElementType(), rowData));
+                        } else {
+                            array.add(getScalarData(arrArray.getElementType(), rowData, rowData.getValidDataList()));
+                        }
                     }
                 }
                 return array;
@@ -472,7 +492,7 @@ public class FieldDataWrapper {
         int rowCount = 0;
         List<Boolean> validData = null;
         for (FieldData fd : field.getFieldsList()) {
-            List<Boolean> subValid = fd.getValidDataList();
+            List<Boolean> subValid = rowValidity(fd);
             if (validData == null && subValid != null && !subValid.isEmpty()) {
                 validData = subValid;
                 rowCount = subValid.size();
@@ -495,18 +515,43 @@ public class FieldDataWrapper {
         for (FieldData fd : field.getFieldsList()) {
             List<?> column;
             if (fd.getType() == DataType.Array) {
-                column = getScalarData(fd.getType(), fd.getScalars(), fd.getValidDataList());
+                column = getScalarData(fd.getType(), fd.getScalars(), rowValidity(fd));
             } else if (fd.getType() == DataType.ArrayOfVector) {
                 VectorArray vecArr = fd.getVectors().getVectorArray();
                 List<Object> vectors = new ArrayList<>();
-                for (VectorField vf : vecArr.getDataList()) {
-                    vectors.add(getVectorData(vecArr.getElementType(), vf, null));
+                List<Boolean> rowValid = rowValidity(fd);
+                // dense payload: one cell per logical row including null-row placeholders;
+                // compacted payload: only non-null rows are stored and valid_data marks positions
+                boolean dense = rowValid != null && !rowValid.isEmpty()
+                        && rowValid.size() == vecArr.getDataCount();
+                int logicalRows = (rowValid != null && rowValid.size() > vecArr.getDataCount())
+                        ? rowValid.size() : vecArr.getDataCount();
+                int dataIdx = 0;
+                for (int i = 0; i < logicalRows; i++) {
+                    boolean nullRow = rowValid != null && i < rowValid.size() && rowValid.get(i) == Boolean.FALSE;
+                    if (dense) {
+                        // every logical row has a cell; consume one regardless of validity
+                        VectorField vf = dataIdx < vecArr.getDataCount() ? vecArr.getData(dataIdx++) : null;
+                        vectors.add(nullRow ? null : getVectorData(vecArr.getElementType(), vf, vf.getValidDataList()));
+                        continue;
+                    }
+                    if (nullRow) {
+                        vectors.add(null);
+                        continue;
+                    }
+                    if (dataIdx >= vecArr.getDataCount()) {
+                        vectors.add(null);
+                        continue;
+                    }
+                    VectorField vf = vecArr.getData(dataIdx++);
+                    vectors.add(getVectorData(vecArr.getElementType(), vf, vf.getValidDataList()));
                 }
                 column = vectors;
             } else {
                 throw new IllegalResponseException("Unsupported data type returned by StructArrayField");
             }
-            columnsData.put(fd.getFieldName(), alignColumnData(column, fd.getValidDataList(), rowCount));
+            columnsData.put(stripStructSubFieldName(fieldName, fd.getFieldName()),
+                    alignColumnData(column, rowValidity(fd), rowCount));
         }
 
         // convert column data into struct list, eventually, the packData is like this:
@@ -552,6 +597,50 @@ public class FieldDataWrapper {
     }
 
     /**
+     * Decodes one struct row cell of a nested-Array sub-field. The cell is a ScalarField
+     * whose {@code array_data} holds the inner leaf cells; the cell's own {@code valid_data}
+     * marks which inner arrays are null (element-level null). Handles both dense server
+     * payloads (one leaf cell per element with empty placeholders) and compacted payloads
+     * (only non-null inner arrays stored).
+     *
+     * @param elementType the nested-Array element type ({@link DataType#Array})
+     * @param rowCell the per-row cell
+     * @return the decoded inner-array values, {@code null} for null inner arrays
+     */
+    private List<?> getStructNestedArrayData(DataType elementType, ScalarField rowCell) {
+        ArrayArray innerArr = rowCell.getArrayData();
+        List<Boolean> cellValidity = rowCell.getValidDataList();
+        int logicalLen = innerArr.getDataCount();
+        if (cellValidity != null && cellValidity.size() > logicalLen) {
+            logicalLen = cellValidity.size();
+        }
+        boolean dense = cellValidity != null && !cellValidity.isEmpty()
+                && cellValidity.size() == innerArr.getDataCount();
+        List<Object> result = new ArrayList<>();
+        int dataIdx = 0;
+        for (int i = 0; i < logicalLen; i++) {
+            boolean nullCell = cellValidity != null && i < cellValidity.size() && cellValidity.get(i) == Boolean.FALSE;
+            if (dense) {
+                // every logical element has a cell; consume one regardless of validity
+                ScalarField leaf = dataIdx < innerArr.getDataCount() ? innerArr.getData(dataIdx++) : null;
+                result.add(nullCell ? null : getScalarData(innerArr.getElementType(), leaf, leaf.getValidDataList()));
+                continue;
+            }
+            if (nullCell) {
+                result.add(null);
+                continue;
+            }
+            if (dataIdx >= innerArr.getDataCount()) {
+                result.add(null);
+                continue;
+            }
+            ScalarField leaf = innerArr.getData(dataIdx++);
+            result.add(getScalarData(innerArr.getElementType(), leaf, leaf.getValidDataList()));
+        }
+        return result;
+    }
+
+    /**
      * Aligns a decoded struct sub-field column to the total row count using the per-row valid
      * data. Full-length server data is returned as-is; compacted payloads (only non-null rows)
      * are re-expanded so null rows map back to their original positions.
@@ -570,6 +659,51 @@ public class FieldDataWrapper {
             }
         }
         return aligned;
+    }
+
+    /**
+     * Strips the "{@code structName}[" prefix and trailing "] from a struct sub-field wire
+     * name, mirroring pymilvus {@code _strip_struct_sub_field_name}. Sub-fields declared at
+     * create time already use their plain names and are returned unchanged.
+     *
+     * @param structName the parent struct field name
+     * @param fieldName the wire sub-field name (may be "{@code structName}[sub]")
+     * @return the plain sub-field name
+     */
+    private static String stripStructSubFieldName(String structName, String fieldName) {
+        String prefix = structName + "[";
+        if (fieldName != null && fieldName.startsWith(prefix) && fieldName.endsWith("]")) {
+            return fieldName.substring(prefix.length(), fieldName.length() - 1);
+        }
+        return fieldName;
+    }
+
+    /**
+     * Returns the row-level validity of a struct sub-field, mirroring pymilvus
+     * {@code row_validity}: {@code FieldData.valid_data} (field 7) is read first and the
+     * outer scalar/vector payload validity (fields 17/9) is used as a fallback when 7 is
+     * empty, so null struct rows stay aligned regardless of where the server places the mask.
+     *
+     * @param fd the struct sub-field {@code FieldData}
+     * @return the row validity, possibly empty when neither location carries a mask
+     */
+    private static List<Boolean> rowValidity(FieldData fd) {
+        List<Boolean> validData = fd.getValidDataList();
+        if (!validData.isEmpty()) {
+            return validData;
+        }
+        if (fd.getFieldCase() == FieldData.FieldCase.SCALARS) {
+            List<Boolean> scalarValid = fd.getScalars().getValidDataList();
+            if (!scalarValid.isEmpty()) {
+                return scalarValid;
+            }
+        } else if (fd.getFieldCase() == FieldData.FieldCase.VECTORS) {
+            List<Boolean> vectorValid = fd.getVectors().getValidDataList();
+            if (!vectorValid.isEmpty()) {
+                return vectorValid;
+            }
+        }
+        return validData;
     }
 
     /**

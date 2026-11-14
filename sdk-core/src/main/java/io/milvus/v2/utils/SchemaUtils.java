@@ -49,6 +49,86 @@ import static io.milvus.param.ParamUtils.AssembleKvPair;
 public class SchemaUtils {
     protected static final Logger logger = LoggerFactory.getLogger(SchemaUtils.class);
 
+    // a struct Array sub-field can only carry a scalar leaf element type (aligned with
+    // pymilvus StructFieldSchema._check_fields)
+    private static final Set<io.milvus.v2.common.DataType> ARRAY_SCALAR_ELEMENT_TYPES =
+            new HashSet<>(Arrays.asList(io.milvus.v2.common.DataType.Bool, io.milvus.v2.common.DataType.Int8,
+                    io.milvus.v2.common.DataType.Int16, io.milvus.v2.common.DataType.Int32,
+                    io.milvus.v2.common.DataType.Int64, io.milvus.v2.common.DataType.Float,
+                    io.milvus.v2.common.DataType.Double, io.milvus.v2.common.DataType.VarChar));
+
+    // struct sub-field name form like "clips[note]", used by add/drop sub-field paths
+    // (mirrors pymilvus Prepare.struct_field_path)
+    public static final java.util.regex.Pattern STRUCT_SUB_FIELD_PATH =
+            java.util.regex.Pattern.compile("([A-Za-z_][A-Za-z_0-9]*)\\[([A-Za-z_][A-Za-z_0-9]*)\\]");
+
+    // PATH_REPLACE selector form like "[1]" or "[1][tags]", relative to the parent struct
+    // field (aligned with pymilvus)
+    public static final java.util.regex.Pattern STRUCT_PATH_REPLACE =
+            java.util.regex.Pattern.compile("\\[(?:0|[1-9][0-9]*)\\](?:\\[([^\\[\\]\\s]+)\\])?");
+
+    /**
+     * Returns whether the given field name contains a bracket character, which would indicate
+     * an intended struct sub-field path.
+     *
+     * @param fieldName the field name to check
+     * @return {@code true} if the name contains {@code [} or {@code ]}
+     */
+    public static boolean containsBracket(String fieldName) {
+        return fieldName != null && (fieldName.contains("[") || fieldName.contains("]"));
+    }
+
+    /**
+     * Returns whether the given field name is a struct sub-field path like
+     * {@code "clips[note]"}. Mirrors pymilvus {@code Prepare.struct_field_path}.
+     *
+     * @param fieldName the field name to check
+     * @return {@code true} if the name is a valid struct sub-field path
+     */
+    public static boolean isStructSubFieldPath(String fieldName) {
+        if (fieldName == null || (!fieldName.contains("[") && !fieldName.contains("]"))) {
+            return false;
+        }
+        return STRUCT_SUB_FIELD_PATH.matcher(fieldName).matches();
+    }
+
+    /**
+     * Validates the Array-specific constraints of a struct sub-field. Shared by the
+     * {@code StructFieldSchema.addField} builder path and the
+     * {@code convertFieldReqToStructFieldSchema} conversion path so the two cannot drift.
+     *
+     * @param dataType the sub-field data type
+     * @param elementType the Array sub-field element type
+     * @param maxCapacity the Array sub-field capacity
+     * @param elementNullable the Array sub-field element-nullability flag
+     * @param fieldName the sub-field name
+     * @param structName the parent struct field name
+     * @throws ParamException when a constraint is violated
+     */
+    public static void checkStructArraySubField(io.milvus.v2.common.DataType dataType,
+                                                io.milvus.v2.common.DataType elementType,
+                                                Integer maxCapacity,
+                                                Boolean elementNullable,
+                                                String fieldName, String structName) {
+        if (dataType == io.milvus.v2.common.DataType.Array && elementType == null) {
+            throw new ParamException(String.format("Element type is required for Array sub-field '%s' in struct '%s'",
+                    fieldName, structName));
+        }
+        if (dataType == io.milvus.v2.common.DataType.Array
+                && !ARRAY_SCALAR_ELEMENT_TYPES.contains(elementType)) {
+            throw new ParamException(String.format("Array sub-field '%s' in struct '%s' requires a scalar element_type",
+                    fieldName, structName));
+        }
+        if (dataType == io.milvus.v2.common.DataType.Array && maxCapacity == null) {
+            throw new ParamException(String.format("maxCapacity is required for Array sub-field '%s' in struct '%s'",
+                    fieldName, structName));
+        }
+        if (Boolean.TRUE.equals(elementNullable) && dataType != io.milvus.v2.common.DataType.Array) {
+            throw new ParamException(String.format("elementNullable requires an Array sub-field, field '%s' in struct '%s'",
+                    fieldName, structName));
+        }
+    }
+
 
     /**
      * Throws an invalid-parameter exception if the target string is null or blank.
@@ -216,25 +296,127 @@ public class SchemaUtils {
         }
 
         for (CreateCollectionReq.FieldSchema field : structSchema.getFields()) {
-            DataType actualType = DataType.Array;
-            DataType elementType = DataType.valueOf(field.getDataType().name());
-            if (ParamUtils.isVectorDataType(elementType)) {
-                actualType = DataType.ArrayOfVector;
+            builder.addFields(buildGrpcStructSubFieldSchema(field,
+                    Boolean.TRUE.equals(structSchema.getNullable()), structSchema.getMaxCapacity()));
+        }
+        return builder.build();
+    }
+
+    /**
+     * Builds the gRPC schema of a struct sub-field, mirroring pymilvus
+     * {@code Prepare.get_struct_sub_field_schema}. Each sub-field describes one struct
+     * element: its {@code nullable} permits a null element value (mapped to
+     * {@code element_nullable} on the wire), and the struct's row-level {@code nullable}
+     * is propagated to every sub-field. A nested Array sub-field additionally builds a
+     * recursive {@code type_schema} that carries the inner array's own nullability
+     * ({@code element_nullable} of the sub-field), the inner element type, inner
+     * {@code max_capacity} and {@code max_length}.
+     *
+     * @param field the V2 struct sub-field schema
+     * @param rowNullable the row-level nullability inherited from the struct field
+     * @param outerCapacity the struct field's per-row element capacity
+     * @return the built gRPC sub-field schema
+     */
+    public static FieldSchema buildGrpcStructSubFieldSchema(CreateCollectionReq.FieldSchema field,
+                                                             boolean rowNullable, Integer outerCapacity) {
+        checkNullEmptyString(field.getName(), "Field name");
+        io.milvus.v2.common.DataType sdkType = field.getDataType();
+        boolean elementNullable = Boolean.TRUE.equals(field.getIsNullable());
+        DataType grpcElementType = DataType.valueOf(sdkType.name());
+        DataType grpcDataType;
+        if (ParamUtils.isVectorDataType(grpcElementType)) {
+            grpcDataType = DataType.ArrayOfVector;
+        } else {
+            grpcDataType = DataType.Array;
+        }
+
+        FieldSchema.Builder builder = FieldSchema.newBuilder()
+                .setName(field.getName())
+                .setDescription(field.getDescription())
+                .setDataType(grpcDataType)
+                .setElementType(grpcElementType)
+                .setNullable(rowNullable)
+                .setElementNullable(elementNullable)
+                .setIsPrimaryKey(false)
+                .setIsPartitionKey(false)
+                .setIsClusteringKey(false)
+                .setAutoID(false)
+                .setExternalField(field.getExternalField());
+
+        // element-level params (dim / max_length) come from the scalar or vector sub-field
+        if (field.getDimension() != null) {
+            builder.addTypeParams(KeyValuePair.newBuilder()
+                    .setKey(VECTOR_DIM)
+                    .setValue(String.valueOf(field.getDimension()))
+                    .build());
+        }
+        if (sdkType == io.milvus.v2.common.DataType.VarChar && field.getMaxLength() != null) {
+            builder.addTypeParams(KeyValuePair.newBuilder()
+                    .setKey(VARCHAR_MAX_LENGTH)
+                    .setValue(String.valueOf(field.getMaxLength()))
+                    .build());
+        }
+
+        // preserve any typeParams configured directly on the sub-field (e.g. dim via
+        // typeParams); skip keys already emitted above and the outer capacity
+        if (field.getTypeParams() != null) {
+            for (Map.Entry<String, String> entry : field.getTypeParams().entrySet()) {
+                String key = entry.getKey();
+                if (VECTOR_DIM.equals(key) || VARCHAR_MAX_LENGTH.equals(key) || ARRAY_MAX_CAPACITY.equals(key)) {
+                    continue;
+                }
+                builder.addTypeParams(KeyValuePair.newBuilder()
+                        .setKey(key)
+                        .setValue(entry.getValue())
+                        .build());
             }
-            FieldSchema fieldSchema = convertToGrpcFieldSchema(field);
-            // reset data type and capacity; a sub-field cannot be nullable independently,
-            // it inherits the struct's nullable (aligned with pymilvus, which sets
-            // nullable=struct.nullable on every struct sub-field)
-            fieldSchema = fieldSchema.toBuilder()
-                    .setDataType(actualType)
-                    .setElementType(elementType)
-                    .setNullable(Boolean.TRUE.equals(structSchema.getNullable()))
-                    .addTypeParams(KeyValuePair.newBuilder()
-                            .setKey(ARRAY_MAX_CAPACITY)
-                            .setValue(String.valueOf(structSchema.getMaxCapacity()))
-                            .build())
-                    .build();
-            builder.addFields(fieldSchema);
+        }
+
+        if (sdkType == io.milvus.v2.common.DataType.Array) {
+            // nested Array sub-field: element type is ARRAY and the recursive type_schema
+            // describes the inner array and its leaf values
+            if (field.getElementType() == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Element type is required for Array sub-field: " + field.getName());
+            }
+            if (field.getMaxCapacity() == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "maxCapacity is required for Array sub-field: " + field.getName());
+            }
+            builder.setElementType(DataType.Array);
+            TypeSchema.Builder leaf = TypeSchema.newBuilder()
+                    .setLeafType(DataType.valueOf(field.getElementType().name()))
+                    .setNullable(Boolean.TRUE.equals(field.getElementNullable()));
+            if (field.getElementType() == io.milvus.v2.common.DataType.VarChar && field.getMaxLength() != null) {
+                leaf.addTypeParams(KeyValuePair.newBuilder()
+                        .setKey(VARCHAR_MAX_LENGTH)
+                        .setValue(String.valueOf(field.getMaxLength()))
+                        .build());
+            }
+            TypeSchema.Builder inner = TypeSchema.newBuilder()
+                    .setNullable(elementNullable)
+                    .setArrayElement(leaf.build());
+            inner.addTypeParams(KeyValuePair.newBuilder()
+                    .setKey(ARRAY_MAX_CAPACITY)
+                    .setValue(String.valueOf(field.getMaxCapacity()))
+                    .build());
+            TypeSchema.Builder root = TypeSchema.newBuilder()
+                    .setNullable(rowNullable)
+                    .setArrayElement(inner.build());
+            if (outerCapacity != null) {
+                root.addTypeParams(KeyValuePair.newBuilder()
+                        .setKey(ARRAY_MAX_CAPACITY)
+                        .setValue(String.valueOf(outerCapacity))
+                        .build());
+            }
+            builder.setTypeSchema(root.build());
+        }
+
+        if (outerCapacity != null) {
+            builder.addTypeParams(KeyValuePair.newBuilder()
+                    .setKey(ARRAY_MAX_CAPACITY)
+                    .setValue(String.valueOf(outerCapacity))
+                    .build());
         }
         return builder.build();
     }
@@ -316,6 +498,7 @@ public class SchemaUtils {
                 .autoID(fieldSchema.getAutoID())
                 .elementType(actualElementType)
                 .isNullable(fieldSchema.getNullable())
+                .elementNullable(fieldSchema.getElementNullable())
                 .defaultValue(ParamUtils.valueFieldToObject(fieldSchema.getDefaultValue(), fieldSchema.getDataType()))
                 .externalField(fieldSchema.getExternalField())
                 .build();
@@ -405,20 +588,73 @@ public class SchemaUtils {
         List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
         for (FieldSchema fieldSchema : structSchema.getFieldsList()) {
             CreateCollectionReq.FieldSchema field = convertFromGrpcFieldSchema(fieldSchema);
+            // a sub-field added via add_collection_field keeps the wire name "struct[sub]";
+            // strip the struct prefix so the sub-field is addressed by its plain name
+            // (aligned with pymilvus _strip_struct_sub_field_name) on describe and in DML
+            // key matching
+            field.setName(stripStructSubFieldName(structSchema.getName(), field.getName()));
             builder.maxCapacity(field.getMaxCapacity());
             // each rpc proto struct's sub-field schema, the data type is Array or ArrayOfVector, the typeParams
-            // contains a "max_capacity" value
-            // reset data type to element type, remove the "max_capacity" from typeParams
-            field.setDataType(ConvertUtils.toSdkDataType(fieldSchema.getElementType()));
-            field.setElementType(io.milvus.v2.common.DataType.None);
+            // contains a "max_capacity" value (the outer capacity inherited from the struct)
+            // element_nullable on the wire is the element-level nullability of the sub-field;
+            // wire nullable (row-level, inherited from the struct) is mapped to the struct itself
+            field.setIsNullable(fieldSchema.getElementNullable());
+            if (fieldSchema.getElementType() == DataType.Array && fieldSchema.hasTypeSchema()) {
+                // nested Array sub-field: the recursive type_schema carries the inner array
+                // capacity and the leaf type/nullability; the sub-field element type is the
+                // inner leaf type
+                TypeSchema typeSchema = fieldSchema.getTypeSchema();
+                if (typeSchema.hasArrayElement()) {
+                    TypeSchema inner = typeSchema.getArrayElement();
+                    if (inner.hasArrayElement()) {
+                        TypeSchema leaf = inner.getArrayElement();
+                        io.milvus.v2.common.DataType leafType = ConvertUtils.toSdkDataType(leaf.getLeafType());
+                        field.setDataType(io.milvus.v2.common.DataType.Array);
+                        field.setElementType(leafType);
+                        field.setElementNullable(leaf.getNullable());
+                        for (KeyValuePair kv : inner.getTypeParamsList()) {
+                            if (kv.getKey().equals(ARRAY_MAX_CAPACITY)) {
+                                field.setMaxCapacity(Integer.parseInt(kv.getValue()));
+                            }
+                        }
+                        for (KeyValuePair kv : leaf.getTypeParamsList()) {
+                            if (kv.getKey().equals(VARCHAR_MAX_LENGTH)) {
+                                field.setMaxLength(Integer.parseInt(kv.getValue()));
+                            }
+                        }
+                    }
+                }
+            } else {
+                // scalar or vector sub-field: reset data type to the element type and clear
+                // the inherited outer capacity
+                field.setDataType(ConvertUtils.toSdkDataType(fieldSchema.getElementType()));
+                field.setElementType(io.milvus.v2.common.DataType.None);
+                field.setMaxCapacity(0);
+            }
             Map<String, String> params = field.getTypeParams();
             params.remove(ARRAY_MAX_CAPACITY);
             field.setTypeParams(params);
-            field.setMaxCapacity(0);
             fields.add(field);
         }
         builder.fields(fields);
         return builder.build();
+    }
+
+    /**
+     * Strips the "{@code structName}[" prefix and trailing "] from a struct sub-field wire
+     * name, mirroring pymilvus {@code _strip_struct_sub_field_name}. A sub-field declared at
+     * create time already uses its plain name and is returned unchanged.
+     *
+     * @param structName the parent struct field name
+     * @param fieldName the wire sub-field name (may be "{@code structName}[sub]")
+     * @return the plain sub-field name
+     */
+    public static String stripStructSubFieldName(String structName, String fieldName) {
+        String prefix = structName + "[";
+        if (fieldName != null && fieldName.startsWith(prefix) && fieldName.endsWith("]")) {
+            return fieldName.substring(prefix.length(), fieldName.length() - 1);
+        }
+        return fieldName;
     }
 
     /**
@@ -474,6 +710,7 @@ public class SchemaUtils {
                 .isClusteringKey(addFieldReq.getIsClusteringKey())
                 .autoID(addFieldReq.getAutoID())
                 .isNullable(addFieldReq.getIsNullable())
+                .elementNullable(addFieldReq.getElementNullable())
                 .defaultValue(addFieldReq.getDefaultValue())
                 .enableAnalyzer(addFieldReq.getEnableAnalyzer())
                 .enableMatch(addFieldReq.getEnableMatch())
@@ -538,14 +775,17 @@ public class SchemaUtils {
             } else if (field.getAutoID()) {
                 String msg = String.format("Field '%s' in struct '%s' cannot be auto-id", fieldName, structName);
                 throw new ParamException(msg);
-            } else if (field.getIsNullable()) {
-                String msg = String.format("Field '%s' in struct '%s' cannot be nullable individually, "
-                        + "set nullable on the struct instead", fieldName, structName);
-                throw new ParamException(msg);
             } else if (field.getDefaultValue() != null) {
                 String msg = String.format("Field '%s' in struct '%s' cannot have default value", fieldName, structName);
                 throw new ParamException(msg);
             }
+            if (field.getDataType() == io.milvus.v2.common.DataType.Struct) {
+                String msg = String.format("Struct field schema does not support Struct as a sub-field: '%s' in struct '%s'",
+                        fieldName, structName);
+                throw new ParamException(msg);
+            }
+            checkStructArraySubField(field.getDataType(), field.getElementType(), field.getMaxCapacity(),
+                    field.getElementNullable(), fieldName, structName);
         }
         if (uniqueNames.size() != fields.size()) {
             String msg = String.format("Duplicate field names in struct '%s'", structName);

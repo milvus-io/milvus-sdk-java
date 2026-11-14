@@ -57,6 +57,7 @@ public class DataUtils {
     public static class InsertBuilderWrapper {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
+        private List<UpsertReq.FieldPartialUpdateOp> requestFieldOps;
 
         /**
          * Converts the given V2 insert request into a gRPC insert request, validating the row
@@ -105,6 +106,7 @@ public class DataUtils {
         public UpsertRequest convertGrpcUpsertRequest(UpsertReq requestParam, DescribeCollectionResp descColl) {
             String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
+            this.requestFieldOps = requestParam.getFieldOps();
 
             // generate upsert request builder
             List<FieldPartialUpdateOp> fieldOps = convertFieldOps(requestParam.getFieldOps());
@@ -136,6 +138,13 @@ public class DataUtils {
             }
 
             List<FieldPartialUpdateOp> fieldOps = new ArrayList<>();
+            // a struct field can carry at most one PATH_REPLACE op, and a PATH_REPLACE op
+            // cannot be combined with any other op on the same field; pathReplaceChild()
+            // encodes only the PATH_REPLACE child's data, so any second op on that field
+            // would receive row data that does not match its semantics (pymilvus keys
+            // field ops by field name and cannot express two ops on one field)
+            Set<String> pathReplaceFields = new HashSet<>();
+            Set<String> nonPathReplaceFields = new HashSet<>();
             for (UpsertReq.FieldPartialUpdateOp fieldOp : requestFieldOps) {
                 if (fieldOp == null) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Field op cannot be null");
@@ -146,10 +155,38 @@ public class DataUtils {
                 if (fieldOp.getOpType() == null) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Field op type cannot be null");
                 }
-                fieldOps.add(FieldPartialUpdateOp.newBuilder()
+                FieldPartialUpdateOp.Builder builder = FieldPartialUpdateOp.newBuilder()
                         .setFieldName(fieldOp.getFieldName())
-                        .setOp(convertFieldOpType(fieldOp.getOpType()))
-                        .build());
+                        .setOp(convertFieldOpType(fieldOp.getOpType()));
+                if (fieldOp.getOpType() == UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE) {
+                    if (StringUtils.isEmpty(fieldOp.getPath())) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "PATH_REPLACE requires a path for field: " + fieldOp.getFieldName());
+                    }
+                    if (!pathReplaceFields.add(fieldOp.getFieldName())) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "Only one PATH_REPLACE op is supported per field: " + fieldOp.getFieldName());
+                    }
+                    if (nonPathReplaceFields.contains(fieldOp.getFieldName())) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "PATH_REPLACE cannot be combined with another op on the same field: " + fieldOp.getFieldName());
+                    }
+                    builder.setPath(fieldOp.getPath());
+                } else {
+                    if (pathReplaceFields.contains(fieldOp.getFieldName())) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "PATH_REPLACE cannot be combined with another op on the same field: " + fieldOp.getFieldName());
+                    }
+                    if (StringUtils.isNotEmpty(fieldOp.getPath())) {
+                        // the proto contract and pymilvus both require an empty path for
+                        // non-PATH_REPLACE ops; a typo must not silently degrade to whole-field
+                        // REPLACE semantics
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "path is only supported for PATH_REPLACE on field: " + fieldOp.getFieldName());
+                    }
+                    nonPathReplaceFields.add(fieldOp.getFieldName());
+                }
+                fieldOps.add(builder.build());
             }
             return fieldOps;
         }
@@ -162,6 +199,8 @@ public class DataUtils {
                     return FieldPartialUpdateOp.OpType.ARRAY_APPEND;
                 case ARRAY_REMOVE:
                     return FieldPartialUpdateOp.OpType.ARRAY_REMOVE;
+                case PATH_REPLACE:
+                    return FieldPartialUpdateOp.OpType.PATH_REPLACE;
                 default:
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Unsupported field op type: " + opType);
             }
@@ -207,6 +246,66 @@ public class DataUtils {
 
         private static String combineStructFieldName(String structName, String subFieldName) {
             return String.format("%s[%s]", structName, subFieldName);
+        }
+
+        /**
+         * Returns the child sub-field name targeted by a PATH_REPLACE op on the given struct
+         * field, or {@code null} when the op addresses a whole element ({@code [index]}) or
+         * when no PATH_REPLACE op targets the field.
+         *
+         * @param structName the struct field name
+         * @return the child sub-field name for a {@code [index][child]} path, otherwise {@code null}
+         * @throws MilvusClientException when the path is malformed or the child is unknown
+         */
+        private String pathReplaceChild(String structName) {
+            if (requestFieldOps == null) {
+                return null;
+            }
+            UpsertReq.FieldPartialUpdateOp pathOp = null;
+            for (UpsertReq.FieldPartialUpdateOp op : requestFieldOps) {
+                if (op != null && structName.equals(op.getFieldName())
+                        && op.getOpType() == UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE) {
+                    pathOp = op;
+                    break;
+                }
+            }
+            if (pathOp == null) {
+                return null;
+            }
+            String path = pathOp.getPath();
+            if (StringUtils.isBlank(path)) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        String.format("PATH_REPLACE requires a path for struct field '%s'", structName));
+            }
+            // strictly match [index] or [index][child], aligned with pymilvus;
+            // a typo must not silently fall back to the whole-element interpretation
+            java.util.regex.Matcher matcher = SchemaUtils.STRUCT_PATH_REPLACE.matcher(path);
+            if (!matcher.matches()) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        String.format("PATH_REPLACE on struct '%s' requires [index] or [index][child], got: '%s'",
+                                structName, path));
+            }
+            // group 1 is the optional child segment
+            return matcher.group(1);
+        }
+
+        /**
+         * Returns whether a PATH_REPLACE op targets the given struct field.
+         *
+         * @param structName the struct field name
+         * @return {@code true} if a PATH_REPLACE op targets the field
+         */
+        private boolean hasPathReplace(String structName) {
+            if (requestFieldOps == null) {
+                return false;
+            }
+            for (UpsertReq.FieldPartialUpdateOp op : requestFieldOps) {
+                if (op != null && structName.equals(op.getFieldName())
+                        && op.getOpType() == UpsertReq.FieldPartialUpdateOp.OpType.PATH_REPLACE) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows,
@@ -358,12 +457,25 @@ public class DataUtils {
                     continue;
                 }
                 StructArrayField.Builder structBuilder = StructArrayField.newBuilder();
-                for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
+                String pathReplaceChild = pathReplaceChild(structField.getName());
+                List<CreateCollectionReq.FieldSchema> subFields = structField.getFields();
+                if (pathReplaceChild != null) {
+                    List<CreateCollectionReq.FieldSchema> onlyChild = new ArrayList<>();
+                    for (CreateCollectionReq.FieldSchema field : subFields) {
+                        if (pathReplaceChild.equals(field.getName())) {
+                            onlyChild.add(field);
+                            break;
+                        }
+                    }
+                    subFields = onlyChild;
+                }
+                for (CreateCollectionReq.FieldSchema field : subFields) {
                     String combineName = combineStructFieldName(structField.getName(), field.getName());
                     InsertDataInfo insertDataInfo = structInsertData.get(combineName);
                     FieldData grpcField;
                     try {
-                        grpcField = DataUtils.genStructSubFieldData(field, insertDataInfo.data);
+                        grpcField = DataUtils.genStructSubFieldData(field, insertDataInfo.data,
+                                Boolean.TRUE.equals(structField.getNullable()));
                     } catch (DataNotMatchException e) {
                         throw e;
                     } catch (MilvusClientException | ParamException e) {
@@ -501,7 +613,16 @@ public class DataUtils {
         private boolean processStructFieldValues(JsonObject row, CreateCollectionReq.StructFieldSchema structField,
                                                  Map<String, InsertDataInfo> nameInsertInfo, boolean partialUpdate) {
             String structName = structField.getName();
+            String pathReplaceChild = pathReplaceChild(structName);
+            boolean isPathReplace = hasPathReplace(structName);
             JsonElement rowFieldData = row.get(structName);
+            if (isPathReplace && (rowFieldData == null || rowFieldData.isJsonNull())) {
+                // a PATH_REPLACE operand must be a single-element array; a null parent is rejected
+                // so the operation does not silently degrade into a null struct row
+                String msg = String.format("PATH_REPLACE requires an operand for struct field '%s' in every row, "
+                        + "got a null or missing value", structName);
+                throw new DataNotMatchException(msg);
+            }
             if (rowFieldData == null) {
                 if (partialUpdate) {
                     // a missing key in a partial update means "leave the field untouched"
@@ -526,13 +647,38 @@ public class DataUtils {
                 throw new DataNotMatchException(msg);
             }
 
-            initializeStructFieldData(structField, nameInsertInfo);
+            JsonArray structs = rowFieldData.getAsJsonArray();
+            if (isPathReplace && structs.size() != 1) {
+                String msg = String.format("PATH_REPLACE requires exactly one element for struct field '%s' in every row",
+                        structName);
+                throw new DataNotMatchException(msg);
+            }
+
+            // for a child path, only the targeted child sub-field participates in the request;
+            // the operand element must explicitly contain the child key
+            List<CreateCollectionReq.FieldSchema> subFields = structField.getFields();
+            if (pathReplaceChild != null) {
+                List<CreateCollectionReq.FieldSchema> onlyChild = new ArrayList<>();
+                for (CreateCollectionReq.FieldSchema field : subFields) {
+                    if (pathReplaceChild.equals(field.getName())) {
+                        onlyChild.add(field);
+                        break;
+                    }
+                }
+                if (onlyChild.isEmpty()) {
+                    String msg = String.format("PATH_REPLACE child '%s' not found in struct field '%s'",
+                            pathReplaceChild, structName);
+                    throw new DataNotMatchException(msg);
+                }
+                subFields = onlyChild;
+            }
+
+            initializeStructFieldData(structName, subFields, nameInsertInfo);
             Set<String> expectedFieldNames = new HashSet<>();
-            for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
+            for (CreateCollectionReq.FieldSchema field : subFields) {
                 expectedFieldNames.add(field.getName());
             }
 
-            JsonArray structs = rowFieldData.getAsJsonArray();
             structs.forEach((element) -> {
                 if (!element.isJsonObject()) {
                     String msg = String.format("The element of struct field: %s is not a JSON dict.", structName);
@@ -540,13 +686,6 @@ public class DataUtils {
                 }
 
                 JsonObject struct = element.getAsJsonObject();
-                Set<String> missingFields = new HashSet<>(expectedFieldNames);
-                missingFields.removeAll(struct.keySet());
-                if (!missingFields.isEmpty()) {
-                    String msg = String.format("The struct field: %s is missing required fields: %s.",
-                            structName, missingFields);
-                    throw new DataNotMatchException(msg);
-                }
                 Set<String> unexpectedFields = new HashSet<>(struct.keySet());
                 unexpectedFields.removeAll(expectedFieldNames);
                 if (!unexpectedFields.isEmpty()) {
@@ -554,23 +693,33 @@ public class DataUtils {
                             structName, unexpectedFields);
                     throw new DataNotMatchException(msg);
                 }
-                for (String fieldName : expectedFieldNames) {
-                    if (struct.get(fieldName).isJsonNull()) {
-                        String msg = String.format("The %s of struct field: %s cannot be null.",
-                                fieldName, structName);
-                        throw new DataNotMatchException(msg);
-                    }
+                if (pathReplaceChild != null && !struct.has(pathReplaceChild)) {
+                    String msg = String.format("PATH_REPLACE operand for struct field '%s' must explicitly contain child '%s'",
+                            structName, pathReplaceChild);
+                    throw new DataNotMatchException(msg);
                 }
             });
 
-            for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
+            for (CreateCollectionReq.FieldSchema field : subFields) {
                 String subFieldName = field.getName();
+                boolean subFieldNullable = Boolean.TRUE.equals(field.getIsNullable());
                 InsertDataInfo insertDataInfo = nameInsertInfo.get(combineStructFieldName(structName, subFieldName));
                 List<Object> columnData = new ArrayList<>();
                 structs.forEach((element) -> {
                     JsonObject struct = element.getAsJsonObject();
                     JsonElement fieldData = struct.get(subFieldName);
-                    Object fieldValue = checkRowFieldValue(field, fieldData);
+                    Object fieldValue;
+                    if (fieldData == null || fieldData.isJsonNull()) {
+                        // a nullable sub-field accepts a missing key or an explicit null
+                        if (!subFieldNullable) {
+                            String msg = String.format("The %s of struct field: %s cannot be null.",
+                                    subFieldName, structName);
+                            throw new DataNotMatchException(msg);
+                        }
+                        fieldValue = null;
+                    } else {
+                        fieldValue = checkRowFieldValue(field, fieldData);
+                    }
                     columnData.add(fieldValue);
                 });
                 insertDataInfo.data.add(columnData);
@@ -578,10 +727,10 @@ public class DataUtils {
             return true;
         }
 
-        private void initializeStructFieldData(CreateCollectionReq.StructFieldSchema structField,
-                                               Map<String, InsertDataInfo> nameInsertInfo) {
-            for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
-                String combineName = combineStructFieldName(structField.getName(), field.getName());
+        private void initializeStructFieldData(String structName, List<CreateCollectionReq.FieldSchema> subFields,
+                                                Map<String, InsertDataInfo> nameInsertInfo) {
+            for (CreateCollectionReq.FieldSchema field : subFields) {
+                String combineName = combineStructFieldName(structName, field.getName());
                 InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(
                         combineName, new InsertDataInfo(field, new LinkedList<>()));
                 nameInsertInfo.put(combineName, insertDataInfo);
@@ -590,7 +739,7 @@ public class DataUtils {
 
         private void addNullStructRow(CreateCollectionReq.StructFieldSchema structField,
                                       Map<String, InsertDataInfo> nameInsertInfo) {
-            initializeStructFieldData(structField, nameInsertInfo);
+            initializeStructFieldData(structField.getName(), structField.getFields(), nameInsertInfo);
             for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
                 String combineName = combineStructFieldName(structField.getName(), field.getName());
                 nameInsertInfo.get(combineName).data.add(null);
@@ -627,64 +776,209 @@ public class DataUtils {
         }
     }
 
-    private static FieldData genStructSubFieldData(CreateCollectionReq.FieldSchema fieldSchema, List<?> objects) {
+    private static FieldData genStructSubFieldData(CreateCollectionReq.FieldSchema fieldSchema, List<?> objects,
+                                                    boolean rowNullable) {
         DataType dataType = ConvertUtils.toProtoDataType(fieldSchema.getDataType());
         String fieldName = fieldSchema.getName();
+        boolean elementNullable = Boolean.TRUE.equals(fieldSchema.getIsNullable());
         FieldData.Builder builder = FieldData.newBuilder().setFieldName(fieldName);
-        boolean isNullable = Boolean.TRUE.equals(fieldSchema.getIsNullable());
+
+        // JSON/Geometry/Timestamptz are not supported as struct sub-field element types
+        // (aligned with pymilvus, which rejects them on insert)
+        if (dataType == DataType.JSON || dataType == DataType.Geometry || dataType == DataType.Timestamptz) {
+            String msg = String.format("Unsupported element type %s for struct sub-field '%s'", dataType, fieldName);
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+        }
+
+        // split rows into per-row validity (row-level, driven by the struct's row nullable)
+        // and non-null rows; a null struct row is marked false and contributes no data cell
+        List<Boolean> rowValidity = new ArrayList<>();
+        List<Object> nonNullRows = new ArrayList<>();
+        for (Object obj : objects) {
+            rowValidity.add(obj != null);
+            if (obj != null) {
+                nonNullRows.add(obj);
+            }
+        }
 
         if (ParamUtils.isVectorDataType(dataType)) {
-            List<?> nonNullRows = objects;
-            if (isNullable) {
-                List<Object> filtered = new ArrayList<>();
-                for (Object obj : objects) {
-                    builder.addValidData(obj != null);
-                    if (obj != null) {
-                        filtered.add(obj);
-                    }
-                }
-                if (filtered.isEmpty()) {
-                    return builder.setType(DataType.ArrayOfVector).build();
-                }
-                nonNullRows = filtered;
+            int dim = fieldSchema.getDimension() == null ? 0 : fieldSchema.getDimension();
+            if (rowNullable) {
+                builder.addAllValidData(rowValidity);
             }
-            VectorArray vectorArr = genVectorArray(dataType, nonNullRows, fieldSchema.getDimension());
-            if (vectorArr.getDim() > 0 && vectorArr.getDim() != fieldSchema.getDimension()) {
-                String msg = String.format("Dimension mismatch for field %s, expected: %d, actual: %d",
-                        fieldName, fieldSchema.getDimension(), vectorArr.getDim());
-                throw new DataNotMatchException(msg);
+            if (nonNullRows.isEmpty()) {
+                // all struct rows are null; leave the payload unset
+                return builder.setType(DataType.ArrayOfVector).build();
             }
-            return builder.setType(DataType.ArrayOfVector)
-                    .setVectors(VectorField.newBuilder()
-                            .setVectorArray(vectorArr)
-                            .setDim(fieldSchema.getDimension())
-                            .build())
-                    .build();
+            VectorArray.Builder vaBuilder = VectorArray.newBuilder().setElementType(dataType).setDim(dim);
+            for (Object row : nonNullRows) {
+                List<?> vectors = (List<?>) row;
+                vaBuilder.addData(genStructVectorRow(dataType, vectors, elementNullable, dim, fieldName));
+            }
+            VectorField.Builder vectorsBuilder = VectorField.newBuilder().setVectorArray(vaBuilder).setDim(dim);
+            if (rowNullable) {
+                vectorsBuilder.addAllValidData(rowValidity);
+            }
+            return builder.setType(DataType.ArrayOfVector).setVectors(vectorsBuilder.build()).build();
+        } else if (dataType == DataType.Array) {
+            // nested Array sub-field: the outer array_data element type is ARRAY and each row
+            // cell carries its own inner array_data with the leaf element type
+            if (rowNullable) {
+                builder.addAllValidData(rowValidity);
+            }
+            if (nonNullRows.isEmpty()) {
+                return builder.setType(DataType.Array).build();
+            }
+            ArrayArray.Builder outerBuilder = ArrayArray.newBuilder().setElementType(DataType.Array);
+            for (Object row : nonNullRows) {
+                List<?> innerArrays = (List<?>) row;
+                outerBuilder.addData(genStructNestedArrayRow(fieldSchema, innerArrays, fieldName));
+            }
+            ScalarField.Builder scalarsBuilder = ScalarField.newBuilder().setArrayData(outerBuilder);
+            if (rowNullable) {
+                scalarsBuilder.addAllValidData(rowValidity);
+            }
+            return builder.setType(DataType.Array).setScalars(scalarsBuilder.build()).build();
         } else {
-            // JSON/Geometry/Timestamptz are not supported as struct sub-field element types
-            // (aligned with pymilvus, which rejects them on insert)
-            if (dataType == DataType.JSON || dataType == DataType.Geometry || dataType == DataType.Timestamptz) {
-                String msg = String.format("Unsupported element type %s for struct sub-field '%s'", dataType, fieldName);
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+            // scalar sub-field: the outer array_data element type is the scalar element type
+            // and each row cell holds that row's element values
+            if (rowNullable) {
+                builder.addAllValidData(rowValidity);
             }
-            List<?> nonNullRows = objects;
-            if (isNullable || fieldSchema.getDefaultValue() != null) {
-                List<Object> filtered = new ArrayList<>();
-                for (Object obj : objects) {
-                    builder.addValidData(obj != null);
-                    if (obj != null) {
-                        filtered.add(obj);
-                    }
-                }
-                if (filtered.isEmpty() && isNullable) {
-                    return builder.setType(DataType.Array).build();
-                }
-                nonNullRows = filtered;
+            if (nonNullRows.isEmpty()) {
+                return builder.setType(DataType.Array).build();
             }
-
-            ScalarField scalarField = ParamUtils.genScalarField(DataType.Array, dataType, nonNullRows);
-            return builder.setType(DataType.Array).setScalars(scalarField).build();
+            ArrayArray.Builder outerBuilder = ArrayArray.newBuilder().setElementType(dataType);
+            for (Object row : nonNullRows) {
+                List<?> values = (List<?>) row;
+                outerBuilder.addData(genStructScalarRow(dataType, values, elementNullable, fieldName));
+            }
+            ScalarField.Builder scalarsBuilder = ScalarField.newBuilder().setArrayData(outerBuilder);
+            if (rowNullable) {
+                scalarsBuilder.addAllValidData(rowValidity);
+            }
+            return builder.setType(DataType.Array).setScalars(scalarsBuilder.build()).build();
         }
+    }
+
+    /**
+     * Encodes one struct row's scalar sub-field values into a per-row ScalarField cell.
+     * When the sub-field is element-nullable, null elements are compacted and the
+     * element-level validity is recorded on the cell; otherwise all values are written
+     * densely without validity (a null element would be a user error, rejected earlier).
+     *
+     * @param elementType the proto scalar element type
+     * @param values the row's element values (may contain nulls when element-nullable)
+     * @param elementNullable whether the sub-field permits null elements
+     * @param name the sub-field name (for error messages)
+     * @return the encoded per-row ScalarField cell
+     */
+    private static ScalarField genStructScalarRow(DataType elementType, List<?> values,
+                                                  boolean elementNullable, String name) {
+        if (!elementNullable) {
+            for (Object value : values) {
+                if (value == null) {
+                    String msg = String.format("Array sub-field '%s' does not allow null elements", name);
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+                }
+            }
+            return ParamUtils.genScalarField(elementType, DataType.None, values);
+        }
+        List<Object> compacted = new ArrayList<>();
+        List<Boolean> validity = new ArrayList<>();
+        for (Object value : values) {
+            validity.add(value != null);
+            if (value != null) {
+                compacted.add(value);
+            }
+        }
+        ScalarField scalarField = ParamUtils.genScalarField(elementType, DataType.None, compacted);
+        return scalarField.toBuilder().addAllValidData(validity).build();
+    }
+
+    /**
+     * Encodes one struct row's vector sub-field values into a per-row VectorField cell.
+     * When the sub-field is element-nullable, null vectors are compacted and the
+     * element-level validity is recorded on the cell; otherwise all vectors are written
+     * densely without validity.
+     *
+     * @param dataType the proto vector element type
+     * @param vectors the row's element vectors (may contain nulls when element-nullable)
+     * @param elementNullable whether the sub-field permits null vectors
+     * @param dim the expected vector dimension
+     * @param name the sub-field name (for error messages)
+     * @return the encoded per-row VectorField cell
+     */
+    private static VectorField genStructVectorRow(DataType dataType, List<?> vectors,
+                                                  boolean elementNullable, int dim, String name) {
+        List<Boolean> validity = null;
+        List<?> nonNullVectors = vectors;
+        if (elementNullable) {
+            List<Object> compacted = new ArrayList<>();
+            validity = new ArrayList<>();
+            for (Object vector : vectors) {
+                validity.add(vector != null);
+                if (vector != null) {
+                    compacted.add(vector);
+                }
+            }
+            nonNullVectors = compacted;
+        }
+        VectorField vectorField = ParamUtils.genVectorField(dataType, nonNullVectors);
+        if (vectorField.getDim() == 0 && dim > 0) {
+            vectorField = vectorField.toBuilder().setDim(dim).build();
+        }
+        if (vectorField.getDim() > 0 && dim > 0 && vectorField.getDim() != dim) {
+            String msg = String.format("Dimension mismatch for field %s, expected: %d, actual: %d",
+                    name, dim, vectorField.getDim());
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+        }
+        if (validity != null) {
+            vectorField = vectorField.toBuilder().addAllValidData(validity).build();
+        }
+        return vectorField;
+    }
+
+    /**
+     * Encodes one struct row's nested-Array sub-field values into a per-row ScalarField
+     * cell. The cell is itself an ArrayArray whose element type is the leaf element type.
+     * When the sub-field is element-nullable (inner array can be null), null inner arrays
+     * are compacted and the element-level validity is recorded on the cell; when the leaf
+     * is element-nullable, null leaf values inside each inner array are compacted with
+     * leaf-level validity.
+     *
+     * @param fieldSchema the nested-Array sub-field schema
+     * @param innerArrays the row's inner-array values (may contain nulls when element-nullable)
+     * @param name the sub-field name (for error messages)
+     * @return the encoded per-row ScalarField cell
+     */
+    private static ScalarField genStructNestedArrayRow(CreateCollectionReq.FieldSchema fieldSchema,
+                                                       List<?> innerArrays, String name) {
+        boolean innerArrayNullable = Boolean.TRUE.equals(fieldSchema.getIsNullable());
+        boolean leafNullable = Boolean.TRUE.equals(fieldSchema.getElementNullable());
+        DataType leafType = ConvertUtils.toProtoDataType(fieldSchema.getElementType());
+        ArrayArray.Builder innerBuilder = ArrayArray.newBuilder().setElementType(leafType);
+        List<Boolean> validity = new ArrayList<>();
+        List<Object> compacted = new ArrayList<>();
+        for (Object inner : innerArrays) {
+            validity.add(inner != null);
+            if (inner != null) {
+                compacted.add(inner);
+            }
+        }
+        if (!innerArrayNullable && validity.contains(Boolean.FALSE)) {
+            String msg = String.format("Array sub-field '%s' does not allow null inner arrays", name);
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+        }
+        for (Object inner : compacted) {
+            List<?> leafValues = (List<?>) inner;
+            innerBuilder.addData(genStructScalarRow(leafType, leafValues, leafNullable, name));
+        }
+        ScalarField.Builder rowBuilder = ScalarField.newBuilder().setArrayData(innerBuilder);
+        if (innerArrayNullable) {
+            rowBuilder.addAllValidData(validity);
+        }
+        return rowBuilder.build();
     }
 
     /**

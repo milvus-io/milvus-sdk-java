@@ -168,7 +168,7 @@ class CollectionStructFieldTest extends BaseTest {
     }
 
     @Test
-    void testAddCollectionStructFieldWrapsStructValidationError() {
+    void testAddCollectionStructFieldAllowsNullableSubField() {
         AddCollectionStructFieldReq request = AddCollectionStructFieldReq.builder()
                 .collectionName("test")
                 .fieldName("metadata")
@@ -180,8 +180,25 @@ class CollectionStructFieldTest extends BaseTest {
                         .build())
                 .build();
 
+        CreateCollectionReq.StructFieldSchema schema = request.toStructFieldSchema();
+        Assertions.assertTrue(schema.getFields().get(0).getIsNullable());
+    }
+
+    @Test
+    void testAddCollectionStructFieldWrapsStructValidationError() {
+        AddCollectionStructFieldReq request = AddCollectionStructFieldReq.builder()
+                .collectionName("test")
+                .fieldName("metadata")
+                .maxCapacity(16)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("tags")
+                        .dataType(DataType.Array)
+                        .elementType(DataType.Int32)
+                        .build())
+                .build();
+
         ParamException exception = Assertions.assertThrows(ParamException.class, request::toStructFieldSchema);
-        Assertions.assertTrue(exception.getMessage().contains("cannot be nullable"));
+        Assertions.assertTrue(exception.getMessage().contains("maxCapacity is required"));
     }
 
     @Test
@@ -189,8 +206,7 @@ class CollectionStructFieldTest extends BaseTest {
         CreateCollectionReq.StructFieldSchema structFieldSchema = CreateCollectionReq.StructFieldSchema.builder()
                 .name("metadata")
                 .maxCapacity(16)
-                .nullable(null)
-                .fields(Collections.singletonList(CreateCollectionReq.FieldSchema.builder()
+                .nullable(null)                .fields(Collections.singletonList(CreateCollectionReq.FieldSchema.builder()
                         .name("score")
                         .dataType(DataType.Float)
                         .build()))
@@ -203,5 +219,85 @@ class CollectionStructFieldTest extends BaseTest {
 
         StructArrayFieldSchema grpcStructSchema = SchemaUtils.convertToGrpcStructFieldSchema(structFieldSchema);
         Assertions.assertFalse(grpcStructSchema.getNullable());
+    }
+
+    @Test
+    void testAddCollectionFieldWithStructSubFieldPath() {
+        AddCollectionFieldReq request = AddCollectionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("clips[note]")
+                .dataType(DataType.VarChar)
+                .maxLength(64)
+                .isNullable(Boolean.TRUE)
+                .build();
+
+        client_v2.addCollectionField(request);
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+
+        io.milvus.grpc.FieldSchema fieldSchema = rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema();
+        Assertions.assertEquals("clips[note]", fieldSchema.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Array, fieldSchema.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.VarChar, fieldSchema.getElementType());
+        // a struct sub-field is wrapped as a non-nullable Array with element_nullable=true
+        Assertions.assertFalse(fieldSchema.getNullable());
+        Assertions.assertTrue(fieldSchema.getElementNullable());
+        Assertions.assertEquals("64", getParam(fieldSchema.getTypeParamsList(), "max_length"));
+    }
+
+    @Test
+    void testAddCollectionFieldWithNestedArraySubFieldPath() {
+        AddCollectionFieldReq request = AddCollectionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("clips[marks]")
+                .dataType(DataType.Array)
+                .elementType(DataType.Int32)
+                .maxCapacity(4)
+                .maxLength(0)
+                .isNullable(Boolean.TRUE)
+                .elementNullable(Boolean.TRUE)
+                .build();
+
+        client_v2.addCollectionField(request);
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.FieldSchema fieldSchema = captor.getValue().getAction().getAddRequest().getFieldInfos(0).getFieldSchema();
+        Assertions.assertEquals("clips[marks]", fieldSchema.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Array, fieldSchema.getElementType());
+        Assertions.assertTrue(fieldSchema.getElementNullable());
+        Assertions.assertTrue(fieldSchema.hasTypeSchema());
+        io.milvus.grpc.TypeSchema root = fieldSchema.getTypeSchema();
+        Assertions.assertTrue(root.hasArrayElement());
+        io.milvus.grpc.TypeSchema inner = root.getArrayElement();
+        Assertions.assertEquals("4", getParam(inner.getTypeParamsList(), "max_capacity"));
+        Assertions.assertTrue(inner.hasArrayElement());
+        io.milvus.grpc.TypeSchema leaf = inner.getArrayElement();
+        Assertions.assertEquals(io.milvus.grpc.DataType.Int32, leaf.getLeafType());
+        Assertions.assertTrue(leaf.getNullable());
+    }
+
+    @Test
+    void testAddCollectionFieldRejectsNonNullableSubFieldPath() {
+        AddCollectionFieldReq request = AddCollectionFieldReq.builder()
+                .collectionName("test")
+                .fieldName("clips[note]")
+                .dataType(DataType.VarChar)
+                .maxLength(64)
+                .isNullable(Boolean.FALSE)
+                .build();
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addCollectionField(request));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("nullable=true"));
     }
 }
