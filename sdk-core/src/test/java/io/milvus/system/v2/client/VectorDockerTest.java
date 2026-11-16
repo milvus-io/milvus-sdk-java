@@ -1085,10 +1085,13 @@ class VectorDockerTest extends MilvusV2DockerTestBase {
         Assertions.assertEquals(DataType.Float16Vector, structSchema.getFields().get(3).getDataType());
         Assertions.assertEquals(DataType.BFloat16Vector, structSchema.getFields().get(4).getDataType());
         Assertions.assertEquals(DataType.Int8Vector, structSchema.getFields().get(5).getDataType());
-        // nullable struct field: nullable must be true on the struct and inherited by every sub-field
+        // nullable struct field: the row-level nullable is on the struct itself; sub-fields
+        // use isNullable for element-level null, which is false here since no sub-field
+        // declares element nullability
         Assertions.assertTrue(structSchema.getNullable());
         for (CreateCollectionReq.FieldSchema subField : structSchema.getFields()) {
-            Assertions.assertTrue(subField.getIsNullable(), "sub-field " + subField.getName() + " should inherit nullable");
+            Assertions.assertFalse(subField.getIsNullable(),
+                    "sub-field " + subField.getName() + " has no element-level nullable");
         }
         // st2 is non-nullable; locate it by name so the check is independent of describe ordering
         Assertions.assertFalse(descSchema.getStructField("st2").getNullable());

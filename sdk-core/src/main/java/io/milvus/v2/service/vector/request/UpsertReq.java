@@ -424,10 +424,12 @@ public class UpsertReq {
     public static class FieldPartialUpdateOp {
         private String fieldName;
         private OpType opType;
+        private String path;
 
         private FieldPartialUpdateOp(FieldPartialUpdateOpBuilder builder) {
             this.fieldName = builder.fieldName;
             this.opType = builder.opType;
+            this.path = builder.path;
         }
 
         /**
@@ -485,11 +487,36 @@ public class UpsertReq {
             this.opType = opType;
         }
 
+        /**
+         * Returns the path for a {@link OpType#PATH_REPLACE} operation. The path is
+         * relative to the parent field and uses {@code [index]} to replace one complete
+         * struct element or {@code [index][child]} to replace one child.
+         *
+         * @return the path, or {@code null} for non-path operations
+         */
+
+
+        public String getPath() {
+            return path;
+        }
+
+        /**
+         * Sets the path for a {@link OpType#PATH_REPLACE} operation.
+         *
+         * @param path the path
+         */
+
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
         @Override
         public String toString() {
             return "FieldPartialUpdateOp{" +
                     "fieldName='" + fieldName + '\'' +
                     ", opType=" + opType +
+                    ", path='" + path + '\'' +
                     '}';
         }
 
@@ -501,7 +528,8 @@ public class UpsertReq {
         public enum OpType {
             REPLACE,
             ARRAY_APPEND,
-            ARRAY_REMOVE
+            ARRAY_REMOVE,
+            PATH_REPLACE
         }
 
         /**
@@ -512,6 +540,7 @@ public class UpsertReq {
         public static class FieldPartialUpdateOpBuilder {
             private String fieldName;
             private OpType opType = OpType.REPLACE;
+            private String path;
 
             /**
              * Sets the name of the field to update.
@@ -536,6 +565,19 @@ public class UpsertReq {
 
             public FieldPartialUpdateOpBuilder opType(OpType opType) {
                 this.opType = opType;
+                return this;
+            }
+
+            /**
+             * Sets the path for a {@link OpType#PATH_REPLACE} operation.
+             *
+             * @param path the path
+             * @return this builder
+             */
+
+
+            public FieldPartialUpdateOpBuilder path(String path) {
+                this.path = path;
                 return this;
             }
 

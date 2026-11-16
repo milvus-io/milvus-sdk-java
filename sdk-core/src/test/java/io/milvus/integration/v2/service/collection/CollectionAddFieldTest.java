@@ -140,6 +140,45 @@ class CollectionAddFieldTest extends BaseTest {
     }
 
     @Test
+    void testAddCollectionFieldSubFieldDoesNotFallBackToLegacy() throws Exception {
+        // a struct sub-field add is only supported by alterCollectionSchema; it must not
+        // fall back to the legacy addCollectionField RPC (aligned with pymilvus)
+        when(blockingStub.alterCollectionSchema(any()))
+                .thenThrow(io.grpc.Status.UNIMPLEMENTED.asRuntimeException());
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addCollectionField(AddCollectionFieldReq.builder()
+                        .databaseName("default")
+                        .collectionName("test")
+                        .fieldName("clips[note]")
+                        .dataType(DataType.VarChar)
+                        .maxLength(128)
+                        .isNullable(true)
+                        .build()));
+
+        verify(blockingStub, never()).addCollectionField(any());
+        Assertions.assertTrue(exception.getMessage().contains("UNIMPLEMENTED")
+                || exception.getMessage().contains("unimplemented"));
+    }
+
+    @Test
+    void testAddCollectionFieldRejectsMalformedStructSubFieldPath() {
+        for (String malformed : new String[]{"clips[note", "clips[note][sub]", "[note]"}) {
+            MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client_v2.addCollectionField(AddCollectionFieldReq.builder()
+                            .collectionName("test")
+                            .fieldName(malformed)
+                            .dataType(DataType.VarChar)
+                            .maxLength(64)
+                            .isNullable(true)
+                            .build()));
+            Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+            Assertions.assertTrue(exception.getMessage().contains("Invalid struct sub-field path"),
+                    "malformed path '" + malformed + "' should be rejected: " + exception.getMessage());
+        }
+    }
+
+    @Test
     void testAddCollectionFieldDoesNotFallbackForOtherRpcErrors() {
         when(blockingStub.alterCollectionSchema(any()))
                 .thenThrow(io.grpc.Status.PERMISSION_DENIED.asRuntimeException());
