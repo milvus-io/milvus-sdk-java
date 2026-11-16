@@ -523,7 +523,7 @@ public class SearchIterator {
         StringBuilder filteredIdsStr = new StringBuilder();
         for (Object filteredId : filteredIds) {
             if (primaryField.getDataType() == DataType.VarChar) {
-                filteredIdsStr.append("\"").append(filteredId.toString()).append("\",");
+                filteredIdsStr.append(JsonUtils.toJson(filteredId)).append(",");
             } else {
                 filteredIdsStr.append((long) filteredId).append(",");
             }

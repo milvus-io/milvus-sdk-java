@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -183,6 +184,62 @@ class IteratorTest {
         }
     }
 
+    @Test
+    void queryIteratorEscapesSpecialCharsInVarcharPkCursor() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                varcharQueryResults(Collections.emptyList(), 100L),
+                varcharQueryResults(Arrays.asList("a", "b", "a\"b"), 100L),
+                varcharQueryResults(Collections.singletonList("c"), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("pk"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField(),
+                TEST_COLLECTION_ID);
+        assertEquals(Arrays.asList("a", "b", "a\"b"), strPks(iterator.next()));
+        assertEquals(Collections.singletonList("c"), strPks(iterator.next()));
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(stub, times(3)).query(captor.capture());
+        QueryRequest resumedRequest = captor.getAllValues().get(2);
+        assertEquals("pk > \"a\\\"b\"", resumedRequest.getExpr());
+        assertEquals(100L, resumedRequest.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void searchIteratorEscapesSpecialCharsInVarcharDedupFilter() throws Exception {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.search(any(SearchRequest.class))).thenReturn(searchResults(1L));
+
+        SearchIterator iterator = new SearchIterator(
+                SearchIteratorReq.builder()
+                        .collectionName("test")
+                        .vectorFieldName("vector")
+                        .metricType(IndexParam.MetricType.L2)
+                        .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                        .batchSize(2)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField());
+
+        Field idsField = SearchIterator.class.getDeclaredField("filteredIds");
+        idsField.setAccessible(true);
+        idsField.set(iterator, Arrays.asList("a\"b", "a\\b", "line\nbreak"));
+
+        Method exprMethod = SearchIterator.class.getDeclaredMethod(
+                "filteredDuplicatedResultExpr", String.class);
+        exprMethod.setAccessible(true);
+        assertEquals("score > 0.5 and pk not in [\"a\\\"b\",\"a\\\\b\",\"line\\nbreak\"]",
+                exprMethod.invoke(iterator, "score > 0.5"));
+    }
+
     private static QueryResults queryResults(List<Long> ids, long sessionTs) {
         QueryResults.Builder builder = QueryResults.newBuilder()
                 .setStatus(successStatus())
@@ -194,6 +251,24 @@ class IteratorTest {
                             .setType(DataType.Int64)
                             .setScalars(ScalarField.newBuilder()
                                     .setLongData(LongArray.newBuilder().addAllData(ids).build())
+                                    .build())
+                            .build());
+        }
+        return builder.build();
+    }
+
+    private static QueryResults varcharQueryResults(List<String> pks, long sessionTs) {
+        QueryResults.Builder builder = QueryResults.newBuilder()
+                .setStatus(successStatus())
+                .setSessionTs(sessionTs);
+        if (!pks.isEmpty()) {
+            builder.addOutputFields("pk")
+                    .addFieldsData(FieldData.newBuilder()
+                            .setFieldName("pk")
+                            .setType(DataType.VarChar)
+                            .setScalars(ScalarField.newBuilder()
+                                    .setStringData(io.milvus.grpc.StringArray.newBuilder()
+                                            .addAllData(pks).build())
                                     .build())
                             .build());
         }
@@ -243,6 +318,22 @@ class IteratorTest {
                 .dataType(io.milvus.v2.common.DataType.Int64)
                 .isPrimaryKey(true)
                 .build();
+    }
+
+    private static CreateCollectionReq.FieldSchema varcharPrimaryField() {
+        return CreateCollectionReq.FieldSchema.builder()
+                .name("pk")
+                .dataType(io.milvus.v2.common.DataType.VarChar)
+                .isPrimaryKey(true)
+                .build();
+    }
+
+    private static List<String> strPks(List<QueryResultsWrapper.RowRecord> records) {
+        List<String> pks = new ArrayList<>();
+        for (QueryResultsWrapper.RowRecord record : records) {
+            pks.add((String) record.get("pk"));
+        }
+        return pks;
     }
 
     private static List<Long> ids(List<QueryResultsWrapper.RowRecord> records) {

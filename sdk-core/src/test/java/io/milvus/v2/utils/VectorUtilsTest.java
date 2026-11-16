@@ -32,6 +32,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -125,5 +126,23 @@ class VectorUtilsTest {
                 .consistencyLevel(ConsistencyLevel.SESSION)
                 .build());
         assertEquals(200L, request.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void getExprByIdEscapesQuotesAndBackslashes() {
+        assertEquals("id in [\"a\\\"b\",\"a\\\\b\"]",
+                new VectorUtils().getExprById("id", Arrays.asList("a\"b", "a\\b")));
+    }
+
+    @Test
+    void getExprByIdEscapesControlCharacters() {
+        assertEquals("id in [\"line\\nbreak\",\"line\\rbreak\",\"\\t\\b\\f\"]",
+                new VectorUtils().getExprById("id", Arrays.asList("line\nbreak", "line\rbreak", "\t\b\f")));
+    }
+
+    @Test
+    void getExprByIdPreservesUnicodeAndNumericStrings() {
+        assertEquals("id in [\"中文\",\"42\"]",
+                new VectorUtils().getExprById("id", Arrays.asList("中文", "42")));
     }
 }
