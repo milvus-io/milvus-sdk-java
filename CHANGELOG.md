@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+### Bug
+- Escape VARCHAR primary keys in V2 get, query, and delete ID filters
+
 ### Improvement
 - Resolve global cluster topology through DNS SRV records with bounded concurrent probing,
   strict no-rollback recovery, and safe deferred background activation
