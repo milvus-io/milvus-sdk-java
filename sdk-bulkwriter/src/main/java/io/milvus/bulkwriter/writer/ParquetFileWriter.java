@@ -223,11 +223,18 @@ public class ParquetFileWriter implements FormatFileWriter {
                     case Bool:
                         addBooleanArray(group, fieldName, (List<Boolean>) value);
                         break;
+                    default:
+                        break;
                 }
         }
     }
 
     private void appendStructGroup(Group group, Object value, CreateCollectionReq.StructFieldSchema field) {
+        if (value == null) {
+            // a null struct row is written as an absent list value; do not create an empty
+            // list group, which would be semantically different from null
+            return;
+        }
         Group arrayGroup = group.addGroup(field.getName());
         Group listGroup = arrayGroup.addGroup(0);
         List<Map<String, Object>> structs = (List<Map<String, Object>>) value;
@@ -236,6 +243,10 @@ public class ParquetFileWriter implements FormatFileWriter {
             for (CreateCollectionReq.FieldSchema subField : field.getFields()) {
                 if (struct.containsKey(subField.getName())) {
                     Object val = struct.get(subField.getName());
+                    if (val == null) {
+                        // a nullable sub-field value; skip so the parquet optional field stays null
+                        continue;
+                    }
                     appendGroup(dict, val, subField);
                 }
             }
@@ -244,9 +255,13 @@ public class ParquetFileWriter implements FormatFileWriter {
 
     private static void addLongArray(Group group, String fieldName, List<Long> values) {
         Group arrayGroup = group.addGroup(fieldName);
-        for (long value : values) {
+        for (Long value : values) {
+            // create a repeated list group for every value so the list keeps its length and
+            // element positions; a null value simply omits the optional element
             Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
+            if (value != null) {
+                addGroup.add(0, value);
+            }
         }
     }
 
@@ -254,39 +269,49 @@ public class ParquetFileWriter implements FormatFileWriter {
         Group arrayGroup = group.addGroup(fieldName);
         for (String value : values) {
             Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
+            if (value != null) {
+                addGroup.add(0, value);
+            }
         }
     }
 
     private static void addIntArray(Group group, String fieldName, List<Integer> values) {
         Group arrayGroup = group.addGroup(fieldName);
-        for (int value : values) {
+        for (Integer value : values) {
             Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
+            if (value != null) {
+                addGroup.add(0, value);
+            }
         }
     }
 
     private static void addFloatArray(Group group, String fieldName, List<Float> values) {
         Group arrayGroup = group.addGroup(fieldName);
-        for (float value : values) {
+        for (Float value : values) {
             Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
+            if (value != null) {
+                addGroup.add(0, value);
+            }
         }
     }
 
     private static void addDoubleArray(Group group, String fieldName, List<Double> values) {
         Group arrayGroup = group.addGroup(fieldName);
-        for (double value : values) {
+        for (Double value : values) {
             Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
+            if (value != null) {
+                addGroup.add(0, value);
+            }
         }
     }
 
     private static void addBooleanArray(Group group, String fieldName, List<Boolean> values) {
         Group arrayGroup = group.addGroup(fieldName);
-        for (boolean value : values) {
+        for (Boolean value : values) {
             Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
+            if (value != null) {
+                addGroup.add(0, value);
+            }
         }
     }
 

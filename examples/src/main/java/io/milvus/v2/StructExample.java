@@ -29,10 +29,12 @@ import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.service.collection.request.AddCollectionFieldReq;
 import io.milvus.v2.service.collection.request.AddCollectionStructFieldReq;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
+import io.milvus.v2.service.collection.request.DropCollectionFieldReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
@@ -40,11 +42,9 @@ import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
-import io.milvus.v2.service.vector.request.data.BFloat16Vec;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.data.BinaryVec;
 import io.milvus.v2.service.vector.request.data.EmbeddingList;
-import io.milvus.v2.service.vector.request.data.Float16Vec;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.request.data.Int8Vec;
 import io.milvus.v2.service.vector.response.InsertResp;
@@ -55,7 +55,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -79,20 +78,20 @@ public class StructExample {
     private static final String DESC_FIELD = "clip_desc";
     private static final String FLOAT_VECTOR_FIELD = "clip_float_embedding";
     private static final String BINARY_VECTOR_FIELD = "clip_binary_embedding";
-    private static final String FLOAT16_VECTOR_FIELD = "clip_float16_embedding";
-    private static final String BFLOAT16_VECTOR_FIELD = "clip_bfloat16_embedding";
     private static final String INT8_VECTOR_FIELD = "clip_int8_embedding";
     private static final String EXTRA_STRUCT_FIELD = "metadata";
     private static final String RATING_FIELD = "rating";
     private static final String TAG_FIELD = "tag";
+    private static final String SCORE_FIELD = "score";
+    private static final String LANG_FIELD = "lang";
+    private static final String TAGS_FIELD = "tags";
+    private static final String NOTE_FIELD = "note";
+    private static final String MARKS_FIELD = "marks";
     private static final int FLOAT_VECTOR_DIM = 128;
     private static final int BINARY_VECTOR_DIM = 32;
-    private static final int FLOAT16_VECTOR_DIM = 32;
     private static final int INT8_VECTOR_DIM = 32;
-    private static final int IVF_NLIST = 64;
     private static final IndexParam.MetricType FLOAT_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_IP;
     private static final IndexParam.MetricType BINARY_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_HAMMING;
-    private static final IndexParam.MetricType FLOAT16_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_COSINE;
     private static final IndexParam.MetricType INT8_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_L2;
     private static final Random RANDOM = new Random();
     private static final long EXTRA_ROW_ID = 5000L;
@@ -141,22 +140,33 @@ public class StructExample {
                         .dimension(BINARY_VECTOR_DIM)
                         .build())
                 .addStructField(AddFieldReq.builder()
-                        .fieldName(FLOAT16_VECTOR_FIELD)
-                        .description("float16 embedding of a clip")
-                        .dataType(DataType.Float16Vector)
-                        .dimension(FLOAT16_VECTOR_DIM)
-                        .build())
-                .addStructField(AddFieldReq.builder()
-                        .fieldName(BFLOAT16_VECTOR_FIELD)
-                        .description("bfloat16 embedding of a clip")
-                        .dataType(DataType.BFloat16Vector)
-                        .dimension(FLOAT16_VECTOR_DIM)
-                        .build())
-                .addStructField(AddFieldReq.builder()
                         .fieldName(INT8_VECTOR_FIELD)
                         .description("int8 embedding of a clip")
                         .dataType(DataType.Int8Vector)
                         .dimension(INT8_VECTOR_DIM)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(SCORE_FIELD)
+                        .description("score of a clip, element-level null allowed")
+                        .dataType(DataType.Int64)
+                        .isNullable(true)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(LANG_FIELD)
+                        .description("language of a clip, element-level null allowed")
+                        .dataType(DataType.VarChar)
+                        .maxLength(16)
+                        .isNullable(true)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(TAGS_FIELD)
+                        .description("tags of a clip, a nested array with null inner values allowed")
+                        .dataType(DataType.Array)
+                        .elementType(DataType.VarChar)
+                        .maxCapacity(8)
+                        .maxLength(16)
+                        .isNullable(true)
+                        .elementNullable(true)
                         .build())
                 .build());
 
@@ -187,8 +197,6 @@ public class StructExample {
                 .build());
 
         List<IndexParam> indexParams = new ArrayList<>();
-        Map<String, Object> ivfExtraParams = new HashMap<>();
-        ivfExtraParams.put("nlist", IVF_NLIST);
         indexParams.add(IndexParam.builder()
                 .fieldName(String.format("%s[%s]", STRUCT_FIELD, FLOAT_VECTOR_FIELD))
                 .indexName("index_float")
@@ -200,20 +208,6 @@ public class StructExample {
                 .indexName("index_binary")
                 .indexType(IndexParam.IndexType.HNSW)
                 .metricType(BINARY_VECTOR_METRIC)
-                .build());
-        indexParams.add(IndexParam.builder()
-                .fieldName(String.format("%s[%s]", STRUCT_FIELD, FLOAT16_VECTOR_FIELD))
-                .indexName("index_float16")
-                .indexType(IndexParam.IndexType.IVF_FLAT)
-                .metricType(FLOAT16_VECTOR_METRIC)
-                .extraParams(ivfExtraParams)
-                .build());
-        indexParams.add(IndexParam.builder()
-                .fieldName(String.format("%s[%s]", STRUCT_FIELD, BFLOAT16_VECTOR_FIELD))
-                .indexName("index_bfloat16")
-                .indexType(IndexParam.IndexType.IVF_FLAT)
-                .metricType(FLOAT16_VECTOR_METRIC)
-                .extraParams(ivfExtraParams)
                 .build());
         indexParams.add(IndexParam.builder()
                 .fieldName(String.format("%s[%s]", STRUCT_FIELD, INT8_VECTOR_FIELD))
@@ -259,9 +253,13 @@ public class StructExample {
                 struct.addProperty(DESC_FIELD, "clip_description_" + id);
                 struct.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
                 struct.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
-                struct.add(FLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, false).array()));
-                struct.add(BFLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, true).array()));
                 struct.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
+                struct.addProperty(SCORE_FIELD, RANDOM.nextInt(100));
+                struct.addProperty(LANG_FIELD, "en");
+                JsonArray tags = new JsonArray();
+                tags.add("a");
+                tags.add("b");
+                struct.add(TAGS_FIELD, tags);
                 structArr.add(struct);
             }
             row.add(STRUCT_FIELD, structArr);
@@ -280,16 +278,116 @@ public class StructExample {
         return row;
     }
 
+    // Rows demonstrating element-level null: a missing or null sub-field key is stored as a null
+    // element for the element-nullable sub-fields (score/lang); nested arrays support null inner
+    // values (tags: ["c", null]) and empty arrays; the whole struct row can be null (clips: null).
+    private static List<JsonObject> buildElementNullRows() {
+        List<JsonObject> rows = new ArrayList<>();
+
+        JsonObject row97 = new JsonObject();
+        row97.addProperty(ID_FIELD, 97L);
+        row97.addProperty(NAME_FIELD, "film_97");
+        JsonArray clips97 = new JsonArray();
+        JsonObject c0 = new JsonObject();
+        c0.addProperty(FRAME_FIELD, 0);
+        c0.addProperty(DESC_FIELD, "clip_description_97");
+        c0.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+        c0.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+        c0.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
+        c0.addProperty(SCORE_FIELD, 1L);
+        c0.addProperty(LANG_FIELD, "en");
+        JsonArray tags0 = new JsonArray();
+        tags0.add("a");
+        tags0.add("b");
+        c0.add(TAGS_FIELD, tags0);
+        clips97.add(c0);
+        JsonObject c1 = new JsonObject();
+        c1.addProperty(FRAME_FIELD, 1);
+        c1.addProperty(DESC_FIELD, "clip_description_97");
+        c1.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+        c1.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+        c1.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
+        c1.addProperty(SCORE_FIELD, 2L);
+        c1.add(LANG_FIELD, JsonNull.INSTANCE); // element-level null for lang
+        JsonArray tags1 = new JsonArray();
+        tags1.add("c");
+        tags1.add(JsonNull.INSTANCE); // null inner value in the nested array
+        c1.add(TAGS_FIELD, tags1);
+        clips97.add(c1);
+        JsonObject c2 = new JsonObject();
+        c2.addProperty(FRAME_FIELD, 2);
+        c2.addProperty(DESC_FIELD, "clip_description_97");
+        c2.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+        c2.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+        c2.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
+        c2.addProperty(SCORE_FIELD, 3L);
+        // score/lang omitted => both stored as null elements; tags is an empty array
+        JsonArray tags2 = new JsonArray();
+        c2.add(TAGS_FIELD, tags2);
+        clips97.add(c2);
+        row97.add(STRUCT_FIELD, clips97);
+        JsonArray simple97 = new JsonArray();
+        row97.add(SIMPLIFY_STRUCT_FIELD, simple97);
+        rows.add(row97);
+
+        JsonObject row98 = new JsonObject();
+        row98.addProperty(ID_FIELD, 98L);
+        row98.addProperty(NAME_FIELD, "film_98");
+        row98.add(STRUCT_FIELD, new JsonArray()); // empty array, a non-null row
+        row98.add(SIMPLIFY_STRUCT_FIELD, new JsonArray());
+        rows.add(row98);
+
+        JsonObject row99 = new JsonObject();
+        row99.addProperty(ID_FIELD, 99L);
+        row99.addProperty(NAME_FIELD, "film_99");
+        row99.add(STRUCT_FIELD, JsonNull.INSTANCE); // null struct row
+        row99.add(SIMPLIFY_STRUCT_FIELD, new JsonArray());
+        rows.add(row99);
+
+        return rows;
+    }
+
+    // Query rows that carry element-level nulls and print how null elements / null struct rows
+    // are decoded back.
+    private static void verifyElementNull() {
+        System.out.println("===================================================");
+        System.out.println("Verify element-level null struct fields on rows 97/98/99");
+
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " in [97, 98, 99]")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(ID_FIELD, STRUCT_FIELD))
+                .build());
+        for (QueryResp.QueryResult result : queryResp.getQueryResults()) {
+            long id = (Long) result.getEntity().get(ID_FIELD);
+            Object clips = result.getEntity().get(STRUCT_FIELD);
+            System.out.println("query result id=" + id + ", clips=" + clips);
+            if (id == 99L && clips != null) {
+                throw new IllegalStateException("Expected null clips for id=99, got: " + clips);
+            }
+        }
+        System.out.println("Element-level null verification passed");
+    }
+
     private static void insertData(int rowCount) {
         final int batchSize = 300;
         int insertedCount = 0;
+        long nextId = 0;
         while (insertedCount < rowCount) {
             int nextBatch = Math.min(batchSize, rowCount - insertedCount);
             List<JsonObject> rows = new ArrayList<>();
-            for (int i = 0; i < nextBatch; i++) {
-                long id = insertedCount + i;
+            int collected = 0;
+            while (collected < nextBatch) {
+                long id = nextId++;
+                // rows 97/98/99 carry element-level nulls and are inserted separately,
+                // so skip them here to avoid duplicate primary keys
+                if (id == 97L || id == 98L || id == 99L) {
+                    continue;
+                }
                 // insert null clips struct for every 100th row
                 rows.add(buildBaseRow(id, id % 100 != 0));
+                collected++;
             }
 
             InsertResp insertResp = client.insert(InsertReq.builder()
@@ -387,24 +485,6 @@ public class StructExample {
                 filter,
                 struct -> new BinaryVec((ByteBuffer) struct.get(BINARY_VECTOR_FIELD)),
                 "Search on binary field '" + BINARY_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
-        );
-    }
-
-    private static void searchFloat16VectorField(String filter) {
-        embeddingListSearch(
-                FLOAT16_VECTOR_FIELD,
-                filter,
-                struct -> new Float16Vec((ByteBuffer) struct.get(FLOAT16_VECTOR_FIELD)),
-                "Search on float16 field '" + FLOAT16_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
-        );
-    }
-
-    private static void searchBFloat16VectorField(String filter) {
-        embeddingListSearch(
-                BFLOAT16_VECTOR_FIELD,
-                filter,
-                struct -> new BFloat16Vec((ByteBuffer) struct.get(BFLOAT16_VECTOR_FIELD)),
-                "Search on bfloat16 field '" + BFLOAT16_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
         );
     }
 
@@ -563,6 +643,76 @@ public class StructExample {
         }
     }
 
+    // Evolve an existing struct field: add sub-fields (including a nested Array sub-field), insert
+    // rows carrying them, and drop one again. Sub-field add/drop use the bracketed `struct[sub]` path.
+    private static void evolveStructSubField() {
+        System.out.println("===================================================");
+        System.out.println("Evolve struct field '" + STRUCT_FIELD + "' by adding sub-fields");
+
+        client.addCollectionField(AddCollectionFieldReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, NOTE_FIELD))
+                .dataType(DataType.VarChar)
+                .maxLength(64)
+                .isNullable(true)
+                .build());
+        System.out.println("Added struct sub-field " + STRUCT_FIELD + "[" + NOTE_FIELD + "]");
+
+        client.addCollectionField(AddCollectionFieldReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, MARKS_FIELD))
+                .dataType(DataType.Array)
+                .elementType(DataType.Int32)
+                .maxCapacity(4)
+                .isNullable(true)
+                .elementNullable(true)
+                .build());
+        System.out.println("Added nested Array struct sub-field " + STRUCT_FIELD + "[" + MARKS_FIELD + "]");
+
+        JsonObject row = new JsonObject();
+        row.addProperty(ID_FIELD, 6000L);
+        row.addProperty(NAME_FIELD, "film_6000");
+        JsonArray clips6000 = new JsonArray();
+        JsonObject c0 = new JsonObject();
+        c0.addProperty(FRAME_FIELD, 0);
+        c0.addProperty(DESC_FIELD, "clip_description_6000");
+        c0.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+        c0.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+        c0.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
+        c0.addProperty(SCORE_FIELD, 7L);
+        c0.addProperty(NOTE_FIELD, "hello");
+        JsonArray marks0 = new JsonArray();
+        marks0.add(1);
+        marks0.add(2);
+        c0.add(MARKS_FIELD, marks0);
+        clips6000.add(c0);
+        row.add(STRUCT_FIELD, clips6000);
+        row.add(SIMPLIFY_STRUCT_FIELD, new JsonArray());
+        client.insert(InsertReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .data(Collections.singletonList(row))
+                .build());
+
+        DescribeCollectionResp described = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .build());
+        System.out.println("Collection fields after sub-field evolution:");
+        for (CreateCollectionReq.StructFieldSchema struct : described.getCollectionSchema().getStructFields()) {
+            if (struct.getName().equals(STRUCT_FIELD)) {
+                for (CreateCollectionReq.FieldSchema subField : struct.getFields()) {
+                    System.out.printf("  %s: %s, isNullable=%s, elementNullable=%s%n",
+                            subField.getName(), subField.getDataType(), subField.getIsNullable(), subField.getElementNullable());
+                }
+            }
+        }
+
+        client.dropCollectionField(DropCollectionFieldReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, NOTE_FIELD))
+                .build());
+        System.out.println("Dropped struct sub-field " + STRUCT_FIELD + "[" + NOTE_FIELD + "]");
+    }
+
     private static void verifyNullableStruct() {
         System.out.println("===================================================");
         System.out.println("Verify nullable struct field '" + STRUCT_FIELD + "' returns null data");
@@ -630,6 +780,15 @@ public class StructExample {
         try {
             createCollection();
             insertData(2000);
+
+            // insert rows demonstrating element-level null and null struct rows
+            List<JsonObject> elementNullRows = buildElementNullRows();
+            client.insert(InsertReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .data(elementNullRows)
+                    .build());
+            verifyElementNull();
+
             verifyNullableStruct();
 
             searchFloatVectorField(ID_FIELD + " in [5, 8]");
@@ -637,16 +796,17 @@ public class StructExample {
             String filter1 = String.format("MATCH_LEAST(%s, $[%s] < 2000, threshold=3)", STRUCT_FIELD, FRAME_FIELD);
             searchBinaryVectorField(filter1);
 
-            searchFloat16VectorField(ID_FIELD + " < 10");
-
-            String filter2 = String.format("MATCH_ANY(%s, $[%s] == \"clip_description_8\")", STRUCT_FIELD, DESC_FIELD);
-            searchBFloat16VectorField(filter2);
-
             searchInt8VectorField(ID_FIELD + " == 999");
             elementLevelSearch();
             elementLevelQuery();
 
             addCollectionStructField();
+            evolveStructSubField();
+
+            client.dropCollection(DropCollectionReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .build());
+            System.out.println("Collection dropped: " + COLLECTION_NAME);
         } finally {
             client.close();
         }

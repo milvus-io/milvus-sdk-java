@@ -438,6 +438,549 @@ public class ResponseWrapperTest {
     }
 
     @Test
+    void testQueryResultsWrapperWithElementNullableStructField() {
+        // a struct field with one row whose sub-fields carry element-level nulls;
+        // the server returns dense payloads with per-cell valid_data marking null elements
+        FieldData scoreField = FieldData.newBuilder()
+                .setFieldName("score")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Float)
+                                .addData(ScalarField.newBuilder()
+                                        .setFloatData(FloatArray.newBuilder().addData(10.0f).addData(0.0f).addData(30.0f).build())
+                                        .addValidData(true)
+                                        .addValidData(false)
+                                        .addValidData(true)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        FieldData embField = FieldData.newBuilder()
+                .setFieldName("emb")
+                .setType(DataType.ArrayOfVector)
+                .setVectors(VectorField.newBuilder()
+                        .setDim(2)
+                        .setVectorArray(VectorArray.newBuilder()
+                                .setElementType(DataType.FloatVector)
+                                .setDim(2)
+                                .addData(VectorField.newBuilder()
+                                        .setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder()
+                                                .addData(1.0f).addData(2.0f)
+                                                .addData(3.0f).addData(4.0f)
+                                                .build())
+                                        .addValidData(true)
+                                        .addValidData(false)
+                                        .addValidData(true)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        FieldData tagsField = FieldData.newBuilder()
+                .setFieldName("tags")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Array)
+                                .addData(ScalarField.newBuilder()
+                                        .setArrayData(ArrayArray.newBuilder()
+                                                .setElementType(DataType.VarChar)
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().addData("a").addData("").build())
+                                                        .addValidData(true)
+                                                        .addValidData(false)
+                                                        .build())
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().build())
+                                                        .build())
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().build())
+                                                        .build())
+                                                .build())
+                                        .addValidData(true)
+                                        .addValidData(false)
+                                        .addValidData(true)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder()
+                        .addFields(scoreField)
+                        .addFields(embField)
+                        .addFields(tagsField)
+                        .build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(1, records.size());
+        Object metadata = records.get(0).get("metadata");
+        assertNotNull(metadata);
+        // one struct element per row cell; element 0 has all fields present, element 1
+        // has score/emb/tags null, element 2 has score/emb/tags present with tags empty
+        List<?> structs = (List<?>) metadata;
+        assertEquals(3, structs.size());
+        Map<?, ?> s0 = (Map<?, ?>) structs.get(0);
+        assertEquals(10.0f, ((Number) s0.get("score")).floatValue());
+        assertEquals(Arrays.asList(1.0f, 2.0f), s0.get("emb"));
+        assertEquals(Arrays.asList("a", null), s0.get("tags"));
+        Map<?, ?> s1 = (Map<?, ?>) structs.get(1);
+        assertNull(s1.get("score"));
+        assertNull(s1.get("emb"));
+        assertNull(s1.get("tags"));
+        Map<?, ?> s2 = (Map<?, ?>) structs.get(2);
+        assertEquals(30.0f, ((Number) s2.get("score")).floatValue());
+        assertEquals(Arrays.asList(3.0f, 4.0f), s2.get("emb"));
+        assertEquals(Collections.emptyList(), s2.get("tags"));
+    }
+
+    @Test
+    void testQueryResultsWrapperWithCompactedScalarStructRows() {
+        // compacted payload: only non-null rows are stored (2 cells) while field-7 valid_data
+        // [true,false,true] marks 3 logical rows; null struct rows must be reconstructed at
+        // their original positions (alignColumnData compacted branch)
+        FieldData scoreField = FieldData.newBuilder()
+                .setFieldName("score")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Float)
+                                .addData(ScalarField.newBuilder().setFloatData(FloatArray.newBuilder().addData(1.0f).build()).build())
+                                .addData(ScalarField.newBuilder().setFloatData(FloatArray.newBuilder().addData(3.0f).build()).build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .addValidData(true)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder().addFields(scoreField).build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).addData(3L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(3, records.size());
+        assertNotNull(records.get(0).get("metadata"));
+        assertNull(records.get(1).get("metadata"));
+        assertNotNull(records.get(2).get("metadata"));
+        List<?> structs0 = (List<?>) records.get(0).get("metadata");
+        assertEquals(1.0f, ((Number) ((Map<?, ?>) structs0.get(0)).get("score")).floatValue());
+        List<?> structs2 = (List<?>) records.get(2).get("metadata");
+        assertEquals(3.0f, ((Number) ((Map<?, ?>) structs2.get(0)).get("score")).floatValue());
+    }
+
+    @Test
+    void testQueryResultsWrapperWithCompactedVectorStructRows() {
+        // compacted vector sub-field: 2 cells but field-7 valid_data [true,false,true]; the
+        // ArrayOfVector branch must consume one cell per valid row and insert null rows at
+        // the false positions
+        FieldData embField = FieldData.newBuilder()
+                .setFieldName("emb")
+                .setType(DataType.ArrayOfVector)
+                .setVectors(VectorField.newBuilder()
+                        .setDim(2)
+                        .setVectorArray(VectorArray.newBuilder()
+                                .setElementType(DataType.FloatVector)
+                                .setDim(2)
+                                .addData(VectorField.newBuilder().setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder().addData(1.0f).addData(2.0f).build()).build())
+                                .addData(VectorField.newBuilder().setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder().addData(3.0f).addData(4.0f).build()).build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .addValidData(true)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder().addFields(embField).build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).addData(3L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(3, records.size());
+        assertNull(records.get(1).get("metadata"));
+        List<?> structs0 = (List<?>) records.get(0).get("metadata");
+        assertEquals(Arrays.asList(1.0f, 2.0f), ((Map<?, ?>) structs0.get(0)).get("emb"));
+        List<?> structs2 = (List<?>) records.get(2).get("metadata");
+        assertEquals(Arrays.asList(3.0f, 4.0f), ((Map<?, ?>) structs2.get(0)).get("emb"));
+    }
+
+    @Test
+    void testQueryResultsWrapperRowValidityPayloadFallback() {
+        // field-7 valid_data is empty; row validity lives only on the scalar (17) and vector
+        // (9) payloads, exercising the rowValidity fallback that mirrors pymilvus
+        FieldData scoreField = FieldData.newBuilder()
+                .setFieldName("score")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Float)
+                                .addData(ScalarField.newBuilder().setFloatData(FloatArray.newBuilder().addData(1.0f).build()).build())
+                                .addData(ScalarField.newBuilder().setFloatData(FloatArray.newBuilder().addData(3.0f).build()).build())
+                                .build())
+                        .addValidData(true)
+                        .addValidData(false)
+                        .build())
+                .build();
+        FieldData embField = FieldData.newBuilder()
+                .setFieldName("emb")
+                .setType(DataType.ArrayOfVector)
+                .setVectors(VectorField.newBuilder()
+                        .setDim(2)
+                        .setVectorArray(VectorArray.newBuilder()
+                                .setElementType(DataType.FloatVector)
+                                .setDim(2)
+                                .addData(VectorField.newBuilder().setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder().addData(1.0f).addData(2.0f).build()).build())
+                                .addData(VectorField.newBuilder().setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder().addData(3.0f).addData(4.0f).build()).build())
+                                .build())
+                        .addValidData(true)
+                        .addValidData(false)
+                        .build())
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder().addFields(scoreField).addFields(embField).build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(2, records.size());
+        assertNotNull(records.get(0).get("metadata"));
+        assertNull(records.get(1).get("metadata"));
+    }
+
+    @Test
+    void testQueryResultsWrapperWithCompactedLeafCell() {
+        // a scalar struct sub-field cell whose own valid_data is compacted ([true,false,true]
+        // with 2 stored values) must expand to [1.0, null, 3.0] (setNoneData compacted branch)
+        FieldData scoreField = FieldData.newBuilder()
+                .setFieldName("score")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Float)
+                                .addData(ScalarField.newBuilder()
+                                        .setFloatData(FloatArray.newBuilder().addData(1.0f).addData(3.0f).build())
+                                        .addValidData(true)
+                                        .addValidData(false)
+                                        .addValidData(true)
+                                        .build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder().addFields(scoreField).build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(1, records.size());
+        // one struct element per decoded sub-field value: [1.0, null, 3.0]
+        List<?> structs = (List<?>) records.get(0).get("metadata");
+        assertEquals(3, structs.size());
+        assertEquals(1.0f, ((Number) ((Map<?, ?>) structs.get(0)).get("score")).floatValue());
+        assertNull(((Map<?, ?>) structs.get(1)).get("score"));
+        assertEquals(3.0f, ((Number) ((Map<?, ?>) structs.get(2)).get("score")).floatValue());
+    }
+
+    @Test
+    void testQueryResultsWrapperWithCompactedNestedArrayCell() {
+        // a nested-Array sub-field cell with 2 stored inner leaves but cell validity
+        // [true,false,true] (compacted) must decode to [["a"], null, ["b"]] preserving
+        // element positions (getStructNestedArrayData compacted branch)
+        FieldData tagsField = FieldData.newBuilder()
+                .setFieldName("tags")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Array)
+                                .addData(ScalarField.newBuilder()
+                                        .setArrayData(ArrayArray.newBuilder()
+                                                .setElementType(DataType.VarChar)
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().addData("a").build()).build())
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().addData("b").build()).build())
+                                                .build())
+                                        .addValidData(true)
+                                        .addValidData(false)
+                                        .addValidData(true)
+                                        .build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder().addFields(tagsField).build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(1, records.size());
+        // one struct element per decoded inner array: [["a"], null, ["b"]]
+        List<?> structs = (List<?>) records.get(0).get("metadata");
+        assertEquals(3, structs.size());
+        assertEquals(Collections.singletonList("a"), ((Map<?, ?>) structs.get(0)).get("tags"));
+        assertNull(((Map<?, ?>) structs.get(1)).get("tags"));
+        assertEquals(Collections.singletonList("b"), ((Map<?, ?>) structs.get(2)).get("tags"));
+    }
+
+    @Test
+    void testQueryResultsWrapperStripsStructSubFieldPrefixOnDecode() {
+        // a sub-field added via add_collection_field keeps the wire name "metadata[note]";
+        // the decoded struct map key must be the plain name "note" (aligned with pymilvus)
+        FieldData noteField = FieldData.newBuilder()
+                .setFieldName("metadata[note]")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.VarChar)
+                                .addData(ScalarField.newBuilder()
+                                        .setStringData(StringArray.newBuilder().addData("hello").build())
+                                        .build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder()
+                        .addFields(noteField)
+                        .build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(1, records.size());
+        List<?> structs = (List<?>) records.get(0).get("metadata");
+        assertEquals(1, structs.size());
+        Map<?, ?> s0 = (Map<?, ?>) structs.get(0);
+        assertEquals("hello", s0.get("note"));
+        assertNull(s0.get("metadata[note]"));
+    }
+
+    @Test
+    void testQueryResultsWrapperWithDenseNullStructRows() {
+        // dense payload: every logical row has a cell, and null struct rows carry an empty
+        // placeholder cell; the null row must not shift the payload index of later rows
+        FieldData scoreField = FieldData.newBuilder()
+                .setFieldName("score")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Float)
+                                .addData(ScalarField.newBuilder().setFloatData(FloatArray.newBuilder().addData(1.0f).build()).build())
+                                .addData(ScalarField.newBuilder().build())
+                                .addData(ScalarField.newBuilder().setFloatData(FloatArray.newBuilder().addData(3.0f).build()).build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .addValidData(true)
+                .build();
+        FieldData embField = FieldData.newBuilder()
+                .setFieldName("emb")
+                .setType(DataType.ArrayOfVector)
+                .setVectors(VectorField.newBuilder()
+                        .setDim(2)
+                        .setVectorArray(VectorArray.newBuilder()
+                                .setElementType(DataType.FloatVector)
+                                .setDim(2)
+                                .addData(VectorField.newBuilder().setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder().addData(1.0f).addData(2.0f).build()).build())
+                                .addData(VectorField.newBuilder().build())
+                                .addData(VectorField.newBuilder().setDim(2)
+                                        .setFloatVector(FloatArray.newBuilder().addData(3.0f).addData(4.0f).build()).build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .addValidData(true)
+                .build();
+        FieldData tagsField = FieldData.newBuilder()
+                .setFieldName("tags")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .setElementType(DataType.Array)
+                                .addData(ScalarField.newBuilder()
+                                        .setArrayData(ArrayArray.newBuilder()
+                                                .setElementType(DataType.VarChar)
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().addData("a").build()).build())
+                                                .build())
+                                        .build())
+                                .addData(ScalarField.newBuilder().build())
+                                .addData(ScalarField.newBuilder()
+                                        .setArrayData(ArrayArray.newBuilder()
+                                                .setElementType(DataType.VarChar)
+                                                .addData(ScalarField.newBuilder()
+                                                        .setStringData(StringArray.newBuilder().addData("b").build()).build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .addValidData(true)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder()
+                        .addFields(scoreField)
+                        .addFields(embField)
+                        .addFields(tagsField)
+                        .build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).addData(3L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(3, records.size());
+        // row 0 and row 2 carry structs, row 1 is a null struct row
+        List<?> row0 = (List<?>) records.get(0).get("metadata");
+        assertNull(records.get(1).get("metadata"));
+        List<?> row2 = (List<?>) records.get(2).get("metadata");
+        assertEquals(1, row0.size());
+        assertEquals(1, row2.size());
+        // the null row must not have shifted the payload index of row 2
+        Map<?, ?> s2 = (Map<?, ?>) row2.get(0);
+        assertEquals(3.0f, ((Number) s2.get("score")).floatValue());
+        assertEquals(Arrays.asList(3.0f, 4.0f), s2.get("emb"));
+        assertEquals(Collections.singletonList("b"), s2.get("tags"));
+    }
+
+    @Test
     void testResultsWrapperWithNullJsonField() {
         // the server fills null rows of a nullable JSON field with empty bytes and marks them in valid_data
         FieldData jsonField = FieldData.newBuilder()
