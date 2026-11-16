@@ -941,7 +941,7 @@ public class VectorUtils {
         sb.append(primaryFieldName).append(" in [");
         for (Object id : ids) {
             if (id instanceof String) {
-                sb.append("\"").append(id.toString()).append("\",");
+                sb.append(JsonUtils.toJson(id)).append(",");
             } else {
                 sb.append(id.toString()).append(",");
             }
