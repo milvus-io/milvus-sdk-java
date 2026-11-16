@@ -19,6 +19,7 @@
 
 package io.milvus.orm.iterator;
 
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.KeyValuePair;
@@ -365,7 +366,7 @@ public class QueryIterator {
         String pkOperator = hasElementCursor() ? ">=" : ">";
         String filteredPKStr;
         if (primaryField.getDataType() == DataType.VarChar) {
-            filteredPKStr = primaryField.getName() + " " + pkOperator + " " + "\"" + nextId + "\"";
+            filteredPKStr = primaryField.getName() + " " + pkOperator + " " + JsonUtils.toJson(nextId);
         } else {
             filteredPKStr = primaryField.getName() + " " + pkOperator + " " + nextId;
         }

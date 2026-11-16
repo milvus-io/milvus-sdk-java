@@ -478,6 +478,47 @@ class QueryIteratorTest {
     }
 
     @Test
+    void queryIteratorEscapesSpecialCharsInVarcharPkCursor() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.query(any(QueryRequest.class))).thenReturn(
+                varcharQueryResults(Collections.emptyList(), 100L),
+                varcharQueryResults(Arrays.asList("a", "b", "a\"b"), 100L),
+                varcharQueryResults(Collections.singletonList("c"), 100L));
+
+        QueryIterator iterator = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("pk"))
+                        .batchSize(10)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField(),
+                TEST_COLLECTION_ID);
+        iterator.next();
+        QueryIteratorCursor cursor = iterator.getCursor();
+        assertEquals("a\"b", cursor.getStrPk());
+
+        QueryIterator resumed = new QueryIterator(
+                QueryIteratorReq.builder()
+                        .collectionName("test")
+                        .outputFields(Collections.singletonList("pk"))
+                        .batchSize(10)
+                        .cursor(cursor)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField(),
+                TEST_COLLECTION_ID);
+        assertEquals(Collections.singletonList("c"), strPks(resumed.next()));
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(stub, times(3)).query(captor.capture());
+        QueryRequest resumedRequest = captor.getAllValues().get(2);
+        assertEquals("pk > \"a\\\"b\"", resumedRequest.getExpr());
+        assertEquals(100L, resumedRequest.getGuaranteeTimestamp());
+    }
+
+    @Test
     void queryIteratorCloseReleasesCache() throws ReflectiveOperationException {
         MilvusServiceGrpc.MilvusServiceBlockingStub stub =
                 mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
