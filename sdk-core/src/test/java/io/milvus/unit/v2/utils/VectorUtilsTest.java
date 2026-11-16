@@ -83,6 +83,24 @@ class VectorUtilsTest {
     }
 
     @Test
+    void getExprByIdEscapesQuotesAndBackslashes() {
+        assertEquals("id in [\"a\\\"b\",\"a\\\\b\"]",
+                new VectorUtils().getExprById("id", Arrays.asList("a\"b", "a\\b")));
+    }
+
+    @Test
+    void getExprByIdEscapesControlCharacters() {
+        assertEquals("id in [\"line\\nbreak\",\"line\\rbreak\",\"\\t\\b\\f\"]",
+                new VectorUtils().getExprById("id", Arrays.asList("line\nbreak", "line\rbreak", "\t\b\f")));
+    }
+
+    @Test
+    void getExprByIdPreservesUnicodeAndNumericStrings() {
+        assertEquals("id in [\"中文\",\"42\"]",
+                new VectorUtils().getExprById("id", Arrays.asList("中文", "42")));
+    }
+
+    @Test
     void convertAnnSearchParamBuildsSearchRequestAndRejectsInvalidInput() {
         BaseVector vector = new FloatVec(Collections.singletonList(1.0f));
         AnnSearchReq request = AnnSearchReq.builder()
