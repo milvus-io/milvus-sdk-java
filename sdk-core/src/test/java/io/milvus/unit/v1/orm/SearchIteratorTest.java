@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,6 +81,34 @@ class SearchIteratorTest {
         verify(stub).search(any(SearchRequest.class));
     }
 
+    @Test
+    void searchIteratorEscapesSpecialCharsInVarcharDedupFilter() throws Exception {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.search(any(SearchRequest.class))).thenReturn(searchResults(1L));
+
+        SearchIterator iterator = new SearchIterator(
+                SearchIteratorReq.builder()
+                        .collectionName("test")
+                        .vectorFieldName("vector")
+                        .metricType(IndexParam.MetricType.L2)
+                        .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                        .batchSize(2)
+                        .build(),
+                testStubWrapper(stub),
+                varcharPrimaryField());
+
+        Field idsField = SearchIterator.class.getDeclaredField("filteredIds");
+        idsField.setAccessible(true);
+        idsField.set(iterator, Arrays.asList("a\"b", "a\\b", "line\nbreak"));
+
+        Method exprMethod = SearchIterator.class.getDeclaredMethod(
+                "filteredDuplicatedResultExpr", String.class);
+        exprMethod.setAccessible(true);
+        assertEquals("score > 0.5 and pk not in [\"a\\\"b\",\"a\\\\b\",\"line\\nbreak\"]",
+                exprMethod.invoke(iterator, "score > 0.5"));
+    }
+
     private static RpcStubWrapper testStubWrapper(
             MilvusServiceGrpc.MilvusServiceBlockingStub stub) {
         return new RpcStubWrapper(stub, 0L, "host:19530", "default");
@@ -112,6 +141,14 @@ class SearchIteratorTest {
         return CreateCollectionReq.FieldSchema.builder()
                 .name("id")
                 .dataType(io.milvus.v2.common.DataType.Int64)
+                .isPrimaryKey(true)
+                .build();
+    }
+
+    private static CreateCollectionReq.FieldSchema varcharPrimaryField() {
+        return CreateCollectionReq.FieldSchema.builder()
+                .name("pk")
+                .dataType(io.milvus.v2.common.DataType.VarChar)
                 .isPrimaryKey(true)
                 .build();
     }
