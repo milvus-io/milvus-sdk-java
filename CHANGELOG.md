@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.6.28 (2026-11-17)
+
+### Feature
+- Add row-level security (RLS) APIs to the V2 client
+
+### Bug
+- Escape VARCHAR primary keys in V2 ID filters and iterator expressions
+- Keep double quotes in BulkWriter CSV values
+
 ## milvus-sdk-java 2.6.27 (2026-10-27)
 
 ### Improvement
