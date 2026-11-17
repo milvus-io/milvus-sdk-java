@@ -25,10 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup JDK 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - name: Update submodule
         run: git submodule update --init
@@ -51,10 +51,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup JDK 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - name: Update submodule
         run: git submodule update --init
