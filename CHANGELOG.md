@@ -1,12 +1,19 @@
 # Changelog
 
-## Unreleased
-### Bug
-- Escape VARCHAR primary keys in V2 get, query, and delete ID filters
+## milvus-sdk-java 3.0.13 (2026-11-17)
+### Feature
+- Add listRunningRequests and cancelRequests to MilvusClientV2
+- Support element-level null, nested Array and sub-field add/drop in struct fields
 
 ### Improvement
 - Resolve global cluster topology through DNS SRV records with bounded concurrent probing,
   strict no-rollback recovery, and safe deferred background activation
+
+### Bug
+- Escape VARCHAR primary keys in V2 ID filters and iterator expressions
+- Fix element-filter QueryIterator offset seek and offset-column collision
+- Handle unknown RLS codes and race in BulkWriter flush wait
+- Keep double quotes in BulkWriter CSV values
 
 ## milvus-sdk-java 3.0.12 (2026-10-27)
 ### Improvement
