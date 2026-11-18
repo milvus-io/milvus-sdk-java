@@ -24,10 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup JDK 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - name: Update submodule
         run: git submodule update --init
@@ -56,10 +56,10 @@ jobs:
       # The Spring Boot starter requires Java 17 and is only part of the reactor on JDK 17+, so
       # switch JDKs for this step. It resolves sdk-core from the local repository installed above.
       - name: Setup JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - name: Spring Boot starter unit tests (ut)
         run: mvn -pl sdk-spring-boot-starter --batch-mode verify
@@ -78,10 +78,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup JDK 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - name: Update submodule
         run: git submodule update --init
