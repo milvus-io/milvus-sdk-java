@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("unit")
 class CollectionTsCacheTest {
@@ -110,5 +112,106 @@ class CollectionTsCacheTest {
         assertEquals(4L, cache.get("host:19530", "other", "four"));
         cache.clear();
         assertEquals(0, cache.size());
+    }
+
+    @Test
+    void evictsLeastRecentlyUsedEntryWhenOverCapacity() {
+        CollectionTsCache cache = new CollectionTsCache(3);
+
+        cache.set("host:19530", "db", "a", 1L);
+        cache.set("host:19530", "db", "b", 2L);
+        cache.set("host:19530", "db", "c", 3L);
+        cache.get("host:19530", "db", "b");
+
+        cache.set("host:19530", "db", "d", 4L);
+
+        assertEquals(3, cache.size());
+        assertEquals(0L, cache.get("host:19530", "db", "a"));
+        assertEquals(2L, cache.get("host:19530", "db", "b"));
+        assertEquals(3L, cache.get("host:19530", "db", "c"));
+        assertEquals(4L, cache.get("host:19530", "db", "d"));
+    }
+
+    @Test
+    void setCapacityShrinksAndEvicts() {
+        int original = CollectionTsCache.getCapacity();
+        try {
+            CollectionTsCache.getInstance().clear();
+            CollectionTsCache.setCapacity(5);
+            for (int i = 1; i <= 5; i++) {
+                CollectionTsCache.getInstance().set("host:19530", "db", "c" + i, i);
+            }
+            assertEquals(5, CollectionTsCache.getInstance().size());
+
+            CollectionTsCache.setCapacity(2);
+            assertEquals(2, CollectionTsCache.getInstance().size());
+            assertEquals(0L, CollectionTsCache.getInstance().get("host:19530", "db", "c1"));
+            assertEquals(4L, CollectionTsCache.getInstance().get("host:19530", "db", "c4"));
+            assertEquals(5L, CollectionTsCache.getInstance().get("host:19530", "db", "c5"));
+
+            CollectionTsCache.setCapacity(1);
+            assertEquals(1, CollectionTsCache.getInstance().size());
+            assertEquals(5L, CollectionTsCache.getInstance().get("host:19530", "db", "c5"));
+            assertEquals(0L, CollectionTsCache.getInstance().get("host:19530", "db", "c4"));
+        } finally {
+            CollectionTsCache.setCapacity(original);
+            CollectionTsCache.getInstance().clear();
+        }
+    }
+
+    @Test
+    void moveAndCopyAtFullCapacityEvictLeastRecentlyUsed() {
+        CollectionTsCache cache = new CollectionTsCache(3);
+        cache.set("host:19530", "db", "a", 1L);
+        cache.set("host:19530", "db", "b", 2L);
+        cache.set("host:19530", "db", "c", 3L);
+        assertEquals(3, cache.size());
+
+        // copy adds a new key at capacity, evicting the least-recently-used entry (a)
+        cache.copy("host:19530", "db", "a", "db", "alias1");
+        assertEquals(3, cache.size());
+        assertEquals(0L, cache.get("host:19530", "db", "a"));
+        assertEquals(1L, cache.get("host:19530", "db", "alias1"));
+        assertEquals(2L, cache.get("host:19530", "db", "b"));
+        assertEquals(3L, cache.get("host:19530", "db", "c"));
+
+        // subsequent copy()/move() at full capacity stay within the bound
+        for (int i = 2; i <= 5; i++) {
+            cache.copy("host:19530", "db", "alias1", "db", "alias" + i);
+            assertTrue(cache.size() <= 3);
+        }
+        for (int i = 1; i <= 5; i++) {
+            cache.move("host:19530", "db", "alias" + i, "db", "renamed" + i);
+            assertTrue(cache.size() <= 3);
+        }
+    }
+
+    @Test
+    void rejectsNonPositiveCapacity() {
+        assertThrows(IllegalArgumentException.class, () -> new CollectionTsCache(0));
+        assertThrows(IllegalArgumentException.class, () -> new CollectionTsCache(-1));
+        assertThrows(IllegalArgumentException.class, () -> CollectionTsCache.setCapacity(0));
+    }
+
+    @Test
+    void defaultCapacityIsBounded() {
+        assertEquals(CollectionTsCache.DEFAULT_CAPACITY, CollectionTsCache.getCapacity());
+        assertEquals(4096, CollectionTsCache.DEFAULT_CAPACITY);
+    }
+
+    @Test
+    void setCapacityAppliesToSingletonAndIsRestorable() {
+        int original = CollectionTsCache.getCapacity();
+        try {
+            CollectionTsCache.getInstance().clear();
+            CollectionTsCache.setCapacity(16);
+            assertEquals(16, CollectionTsCache.getCapacity());
+
+            CollectionTsCache.getInstance().set("host:19530", "db", "x_lru_config", 1L);
+            assertEquals(1L, CollectionTsCache.getInstance().get("host:19530", "db", "x_lru_config"));
+        } finally {
+            CollectionTsCache.setCapacity(original);
+            CollectionTsCache.getInstance().clear();
+        }
     }
 }
