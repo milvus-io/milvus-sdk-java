@@ -119,7 +119,7 @@ jobs:
           submodules: recursive
 
       - name: Set up Java and Maven Central credentials
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '8.0.462'
@@ -185,7 +185,7 @@ jobs:
       # module is only in the reactor on JDK 17+). Publish it separately; it resolves milvus-sdk-java
       # from the local repository, where the deploy above installed it.
       - name: Set up Java 17 for the Spring Boot starter
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
