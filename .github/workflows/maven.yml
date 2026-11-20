@@ -16,6 +16,26 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Retry transient Maven Central download failures instead of failing the whole job on a network
+# hiccup. Both key families are set so the config takes effect regardless of the bundled resolver:
+# Maven 3.9 / Resolver 1.x reads aether.connector.http.retryHandler.* plus
+# aether.connector.{connect,request}Timeout, while Maven 3.10 / Resolver 2.x reads
+# aether.transport.http.* (each resolver silently ignores the other prefix).
+env:
+  MAVEN_OPTS: >-
+    -Daether.connector.http.retryHandler.count=5
+    -Daether.connector.http.retryHandler.interval=1000
+    -Daether.connector.http.retryHandler.intervalMax=10000
+    -Daether.connector.http.retryHandler.serviceUnavailable=500,502,503,504,429
+    -Daether.connector.connectTimeout=30000
+    -Daether.connector.requestTimeout=120000
+    -Daether.transport.http.retryHandler.count=5
+    -Daether.transport.http.retryHandler.interval=1000
+    -Daether.transport.http.retryHandler.intervalMax=10000
+    -Daether.transport.http.retryHandler.serviceUnavailable=500,502,503,504,429
+    -Daether.transport.http.connectTimeout=30000
+    -Daether.transport.http.requestTimeout=120000
+
 jobs:
   ubuntu:
     name: Build and test on ubuntu
