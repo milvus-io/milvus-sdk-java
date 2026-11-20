@@ -19,6 +19,7 @@
 
 package io.milvus.integration.v2.service.vector;
 
+import com.google.common.util.concurrent.Futures;
 import io.milvus.grpc.QueryResults;
 import io.milvus.grpc.SearchResults;
 import io.milvus.grpc.Status;
@@ -39,8 +40,12 @@ import org.junit.jupiter.api.function.Executable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -61,8 +66,7 @@ class RunningRequestCancellationTest extends BaseTest {
     void searchCancellationIsTerminal() {
         when(blockingStub.search(any())).thenReturn(SearchResults.newBuilder().setStatus(CANCELED).build());
 
-        assertCanceled(() -> client_v2.search(SearchReq.builder().collectionName("test")
-                .annsField("vector").data(vectors()).limit(10).build()));
+        assertCanceled(() -> client_v2.search(searchRequest()));
         verify(blockingStub).search(any());
     }
 
@@ -70,19 +74,63 @@ class RunningRequestCancellationTest extends BaseTest {
     void queryCancellationIsTerminal() {
         when(blockingStub.query(any())).thenReturn(QueryResults.newBuilder().setStatus(CANCELED).build());
 
-        assertCanceled(() -> client_v2.query(QueryReq.builder().collectionName("test")
-                .filter("id >= 0").limit(10).build()));
+        assertCanceled(() -> client_v2.query(queryRequest()));
         verify(blockingStub).query(any());
     }
 
     @Test
     void hybridSearchCancellationIsTerminal() {
         when(blockingStub.hybridSearch(any())).thenReturn(SearchResults.newBuilder().setStatus(CANCELED).build());
-        AnnSearchReq branch = AnnSearchReq.builder().vectorFieldName("vector").vectors(vectors()).limit(10).build();
 
-        assertCanceled(() -> client_v2.hybridSearch(HybridSearchReq.builder().collectionName("test")
-                .searchRequests(Collections.singletonList(branch)).limit(10).build()));
+        assertCanceled(() -> client_v2.hybridSearch(hybridSearchRequest()));
         verify(blockingStub).hybridSearch(any());
+    }
+
+    @Test
+    void asyncSearchCancellationIsTerminal() {
+        when(futureStub.search(any())).thenReturn(
+                Futures.immediateFuture(SearchResults.newBuilder().setStatus(CANCELED).build()));
+
+        assertAsyncCanceled(client_v2.searchAsync(searchRequest()));
+        verify(futureStub).search(any());
+    }
+
+    @Test
+    void asyncQueryCancellationIsTerminal() {
+        when(futureStub.query(any())).thenReturn(
+                Futures.immediateFuture(QueryResults.newBuilder().setStatus(CANCELED).build()));
+
+        assertAsyncCanceled(client_v2.queryAsync(queryRequest()));
+        verify(futureStub).query(any());
+    }
+
+    @Test
+    void asyncHybridSearchCancellationIsTerminal() {
+        when(futureStub.hybridSearch(any())).thenReturn(
+                Futures.immediateFuture(SearchResults.newBuilder().setStatus(CANCELED).build()));
+
+        assertAsyncCanceled(client_v2.hybridSearchAsync(hybridSearchRequest()));
+        verify(futureStub).hybridSearch(any());
+    }
+
+    private static SearchReq searchRequest() {
+        return SearchReq.builder().collectionName("test").annsField("vector").data(vectors()).limit(10).build();
+    }
+
+    private static QueryReq queryRequest() {
+        return QueryReq.builder().collectionName("test").filter("id >= 0").limit(10).build();
+    }
+
+    private static HybridSearchReq hybridSearchRequest() {
+        AnnSearchReq branch = AnnSearchReq.builder().vectorFieldName("vector").vectors(vectors()).limit(10).build();
+        return HybridSearchReq.builder().collectionName("test")
+                .searchRequests(Collections.singletonList(branch)).limit(10).build();
+    }
+
+    private static void assertAsyncCanceled(CompletableFuture<?> result) {
+        ExecutionException error = assertThrows(ExecutionException.class, () -> result.get(5, TimeUnit.SECONDS));
+        assertInstanceOf(MilvusClientException.class, error.getCause());
+        assertCancellationError((MilvusClientException) error.getCause());
     }
 
     private static List<BaseVector> vectors() {
@@ -90,7 +138,10 @@ class RunningRequestCancellationTest extends BaseTest {
     }
 
     private static void assertCanceled(Executable invoke) {
-        MilvusClientException error = assertThrows(MilvusClientException.class, invoke);
+        assertCancellationError(assertThrows(MilvusClientException.class, invoke));
+    }
+
+    private static void assertCancellationError(MilvusClientException error) {
         assertEquals(REQUEST_CANCELED, error.getServerErrCode());
         assertEquals(REASON, error.getMessage());
     }
