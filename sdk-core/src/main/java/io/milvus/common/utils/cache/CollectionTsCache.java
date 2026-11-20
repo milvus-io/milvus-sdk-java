@@ -19,21 +19,62 @@
 
 package io.milvus.common.utils.cache;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * In-process cache storing the latest session timestamp per endpoint, database, and collection.
- * Timestamps are updated monotonically and can be invalidated or transferred on rename/alias.
+ * In-process, capacity-bounded cache storing the latest session timestamp per endpoint, database,
+ * and collection. Timestamps are updated monotonically and can be invalidated or transferred on
+ * rename/alias. When the cache exceeds its capacity, the least-recently-used entry is evicted.
+ *
+ * <p>Evicting an entry silently drops the client's last-write guarantee timestamp: SESSION (and
+ * null) consistency reads fall back to {@code ts=1} for that collection until the next DML records
+ * a new timestamp. Unlike the schema cache, an evicted timestamp cannot be reloaded from the
+ * server. Applications relying on SESSION consistency across many collections should size the
+ * cache with {@link #setCapacity(int)} accordingly rather than relying on the default.
  */
 
 
-public class CollectionTsCache {
+public class CollectionTsCache implements CollectionCacheConstants {
     private static final CollectionTsCache INSTANCE = new CollectionTsCache();
 
+    private static final class Entry {
+        private long ts;
+        private final AtomicLong lastAccess;
+
+        private Entry(long ts, long lastAccess) {
+            this.ts = ts;
+            this.lastAccess = new AtomicLong(lastAccess);
+        }
+    }
+
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final Map<CollectionCacheKey, Long> cache = new HashMap<>();
+    private final AtomicLong accessSequence = new AtomicLong();
+    private volatile int capacity;
+    private final Map<CollectionCacheKey, Entry> cache = new HashMap<>();
+
+    /**
+     * Creates a timestamp cache with the default capacity.
+     */
+    public CollectionTsCache() {
+        this(DEFAULT_CAPACITY);
+    }
+
+    /**
+     * Creates a timestamp cache with the given capacity.
+     *
+     * @param capacity the maximum number of cached entries
+     * @throws IllegalArgumentException if {@code capacity} is not positive
+     */
+    public CollectionTsCache(int capacity) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Cache capacity must be greater than zero");
+        }
+        this.capacity = capacity;
+    }
 
     /**
      * Returns the process-wide singleton instance of the cache.
@@ -60,7 +101,12 @@ public class CollectionTsCache {
         CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
         lock.readLock().lock();
         try {
-            return cache.getOrDefault(key, 0L);
+            Entry entry = cache.get(key);
+            if (entry == null) {
+                return 0L;
+            }
+            touch(entry);
+            return entry.ts;
         } finally {
             lock.readLock().unlock();
         }
@@ -84,7 +130,16 @@ public class CollectionTsCache {
         CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
         lock.writeLock().lock();
         try {
-            cache.compute(key, (ignored, current) -> current == null || timestamp > current ? timestamp : current);
+            Entry entry = cache.get(key);
+            if (entry == null) {
+                cache.put(key, new Entry(timestamp, nextAccess()));
+                evictIfNeeded();
+            } else {
+                if (timestamp > entry.ts) {
+                    entry.ts = timestamp;
+                }
+                touch(entry);
+            }
         } finally {
             lock.writeLock().unlock();
         }
@@ -171,13 +226,39 @@ public class CollectionTsCache {
                 return;
             }
             long latestTimestamp = Math.max(
-                    cache.getOrDefault(sourceKey, 0L), cache.getOrDefault(targetKey, 0L));
+                    tsOf(cache.get(sourceKey)), tsOf(cache.get(targetKey)));
             if (dropSource) {
                 cache.remove(sourceKey);
             }
             cache.remove(targetKey);
             if (latestTimestamp != 0L) {
-                cache.put(targetKey, latestTimestamp);
+                cache.put(targetKey, new Entry(latestTimestamp, nextAccess()));
+                evictIfNeeded();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private static long tsOf(Entry entry) {
+        return entry == null ? 0L : entry.ts;
+    }
+
+    /**
+     * Resizes the cache to the given capacity, evicting least-recently-used entries as needed.
+     *
+     * @param newCapacity the new maximum number of cached entries
+     * @throws IllegalArgumentException if {@code newCapacity} is not positive
+     */
+    void setCapacityInternal(int newCapacity) {
+        if (newCapacity <= 0) {
+            throw new IllegalArgumentException("Cache capacity must be greater than zero");
+        }
+        lock.writeLock().lock();
+        try {
+            capacity = newCapacity;
+            while (cache.size() > capacity) {
+                evictLeastRecentlyUsed();
             }
         } finally {
             lock.writeLock().unlock();
@@ -185,10 +266,36 @@ public class CollectionTsCache {
     }
 
     /**
+     * Returns the current capacity of the cache.
+     *
+     * @return the maximum number of cached entries
+     */
+    int getCapacityInternal() {
+        return capacity;
+    }
+
+    /**
+     * Sets the capacity of the process-wide collection timestamp cache.
+     *
+     * @param capacity the new maximum number of cached session timestamps
+     * @throws IllegalArgumentException if {@code capacity} is not positive
+     */
+    public static void setCapacity(int capacity) {
+        INSTANCE.setCapacityInternal(capacity);
+    }
+
+    /**
+     * Returns the capacity of the process-wide collection timestamp cache.
+     *
+     * @return the maximum number of cached session timestamps
+     */
+    public static int getCapacity() {
+        return INSTANCE.getCapacityInternal();
+    }
+
+    /**
      * Removes all cached timestamps.
      */
-
-
     public void clear() {
         lock.writeLock().lock();
         try {
@@ -203,8 +310,6 @@ public class CollectionTsCache {
      *
      * @return the cache size
      */
-
-
     public int size() {
         lock.readLock().lock();
         try {
@@ -212,5 +317,27 @@ public class CollectionTsCache {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    private long nextAccess() {
+        return accessSequence.incrementAndGet();
+    }
+
+    private void touch(Entry entry) {
+        entry.lastAccess.accumulateAndGet(nextAccess(), Math::max);
+    }
+
+    private void evictIfNeeded() {
+        if (cache.size() <= capacity) {
+            return;
+        }
+        evictLeastRecentlyUsed();
+    }
+
+    private void evictLeastRecentlyUsed() {
+        cache.entrySet().stream()
+                .min(Comparator.comparingLong(item -> item.getValue().lastAccess.get()))
+                .map(Map.Entry::getKey)
+                .ifPresent(cache::remove);
     }
 }
