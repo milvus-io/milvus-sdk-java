@@ -16,6 +16,24 @@ permissions:
 env:
   UT_CHECK_UBUNTU: 'Build and test on ubuntu'
   UT_CHECK_WINDOWS: 'Build and test on windows'
+  # Retry transient Maven Central download failures instead of failing the job on a network
+  # hiccup. Both key families are set so the config takes effect on any bundled resolver: Resolver
+  # 1.x reads aether.connector.http.retryHandler.* plus aether.connector.{connect,request}Timeout,
+  # while Resolver 2.x reads aether.transport.http.* (each resolver silently ignores the other
+  # prefix).
+  MAVEN_OPTS: >-
+    -Daether.connector.http.retryHandler.count=5
+    -Daether.connector.http.retryHandler.interval=1000
+    -Daether.connector.http.retryHandler.intervalMax=10000
+    -Daether.connector.http.retryHandler.serviceUnavailable=500,502,503,504,429
+    -Daether.connector.connectTimeout=30000
+    -Daether.connector.requestTimeout=120000
+    -Daether.transport.http.retryHandler.count=5
+    -Daether.transport.http.retryHandler.interval=1000
+    -Daether.transport.http.retryHandler.intervalMax=10000
+    -Daether.transport.http.retryHandler.serviceUnavailable=500,502,503,504,429
+    -Daether.transport.http.connectTimeout=30000
+    -Daether.transport.http.requestTimeout=120000
 
 # Maven Central releases are immutable. Do not publish two release tags at the same time,
 # and do not cancel a deployment after it has started uploading artifacts.
