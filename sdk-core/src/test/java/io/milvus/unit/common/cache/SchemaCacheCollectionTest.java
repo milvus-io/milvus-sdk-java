@@ -19,6 +19,7 @@
 
 package io.milvus.unit.common.cache;
 
+import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.grpc.DescribeCollectionResponse;
 import org.junit.jupiter.api.Tag;
@@ -581,6 +582,55 @@ class SchemaCacheCollectionTest {
 
         assertEquals(2, loads.get());
         assertEquals(4L, loaded.getCollectionID());
+    }
+
+    @Test
+    void setCapacityEvictsLeastRecentlyUsedSchemas() {
+        int original = SchemaCache.getCapacity();
+        try {
+            SchemaCache.getInstance().clear();
+            SchemaCache.setCapacity(3);
+
+            SchemaCache.getInstance().set("host:19530", "db", "a", response(1L));
+            SchemaCache.getInstance().set("host:19530", "db", "b", response(2L));
+            SchemaCache.getInstance().set("host:19530", "db", "c", response(3L));
+            SchemaCache.getInstance().get("host:19530", "db", "b");
+
+            SchemaCache.setCapacity(1);
+
+            assertEquals(1, SchemaCache.getInstance().size());
+            assertEquals(2L, SchemaCache.getInstance().get("host:19530", "db", "b").getCollectionID());
+            assertNull(SchemaCache.getInstance().get("host:19530", "db", "a"));
+            assertNull(SchemaCache.getInstance().get("host:19530", "db", "c"));
+            assertThrows(IllegalArgumentException.class, () -> SchemaCache.setCapacity(0));
+        } finally {
+            SchemaCache.setCapacity(original);
+            SchemaCache.getInstance().clear();
+        }
+    }
+
+    @Test
+    void setCapacityAppliesToBothCollectionCacheSingletons() {
+        int originalSchema = SchemaCache.getCapacity();
+        int originalTs = CollectionTsCache.getCapacity();
+        try {
+            SchemaCache.getInstance().clear();
+            CollectionTsCache.getInstance().clear();
+
+            SchemaCache.getInstance().set("host:19530", "db", "coll_lru_config", response(1L));
+            SchemaCache.setCapacity(8);
+            CollectionTsCache.setCapacity(32);
+
+            assertEquals(8, SchemaCache.getCapacity());
+            assertEquals(32, CollectionTsCache.getCapacity());
+            assertEquals(1L, SchemaCache.getInstance()
+                    .get("host:19530", "db", "coll_lru_config").getCollectionID());
+        } finally {
+            SchemaCache.setCapacity(originalSchema);
+            CollectionTsCache.setCapacity(originalTs);
+            SchemaCache.getInstance().clear();
+            CollectionTsCache.getInstance().clear();
+        }
     }
 
     private static DescribeCollectionResponse response(long collectionId) {
