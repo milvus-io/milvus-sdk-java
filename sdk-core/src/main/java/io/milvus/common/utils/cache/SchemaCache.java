@@ -20,6 +20,7 @@
 package io.milvus.common.utils.cache;
 
 import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.v2.common.CacheConfig;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,7 +41,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class SchemaCache {
-    public static final int DEFAULT_CAPACITY = 4096;
+    /**
+     * Default maximum number of cached schemas, mirroring {@link CacheConfig#DEFAULT_CAPACITY}.
+     * Kept as a public constant for backward compatibility; prefer
+     * {@link CacheConfig#DEFAULT_CAPACITY} for new code.
+     */
+    public static final int DEFAULT_CAPACITY = CacheConfig.DEFAULT_CAPACITY;
 
     /**
      * Callback used to load a collection schema on cache miss.
@@ -107,7 +113,7 @@ public class SchemaCache {
         }
     }
 
-    private final int capacity;
+    private volatile int capacity;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final AtomicLong accessSequence = new AtomicLong();
     private final Map<CollectionCacheKey, Entry> cache = new HashMap<>();
@@ -392,6 +398,55 @@ public class SchemaCache {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    /**
+     * Resizes the cache to the given capacity, evicting least-recently-used schemas as needed.
+     *
+     * @param newCapacity the new maximum number of cached schemas
+     * @throws IllegalArgumentException if {@code newCapacity} is not positive
+     */
+    void setCapacityInternal(int newCapacity) {
+        if (newCapacity <= 0) {
+            throw new IllegalArgumentException("Cache capacity must be greater than zero");
+        }
+        lock.writeLock().lock();
+        try {
+            capacity = newCapacity;
+            while (cache.size() > capacity) {
+                evictIfNeeded();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Returns the current capacity of the cache.
+     *
+     * @return the maximum number of cached schemas
+     */
+    int getCapacityInternal() {
+        return capacity;
+    }
+
+    /**
+     * Sets the capacity of the process-wide schema cache.
+     *
+     * @param capacity the new maximum number of cached schemas
+     * @throws IllegalArgumentException if {@code capacity} is not positive
+     */
+    public static void setCapacity(int capacity) {
+        INSTANCE.setCapacityInternal(capacity);
+    }
+
+    /**
+     * Returns the capacity of the process-wide schema cache.
+     *
+     * @return the maximum number of cached schemas
+     */
+    public static int getCapacity() {
+        return INSTANCE.getCapacityInternal();
     }
 
     private DescribeCollectionResponse getCached(CollectionCacheKey key) {
