@@ -60,6 +60,20 @@ public class SnapshotServiceTest extends BaseTest {
         assertEquals(2, resp.getSnapshots().size());
         assertEquals("snapshot_1", resp.getSnapshots().get(0));
         assertEquals("snapshot_2", resp.getSnapshots().get(1));
+
+        assertNotNull(resp.getSnapshotSummaries());
+        assertEquals(2, resp.getSnapshotSummaries().size());
+        SnapshotSummaryInfo first = resp.getSnapshotSummaries().get(0);
+        assertEquals("snapshot_1", first.getName());
+        assertEquals(9007199254740993L, first.getCreateTs());
+        assertEquals("test snapshot", first.getDescription());
+        assertEquals(34359738368L, first.getCreateUtcTs());
+
+        SnapshotSummaryInfo second = resp.getSnapshotSummaries().get(1);
+        assertEquals("snapshot_2", second.getName());
+        assertEquals(1000L, second.getCreateTs());
+        assertEquals("", second.getDescription());
+        assertEquals(0L, second.getCreateUtcTs());
     }
 
     @Test
@@ -67,6 +81,8 @@ public class SnapshotServiceTest extends BaseTest {
         ListSnapshotsResp resp = ListSnapshotsResp.builder().build();
         assertNotNull(resp.getSnapshots());
         assertTrue(resp.getSnapshots().isEmpty());
+        assertNotNull(resp.getSnapshotSummaries());
+        assertTrue(resp.getSnapshotSummaries().isEmpty());
     }
 
     @Test

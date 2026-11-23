@@ -677,6 +677,7 @@ public class BuilderConventionTest {
         VerifyClass(PinSnapshotDataReq.class.getName(), config);
         VerifyClass(UnpinSnapshotDataReq.class.getName(), config);
         VerifyClass(ListSnapshotsResp.class.getName(), config);
+        VerifyClass(SnapshotSummaryInfo.class.getName(), config);
         VerifyClass(DescribeSnapshotResp.class.getName(), config);
         VerifyClass(RestoreSnapshotResp.class.getName(), config);
         VerifyClass(RestoreSnapshotJobInfo.class.getName(), config);
