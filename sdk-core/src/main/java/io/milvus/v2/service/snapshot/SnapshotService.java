@@ -118,8 +118,13 @@ public class SnapshotService extends BaseService {
 
         ListSnapshotsResponse response = blockingStub.listSnapshots(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
+        List<SnapshotSummaryInfo> summaries = new ArrayList<>();
+        for (io.milvus.grpc.SnapshotSummary summary : response.getSnapshotSummariesList()) {
+            summaries.add(convertSnapshotSummaryInfo(summary));
+        }
         return ListSnapshotsResp.builder()
                 .snapshots(new ArrayList<>(response.getSnapshotsList()))
+                .snapshotSummaries(summaries)
                 .build();
     }
 
@@ -300,6 +305,15 @@ public class SnapshotService extends BaseService {
         Status status = blockingStub.unpinSnapshotData(grpcRequest);
         rpcUtils.handleResponse(title, status);
         return null;
+    }
+
+    private SnapshotSummaryInfo convertSnapshotSummaryInfo(io.milvus.grpc.SnapshotSummary summary) {
+        return SnapshotSummaryInfo.builder()
+                .name(summary.getName())
+                .createTs(summary.getCreateTs())
+                .description(summary.getDescription())
+                .createUtcTs(summary.getCreateUtcTs())
+                .build();
     }
 
     private RestoreSnapshotJobInfo convertRestoreSnapshotJobInfo(io.milvus.grpc.RestoreSnapshotInfo info) {
