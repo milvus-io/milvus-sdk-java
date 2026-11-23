@@ -43,6 +43,7 @@ import io.milvus.v2.service.snapshot.response.ListSnapshotsResp;
 import io.milvus.v2.service.snapshot.response.PinSnapshotDataResp;
 import io.milvus.v2.service.snapshot.response.RestoreSnapshotJobInfo;
 import io.milvus.v2.service.snapshot.response.RestoreSnapshotResp;
+import io.milvus.v2.service.snapshot.response.SnapshotSummaryInfo;
 import io.milvus.v2.service.utility.request.FlushReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
@@ -112,6 +113,10 @@ public class SnapshotExample {
                     .collectionName(COLLECTION_NAME)
                     .build());
             System.out.println("Snapshots: " + listResp.getSnapshots());
+            for (SnapshotSummaryInfo summary : listResp.getSnapshotSummaries()) {
+                System.out.printf("  summary: name=%s, createTs=%d, createUtcTs=%d, description=%s%n",
+                        summary.getName(), summary.getCreateTs(), summary.getCreateUtcTs(), summary.getDescription());
+            }
 
             DescribeSnapshotResp describeResp = client.describeSnapshot(DescribeSnapshotReq.builder()
                     .snapshotName(SNAPSHOT_NAME)

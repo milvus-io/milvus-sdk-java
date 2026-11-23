@@ -417,6 +417,18 @@ public class BaseTest {
                         .setStatus(successStatus)
                         .addSnapshots("snapshot_1")
                         .addSnapshots("snapshot_2")
+                        .addSnapshotSummaries(SnapshotSummary.newBuilder()
+                                .setName("snapshot_1")
+                                .setCreateTs(9007199254740993L)
+                                .setDescription("test snapshot")
+                                .setCreateUtcTs(34359738368L)
+                                .build())
+                        .addSnapshotSummaries(SnapshotSummary.newBuilder()
+                                .setName("snapshot_2")
+                                .setCreateTs(1000L)
+                                .setDescription("")
+                                .setCreateUtcTs(0L)
+                                .build())
                         .build());
         when(blockingStub.describeSnapshot(any())).thenReturn(
                 DescribeSnapshotResponse.newBuilder()

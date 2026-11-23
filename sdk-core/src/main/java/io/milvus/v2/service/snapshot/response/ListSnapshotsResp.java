@@ -29,9 +29,11 @@ import java.util.List;
 
 public class ListSnapshotsResp {
     private List<String> snapshots;
+    private List<SnapshotSummaryInfo> snapshotSummaries;
 
     private ListSnapshotsResp(ListSnapshotsRespBuilder builder) {
         this.snapshots = builder.snapshots == null ? new ArrayList<>() : builder.snapshots;
+        this.snapshotSummaries = builder.snapshotSummaries == null ? new ArrayList<>() : builder.snapshotSummaries;
     }
 
     /**
@@ -67,10 +69,36 @@ public class ListSnapshotsResp {
         this.snapshots = snapshots;
     }
 
+    /**
+     * Returns the lightweight snapshot summaries in server-provided order
+     * ({@code createTs} descending, then {@code name} ascending).
+     *
+     * <p>When connected to an older server that returns snapshot names only, this list is empty.</p>
+     *
+     * @return the list of snapshot summaries
+     */
+
+
+    public List<SnapshotSummaryInfo> getSnapshotSummaries() {
+        return snapshotSummaries;
+    }
+
+    /**
+     * Sets the list of lightweight snapshot summaries.
+     *
+     * @param snapshotSummaries the list of snapshot summaries
+     */
+
+
+    public void setSnapshotSummaries(List<SnapshotSummaryInfo> snapshotSummaries) {
+        this.snapshotSummaries = snapshotSummaries;
+    }
+
     @Override
     public String toString() {
         return "ListSnapshotsResp{" +
                 "snapshots=" + snapshots +
+                ", snapshotSummaries=" + snapshotSummaries +
                 '}';
     }
 
@@ -81,6 +109,7 @@ public class ListSnapshotsResp {
 
     public static class ListSnapshotsRespBuilder {
         private List<String> snapshots = new ArrayList<>();
+        private List<SnapshotSummaryInfo> snapshotSummaries = new ArrayList<>();
 
         /**
          * Sets the list of snapshot names.
@@ -92,6 +121,19 @@ public class ListSnapshotsResp {
 
         public ListSnapshotsRespBuilder snapshots(List<String> snapshots) {
             this.snapshots = snapshots;
+            return this;
+        }
+
+        /**
+         * Sets the list of lightweight snapshot summaries.
+         *
+         * @param snapshotSummaries the list of snapshot summaries
+         * @return this builder
+         */
+
+
+        public ListSnapshotsRespBuilder snapshotSummaries(List<SnapshotSummaryInfo> snapshotSummaries) {
+            this.snapshotSummaries = snapshotSummaries;
             return this;
         }
 

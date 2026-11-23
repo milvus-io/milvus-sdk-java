@@ -2184,8 +2184,14 @@ public class MilvusClientV2 {
     /**
      * Lists the snapshots that already exist for a collection.
      *
+     * <p>Newer servers also populate {@link ListSnapshotsResp#getSnapshotSummaries()} with
+     * lightweight metadata ({@code name}, {@code createTs}, {@code description}, and
+     * {@code createUtcTs}) in server-provided order ({@code createTs} descending, then
+     * {@code name} ascending). Older servers return snapshot names only, leaving
+     * {@code snapshotSummaries} empty.</p>
+     *
      * @param request the list snapshots request
-     * @return the list of snapshot names
+     * @return the list snapshots response containing snapshot names and summaries
      */
 
 
