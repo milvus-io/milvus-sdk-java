@@ -23,6 +23,7 @@ import io.milvus.grpc.DescribeSnapshotResponse;
 import io.milvus.grpc.ErrorCode;
 import io.milvus.grpc.GetRestoreSnapshotStateResponse;
 import io.milvus.grpc.ListRestoreSnapshotJobsResponse;
+import io.milvus.grpc.ListSnapshotsRequest;
 import io.milvus.grpc.ListSnapshotsResponse;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.PinSnapshotDataResponse;
@@ -46,17 +47,23 @@ import io.milvus.v2.service.snapshot.response.ListRestoreSnapshotJobsResp;
 import io.milvus.v2.service.snapshot.response.ListSnapshotsResp;
 import io.milvus.v2.service.snapshot.response.PinSnapshotDataResp;
 import io.milvus.v2.service.snapshot.response.RestoreSnapshotResp;
+import io.milvus.v2.service.snapshot.response.SnapshotSummaryInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -145,7 +152,91 @@ class SnapshotServiceTest {
                 .build());
 
         assertEquals(Collections.singletonList("snap1"), result.getSnapshots());
+        assertTrue(result.getSnapshotSummaries().isEmpty());
         verify(stub).listSnapshots(any());
+        verify(stub, never()).describeSnapshot(any());
+    }
+
+    @Test
+    void listSnapshotsReturnsSummariesInServerOrderWithoutDescribeCalls() {
+        ListSnapshotsResponse response = ListSnapshotsResponse.newBuilder()
+                .setStatus(success())
+                .addAllSnapshots(Arrays.asList("old", "b", "a"))
+                .addSnapshotSummaries(io.milvus.grpc.SnapshotSummary.newBuilder()
+                        .setName("old")
+                        .build())
+                .addSnapshotSummaries(io.milvus.grpc.SnapshotSummary.newBuilder()
+                        .setName("b")
+                        .setCreateTs(9007199254740993L)
+                        .setDescription("daily")
+                        .setCreateUtcTs(34359738368L)
+                        .build())
+                .addSnapshotSummaries(io.milvus.grpc.SnapshotSummary.newBuilder()
+                        .setName("a")
+                        .setCreateTs(9007199254740993L)
+                        .build())
+                .build();
+        when(stub.listSnapshots(any())).thenReturn(response);
+
+        ListSnapshotsResp result = service.listSnapshots(stub, ListSnapshotsReq.builder()
+                .collectionName("books")
+                .databaseName("archive")
+                .build());
+
+        ArgumentCaptor<ListSnapshotsRequest> requestCaptor = ArgumentCaptor.forClass(ListSnapshotsRequest.class);
+        verify(stub).listSnapshots(requestCaptor.capture());
+        verify(stub, never()).describeSnapshot(any());
+        assertEquals("books", requestCaptor.getValue().getCollectionName());
+        assertEquals("archive", requestCaptor.getValue().getDbName());
+
+        assertEquals(Arrays.asList("old", "b", "a"), result.getSnapshots());
+        List<SnapshotSummaryInfo> summaries = result.getSnapshotSummaries();
+        assertEquals(3, summaries.size());
+
+        assertEquals("old", summaries.get(0).getName());
+        assertEquals(Long.valueOf(0L), summaries.get(0).getCreateTs());
+        assertEquals("", summaries.get(0).getDescription());
+        assertEquals(Long.valueOf(0L), summaries.get(0).getCreateUtcTs());
+
+        assertEquals("b", summaries.get(1).getName());
+        assertEquals(Long.valueOf(9007199254740993L), summaries.get(1).getCreateTs());
+        assertEquals("daily", summaries.get(1).getDescription());
+        assertEquals(Long.valueOf(34359738368L), summaries.get(1).getCreateUtcTs());
+
+        assertEquals("a", summaries.get(2).getName());
+        assertEquals(Long.valueOf(9007199254740993L), summaries.get(2).getCreateTs());
+        assertEquals("", summaries.get(2).getDescription());
+        assertEquals(Long.valueOf(0L), summaries.get(2).getCreateUtcTs());
+    }
+
+    @Test
+    void listSnapshotsReturnsEmptyLists() {
+        ListSnapshotsResponse response = ListSnapshotsResponse.newBuilder()
+                .setStatus(success())
+                .build();
+        when(stub.listSnapshots(any())).thenReturn(response);
+
+        ListSnapshotsResp result = service.listSnapshots(stub, ListSnapshotsReq.builder().build());
+
+        assertTrue(result.getSnapshots().isEmpty());
+        assertTrue(result.getSnapshotSummaries().isEmpty());
+        verify(stub, never()).describeSnapshot(any());
+    }
+
+    @Test
+    void listSnapshotsPropagatesServerError() {
+        ListSnapshotsResponse response = ListSnapshotsResponse.newBuilder()
+                .setStatus(Status.newBuilder()
+                        .setCode(100)
+                        .setErrorCode(ErrorCode.CollectionNotExists)
+                        .setReason("collection not found")
+                        .build())
+                .build();
+        when(stub.listSnapshots(any())).thenReturn(response);
+
+        assertThrows(MilvusClientException.class,
+                () -> service.listSnapshots(stub, ListSnapshotsReq.builder().collectionName("missing").build()));
+        verify(stub, never()).describeSnapshot(any());
     }
 
     @Test
