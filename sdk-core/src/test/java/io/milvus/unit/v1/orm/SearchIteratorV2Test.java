@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -116,6 +117,35 @@ class SearchIteratorV2Test {
         iterator.next();
 
         verify(stub, times(2)).search(any(SearchRequest.class));
+    }
+
+    @Test
+    void cursorUpdatesEveryPageWhileTokenStaysFixed() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub = mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        when(stub.describeCollection(any(DescribeCollectionRequest.class)))
+                .thenReturn(describeCollectionResponse());
+        SearchResults probe = searchResults(100L, "probe-tok", "");
+        SearchResults page1 = searchResults(100L, "page-tok", "c1:page1", 1L);
+        SearchResults page2 = searchResults(100L, "ignored-tok", "c1:page2", 2L);
+        when(stub.search(any(SearchRequest.class))).thenReturn(probe, page1, page2);
+
+        SearchIteratorV2 iterator = new SearchIteratorV2(request(new HashMap<>()), testStubWrapper(stub));
+        iterator.next();
+        iterator.next();
+
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(stub, times(3)).search(captor.capture());
+
+        SearchRequest firstReq = captor.getAllValues().get(1);
+        assertFalse(firstReq.getSearchParamsList().stream().anyMatch(kv -> "search_iter_cursor".equals(kv.getKey())));
+
+        SearchRequest secondReq = captor.getAllValues().get(2);
+        assertEquals("page-tok", secondReq.getSearchParamsList().stream()
+                .filter(kv -> "search_iter_id".equals(kv.getKey()))
+                .findFirst().orElseThrow().getValue());
+        assertEquals("c1:page1", secondReq.getSearchParamsList().stream()
+                .filter(kv -> "search_iter_cursor".equals(kv.getKey()))
+                .findFirst().orElseThrow().getValue());
     }
 
     @Test
@@ -225,13 +255,20 @@ class SearchIteratorV2Test {
     }
 
     private static SearchResults searchResults(long sessionTs, Long... ids) {
+        return searchResults(sessionTs, "token", "", ids);
+    }
+
+    private static SearchResults searchResults(long sessionTs, String token, String cursor, Long... ids) {
+        SearchIteratorV2Results.Builder iterBuilder = SearchIteratorV2Results.newBuilder()
+                .setToken(token);
+        if (cursor != null && !cursor.isEmpty()) {
+            iterBuilder.setCursor(cursor);
+        }
         SearchResultData.Builder resultBuilder = SearchResultData.newBuilder()
                 .setNumQueries(1)
                 .setTopK(ids.length)
                 .addTopks(ids.length)
-                .setSearchIteratorV2Results(SearchIteratorV2Results.newBuilder()
-                        .setToken("token")
-                        .build());
+                .setSearchIteratorV2Results(iterBuilder.build());
         if (ids.length > 0) {
             resultBuilder.setIds(IDs.newBuilder()
                     .setIntId(LongArray.newBuilder().addAllData(Arrays.asList(ids)).build())

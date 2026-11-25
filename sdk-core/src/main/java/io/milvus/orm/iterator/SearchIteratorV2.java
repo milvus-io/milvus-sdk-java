@@ -272,6 +272,12 @@ public class SearchIteratorV2 {
         if (!searchParams.containsKey("search_iter_id")) {
             searchParams.put("search_iter_id", iterInfo.getToken());
         }
+        String cursor = iterInfo.getCursor();
+        if (StringUtils.isNotEmpty(cursor)) {
+            searchParams.put("search_iter_cursor", cursor);
+        } else {
+            searchParams.remove("search_iter_cursor");
+        }
 
         setupGuaranteeTimestamp(response);
 
