@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+### Feature
+- Allow V2 clients to opt into zstd compression for gRPC requests and responses.
+
 ### Bug
 - Escape VARCHAR primary keys in V2 get, query, and delete ID filters
 

@@ -413,6 +413,7 @@ public class GlobalStub {
 
         return builder
                 .connectTimeoutMs(original.getConnectTimeoutMs())
+                .enableZstdCompression(original.isEnableZstdCompression())
                 .keepAliveTimeMs(original.getKeepAliveTimeMs())
                 .keepAliveTimeoutMs(original.getKeepAliveTimeoutMs())
                 .keepAliveWithoutCalls(original.isKeepAliveWithoutCalls())

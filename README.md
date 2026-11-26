@@ -78,6 +78,19 @@ To use BulkWriter, import milvus-sdk-java-bulkwriter to your project.
 
 For Spring Boot applications (Java 17+), the `milvus-sdk-java-spring-boot-starter` package auto-configures a `MilvusClientV2` from `milvus.*` properties. See [sdk-spring-boot-starter](sdk-spring-boot-starter/README.md).
 
+### Optional gRPC compression
+
+Enable zstd on a V2 connection to compress outgoing RPC messages and accept compressed replies.
+Compression is off by default. The Milvus server must support the `zstd` gRPC encoding.
+
+```java
+ConnectConfig config = ConnectConfig.builder()
+        .uri("http://localhost:19530")
+        .enableZstdCompression(true)
+        .build();
+MilvusClientV2 client = new MilvusClientV2(config);
+```
+
 ### Examples
 
 Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.

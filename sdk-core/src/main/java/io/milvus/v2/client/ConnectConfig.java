@@ -61,6 +61,7 @@ public class ConnectConfig {
     private String serverName;
     private String proxyAddress;
     private Boolean secure = false;
+    private boolean enableZstdCompression;
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
     private boolean enablePrecheck = false;  // default value is false
     private Map<String, String> option = new HashMap<>();
@@ -96,6 +97,7 @@ public class ConnectConfig {
         this.serverName = builder.serverName;
         this.proxyAddress = builder.proxyAddress;
         this.secure = builder.secure;
+        this.enableZstdCompression = builder.enableZstdCompression;
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.sslContext = builder.sslContext;
         this.clientRequestId = builder.clientRequestId;
@@ -281,6 +283,11 @@ public class ConnectConfig {
 
     public Boolean getSecure() {
         return secure;
+    }
+
+    /** Returns whether this connection uses zstd gRPC message compression. */
+    public boolean isEnableZstdCompression() {
+        return enableZstdCompression;
     }
 
     /**
@@ -595,6 +602,11 @@ public class ConnectConfig {
         this.enablePrecheck = enablePrecheck;
     }
 
+    /** Configures zstd compression for channels created from this configuration. */
+    public void setEnableZstdCompression(boolean enabled) {
+        this.enableZstdCompression = enabled;
+    }
+
     /**
     * Sets additional connection options.
     *
@@ -765,6 +777,7 @@ public class ConnectConfig {
                 ", serverName='" + serverName + '\'' +
                 ", proxyAddress='" + proxyAddress + '\'' +
                 ", secure=" + secure +
+                ", enableZstdCompression=" + enableZstdCompression +
                 ", enablePrecheck=" + enablePrecheck +
                 ", idleTimeoutMs=" + idleTimeoutMs +
                 ", sslContext=" + sslContext +
@@ -795,6 +808,7 @@ public class ConnectConfig {
         private String serverName;
         private String proxyAddress;
         private Boolean secure = false;
+        private boolean enableZstdCompression;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private SSLContext sslContext;
         private ThreadLocal<String> clientRequestId;
@@ -1029,6 +1043,18 @@ public class ConnectConfig {
 
         public ConnectConfigBuilder secure(Boolean secure) {
             this.secure = secure;
+            return this;
+        }
+
+        /**
+         * Enables zstd compression for RPCs on this connection. Disabled by default.
+         * The server must support the zstd gRPC message encoding.
+         *
+         * @param enabled whether to send zstd-compressed messages and accept zstd replies
+         * @return this builder
+         */
+        public ConnectConfigBuilder enableZstdCompression(boolean enabled) {
+            this.enableZstdCompression = enabled;
             return this;
         }
 
