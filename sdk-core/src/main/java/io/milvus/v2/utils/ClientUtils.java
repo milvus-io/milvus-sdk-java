@@ -103,9 +103,10 @@ public class ClientUtils {
         }
 
         try {
+            ManagedChannelBuilder<?> builder;
             if (connectConfig.getSslContext() != null) {
                 // sslContext from connect config
-                NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
+                builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
                         .overrideAuthority(connectConfig.getServerName())
                         .sslContext(convertJavaSslContextToNetty(connectConfig))
                         .maxInboundMessageSize(Integer.MAX_VALUE)
@@ -125,14 +126,13 @@ public class ClientUtils {
                 if (StringUtils.isNotEmpty(connectConfig.getServerName())) {
                     builder.overrideAuthority(connectConfig.getServerName());
                 }
-                channel = builder.build();
             } else if (StringUtils.isNotEmpty(connectConfig.getServerPemPath())) {
                 // one-way tls
                 SslContext sslContext = GrpcSslContexts.forClient()
                         .trustManager(new File(connectConfig.getServerPemPath()))
                         .build();
 
-                NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
+                builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
                         .overrideAuthority(connectConfig.getServerName())
                         .sslContext(sslContext)
                         .maxInboundMessageSize(Integer.MAX_VALUE)
@@ -149,7 +149,6 @@ public class ClientUtils {
                 if (connectConfig.isSecure()) {
                     builder.useTransportSecurity();
                 }
-                channel = builder.build();
             } else if (StringUtils.isNotEmpty(connectConfig.getClientPemPath())
                     && StringUtils.isNotEmpty(connectConfig.getClientKeyPath())
                     && StringUtils.isNotEmpty(connectConfig.getCaPemPath())) {
@@ -159,7 +158,7 @@ public class ClientUtils {
                         .keyManager(new File(connectConfig.getClientPemPath()), new File(connectConfig.getClientKeyPath()))
                         .build();
 
-                NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
+                builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
                         .sslContext(sslContext)
                         .maxInboundMessageSize(Integer.MAX_VALUE)
                         .keepAliveTime(connectConfig.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
@@ -178,10 +177,9 @@ public class ClientUtils {
                 if (StringUtils.isNotEmpty(connectConfig.getServerName())) {
                     builder.overrideAuthority(connectConfig.getServerName());
                 }
-                channel = builder.build();
             } else {
                 // no tls
-                ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
+                builder = ManagedChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
                         .usePlaintext()
                         .maxInboundMessageSize(Integer.MAX_VALUE)
                         .keepAliveTime(connectConfig.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
@@ -195,8 +193,11 @@ public class ClientUtils {
                 if (connectConfig.isSecure()) {
                     builder.useTransportSecurity();
                 }
-                channel = builder.build();
             }
+            if (connectConfig.isEnableZstdCompression()) {
+                ZstdCodec.configure(builder);
+            }
+            channel = builder.build();
         } catch (IOException e) {
             logger.error("Failed to open credentials file, error:{}\n", e.getMessage());
         }

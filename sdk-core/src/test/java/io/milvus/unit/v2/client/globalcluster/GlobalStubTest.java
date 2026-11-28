@@ -243,6 +243,12 @@ class GlobalStubTest {
     }
 
     @Test
+    void primaryConfigPreservesZstdCompression() throws Exception {
+        ConnectConfig original = ConnectConfig.builder().uri(GLOBAL_ENDPOINT).enableZstdCompression(true).build();
+        assertTrue(clonePrimaryConfig(original, "primary.example.com").isEnableZstdCompression());
+    }
+
+    @Test
     void primaryConfigUsesSchemeAwareDefaultPorts() throws Exception {
         ConnectConfig secureOriginal = ConnectConfig.builder().uri(GLOBAL_ENDPOINT).build();
 
